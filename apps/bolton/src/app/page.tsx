@@ -2,6 +2,15 @@
 
 import { Button, Card, PageHeader } from "@11am/ui";
 import { useCallback, useEffect, useState } from "react";
+import { AskBoltonBar } from "@/components/AskBoltonBar";
+
+interface SearchResult {
+  id: string;
+  title: string;
+  entry_type: string;
+  source_agent: string;
+  summary: string;
+}
 
 interface MemoryEntry {
   id: string;
@@ -21,6 +30,29 @@ export default function MemoryFeedPage() {
   const [editing, setEditing] = useState<string | null>(null);
   const [editSummary, setEditSummary] = useState("");
   const [notice, setNotice] = useState("");
+  const [askQuery, setAskQuery] = useState("");
+  const [asking, setAsking] = useState(false);
+  const [askResults, setAskResults] = useState<SearchResult[] | null>(null);
+
+  async function handleAsk() {
+    if (!askQuery.trim()) return;
+    setAsking(true);
+    setAskResults(null);
+    try {
+      const res = await fetch("/api/search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: askQuery.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Search failed");
+      setAskResults(data.results ?? []);
+    } catch (e) {
+      setNotice(e instanceof Error ? e.message : "Search failed");
+    } finally {
+      setAsking(false);
+    }
+  }
 
   const loadEntries = useCallback(async () => {
     const res = await fetch("/api/memory");
@@ -76,9 +108,33 @@ export default function MemoryFeedPage() {
         }
       />
 
+      <AskBoltonBar
+        value={askQuery}
+        onChange={setAskQuery}
+        onAsk={handleAsk}
+        loading={asking}
+        onScheduled={setNotice}
+      />
+
       {notice && (
         <Card padding="sm" className="am-section !p-4">
           <p className="am-copy">{notice}</p>
+        </Card>
+      )}
+
+      {askResults && (
+        <Card grain padding="md" className="am-section">
+          <p className="am-label mb-3">memory results · “{askQuery}”</p>
+          {askResults.length === 0 && <p className="am-copy">nothing found in memory for that.</p>}
+          <div className="space-y-4">
+            {askResults.map((r) => (
+              <div key={r.id} className="am-list-item pt-3 first:pt-0">
+                <h3 className="am-title text-sm">{r.title}</h3>
+                <p className="am-detail-meta">{r.source_agent} · {r.entry_type} · [{r.id.slice(0, 8)}]</p>
+                <p className="am-copy mt-1 text-sm">{r.summary}</p>
+              </div>
+            ))}
+          </div>
         </Card>
       )}
 

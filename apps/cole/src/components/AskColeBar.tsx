@@ -67,9 +67,9 @@ export function AskColeBar({
 
   return (
     <div className="mb-10">
-      <div className="am-ask-bar flex items-stretch gap-0 overflow-hidden">
-        <div className="am-ask-monogram flex shrink-0 items-center justify-center px-4">
-          <span className="text-sm font-bold tracking-[0.2em] lowercase">co</span>
+      <div className="am-ask-bar">
+        <div className="am-ask-monogram">
+          <span className="am-mono-dark">co</span>
         </div>
         <input
           type="text"
@@ -97,7 +97,7 @@ export function AskColeBar({
           type="button"
           onClick={() => setShowSchedule((v) => !v)}
           disabled={!value.trim()}
-          className="am-ask-schedule border-l border-white/10 px-5 py-4 text-xs font-bold tracking-[0.15em] uppercase disabled:opacity-40"
+          className="am-ask-schedule disabled:opacity-40"
         >
           Schedule
         </button>

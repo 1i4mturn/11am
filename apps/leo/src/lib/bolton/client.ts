@@ -10,6 +10,7 @@ const BOLTON_BASE = process.env.BOLTON_API_URL ?? "http://localhost:3002";
 
 async function boltonFetch(path: string, init?: RequestInit) {
   const res = await fetch(`${BOLTON_BASE}${path}`, {
+      signal: AbortSignal.timeout(5000),
     ...init,
     headers: { "Content-Type": "application/json", ...init?.headers },
   });

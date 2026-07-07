@@ -37,7 +37,7 @@ export default function PlanPage() {
         }
       />
 
-      {error && <p className="am-copy text-sm text-red-700">{error}</p>}
+      {error && <p className="am-copy am-error text-sm">{error}</p>}
       {meta && (
         <p className="am-copy text-sm text-[var(--am-muted)]">
           Based on {meta.events} calendar events and {meta.tasks} active tasks

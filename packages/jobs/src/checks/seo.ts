@@ -65,7 +65,12 @@ export async function runSeoReview(
       const url = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(siteUrl)}&category=PERFORMANCE&strategy=MOBILE&key=${pagespeedApiKey}`;
       const res = await fetch(url);
       if (res.ok) {
-        const data = await res.json();
+        const data = (await res.json()) as {
+          lighthouseResult?: {
+            categories?: { performance?: { score?: number } };
+            audits?: Record<string, { numericValue?: number }>;
+          };
+        };
         const score = data.lighthouseResult?.categories?.performance?.score ?? 0;
         const audits = data.lighthouseResult?.audits ?? {};
         pagespeed = {

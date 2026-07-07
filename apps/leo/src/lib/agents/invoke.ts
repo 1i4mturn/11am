@@ -13,6 +13,7 @@ async function invokeJamesHandoff(
   request: AgentInvokeRequest
 ): Promise<AgentInvokeResponse> {
   const res = await fetch(`${JAMES_API}/api/handoff`, {
+    signal: AbortSignal.timeout(90_000),
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -44,6 +45,7 @@ async function invokeConnerHandoff(
   request: AgentInvokeRequest
 ): Promise<AgentInvokeResponse> {
   const res = await fetch(`${CONNER_API}/api/handoff`, {
+    signal: AbortSignal.timeout(90_000),
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -75,6 +77,7 @@ async function invokeRobertHandoff(
   request: AgentInvokeRequest
 ): Promise<AgentInvokeResponse> {
   const res = await fetch(`${ROBERT_API}/api/handoff`, {
+    signal: AbortSignal.timeout(90_000),
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -106,6 +109,7 @@ async function invokeHarrisHandoff(
   request: AgentInvokeRequest
 ): Promise<AgentInvokeResponse> {
   const res = await fetch(`${HARRIS_API}/api/handoff`, {
+    signal: AbortSignal.timeout(90_000),
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -135,6 +139,7 @@ async function invokeColeHandoff(
   request: AgentInvokeRequest
 ): Promise<AgentInvokeResponse> {
   const res = await fetch(`${COLE_API}/api/handoff`, {
+    signal: AbortSignal.timeout(90_000),
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -164,6 +169,7 @@ async function invokeJohnnyHandoff(
   request: AgentInvokeRequest
 ): Promise<AgentInvokeResponse> {
   const res = await fetch(`${JOHNNY_API}/api/handoff`, {
+    signal: AbortSignal.timeout(90_000),
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -209,6 +215,34 @@ const AGENT_PROMPTS: Record<string, string> = {
   cole: "You are Cole, the video agent. Structure concepts for reels, YouTube, and short-form video.",
   leo: "You are Leo, chief of staff. Coordinate priorities, calendar, and agent handoffs for Liam.",
 };
+
+/**
+ * Parallel fan-out — brief several agents at once with the same task.
+ * Each invocation is independent and failure-isolated: one agent being down
+ * returns an error response for that agent without sinking the others.
+ */
+export async function invokeAgentsParallel(
+  base: Omit<AgentInvokeRequest, "to_agent">,
+  toAgents: string[]
+): Promise<AgentInvokeResponse[]> {
+  const settled = await Promise.allSettled(
+    toAgents.map((to_agent) => invokeAgent({ ...base, to_agent }))
+  );
+
+  return settled.map((result, i) =>
+    result.status === "fulfilled"
+      ? result.value
+      : {
+          from_agent: toAgents[i],
+          to_agent: base.from_agent,
+          summary: `${toAgents[i]} unavailable: ${
+            result.reason instanceof Error ? result.reason.message : "invocation failed"
+          }`,
+          memory_ids_written: [],
+          follow_up_needed: true,
+        }
+  );
+}
 
 export async function invokeAgent(
   request: AgentInvokeRequest

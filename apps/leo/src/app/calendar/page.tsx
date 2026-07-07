@@ -106,7 +106,7 @@ export default function CalendarPage() {
       {status?.message && (
         <p className="am-copy text-sm text-[var(--am-muted)]">{status.message}</p>
       )}
-      {error && <p className="am-copy text-sm text-red-700">{error}</p>}
+      {error && <p className="am-copy am-error text-sm">{error}</p>}
 
       <Card padding="md">
         <p className="am-label mb-3">Create event</p>

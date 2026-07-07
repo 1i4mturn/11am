@@ -15,6 +15,8 @@ async function boltonFetch(
 ): Promise<Response> {
   return fetch(`${base}${path}`, {
     ...init,
+    // Bolton being down should degrade the job to repo-only analysis quickly.
+    signal: init?.signal ?? AbortSignal.timeout(10_000),
     headers: { "Content-Type": "application/json", ...init?.headers },
   });
 }
@@ -31,7 +33,10 @@ export async function fetchBoltonContext(
       body: JSON.stringify({ requesting_agent: "Johnny", task }),
     });
     if (ctxRes.ok) {
-      const data = await ctxRes.json();
+      const data = (await ctxRes.json()) as {
+        context_pack?: { architecture?: Record<string, unknown>; prior_build?: Record<string, unknown> };
+        entries?: unknown;
+      };
       pack.architecture = data.context_pack?.architecture;
       pack.prior_build = data.context_pack?.prior_build;
       if (Array.isArray(data.entries)) {
@@ -54,7 +59,9 @@ export async function fetchBoltonContext(
       "/api/agent-summaries?agent_id=robert"
     );
     if (brandRes.ok) {
-      const data = await brandRes.json();
+      const data = (await brandRes.json()) as {
+        summary?: { summary?: Record<string, unknown> } & Record<string, unknown>;
+      };
       pack.brand_system = data.summary?.summary ?? data.summary;
     }
   } catch {
@@ -67,7 +74,9 @@ export async function fetchBoltonContext(
       "/api/agent-summaries?agent_id=conner"
     );
     if (stratRes.ok) {
-      const data = await stratRes.json();
+      const data = (await stratRes.json()) as {
+        summary?: { summary?: Record<string, unknown> } & Record<string, unknown>;
+      };
       pack.strategy_brief = data.summary?.summary ?? data.summary;
     }
   } catch {

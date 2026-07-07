@@ -38,8 +38,6 @@ export async function POST(request: NextRequest) {
         2
       ),
       tags: ["task", "james", "schedule", `cadence:${body.cadence}`, "leo-calendar"],
-      cadence: body.cadence,
-      custom_schedule: body.custom_schedule,
       force: true,
     });
 

@@ -169,7 +169,7 @@ export function JobMonitor({ selectedJobId, onSelectJob }: JobMonitorProps) {
           </div>
 
           {display.error && (
-            <p className="am-copy text-sm text-red-700">{display.error}</p>
+            <p className="am-copy am-error text-sm">{display.error}</p>
           )}
 
           {display.result && (

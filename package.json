@@ -7,6 +7,8 @@
   ],
   "scripts": {
     "start": "bash scripts/start.sh",
+    "test": "node --test packages/jobs/src/*.test.ts packages/ui/src/tokens/*.test.ts",
+    "doctor": "bash scripts/doctor.sh",
     "start:extended": "bash scripts/start-extended.sh",
     "start:full": "bash scripts/start-full.sh",
     "setup": "npm install && npm run postinstall && npm run setup:env && bash scripts/db.sh",
@@ -35,6 +37,11 @@
     "db:migrate:neon": "bash scripts/neon-migrate.sh",
     "deploy:vercel": "bash scripts/deploy-vercel.sh",
     "deploy:first": "bash scripts/vercel-first-deploy.sh",
+    "deploy:all": "bash scripts/vercel-deploy-all.sh",
+    "deploy:git": "bash scripts/vercel-git-deploy.sh",
+    "deploy:configure": "bash scripts/vercel-configure-projects.sh",
+    "deploy:one": "bash scripts/vercel-deploy-one.sh",
+    "deploy:fix-git": "bash scripts/fix-git-author.sh",
     "notion:file-builds": "tsx apps/bolton/scripts/file-agent-builds-jul6.ts",
     "postinstall": "bash scripts/ensure-native-bindings.sh"
   },

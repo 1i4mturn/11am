@@ -14,7 +14,7 @@ export async function GET() {
       });
     }
     const financials = await getXeroFinancials();
-    return NextResponse.json({ connected: true, ...status, financials });
+    return NextResponse.json({ ...status, connected: true, financials });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Xero read failed";
     return NextResponse.json({ error: message }, { status: 500 });

@@ -6,6 +6,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const res = await fetch(`${LEO_API_URL}/api/ask`, {
       method: "POST",
+      signal: AbortSignal.timeout(90_000),
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ query: body.query }),
       cache: "no-store",

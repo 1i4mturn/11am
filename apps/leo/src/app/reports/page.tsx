@@ -70,7 +70,7 @@ export default function ReportsPage() {
         }
       />
 
-      {error && <p className="am-copy text-sm text-red-700">{error}</p>}
+      {error && <p className="am-copy am-error text-sm">{error}</p>}
 
       {loading ? (
         <p className="am-copy text-sm">Loading reports…</p>

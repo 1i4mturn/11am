@@ -84,7 +84,7 @@ export default function UnitEconomicsPage() {
         </Button>
       </Card>
 
-      {error && <p className="am-copy text-sm text-red-700">{error}</p>}
+      {error && <p className="am-copy am-error text-sm">{error}</p>}
       {analysis && (
         <Card padding="lg">
           <pre className="am-copy whitespace-pre-wrap text-sm">{analysis}</pre>

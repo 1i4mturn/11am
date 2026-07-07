@@ -96,7 +96,7 @@ export default function TasksPage() {
         description="Stored as Bolton memory entries (entry_type: task) — visible to all agents."
       />
 
-      {error && <p className="am-copy text-sm text-red-700">{error}</p>}
+      {error && <p className="am-copy am-error text-sm">{error}</p>}
 
       <Card padding="md">
         <p className="am-label mb-3">New task</p>

@@ -14,6 +14,7 @@ export async function writeToBolton(candidate: {
   const baseUrl = process.env.BOLTON_API_URL ?? "http://localhost:3002";
   try {
     await fetch(`${baseUrl}/api/memory`, {
+      signal: AbortSignal.timeout(5_000),
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...candidate, force: candidate.force ?? true }),
@@ -26,7 +27,7 @@ export async function writeToBolton(candidate: {
 export async function getPersonContextFromBolton(query: string) {
   const baseUrl = process.env.BOLTON_API_URL ?? "http://localhost:3002";
   try {
-    const res = await fetch(`${baseUrl}/api/entities?q=${encodeURIComponent(query)}`);
+    const res = await fetch(`${baseUrl}/api/entities?q=${encodeURIComponent(query)}`, { signal: AbortSignal.timeout(5_000) });
     if (res.ok) return res.json();
   } catch {
     // fallback to direct DB in bolton/index.ts
@@ -38,6 +39,7 @@ export async function getBoltonContext(task: string) {
   const baseUrl = process.env.BOLTON_API_URL ?? "http://localhost:3002";
   try {
     const res = await fetch(`${baseUrl}/api/context`, {
+      signal: AbortSignal.timeout(5_000),
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ requesting_agent: "Marc", task }),

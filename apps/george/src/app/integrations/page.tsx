@@ -98,7 +98,7 @@ function IntegrationsContent() {
 
       <TaxDisclaimer />
       {notice && <p className="am-copy text-sm">{notice}</p>}
-      {error && <p className="am-copy text-sm text-red-700">{error}</p>}
+      {error && <p className="am-copy am-error text-sm">{error}</p>}
 
       <div className="grid gap-4 md:grid-cols-2">
         <Card padding="md">
@@ -134,8 +134,8 @@ function IntegrationsContent() {
               <p className="am-copy mb-2 text-sm text-[var(--am-muted)]">
                 Uncertified OAuth — works immediately for your org.
               </p>
-              {xero?.authUrl && (
-                <a href={xero.authUrl as string} className="am-btn am-btn-primary px-3 py-1.5 am-label inline-block">
+              {typeof xero?.authUrl === "string" && (
+                <a href={xero.authUrl} className="am-btn am-btn-primary px-3 py-1.5 am-label inline-block">
                   Connect Xero
                 </a>
               )}

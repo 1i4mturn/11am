@@ -9,7 +9,7 @@ import type { BoltonContextPack } from "../bolton";
 import { boltonContextBlock } from "../bolton";
 import type { BuildJob, JobCost, JobsConfig } from "../types";
 
-const MODEL = "claude-sonnet-4-20250514";
+const MODEL = process.env.ANTHROPIC_MODEL ?? "claude-sonnet-4-20250514";
 
 export interface AgentRunResult {
   output: string;

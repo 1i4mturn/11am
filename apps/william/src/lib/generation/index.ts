@@ -121,7 +121,7 @@ export function computeConfidence(
 
 export async function* streamGenerateCopy(options: GenerateContext): AsyncGenerator<string> {
   const stream = await getAnthropic().messages.stream({
-    model: "claude-sonnet-4-20250514",
+    model: process.env.ANTHROPIC_MODEL ?? "claude-sonnet-4-20250514",
     max_tokens: 4096,
     system: buildSystemPrompt(options),
     messages: [{ role: "user", content: buildUserContent(options) }],

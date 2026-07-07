@@ -13,7 +13,7 @@ import { writeToBolton } from "@/lib/bolton/client";
 import type { JamesHandoff, ResearchBrief, ResearchSource, RequestType } from "@/lib/types";
 import { briefToMarkdown } from "@/lib/research/template";
 
-const MODEL = "claude-sonnet-4-20250514";
+const MODEL = process.env.ANTHROPIC_MODEL ?? "claude-sonnet-4-20250514";
 
 const JAMES_SYSTEM = `You are James, the research agent for LiamOS/11am. You ground every answer in web evidence with citations.
 You run in a separate context — callers receive only a summarised handoff, never your full thread.

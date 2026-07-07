@@ -50,7 +50,7 @@ function HomeContent() {
       />
 
       {notice && <p className="am-copy text-sm">{notice}</p>}
-      {error && <p className="am-copy text-sm text-red-700">{error}</p>}
+      {error && <p className="am-copy am-error text-sm">{error}</p>}
 
       <div className="grid gap-4 md:grid-cols-2">
         <Card padding="md">

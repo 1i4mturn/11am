@@ -338,7 +338,7 @@ export default function LearnPage() {
       )}
 
       {notice && <p className="am-copy text-sm">{notice}</p>}
-      {error && <p className="am-copy text-sm text-red-700">{error}</p>}
+      {error && <p className="am-copy am-error text-sm">{error}</p>}
 
       {renderResult()}
     </div>

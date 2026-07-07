@@ -97,6 +97,7 @@ async function fetchInboxGlance(): Promise<GlanceCard> {
     const res = await fetch(`${MARC_API_URL}/api/triage`, {
       method: "POST",
       cache: "no-store",
+      signal: AbortSignal.timeout(3_500),
     });
     if (res.ok) {
       const data = await res.json();
@@ -140,7 +141,7 @@ async function fetchCalendarGlance(): Promise<GlanceCard> {
     end.setDate(end.getDate() + 2);
     const calRes = await fetch(
       `${LEO_API_URL}/api/calendar?timeMin=${now.toISOString()}&timeMax=${end.toISOString()}`,
-      { cache: "no-store" }
+      { cache: "no-store", signal: AbortSignal.timeout(3_500) }
     );
     if (calRes.ok) {
       const data = await calRes.json();
@@ -161,6 +162,7 @@ async function fetchCalendarGlance(): Promise<GlanceCard> {
   try {
     const taskRes = await fetch(`${BOLTON_API_URL}/api/memory?entry_type=task&status=active`, {
       cache: "no-store",
+      signal: AbortSignal.timeout(3_500),
     });
     if (taskRes.ok) {
       const data = await taskRes.json();
@@ -190,7 +192,7 @@ async function fetchWipGlance(): Promise<GlanceCard> {
   const sources = ["William", "Bolton", "Johnny"];
 
   try {
-    const res = await fetch(`${BOLTON_API_URL}/api/memory?status=active`, { cache: "no-store" });
+    const res = await fetch(`${BOLTON_API_URL}/api/memory?status=active`, { cache: "no-store", signal: AbortSignal.timeout(3_500) });
     if (res.ok) {
       const data = await res.json();
       const entries = (data.entries ?? []).map((e: Record<string, unknown>) => normalizeEntry(e));
@@ -228,8 +230,8 @@ async function fetchActivity(): Promise<ActivityEntry[]> {
 
   try {
     const [memRes, decRes] = await Promise.all([
-      fetch(`${BOLTON_API_URL}/api/memory?status=active`, { cache: "no-store" }),
-      fetch(`${BOLTON_API_URL}/api/decisions`, { cache: "no-store" }),
+      fetch(`${BOLTON_API_URL}/api/memory?status=active`, { cache: "no-store", signal: AbortSignal.timeout(3_500) }),
+      fetch(`${BOLTON_API_URL}/api/decisions`, { cache: "no-store", signal: AbortSignal.timeout(3_500) }),
     ]);
 
     if (memRes.ok) {

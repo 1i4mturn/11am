@@ -28,7 +28,7 @@ Be specific and evidence-based. Infer from the actual writing, not generic assum
 
 export async function analyseCorpus(corpus: string): Promise<VoiceProfile> {
   const response = await getAnthropic().messages.create({
-    model: "claude-sonnet-4-20250514",
+    model: process.env.ANTHROPIC_MODEL ?? "claude-sonnet-4-20250514",
     max_tokens: 4096,
     messages: [
       {
@@ -56,7 +56,7 @@ export async function updateProfileFromEdits(
   editedOutput: string
 ): Promise<VoiceProfile> {
   const response = await getAnthropic().messages.create({
-    model: "claude-sonnet-4-20250514",
+    model: process.env.ANTHROPIC_MODEL ?? "claude-sonnet-4-20250514",
     max_tokens: 4096,
     messages: [
       {

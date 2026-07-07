@@ -1,5 +1,10 @@
 node_modules
 .next
 .env.local
+deploy/.vercel-url-*
+deploy/home-vercel.env
 *.log
 .DS_Store
+.vercel
+.env*
+.data/

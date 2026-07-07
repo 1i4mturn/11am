@@ -11,6 +11,7 @@ export async function writeToBolton(candidate: {
 }): Promise<{ id?: string } | null> {
   try {
     const res = await fetch(`${BOLTON_BASE}/api/memory`, {
+      signal: AbortSignal.timeout(5000),
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...candidate, force: candidate.force ?? true }),
@@ -28,6 +29,7 @@ export async function writeToBolton(candidate: {
 export async function searchBoltonMemory(query: string) {
   try {
     const res = await fetch(`${BOLTON_BASE}/api/search`, {
+      signal: AbortSignal.timeout(5000),
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ query }),
@@ -50,9 +52,7 @@ export async function searchBoltonMemory(query: string) {
 
 export async function listJamesResearch(limit = 20) {
   try {
-    const res = await fetch(
-      `${BOLTON_BASE}/api/memory?source_agent=James&entry_type=research&status=active`
-    );
+    const res = await fetch(`${BOLTON_BASE}/api/memory?source_agent=James&entry_type=research&status=active`, { signal: AbortSignal.timeout(5000) });
     if (!res.ok) return [];
     const data = await res.json();
     return (data.entries ?? []).slice(0, limit) as Array<Record<string, unknown>>;

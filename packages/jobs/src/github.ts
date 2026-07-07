@@ -28,7 +28,7 @@ export async function listUserRepos(token: string): Promise<GitHubRepo[]> {
     const err = await res.text();
     throw new Error(`GitHub API error: ${res.status} ${err}`);
   }
-  return res.json();
+  return (await res.json()) as GitHubRepo[];
 }
 
 export async function fetchRepoFile(
@@ -71,8 +71,8 @@ export async function fetchRepoDiff(
     }
   );
   if (!res.ok) throw new Error(`Compare failed: ${res.status}`);
-  const data = await res.json();
-  const files = (data.files ?? []) as Array<{ filename: string; patch?: string }>;
+  const data = (await res.json()) as { files?: Array<{ filename: string; patch?: string }> };
+  const files = data.files ?? [];
   return files
     .map((f) => `--- ${f.filename}\n${f.patch ?? "(binary)"}`)
     .join("\n\n")
@@ -92,6 +92,6 @@ export async function fetchDefaultBranch(
     },
   });
   if (!res.ok) throw new Error(`Repo lookup failed: ${res.status}`);
-  const data = await res.json();
+  const data = (await res.json()) as { default_branch?: string };
   return data.default_branch ?? "main";
 }
