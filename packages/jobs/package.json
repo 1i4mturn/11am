@@ -1,0 +1,21 @@
+{
+  "name": "@11am/jobs",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Suite-wide async job queue, sandbox runner, and push infrastructure",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.110.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "typescript": "^5"
+  }
+}

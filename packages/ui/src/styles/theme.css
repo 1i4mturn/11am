@@ -1,0 +1,10 @@
+@theme inline {
+  --color-background: #edeeef;
+  --color-foreground: #161616;
+  --color-graphite: #2f2f2f;
+  --color-surface: rgba(255, 255, 255, 0.6);
+  --color-border: rgba(0, 0, 0, 0.05);
+  --color-muted: #6b6560;
+  --color-accent-light: rgba(255, 255, 255, 0.6);
+  --font-sans: "Alte Haas Grotesk", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}

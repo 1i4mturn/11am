@@ -1,0 +1,16 @@
+{
+  "name": "11am",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:william": "npm run dev -w @11am/william",
+    "dev:marc": "npm run dev -w @11am/marc",
+    "dev:bolton": "npm run dev -w @11am/bolton",
+    "build": "npm run build -w @11am/william && npm run build -w @11am/marc && npm run build -w @11am/bolton",
+    "db:up": "npm run db:up -w @11am/bolton",
+    "db:migrate": "npm run db:migrate -w @11am/bolton"
+  }
+}

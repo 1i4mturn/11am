@@ -1,0 +1,11 @@
+export const MARC_API_URL = process.env.MARC_API_URL ?? "http://localhost:3001";
+export const WILLIAM_API_URL = process.env.WILLIAM_API_URL ?? "http://localhost:3000";
+export const LEO_API_URL = process.env.LEO_API_URL ?? "http://localhost:3006";
+export const GEORGE_API_URL = process.env.GEORGE_API_URL ?? "http://localhost:3004";
+export const BOLTON_API_URL = process.env.BOLTON_API_URL ?? "http://localhost:3002";
+export const JAMES_API_URL = process.env.JAMES_API_URL ?? "http://localhost:3003";
+export const CONNER_API_URL = process.env.CONNER_API_URL ?? "http://localhost:3005";
+export const ROBERT_API_URL = process.env.ROBERT_API_URL ?? "http://localhost:3007";
+export const HARRIS_API_URL = process.env.HARRIS_API_URL ?? "http://localhost:3008";
+export const COLE_API_URL = process.env.COLE_API_URL ?? "http://localhost:3009";
+export const JOHNNY_API_URL = process.env.JOHNNY_API_URL ?? "http://localhost:3011";

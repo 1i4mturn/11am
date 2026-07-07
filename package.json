@@ -1,0 +1,48 @@
+{
+  "name": "11am",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "start": "bash scripts/start.sh",
+    "start:extended": "bash scripts/start-extended.sh",
+    "start:full": "bash scripts/start-full.sh",
+    "setup": "npm install && npm run postinstall && npm run setup:env && bash scripts/db.sh",
+    "db": "bash scripts/db.sh",
+    "setup:env": "for app in home william marc bolton leo george james conner robert harris cole johnny; do test -f apps/$app/.env.local || cp apps/$app/.env.example apps/$app/.env.local; done",
+    "dev:core": "concurrently -k -n home,bolton,leo,marc -c cyan,blue,yellow,magenta \"npm run dev:home\" \"npm run dev:bolton\" \"npm run dev:leo\" \"npm run dev:marc\"",
+    "dev:extended": "concurrently -k -n home,bolton,leo,marc,william,george -c cyan,blue,yellow,magenta,green,red \"npm run dev:home\" \"npm run dev:bolton\" \"npm run dev:leo\" \"npm run dev:marc\" \"npm run dev:william\" \"npm run dev:george\"",
+    "dev:full": "concurrently -k -n home,william,marc,bolton,james,george,conner,robert,harris,cole,johnny,leo -c cyan,green,magenta,blue,white,red,brightRed,white,gray,brightCyan,white,yellow \"npm run dev:home\" \"npm run dev:william\" \"npm run dev:marc\" \"npm run dev:bolton\" \"npm run dev:james\" \"npm run dev:george\" \"npm run dev:conner\" \"npm run dev:robert\" \"npm run dev:harris\" \"npm run dev:cole\" \"npm run dev:johnny\" \"npm run dev:leo\"",
+    "dev": "npm run dev:core",
+    "stop": "bash scripts/stop.sh",
+    "dev:home": "npm run dev -w @11am/home",
+    "dev:william": "npm run dev -w @11am/william",
+    "dev:marc": "npm run dev -w @11am/marc",
+    "dev:bolton": "npm run dev -w @11am/bolton",
+    "dev:james": "npm run dev -w @11am/james",
+    "dev:leo": "npm run dev -w @11am/leo",
+    "dev:george": "npm run dev -w @11am/george",
+    "dev:conner": "npm run dev -w @11am/conner",
+    "dev:robert": "npm run dev -w @11am/robert",
+    "dev:harris": "npm run dev -w @11am/harris",
+    "dev:cole": "npm run dev -w @11am/cole",
+    "dev:johnny": "npm run dev -w @11am/johnny",
+    "build": "npm run build -w @11am/home && npm run build -w @11am/william && npm run build -w @11am/marc && npm run build -w @11am/bolton && npm run build -w @11am/james && npm run build -w @11am/leo && npm run build -w @11am/george && npm run build -w @11am/conner && npm run build -w @11am/robert && npm run build -w @11am/harris && npm run build -w @11am/cole && npm run build -w @11am/johnny",
+    "db:up": "npm run db:up -w @11am/bolton",
+    "db:migrate": "npm run db:migrate -w @11am/bolton",
+    "db:migrate:neon": "bash scripts/neon-migrate.sh",
+    "deploy:vercel": "bash scripts/deploy-vercel.sh",
+    "deploy:first": "bash scripts/vercel-first-deploy.sh",
+    "notion:file-builds": "tsx apps/bolton/scripts/file-agent-builds-jul6.ts",
+    "postinstall": "bash scripts/ensure-native-bindings.sh"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.0"
+  },
+  "optionalDependencies": {
+    "@tailwindcss/oxide-darwin-x64": "^4.3.2",
+    "lightningcss-darwin-x64": "^1.32.0"
+  }
+}
