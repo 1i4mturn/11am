@@ -13,7 +13,7 @@ export type WorkflowType =
 
 export type HandoffTarget = "johnny" | "cole";
 
-/** Exact shape William sends — must stay in sync */
+/** Exact shape William sends - must stay in sync */
 export interface WilliamRobertHandoff {
   copy: string;
   platform: string;
@@ -40,7 +40,7 @@ export const LogoVariantSchema = z.object({
   concept_image_url: z.string().optional(),
 });
 
-/** Living brand-system doc — exact Bolton schema (Cole depends on motion_tokens) */
+/** Living brand-system doc - exact Bolton schema (Cole depends on motion_tokens) */
 export const BrandSystemDocSchema = z.object({
   source_agent: z.literal("Robert"),
   version: z.string(),

@@ -52,7 +52,7 @@ function TokenBlock({ title, tokens }: { title: string; tokens: Record<string, s
       <ul className="am-copy space-y-1 text-sm">
         {Object.entries(tokens).map(([k, v]) => (
           <li key={k}>
-            <span className="font-mono text-xs text-[var(--am-muted)]">{k}</span> — {v}
+            <span className="font-mono text-xs text-[var(--am-muted)]">{k}</span> - {v}
           </li>
         ))}
       </ul>

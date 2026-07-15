@@ -159,7 +159,7 @@ export default function DashboardPage() {
               <h2 className="panel-title">activity</h2>
               <div className="timeline">
                 {activity.length === 0 && (
-                  <p className="activity-empty">no recent bolton activity — start bolton on :3002</p>
+                  <p className="activity-empty">no recent bolton activity - start bolton on :3002</p>
                 )}
                 {activity.map((entry, index) => (
                   <div key={`${entry.agentId}-${index}`} className="timeline-row">

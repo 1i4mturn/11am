@@ -41,7 +41,7 @@ export async function writeToBolton(candidate: {
   return null;
 }
 
-/** Short pointer only — full plan detail stays in Learning Hub */
+/** Short pointer only - full plan detail stays in Learning Hub */
 export async function writePlanPointer(hub: LearningHub): Promise<{ id?: string } | null> {
   const active = hub.plans.filter((p) => p.progress.status === "active");
   const summary = `${active.length} active plan(s) · ${hub.plans.length} total · updated ${hub.updated_at.slice(0, 10)}`;

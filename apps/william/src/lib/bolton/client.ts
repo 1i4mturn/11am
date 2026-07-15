@@ -20,7 +20,7 @@ export async function writeToBolton(candidate: {
       body: JSON.stringify({ ...candidate, force: candidate.force ?? true }),
     });
   } catch {
-    // Bolton may be offline during dev — non-blocking
+    // Bolton may be offline during dev - non-blocking
   }
 }
 

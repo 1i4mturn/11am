@@ -155,7 +155,7 @@ export default function CalendarPage() {
                   <div>
                     <p className="am-copy font-medium">{ev.summary}</p>
                     <p className="am-copy text-sm text-[var(--am-muted)]">
-                      {new Date(ev.start).toLocaleString()} — {new Date(ev.end).toLocaleString()}
+                      {new Date(ev.start).toLocaleString()} - {new Date(ev.end).toLocaleString()}
                     </p>
                     {ev.location && (
                       <p className="am-copy text-sm">{ev.location}</p>

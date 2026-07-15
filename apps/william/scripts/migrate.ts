@@ -104,7 +104,7 @@ async function migrate() {
       'george',
       'default',
       '{"revenue_growth": "18% QoQ", "runway_months": 14, "key_metric": "MRR up to $42k"}'::jsonb,
-      'Q1 finance review — strong quarter'
+      'Q1 finance review - strong quarter'
     )
   `;
 
@@ -114,7 +114,7 @@ async function migrate() {
       'conner',
       'default',
       '{"positioning_shift": "platform language over product language", "target_audience": "founders building agent suites", "key_message": "voice fidelity is the moat"}'::jsonb,
-      'Strategy session — repositioning for platform narrative'
+      'Strategy session - repositioning for platform narrative'
     )
   `;
 

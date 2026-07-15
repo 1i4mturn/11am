@@ -41,13 +41,13 @@ function segmentsToVtt(
   return `WEBVTT\n\n${body}`;
 }
 
-/** OpenAI Whisper API — instant-key transcription */
+/** OpenAI Whisper API - instant-key transcription */
 export async function transcribeAudio(
   buffer: Buffer,
   filename: string
 ): Promise<TranscriptionResult> {
   const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) throw new Error("OPENAI_API_KEY not set — required for Whisper transcription");
+  if (!apiKey) throw new Error("OPENAI_API_KEY not set - required for Whisper transcription");
 
   const tmpPath = path.join(process.cwd(), ".data", "uploads", `${randomUUID()}-${filename}`);
   await writeFile(tmpPath, buffer);

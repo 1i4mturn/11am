@@ -3,6 +3,7 @@ node_modules
 .env.local
 deploy/.vercel-url-*
 deploy/home-vercel.env
+deploy/pulled-env/
 *.log
 .DS_Store
 .vercel

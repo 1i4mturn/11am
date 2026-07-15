@@ -19,14 +19,14 @@ export interface GeneratedImage {
   revised_prompt?: string;
 }
 
-/** OpenAI DALL-E 3 — instant-key provider, session-capped */
+/** OpenAI DALL-E 3 - instant-key provider, session-capped */
 export async function generateImage(
   prompt: string,
   sessionId: string,
   options?: { size?: "1024x1024" | "1792x1024" | "1024x1792" }
 ): Promise<GeneratedImage> {
   const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) throw new Error("OPENAI_API_KEY not set — required for image generation");
+  if (!apiKey) throw new Error("OPENAI_API_KEY not set - required for image generation");
 
   const remaining = getImagesRemaining(sessionId);
   if (remaining <= 0) {

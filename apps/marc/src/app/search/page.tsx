@@ -44,7 +44,7 @@ export default function SearchPage() {
     <>
       <PageHeader
         title="Search your inbox"
-        description={'Natural language search — "Find the email where JC mentioned the Xero bank feed issue"'}
+        description={'Natural language search - "Find the email where JC mentioned the Xero bank feed issue"'}
       />
 
       <form onSubmit={handleSearch} className="am-section flex gap-3">

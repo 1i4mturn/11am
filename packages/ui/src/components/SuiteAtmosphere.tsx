@@ -1,4 +1,4 @@
-/** Dual wash + grain stack — matches home dashboard & brand guidelines */
+/** Dual wash + grain stack - matches home dashboard & brand guidelines */
 
 export function SuiteAtmosphere() {
   return (

@@ -25,7 +25,7 @@ export default function BriefingPage() {
 
   return (
     <>
-      <PageHeader title="Inbox briefing" description="Calm, action-oriented catch-up — no anxiety, no dumps." />
+      <PageHeader title="Inbox briefing" description="Calm, action-oriented catch-up - no anxiety, no dumps." />
 
       <div className="am-section flex gap-3">
         <Button onClick={() => load("daily")} disabled={loading}>

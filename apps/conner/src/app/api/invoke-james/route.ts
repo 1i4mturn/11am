@@ -25,7 +25,7 @@ export async function GET() {
       endpoint: "POST /api/invoke-james",
       routes_via: "Leo /api/invoke",
       request: {
-        task: "string — research question for James",
+        task: "string - research question for James",
         priority: "normal | urgent",
       },
       response: {

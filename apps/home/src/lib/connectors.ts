@@ -53,7 +53,7 @@ async function fetchConnectorStatus(
     connected: false,
     needsReauth: false,
     authUrl: null,
-    message: `${def.agent} offline — start app on ${APP_URL_BY_AGENT[def.agentId] ?? def.appUrl}`,
+    message: `${def.agent} offline - start app on ${APP_URL_BY_AGENT[def.agentId] ?? def.appUrl}`,
     envHint: def.envHint,
     offline: true,
   };

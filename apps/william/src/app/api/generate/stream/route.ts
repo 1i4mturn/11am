@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
               ? ctx.voiceProfile.tone_adjectives.slice(0, 3).join(", ")
               : "Warm, clear, conversational",
             visual_direction:
-              "Clean, authentic, human — editorial white space, no stock-photo energy",
+              "Clean, authentic, human - editorial white space, no stock-photo energy",
           };
 
           await incrementGenerationCount(userId);

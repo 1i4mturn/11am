@@ -31,7 +31,7 @@ export async function POST() {
     await writeToBolton({
       source_agent: "George",
       entry_type: "research",
-      title: `Latest numbers — ${summary.as_of}`,
+      title: `Latest numbers - ${summary.as_of}`,
       summary: `${summary.revenue} · ${summary.runway_months}mo runway · burn ${summary.burn_rate}`,
       full_content: JSON.stringify(summary, null, 2),
       tags: ["george", "latest_numbers", "finance"],

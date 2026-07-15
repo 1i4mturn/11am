@@ -9,16 +9,16 @@ import type { BrandSystemDoc, Platform, WorkflowType } from "@/lib/types";
 const WORKFLOWS: { value: WorkflowType; label: string; description: string }[] = [
   { value: "script", label: "Script package", description: "Script, shot list, voiceover, editing direction" },
   { value: "concepts", label: "Content concepts", description: "YouTube / Reels / TikTok structure" },
-  { value: "storyboard", label: "Storyboard", description: "Text/spec frames only — not rendered video" },
+  { value: "storyboard", label: "Storyboard", description: "Text/spec frames only - not rendered video" },
   { value: "transcribe", label: "Transcribe", description: "Whisper API → captions (SRT/VTT)" },
   { value: "convert", label: "Convert", description: "Server-side FFmpeg format optimisation" },
   { value: "motion_template", label: "Motion template", description: "Brand-locked basic template (Robert tokens)" },
 ];
 
 const DEFAULT_PROMPTS: Record<WorkflowType, string> = {
-  script: "60s intro to the 11am agent suite for solo founders — warm, editorial, not hype",
+  script: "60s intro to the 11am agent suite for solo founders - warm, editorial, not hype",
   concepts: "Behind-the-scenes of building LiamOS agents",
-  storyboard: "Agent suite walkthrough — William to Marc handoff",
+  storyboard: "Agent suite walkthrough - William to Marc handoff",
   transcribe: "",
   convert: "",
   motion_template: "",
@@ -212,7 +212,7 @@ export default function MotionPage() {
     <div className="am-section space-y-6">
       <PageHeader
         title="Motion"
-        description="Scripts, storyboards, and brand-locked motion — grounded in Robert's motion_tokens."
+        description="Scripts, storyboards, and brand-locked motion - grounded in Robert's motion_tokens."
       />
 
       {brand && (
@@ -224,16 +224,16 @@ export default function MotionPage() {
       )}
 
       <Card padding="md">
-        <p className="am-label mb-2">filmed podcast auto-edit — scoped mini-project</p>
+        <p className="am-label mb-2">filmed podcast auto-edit - scoped mini-project</p>
         <p className="am-copy text-sm text-[var(--am-muted)]">
           Transcript-driven cuts, chapter markers, and filler removal via a cloud FFmpeg pipeline.
-          Cole v1 handles upload/review hooks only — heavy lifting is a separate backend effort, not
+          Cole v1 handles upload/review hooks only - heavy lifting is a separate backend effort, not
           part of this sprint. No CapCut SDK patterns.
         </p>
         <ul className="am-copy mt-3 list-disc space-y-1 pl-5 text-sm text-[var(--am-muted)]">
           <li>Phase 1: Whisper transcript + chapter detection (this app)</li>
-          <li>Phase 2: Server worker — FFmpeg cut list from transcript</li>
-          <li>Phase 3: Review UI in Cole — approve/reject cuts</li>
+          <li>Phase 2: Server worker - FFmpeg cut list from transcript</li>
+          <li>Phase 3: Review UI in Cole - approve/reject cuts</li>
         </ul>
       </Card>
 

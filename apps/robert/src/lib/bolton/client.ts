@@ -70,7 +70,7 @@ export async function persistBrandSystem(doc: BrandSystemDoc): Promise<string[]>
   const memoryWrite = await writeToBolton({
     source_agent: "Robert",
     entry_type: "reference",
-    title: `Living brand system — ${doc.version}`,
+    title: `Living brand system - ${doc.version}`,
     summary: `Brand system v${doc.version} · ${Object.keys(doc.color_tokens).length} colours · ${doc.do_dont_rules.length} rules`,
     full_content: JSON.stringify(doc, null, 2),
     tags: ["brand", "design", "brand_system", "motion_tokens", `version:${doc.version}`],
@@ -143,7 +143,7 @@ export async function getConnerContext(): Promise<{
       method: "POST",
       body: JSON.stringify({
         requesting_agent: "Robert",
-        task: "Latest Conner strategy summary — positioning, decisions, target segment",
+        task: "Latest Conner strategy summary - positioning, decisions, target segment",
       }),
     });
     if (res.ok) {

@@ -100,7 +100,7 @@ export default function ModelPage() {
     <div className="am-section space-y-6">
       <PageHeader
         title="Financial modelling"
-        description="Conversational P&L, runway, cash flow, and break-even — powered by Claude."
+        description="Conversational P&L, runway, cash flow, and break-even - powered by Claude."
       />
 
       <TaxDisclaimer />

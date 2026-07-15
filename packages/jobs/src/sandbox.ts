@@ -35,7 +35,7 @@ export async function prepareWorkspace(
     };
   }
 
-  throw new Error("Invalid repo scope — provide local path or github owner/repo");
+  throw new Error("Invalid repo scope - provide local path or github owner/repo");
 }
 
 export async function runInSandbox(

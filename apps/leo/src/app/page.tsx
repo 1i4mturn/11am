@@ -46,7 +46,7 @@ function HomeContent() {
     <div className="am-section space-y-8">
       <PageHeader
         title="Chief of staff"
-        description="Calendar, tasks, routing, and daily planning — single-user debug build."
+        description="Calendar, tasks, routing, and daily planning - single-user debug build."
       />
 
       {notice && <p className="am-copy text-sm">{notice}</p>}

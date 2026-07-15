@@ -281,7 +281,7 @@ export async function updateMemoryEntry(
     .where(and(eq(memoryEntries.id, id), eq(memoryEntries.userId, userId)));
 }
 
-/** Never hard-delete — archive only */
+/** Never hard-delete - archive only */
 export async function deleteMemoryEntry(id: string, userId = DEFAULT_USER) {
   await archiveMemoryEntry(id, userId);
 }
@@ -370,7 +370,7 @@ export async function buildContextPack(
       })
     ),
     active_decisions: activeDecisions.map(
-      (d) => `${d.decision} (${d.sourceAgent})${d.context ? ` — ${d.context}` : ""}`
+      (d) => `${d.decision} (${d.sourceAgent})${d.context ? ` - ${d.context}` : ""}`
     ),
     warnings: openConflicts.map((c) => c.description),
   };

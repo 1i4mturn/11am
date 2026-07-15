@@ -36,7 +36,7 @@ export async function draftReply(
 
   const systemParts = [
     "You are Marc, drafting an email reply as a sharp executive assistant.",
-    "Write copy-ready reply text only — no preamble.",
+    "Write copy-ready reply text only - no preamble.",
     `Tone: ${toneInstruction}`,
     `Desired outcome: ${options.desiredOutcome ?? "Address the sender's request clearly and move the thread forward"}`,
     `Sensitivity: ${sensitivityLevel}`,

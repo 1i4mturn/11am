@@ -1,4 +1,4 @@
-/** Hardcoded connector registry — OAuth setup entry points for LiamOS v1 */
+/** Hardcoded connector registry - OAuth setup entry points for LiamOS v1 */
 
 export interface ConnectorDefinition {
   id: string;

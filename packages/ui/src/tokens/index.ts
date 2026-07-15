@@ -1,4 +1,4 @@
-/** 11am design tokens — from Robert's locked visual decisions */
+/** 11am design tokens - from Robert's locked visual decisions */
 
 export const colors = {
   paper: "#faf9f7",
@@ -58,10 +58,10 @@ export const brand = {
 
 export const suite = {
   homeUrl: process.env.NEXT_PUBLIC_HOME_URL ?? "http://localhost:3010",
-  wordmarkSrc: "/logos/agent_logo_11am_from_png_smoothed.svg",
+  wordmarkSrc: "/logos/11am_wordmark.svg",
 } as const;
 
-/** Fixed rail order — identical on every agent page */
+/** Fixed rail order - identical on every agent page */
 export const agentRoster: AgentId[] = [
   "marc",
   "william",
@@ -90,7 +90,7 @@ const LOCAL_APP_URLS: Record<AgentId, string> = {
   johnny: "http://localhost:3011",
 };
 
-/** Agent app URL for rail tiles — set NEXT_PUBLIC_*_APP_URL in production */
+/** Agent app URL for rail tiles - set NEXT_PUBLIC_*_APP_URL in production */
 export function getAgentAppUrl(id: AgentId): string {
   const fromEnv: Partial<Record<AgentId, string | undefined>> = {
     william: process.env.NEXT_PUBLIC_WILLIAM_APP_URL,

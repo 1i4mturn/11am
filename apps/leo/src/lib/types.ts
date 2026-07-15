@@ -31,7 +31,7 @@ export interface BoltonTask extends BoltonMemoryEntry {
 export type AgentInvokePriority = "normal" | "urgent";
 export type AgentResponseMode = "sync" | "async";
 
-/** Shared routing interface — every agent in the suite uses this contract */
+/** Shared routing interface - every agent in the suite uses this contract */
 export interface AgentInvokeRequest {
   from_agent: string;
   to_agent: string;

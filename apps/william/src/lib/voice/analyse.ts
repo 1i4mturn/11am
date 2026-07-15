@@ -13,7 +13,7 @@ Return ONLY valid JSON matching this schema:
   "tone_adjectives": ["array of 5-8 tone descriptors"],
   "sentence_rhythm": "description of typical sentence length, pacing, and structure patterns",
   "vocabulary_preferences": ["array of characteristic word choices and phrases they favour"],
-  "avoid_phrases": ["array of phrases this writer would never use — corporate filler, AI-isms, etc."],
+  "avoid_phrases": ["array of phrases this writer would never use - corporate filler, AI-isms, etc."],
   "platform_rules": {
     "email": "how they write emails specifically",
     "linkedin": "how they write LinkedIn posts",
@@ -21,7 +21,7 @@ Return ONLY valid JSON matching this schema:
     "slack": "how they write Slack messages",
     "announcement": "how they write announcements"
   },
-  "argument_style": "how they build arguments — direct, narrative, data-led, etc."
+  "argument_style": "how they build arguments - direct, narrative, data-led, etc."
 }
 
 Be specific and evidence-based. Infer from the actual writing, not generic assumptions.`;

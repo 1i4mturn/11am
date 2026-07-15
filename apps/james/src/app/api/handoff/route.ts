@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { runResearch } from "@/lib/research/engine";
 
-/** Separate-context handoff — returns ONLY summarised handoff, never full thread */
+/** Separate-context handoff - returns ONLY summarised handoff, never full thread */
 const HandoffSchema = z.object({
   from_agent: z.string(),
   to_agent: z.string().optional(),
@@ -61,7 +61,7 @@ export async function GET() {
         saved_to_bolton: "boolean",
         memory_id: "string (optional)",
       },
-      note: "Full research thread never returned — James runs in separate context.",
+      note: "Full research thread never returned - James runs in separate context.",
     },
   });
 }

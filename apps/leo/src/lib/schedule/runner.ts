@@ -4,7 +4,7 @@ import { invokeAgent } from "@/lib/agents/invoke";
 import { writeToBolton } from "@/lib/bolton/client";
 
 /**
- * Scheduled-task runner — executes the schedule entries every agent's ask bar
+ * Scheduled-task runner - executes the schedule entries every agent's ask bar
  * writes to Bolton (tags: ["task", <agent>, "schedule", "cadence:<c>"]).
  *
  * Previously these entries were stored but nothing ran them. This runner:
@@ -17,7 +17,7 @@ import { writeToBolton } from "@/lib/bolton/client";
  * Safety: max RUNS_PER_TICK executions per poll, per-run bounded by the
  * invocation contract's 90s timeout, disable entirely with
  * LEO_SCHEDULER_ENABLED=false. "custom" cadences are surfaced but never
- * auto-run (free-text schedules aren't parsed — deliberate).
+ * auto-run (free-text schedules aren't parsed - deliberate).
  */
 
 const BOLTON_BASE = process.env.BOLTON_API_URL ?? "http://localhost:3002";
@@ -153,7 +153,7 @@ export async function runSchedulerTick(): Promise<{ ran: number; due: number }> 
       try {
         await runTask(entry, payload);
       } catch {
-        // A failed run still counts as attempted this interval — avoids
+        // A failed run still counts as attempted this interval - avoids
         // hammering a broken target agent every 10 minutes.
       }
       state.lastRun[entry.id] = new Date().toISOString();

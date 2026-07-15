@@ -64,7 +64,7 @@ export default function RulesPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      setNotice(`Rule activated — applied to ${data.appliedTo} messages.`);
+      setNotice(`Rule activated - applied to ${data.appliedTo} messages.`);
       setProposal(null);
       setInstruction("");
       loadRules();

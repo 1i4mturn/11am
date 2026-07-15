@@ -12,14 +12,14 @@ if (existsSync(envPath)) {
 
 const SESSIONS = [
   {
-    title: "Leo — Chief of Staff (apps/leo, port 3006)",
+    title: "Leo - Chief of Staff (apps/leo, port 3006)",
     sections: [
       {
         heading: "Overview",
         bullets: [
-          "Single-user debug build for Liam — no billing/tier logic",
+          "Single-user debug build for Liam - no billing/tier logic",
           "Routing agent: calendar, tasks, daily plan, agent invocation, reporting",
-          "All cross-agent data via Bolton memory + context-pack — no duplicate storage",
+          "All cross-agent data via Bolton memory + context-pack - no duplicate storage",
         ],
       },
       {
@@ -29,10 +29,10 @@ const SESSIONS = [
           "Calendar CRUD + meeting prep brief (Bolton context-pack)",
           "Daily plan: Claude synthesis of calendar + Bolton task entries",
           "Tasks as Bolton memory entries (entry_type: task, cadence field)",
-          "Agent-invocation contract v1 (sync) — POST /api/invoke",
+          "Agent-invocation contract v1 (sync) - POST /api/invoke",
           "Reporting dashboard: George/James/Conner via Bolton context-pack",
           "Weekly/monthly ops summary over Bolton entries",
-          "Ask bar pattern deferred — Leo uses nav pages; schedule via tasks API",
+          "Ask bar pattern deferred - Leo uses nav pages; schedule via tasks API",
         ],
       },
       {
@@ -54,13 +54,13 @@ const SESSIONS = [
     ],
   },
   {
-    title: "George — Finance Agent (apps/george, port 3004)",
+    title: "George - Finance Agent (apps/george, port 3004)",
     sections: [
       {
         heading: "Overview",
         bullets: [
-          "Finance agent — conversational modelling, unit economics, integrations",
-          "Full models in george_financial_models (Postgres) — NOT Bolton",
+          "Finance agent - conversational modelling, unit economics, integrations",
+          "Full models in george_financial_models (Postgres) - NOT Bolton",
           "Latest numbers summary to bolton_agent_summaries (exact schema other agents depend on)",
         ],
       },
@@ -97,28 +97,28 @@ const SESSIONS = [
     ],
   },
   {
-    title: "James — Research Agent (apps/james, port 3003)",
+    title: "James - Research Agent (apps/james, port 3003)",
     sections: [
       {
         heading: "Overview",
         bullets: [
-          "Research agent referenced by every other agent — cheapest to stand up (no OAuth)",
+          "Research agent referenced by every other agent - cheapest to stand up (no OAuth)",
           "Anthropic native web_search_20250305 with citations",
-          "Runs in separate context — returns handoff only, never full thread",
+          "Runs in separate context - returns handoff only, never full thread",
         ],
       },
       {
         heading: "Locked output template",
         bullets: [
           "Research question → Key findings → What this means → Recommendation → Sources",
-          "Source credibility scored 1–5 inline (Claude-judged)",
+          "Source credibility scored 1-5 inline (Claude-judged)",
         ],
       },
       {
         heading: "Features shipped",
         bullets: [
           "Web search + citation-backed research end to end",
-          "Handoff API: POST /api/handoff — JamesHandoff shape",
+          "Handoff API: POST /api/handoff - JamesHandoff shape",
           "Save-vs-return heuristic (codified rules in save-heuristic.ts)",
           "Research memory check before new work (Bolton search + prior James entries)",
           "Source-type routing: market / technical / cultural / academic / pricing",
@@ -166,7 +166,7 @@ const SESSIONS = [
         bullets: [
           "Dark ask bar with inverted monogram on each agent",
           "Schedule action beside ask → Bolton task entry with cadence → Leo calendar",
-          "Visual identity per agent TBD — plain packages/ui for now",
+          "Visual identity per agent TBD - plain packages/ui for now",
         ],
       },
     ],
@@ -183,7 +183,7 @@ async function main() {
       process.exitCode = 1;
     }
   }
-  console.log("\nDone — check NOTION_11AM_PROJECT_PAGE_ID in Notion.");
+  console.log("\nDone - check NOTION_11AM_PROJECT_PAGE_ID in Notion.");
 }
 
 main().catch((err) => {

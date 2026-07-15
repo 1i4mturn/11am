@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
         needsReauth,
         authUrl: needsReauth ? status.authUrl ?? (await getCalendarAuthStatus()).authUrl : status.authUrl,
         message: needsReauth
-          ? "Google Calendar Testing mode refresh expires every 7 days — reconnect to keep access."
+          ? "Google Calendar Testing mode refresh expires every 7 days - reconnect to keep access."
           : undefined,
       });
     }
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
     ...status,
     events,
     message: status.needsReauth
-      ? "Google Calendar Testing mode refresh expires every 7 days — reconnect to keep access."
+      ? "Google Calendar Testing mode refresh expires every 7 days - reconnect to keep access."
       : undefined,
   });
 }

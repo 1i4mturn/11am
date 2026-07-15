@@ -12,5 +12,7 @@ export { Badge } from "./components/Badge";
 export { TierToggle } from "./components/TierToggle";
 export { PageHeader } from "./components/PageHeader";
 export type { PageHeaderProps } from "./components/PageHeader";
+export { SectionNav } from "./components/SectionNav";
+export type { SectionNavProps } from "./components/SectionNav";
 export { agents, agentRoster, brand, colors, suite, getAgentAppUrl } from "./tokens";
 export type { AgentId, AgentConfig } from "./tokens";

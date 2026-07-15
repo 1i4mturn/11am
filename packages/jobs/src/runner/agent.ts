@@ -173,7 +173,7 @@ export async function generateTests(
 ): Promise<{ tests: string; cost: JobCost }> {
   const client = new Anthropic({ apiKey: config.anthropicApiKey });
   const budgetCheck = isBudgetExceeded(cost, budget, startedAt);
-  if (budgetCheck.exceeded) return { tests: "Skipped — budget exceeded", cost };
+  if (budgetCheck.exceeded) return { tests: "Skipped - budget exceeded", cost };
 
   const response = await client.messages.create({
     model: MODEL,

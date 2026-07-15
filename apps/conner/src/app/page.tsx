@@ -9,7 +9,7 @@ const WORKFLOWS: { value: WorkflowType; label: string; description: string }[] =
   {
     value: "idea_validation",
     label: "Idea validation",
-    description: "Validate a business idea and draft an offer — standalone, no Bolton required",
+    description: "Validate a business idea and draft an offer - standalone, no Bolton required",
   },
   {
     value: "stress_test",
@@ -40,12 +40,12 @@ const WORKFLOWS: { value: WorkflowType; label: string; description: string }[] =
 
 const DEFAULT_PROMPTS: Record<WorkflowType, string> = {
   idea_validation:
-    "Voice-fidelity AI writing suite for solo founders — multi-agent OS that sounds like you, not generic AI",
+    "Voice-fidelity AI writing suite for solo founders - multi-agent OS that sounds like you, not generic AI",
   stress_test:
     "11am agent suite at AUD 24/mo with 200 paying users target in 12 months",
   gtm: "Soft launch 11am to indie hacker communities and creator newsletters",
   growth: "Grow MRR from 8k to 25k in 6 months without paid ads",
-  pricing: "Price the 11am agent suite for solo founders — subscription vs usage hybrid",
+  pricing: "Price the 11am agent suite for solo founders - subscription vs usage hybrid",
   digest: "",
 };
 
@@ -213,7 +213,7 @@ export default function StrategyPage() {
     <div className="am-section space-y-6">
       <PageHeader
         title="Strategy"
-        description="Commercial direction — positioning, offers, GTM, and growth. Cross-agent reasoning over George's numbers and James's research."
+        description="Commercial direction - positioning, offers, GTM, and growth. Cross-agent reasoning over George's numbers and James's research."
       />
 
       <div className="flex flex-wrap gap-2">

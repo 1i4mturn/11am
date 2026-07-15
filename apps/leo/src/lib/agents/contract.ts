@@ -1,4 +1,4 @@
-/** Shared agent-invocation contract — v1 synchronous routing via Leo */
+/** Shared agent-invocation contract - v1 synchronous routing via Leo */
 export type {
   AgentInvokeRequest,
   AgentInvokeResponse,

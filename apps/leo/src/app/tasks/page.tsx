@@ -93,7 +93,7 @@ export default function TasksPage() {
     <div className="am-section space-y-6">
       <PageHeader
         title="Tasks"
-        description="Stored as Bolton memory entries (entry_type: task) — visible to all agents."
+        description="Stored as Bolton memory entries (entry_type: task) - visible to all agents."
       />
 
       {error && <p className="am-copy am-error text-sm">{error}</p>}

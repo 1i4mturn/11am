@@ -10,11 +10,11 @@ import type {
 const SCRIPT_PROMPT = `Create a full video production package grounded in Robert's brand-system (especially motion_tokens).
 Output JSON ONLY:
 {
-  "script": "string — spoken script or A-roll outline",
+  "script": "string - spoken script or A-roll outline",
   "shot_list": [{ "shot": 1, "description": "string", "duration": "string", "notes": "string" }],
-  "voiceover": "string — voiceover copy if applicable",
-  "editing_direction": "string — pacing, cuts, b-roll notes",
-  "motion_notes": "string — transitions using motion_tokens timing/easing"
+  "voiceover": "string - voiceover copy if applicable",
+  "editing_direction": "string - pacing, cuts, b-roll notes",
+  "motion_notes": "string - transitions using motion_tokens timing/easing"
 }`;
 
 const CONCEPTS_PROMPT = `Create a platform-native content concept structure.
@@ -40,7 +40,7 @@ export async function generateScriptPackage(
 ): Promise<ScriptPackageResult> {
   const brand = await getBrandContext();
   if (!brand.motion_tokens_ready) {
-    throw new Error("Robert brand-system motion_tokens not ready — load Robert app first");
+    throw new Error("Robert brand-system motion_tokens not ready - load Robert app first");
   }
 
   const raw = await askCole(

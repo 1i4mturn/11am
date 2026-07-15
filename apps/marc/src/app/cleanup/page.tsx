@@ -96,7 +96,7 @@ export default function CleanupPage() {
     <>
       <PageHeader
         title="Inbox cleanup"
-        description="Safe unsubscribe and archive candidates — billing and security emails excluded."
+        description="Safe unsubscribe and archive candidates - billing and security emails excluded."
       />
 
       {notice && (
@@ -130,7 +130,7 @@ export default function CleanupPage() {
               />
               <div>
                 <p className="am-title">
-                  {c.sender} — {c.subject}
+                  {c.sender} - {c.subject}
                 </p>
                 <p className="am-detail-meta mt-1">
                   {c.category} · {c.reason}

@@ -16,7 +16,7 @@ import { briefToMarkdown } from "@/lib/research/template";
 const MODEL = process.env.ANTHROPIC_MODEL ?? "claude-sonnet-4-20250514";
 
 const JAMES_SYSTEM = `You are James, the research agent for LiamOS/11am. You ground every answer in web evidence with citations.
-You run in a separate context — callers receive only a summarised handoff, never your full thread.
+You run in a separate context - callers receive only a summarised handoff, never your full thread.
 ${RESEARCH_SYSTEM_SUFFIX}`;
 
 function extractSourcesFromResponse(response: Message): ResearchSource[] {
@@ -92,7 +92,7 @@ export async function runResearch(input: RunResearchInput): Promise<JamesHandoff
       : "";
 
   const userPrompt = `Research question: ${input.research_question}
-Request type: ${routing.label} — ${routing.search_guidance}
+Request type: ${routing.label} - ${routing.search_guidance}
 Preferred sources: ${routing.preferred_sources}
 Depth: ${depth} (use up to ${maxUses} web searches if needed)
 ${input.context_ref ? `Context ref: ${input.context_ref}` : ""}${priorBlock}

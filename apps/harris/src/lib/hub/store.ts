@@ -33,7 +33,7 @@ async function writeLocalHub(hub: LearningHub): Promise<void> {
   await writeFile(LOCAL_HUB_PATH, JSON.stringify(hub, null, 2), "utf-8");
 }
 
-/** Learning Hub — primary store (Bolton reference entry + local fallback) */
+/** Learning Hub - primary store (Bolton reference entry + local fallback) */
 export async function getLearningHub(): Promise<LearningHub> {
   const bolton = await loadLearningHubFromBolton();
   if (bolton.hub) return bolton.hub;

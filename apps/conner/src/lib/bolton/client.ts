@@ -97,7 +97,7 @@ export async function getGeorgeNumbers(): Promise<{
       method: "POST",
       body: JSON.stringify({
         requesting_agent: "Conner",
-        task: "Latest George finance summary — revenue, runway, burn rate, unit economics, flags",
+        task: "Latest George finance summary - revenue, runway, burn rate, unit economics, flags",
       }),
     });
     if (res.ok) {
@@ -224,7 +224,7 @@ export async function persistStrategyToBolton(
   const memoryWrite = await writeToBolton({
     source_agent: "Conner",
     entry_type: "other",
-    title: `Latest strategy — ${summary.as_of}`,
+    title: `Latest strategy - ${summary.as_of}`,
     summary: `${summary.positioning_update.slice(0, 120)}… · segment: ${summary.target_segment.slice(0, 80)}`,
     full_content: JSON.stringify(summary, null, 2),
     tags: [

@@ -39,7 +39,7 @@ export default function ModelsPage() {
     <div className="am-section space-y-6">
       <PageHeader
         title="Saved models"
-        description="Full working models live in George's Postgres table — not Bolton."
+        description="Full working models live in George's Postgres table - not Bolton."
         actions={
           <Link href="/" className="am-btn am-btn-secondary px-3 py-1.5 am-label">
             New model
@@ -68,7 +68,7 @@ export default function ModelsPage() {
           </ul>
         ) : (
           <p className="am-copy text-sm text-[var(--am-muted)]">
-            No saved models — build one on the Model page and hit Save.
+            No saved models - build one on the Model page and hit Save.
           </p>
         )}
       </Card>

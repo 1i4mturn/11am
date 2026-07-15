@@ -85,7 +85,7 @@ export function BrandSystemDisplay({
           <ul className="am-copy space-y-2 text-sm">
             {doc.logo_variants.map((v) => (
               <li key={v.id}>
-                <strong>{v.id}</strong> — {v.description}
+                <strong>{v.id}</strong> - {v.description}
                 {v.usage && <span className="text-[var(--am-muted)]"> · {v.usage}</span>}
               </li>
             ))}

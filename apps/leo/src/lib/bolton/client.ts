@@ -185,9 +185,9 @@ export async function getAgentSummaryViaContext(
   agentId: string
 ): Promise<ContextPack | null> {
   const taskMap: Record<string, string> = {
-    george: "Latest George finance summary — revenue, runway, burn rate, flags",
-    james: "Latest James research summary — competitive landscape and key findings",
-    conner: "Latest Conner strategy summary — positioning, decisions, target segment",
+    george: "Latest George finance summary - revenue, runway, burn rate, flags",
+    james: "Latest James research summary - competitive landscape and key findings",
+    conner: "Latest Conner strategy summary - positioning, decisions, target segment",
   };
   const task = taskMap[agentId.toLowerCase()];
   if (!task) return null;

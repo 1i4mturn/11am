@@ -151,7 +151,7 @@ export function JobMonitor({ selectedJobId, onSelectJob }: JobMonitorProps) {
                 <span className="font-mono text-xs text-[var(--am-muted)]">{s.status}</span>
                 <span>{s.label}</span>
                 {s.detail && (
-                  <span className="text-[var(--am-muted)]">— {s.detail.slice(0, 80)}</span>
+                  <span className="text-[var(--am-muted)]">- {s.detail.slice(0, 80)}</span>
                 )}
               </li>
             ))}

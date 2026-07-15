@@ -113,7 +113,7 @@ function InboxContent() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setSearchResults(data.results ?? []);
-      if (!data.results?.length) setNotice("No matches — try syncing first or rephrase your query.");
+      if (!data.results?.length) setNotice("No matches - try syncing first or rephrase your query.");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Search failed");
     } finally {
@@ -191,7 +191,7 @@ function InboxContent() {
     <>
       <PageHeader
         title="Inbox intelligence"
-        description="Marc triages your Gmail — relationship context, not another email client."
+        description="Marc triages your Gmail - relationship context, not another email client."
       />
 
       <AskMarcBar
@@ -219,7 +219,7 @@ function InboxContent() {
         {gmail?.needsReauth && gmail.authUrl && (
           <Card padding="sm" className="mt-4 !p-4">
             <p className="am-copy">
-              Gmail Testing mode — refresh token expires every 7 days.
+              Gmail Testing mode - refresh token expires every 7 days.
               {gmail.daysUntilExpiry != null ? ` ~${gmail.daysUntilExpiry} day(s) left.` : " Reconnect now."}
             </p>
             <a href={gmail.authUrl} className="am-btn am-btn-primary am-copy mt-3 inline-flex px-4 py-2">

@@ -1,6 +1,6 @@
 import { pgTable, text, timestamp, integer, boolean } from "drizzle-orm/pg-core";
 
-/** Shared user record — calendar tokens stored here, not duplicated in Leo */
+/** Shared user record - calendar tokens stored here, not duplicated in Leo */
 export const users = pgTable("users", {
   id: text("id").primaryKey().default("default"),
   tier: text("tier").notNull().default("free"),

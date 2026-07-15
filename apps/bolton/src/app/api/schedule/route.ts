@@ -5,7 +5,7 @@ import { resolveUserId } from "@/lib/config";
 import { CadenceSchema } from "@/lib/types";
 
 /**
- * Schedule action for the Ask Bolton bar — same cross-cutting pattern as the
+ * Schedule action for the Ask Bolton bar - same cross-cutting pattern as the
  * other agents, except Bolton writes the task entry to its own store directly.
  */
 const ScheduleSchema = z.object({

@@ -3,7 +3,7 @@ import { AppShell } from "@11am/ui";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Robert — 11am Design Agent",
+  title: "Robert - 11am Design Agent",
   description: "Visual direction, brand system, and design briefs for LiamOS.",
 };
 

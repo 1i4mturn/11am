@@ -1,6 +1,6 @@
 import type { BrandSystemDoc } from "@/lib/types";
 
-/** Default living brand system seeded from @11am/ui tokens — used when Bolton has no doc yet */
+/** Default living brand system seeded from @11am/ui tokens - used when Bolton has no doc yet */
 export const MOCK_BRAND_SYSTEM: BrandSystemDoc = {
   source_agent: "Robert",
   version: "2026.07.06-mock",
@@ -58,7 +58,7 @@ export const MOCK_BRAND_SYSTEM: BrandSystemDoc = {
     logo_safe_area: "1.25× monogram bounding box on all sides",
   },
   do_dont_rules: [
-    { type: "do", rule: "Use warm off-white backgrounds — editorial, not sterile" },
+    { type: "do", rule: "Use warm off-white backgrounds - editorial, not sterile" },
     { type: "do", rule: "Dark inverted ask bars with lowercase monogram" },
     { type: "dont", rule: "No stock-photo energy or corporate blue gradients" },
     { type: "dont", rule: "No invented palettes outside the living brand-system doc" },
@@ -74,7 +74,7 @@ export const MOCK_CONNER_STRATEGY = {
 };
 
 export const MOCK_JAMES_VISUAL_RESEARCH = {
-  topic: "Competitor visual landscape — AI productivity tools (mock)",
+  topic: "Competitor visual landscape - AI productivity tools (mock)",
   key_findings: [
     "Linear-style minimal UI dominates B2B SaaS",
     "Warm neutrals differentiate from cold blue-grey defaults",

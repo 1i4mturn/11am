@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
       source_agent: "George",
       entry_type: "other",
       title: `Calculator: ${title}`,
-      summary: `Self-contained calculator artifact — ${body.prompt.slice(0, 200)}`,
+      summary: `Self-contained calculator artifact - ${body.prompt.slice(0, 200)}`,
       full_content: JSON.stringify({ prompt: body.prompt, storage_path: storagePath, public_url: publicUrl }),
       tags: ["calculator", "george", "artifact"],
       force: true,

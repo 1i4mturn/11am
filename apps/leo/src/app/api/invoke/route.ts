@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
 
     if (body.response_mode === "async") {
       return NextResponse.json(
-        { error: "async routing not supported — use sync (single or parallel)" },
+        { error: "async routing not supported - use sync (single or parallel)" },
         { status: 400 }
       );
     }

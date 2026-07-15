@@ -36,7 +36,7 @@ async function notionRequest(path: string, method: string, body?: unknown) {
   return res.json();
 }
 
-/** Sync a memory entry to Notion — updates existing page by title match or creates new */
+/** Sync a memory entry to Notion - updates existing page by title match or creates new */
 export async function syncEntryToNotion(
   entryId: string,
   candidate: CaptureCandidate
@@ -160,7 +160,7 @@ export async function appendBuildSessionToNotion(
         rich_text: [
           {
             type: "text",
-            text: { content: new Date().toISOString().slice(0, 10) + " — filed from Bolton build session" },
+            text: { content: new Date().toISOString().slice(0, 10) + " - filed from Bolton build session" },
           },
         ],
       },

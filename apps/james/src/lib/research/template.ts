@@ -1,6 +1,6 @@
 import type { ResearchBrief } from "@/lib/types";
 
-/** Locked template — reusable across UI, API, and handoffs */
+/** Locked template - reusable across UI, API, and handoffs */
 export const RESEARCH_TEMPLATE_SECTIONS = [
   "Research question",
   "Key findings",
@@ -25,7 +25,7 @@ You MUST structure every research output using this exact template (markdown hea
 [Clear actionable recommendation]
 
 ## Sources
-- [Title](url) — credibility: N/5 — brief note
+- [Title](url) - credibility: N/5 - brief note
 
 After the markdown, output a JSON block on its own line starting with RESEARCH_JSON: followed by:
 {
@@ -56,7 +56,7 @@ ${brief.recommendation}
 ${brief.sources
   .map(
     (s) =>
-      `- [${s.title}](${s.url}) — credibility: ${s.credibility_score}/5${s.notes ? ` — ${s.notes}` : ""}`
+      `- [${s.title}](${s.url}) - credibility: ${s.credibility_score}/5${s.notes ? ` - ${s.notes}` : ""}`
   )
   .join("\n")}`;
 }

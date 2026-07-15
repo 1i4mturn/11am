@@ -12,7 +12,7 @@ export type Cadence = "once" | "daily" | "weekly" | "monthly" | "custom";
 
 export type Confidence = "high" | "medium" | "low";
 
-/** Exact shape William depends on — source_agent lowercase per agent-summaries schema */
+/** Exact shape William depends on - source_agent lowercase per agent-summaries schema */
 export const ConnerStrategySummarySchema = z.object({
   source_agent: z.literal("conner"),
   as_of: z.string(),

@@ -6,7 +6,7 @@ const ValidateSchema = z.object({
   idea: z.string().min(1),
 });
 
-/** Standalone idea validation + offer creation — no Bolton dependency */
+/** Standalone idea validation + offer creation - no Bolton dependency */
 export async function POST(request: NextRequest) {
   try {
     const body = ValidateSchema.parse(await request.json());

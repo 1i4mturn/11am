@@ -12,7 +12,7 @@ export default function EntitiesPage() {
 
   return (
     <>
-      <PageHeader title="Entities" description="People, projects, tools, agents — connected, not isolated notes." />
+      <PageHeader title="Entities" description="People, projects, tools, agents - connected, not isolated notes." />
       <div className="grid gap-8 sm:grid-cols-2">
         {entities.map((e) => (
           <Card key={String(e.id)} grain padding="md">

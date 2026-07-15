@@ -66,7 +66,7 @@ ${existingList || "none"}
 Rules:
 - save if new reusable context
 - update if same topic, refined info (similar_to = entry to update)
-- supersede if new info replaces old (similar_to = entry to supersede) — never delete
+- supersede if new info replaces old (similar_to = entry to supersede) - never delete
 - link if related but distinct (similar_to = entry to link)
 - skip if filler, duplicate, temporary
 - ask_user if ambiguous or high-stakes`,

@@ -5,7 +5,7 @@ export async function detectTaxFlags(content: string): Promise<TaxFlag[]> {
   const result = await askGeorge(
     `Review the content for Australian tax-related categories ONLY. Return a JSON array of flags with shape: [{ "category": "GST|depreciation|deductions|BAS|capital_gains|other", "description": "brief flag", "severity": "info|review" }].
 If none apply, return [].
-Do NOT give tax advice — only flag categories for awareness.
+Do NOT give tax advice - only flag categories for awareness.
 Output ONLY valid JSON array, no markdown.`,
     content.slice(0, 8000)
   );

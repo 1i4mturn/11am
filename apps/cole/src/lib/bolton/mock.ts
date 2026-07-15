@@ -47,7 +47,7 @@ export const MOCK_BRAND_SYSTEM: BrandSystemDoc = {
     logo_safe_area: "1.25× monogram bounding box on all sides",
   },
   do_dont_rules: [
-    { type: "do", rule: "Warm editorial pacing — not frantic cuts" },
+    { type: "do", rule: "Warm editorial pacing - not frantic cuts" },
     { type: "dont", rule: "No stock-photo energy or corporate motion graphics" },
   ],
 };

@@ -3,7 +3,7 @@ import { AppShell } from "@11am/ui";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Harris — 11am Learning Agent",
+  title: "Harris - 11am Learning Agent",
   description: "Study paths, skill-building, and practice for LiamOS.",
 };
 

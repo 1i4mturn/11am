@@ -11,7 +11,7 @@ export interface ResearchSource {
   notes?: string;
 }
 
-/** Locked structured output template — every James response uses this shape */
+/** Locked structured output template - every James response uses this shape */
 export interface ResearchBrief {
   research_question: string;
   key_findings: string[];
@@ -20,7 +20,7 @@ export interface ResearchBrief {
   sources: ResearchSource[];
 }
 
-/** Handoff object returned to callers — never the full research thread */
+/** Handoff object returned to callers - never the full research thread */
 export interface JamesHandoff extends ResearchBrief {
   from_agent: "James";
   to_agent: string;

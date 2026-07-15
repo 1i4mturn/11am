@@ -1,33 +1,33 @@
-# Bolton — 11am Memory Layer
+# Bolton - 11am Memory Layer
 
 Curated institutional memory for the 11am agent suite. Bolton decides what to save, where it belongs, and what it supersedes.
 
 ## Stack
 
-- **Next.js 16** — Memory review UI + shared API
-- **@11am/ui** — Shared design system
-- **PostgreSQL + pgvector** — Shared database for William, Marc, and Bolton
-- **Claude Sonnet** — Capture classification, conflict detection, search parsing
-- **OpenAI embeddings** — Semantic memory retrieval
+- **Next.js 16** - Memory review UI + shared API
+- **@11am/ui** - Shared design system
+- **PostgreSQL + pgvector** - Shared database for William, Marc, and Bolton
+- **Claude Sonnet** - Capture classification, conflict detection, search parsing
+- **OpenAI embeddings** - Semantic memory retrieval
 
 ## Quick start (start here for the whole suite)
 
 ```bash
 cd ~/Projects/11am/apps/bolton
 
-# Start shared Postgres — all three agents use this
+# Start shared Postgres - all three agents use this
 docker compose up -d
 npm install
 cp .env.example .env.local
 npm run db:migrate
 
-# Terminal 1 — Bolton (memory layer)
+# Terminal 1 - Bolton (memory layer)
 npm run dev   # http://localhost:3002
 
-# Terminal 2 — William
+# Terminal 2 - William
 cd ~/Projects/11am/apps/william && npm run dev   # http://localhost:3000
 
-# Terminal 3 — Marc
+# Terminal 3 - Marc
 cd ~/Projects/11am/apps/marc && npm run dev      # http://localhost:3001
 ```
 

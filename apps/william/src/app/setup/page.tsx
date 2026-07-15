@@ -138,7 +138,7 @@ function SetupContent() {
 
       <div className="space-y-8">
         <Card padding="lg">
-          <h2 className="am-title">gmail — highest value source</h2>
+          <h2 className="am-title">gmail - highest value source</h2>
           <p className="am-detail-meta mt-2">
             Sent emails are the richest training data. William pulls your sent mail only.
           </p>
@@ -146,7 +146,7 @@ function SetupContent() {
             {gmailStatus?.needsReauth && gmailStatus.authUrl && (
               <Card padding="sm" className="mb-4 w-full !p-4">
                 <p className="am-copy">
-                  Gmail Testing mode — refresh token expires every 7 days.
+                  Gmail Testing mode - refresh token expires every 7 days.
                   {gmailStatus.daysUntilExpiry !== null && gmailStatus.daysUntilExpiry !== undefined
                     ? ` ~${gmailStatus.daysUntilExpiry} day(s) left.`
                     : " Reconnect now."}
@@ -178,7 +178,7 @@ function SetupContent() {
           <textarea
             value={pasteText}
             onChange={(e) => setPasteText(e.target.value)}
-            placeholder="Paste emails, posts, documents — anything you've written"
+            placeholder="Paste emails, posts, documents - anything you've written"
             rows={6}
             className="am-input am-copy mt-4 w-full px-4 py-3"
           />

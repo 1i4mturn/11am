@@ -6,9 +6,9 @@
  *
  * Notion env (optional but required for Notion sync):
  *   NOTION_API_KEY
- *   NOTION_11AM_PROJECT_PAGE_ID     — append build log section
- *   NOTION_MEMORY_DATABASE_ID       — sync memory bank rows
- *   NOTION_DECISION_LOG_DATABASE_ID — sync decisions (Title + Summary props)
+ *   NOTION_11AM_PROJECT_PAGE_ID     - append build log section
+ *   NOTION_MEMORY_DATABASE_ID       - sync memory bank rows
+ *   NOTION_DECISION_LOG_DATABASE_ID - sync decisions (Title + Summary props)
  */
 import postgres from "postgres";
 import { logDecision } from "../src/lib/decisions";
@@ -24,7 +24,7 @@ const BUILD_SESSION_MEMORIES = [
   {
     source_agent: "Johnny",
     entry_type: "project" as const,
-    title: "11am v1 debug builds — test-ready (Jul 6 2026)",
+    title: "11am v1 debug builds - test-ready (Jul 6 2026)",
     summary:
       "William, Marc, and Bolton v1 single-user debug builds complete per acceptance criteria. Monorepo at ~/Projects/11am, ports 3000/3001/3002, shared Postgres pgvector on 5435.",
     tags: ["11am", "build-session", "v1"],
@@ -33,7 +33,7 @@ const BUILD_SESSION_MEMORIES = [
   {
     source_agent: "William",
     entry_type: "output" as const,
-    title: "William — streaming + Ask bar + schedule",
+    title: "William - streaming + Ask bar + schedule",
     summary:
       "SSE /api/generate/stream, dark Ask William bar with Schedule→Bolton tasks, George/Conner typed schemas, Gmail 7-day reauth, SINGLE_USER_DEBUG bypasses tier gates.",
     tags: ["william", "build-session"],
@@ -42,7 +42,7 @@ const BUILD_SESSION_MEMORIES = [
   {
     source_agent: "Marc",
     entry_type: "output" as const,
-    title: "Marc — inbox v1 gaps closed",
+    title: "Marc - inbox v1 gaps closed",
     summary:
       "Ask Marc bar, bulk unsubscribe with confirmation, rule confirm/apply, triage persistence, William handoff UI, Gmail scopes trimmed to readonly/modify/labels, 7-day reauth.",
     tags: ["marc", "build-session"],
@@ -51,7 +51,7 @@ const BUILD_SESSION_MEMORIES = [
   {
     source_agent: "Bolton",
     entry_type: "output" as const,
-    title: "Bolton — capture engine + Notion scaffold",
+    title: "Bolton - capture engine + Notion scaffold",
     summary:
       "Supersede/link capture actions, archive-only DELETE, task cadence columns, structured context pack, entity POST API, hybrid search citations, 22 seed memories.",
     tags: ["bolton", "build-session"],
@@ -87,7 +87,7 @@ const BUILD_SESSION_MEMORIES = [
   {
     source_agent: "Marc",
     entry_type: "decision" as const,
-    title: "Gmail OAuth Testing mode — no CASA yet",
+    title: "Gmail OAuth Testing mode - no CASA yet",
     summary:
       "Google Cloud app stays in Testing with Liam as sole test user. Refresh tokens expire every 7 days. No send/compose scope until sending is needed.",
     tags: ["marc", "gmail", "security"],
@@ -104,7 +104,7 @@ const BUILD_DECISIONS = [
     decisionType: "dev",
   },
   {
-    decision: "Bolton DELETE archives only — never hard delete",
+    decision: "Bolton DELETE archives only - never hard delete",
     context: "Bolton memory integrity policy",
     rationale: "Preserves audit trail; supersede/link model replaces silent deletion",
     sourceAgent: "Bolton",
@@ -130,7 +130,7 @@ async function main() {
     await sql`SELECT 1`;
     await sql.end();
   } catch {
-    console.warn("Postgres unavailable — skipping Bolton DB writes (start Docker + npm run db)");
+    console.warn("Postgres unavailable - skipping Bolton DB writes (start Docker + npm run db)");
   }
 
   console.log("\n── Filing to Bolton Postgres ──");
@@ -170,11 +170,11 @@ async function main() {
   }
 
   console.log("\n── Filing to Notion project page ──");
-  const append = await appendBuildSessionToNotion("Build session — 6 Jul 2026 (11am v1 debug)", [
+  const append = await appendBuildSessionToNotion("Build session - 6 Jul 2026 (11am v1 debug)", [
     {
       heading: "Overview",
       bullets: [
-        "Monorepo ~/Projects/11am — William :3000, Marc :3001, Bolton :3002, Postgres :5435",
+        "Monorepo ~/Projects/11am - William :3000, Marc :3001, Bolton :3002, Postgres :5435",
         "Acceptance: William, Marc, Bolton v1 debug builds test-ready",
         "Debug: *_SINGLE_USER env vars default on; set false to re-enable tier gates",
       ],

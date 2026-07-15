@@ -12,7 +12,7 @@ export type WorkflowType =
 
 export type PlanStatus = "active" | "paused" | "completed";
 
-/** Skill-gap signal — written by James or any agent */
+/** Skill-gap signal - written by James or any agent */
 export const SkillGapSignalSchema = z.object({
   source_agent: z.string(),
   skill_gap: z.string(),
@@ -78,7 +78,7 @@ export const FrenchSrsCardSchema = z.object({
 
 export type FrenchSrsCard = z.infer<typeof FrenchSrsCardSchema>;
 
-/** Primary Learning Hub store — full plan detail lives here, not duplicated in Bolton */
+/** Primary Learning Hub store - full plan detail lives here, not duplicated in Bolton */
 export const LearningHubSchema = z.object({
   version: z.literal(1),
   updated_at: z.string(),

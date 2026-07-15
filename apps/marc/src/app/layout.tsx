@@ -3,13 +3,12 @@ import { AppShell } from "@11am/ui";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Marc — 11am Inbox Agent",
+  title: "Marc - 11am Inbox Agent",
   description: "Relationship-aware inbox intelligence.",
 };
 
-const PRIMARY_NAV = [{ href: "/", label: "Inbox" }];
-
-const SECONDARY_NAV = [
+const NAV = [
+  { href: "/", label: "Inbox" },
   { href: "/search", label: "Search" },
   { href: "/briefing", label: "Briefing" },
   { href: "/senders", label: "Senders" },
@@ -21,12 +20,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className="h-full antialiased">
       <body className="min-h-screen">
-        <AppShell
-          agent="marc"
-          logoSrc="/logos/marc_mc.svg"
-          nav={PRIMARY_NAV}
-          secondaryNav={SECONDARY_NAV}
-        >
+        <AppShell agent="marc" nav={NAV}>
           {children}
         </AppShell>
       </body>

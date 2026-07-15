@@ -29,20 +29,20 @@ Then markdown narrative starting with "## Your plan".`;
 
 const ROADMAP_PROMPT = `Generate a skill roadmap. Output JSON ONLY:
 {
-  "roadmap": "string — markdown roadmap",
+  "roadmap": "string - markdown roadmap",
   "milestones": ["string"]
 }
 Then brief narrative.`;
 
 const EXERCISES_PROMPT = `Generate practice exercises. Output JSON ONLY:
 {
-  "exercises": [{ "title": "string", "content": "string — the actual exercise" }]
+  "exercises": [{ "title": "string", "content": "string - the actual exercise" }]
 }`;
 
 const EXPLAIN_PROMPT = `Explain a concept clearly for self-directed learning. Output JSON ONLY:
 {
-  "explanation": "string — clear explanation",
-  "practice_prompt": "string — one thing to try right now"
+  "explanation": "string - clear explanation",
+  "practice_prompt": "string - one thing to try right now"
 }`;
 
 const FRENCH_PROMPT = `Help with French learning (lightweight personal feature). Be accurate on grammar.
@@ -150,7 +150,7 @@ export async function generateGapPlan(gap?: SkillGapSignal): Promise<GapPlanResu
 
   const raw = await askHarris(
     PLAN_PROMPT,
-    `Build a learning plan for this REAL skill gap from ${signal.source_agent}:\n\nSkill gap: ${signal.skill_gap}\nEvidence: ${signal.evidence}\nPriority: ${signal.priority}\n\nAnchor everything to the evidence — not a generic curriculum.`,
+    `Build a learning plan for this REAL skill gap from ${signal.source_agent}:\n\nSkill gap: ${signal.skill_gap}\nEvidence: ${signal.evidence}\nPriority: ${signal.priority}\n\nAnchor everything to the evidence - not a generic curriculum.`,
     5000
   );
   const { json, narrative } = splitNarrative(raw);

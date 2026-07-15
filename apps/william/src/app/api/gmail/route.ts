@@ -23,7 +23,7 @@ export async function GET() {
   return NextResponse.json({
     ...status,
     message: status.needsReauth
-      ? "Gmail Testing mode refresh expires every 7 days — reconnect to keep syncing."
+      ? "Gmail Testing mode refresh expires every 7 days - reconnect to keep syncing."
       : undefined,
   });
 }

@@ -64,7 +64,7 @@ export async function GET() {
         task: "string",
         request_type:
           "brand_direction | visual_brief | token_review | design_critique | layout | competitor_landscape | general",
-        william_handoff: "optional — same shape as William→Robert handoff",
+        william_handoff: "optional - same shape as William→Robert handoff",
       },
       response: {
         from_agent: "Robert",

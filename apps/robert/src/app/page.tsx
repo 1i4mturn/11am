@@ -15,7 +15,7 @@ const WORKFLOWS: { value: WorkflowType; label: string; description: string }[] =
   {
     value: "color_typography",
     label: "Colour / type",
-    description: "Structured token output — not prose",
+    description: "Structured token output - not prose",
   },
   {
     value: "moodboard",
@@ -25,12 +25,12 @@ const WORKFLOWS: { value: WorkflowType; label: string; description: string }[] =
   {
     value: "logo_concepts",
     label: "Logo concepts",
-    description: "Direction + concept images only — not production vectors",
+    description: "Direction + concept images only - not production vectors",
   },
   {
     value: "brand_audit",
     label: "Brand audit",
-    description: "Upload an asset — compared against brand-system tokens",
+    description: "Upload an asset - compared against brand-system tokens",
   },
   {
     value: "competitor_landscape",
@@ -46,9 +46,9 @@ const WORKFLOWS: { value: WorkflowType; label: string; description: string }[] =
 
 const DEFAULT_PROMPTS: Record<WorkflowType, string> = {
   brand_direction: "How should 11am position visually against generic AI productivity tools?",
-  color_typography: "Refine warm neutrals for the agent suite — keep editorial, not corporate",
-  moodboard: "Warm editorial SaaS — solo founder calm, not startup bro energy",
-  logo_concepts: "Lowercase monogram mark for dark ask bars — minimal, confident",
+  color_typography: "Refine warm neutrals for the agent suite - keep editorial, not corporate",
+  moodboard: "Warm editorial SaaS - solo founder calm, not startup bro energy",
+  logo_concepts: "Lowercase monogram mark for dark ask bars - minimal, confident",
   brand_audit: "",
   competitor_landscape: "AI agent suites and productivity tools visual positioning",
   handoff: "Home dashboard glance cards",
@@ -375,7 +375,7 @@ export default function DirectionPage() {
     <div className="am-section space-y-6">
       <PageHeader
         title="Direction"
-        description="Visual direction, living brand system, and structured briefs — Johnny builds, Cole moves."
+        description="Visual direction, living brand system, and structured briefs - Johnny builds, Cole moves."
       />
 
       {brandSystem && (

@@ -203,12 +203,12 @@ const AGENT_PROMPTS: Record<string, string> = {
   conner:
     "You are Conner, the business-building agent. Focus on positioning, offers, go-to-market, and strategic decisions. Be direct and commercially minded.",
   william:
-    "You are William, the writing agent. Draft copy in Liam's voice — warm, clear, conversational, no corporate filler.",
+    "You are William, the writing agent. Draft copy in Liam's voice - warm, clear, conversational, no corporate filler.",
   marc: "You are Marc, the inbox agent. Triage communication, draft replies, and flag urgency based on sender context.",
   bolton:
     "You are Bolton, the memory archivist. Summarize what should be stored, linked, or superseded in shared memory.",
   robert:
-    "You are Robert, the design agent. Give visual direction using brand tokens — no invented palettes.",
+    "You are Robert, the design agent. Give visual direction using brand tokens - no invented palettes.",
   johnny:
     "You are Johnny, the build agent. Provide technical architecture and implementation guidance.",
   harris: "You are Harris, the learning agent. Explain concepts clearly and suggest practice steps.",
@@ -217,7 +217,7 @@ const AGENT_PROMPTS: Record<string, string> = {
 };
 
 /**
- * Parallel fan-out — brief several agents at once with the same task.
+ * Parallel fan-out - brief several agents at once with the same task.
  * Each invocation is independent and failure-isolated: one agent being down
  * returns an error response for that agent without sinking the others.
  */
@@ -251,7 +251,7 @@ export async function invokeAgent(
     return {
       from_agent: request.to_agent,
       to_agent: request.from_agent,
-      summary: "Async routing not yet supported in v1 — use response_mode: sync",
+      summary: "Async routing not yet supported in v1 - use response_mode: sync",
       memory_ids_written: [],
       follow_up_needed: true,
     };
@@ -298,7 +298,7 @@ export async function invokeAgent(
 
   const urgency =
     request.priority === "urgent"
-      ? "This is URGENT — prioritize speed and flag blockers."
+      ? "This is URGENT - prioritize speed and flag blockers."
       : "";
 
   const result = await synthesizeWithClaude(

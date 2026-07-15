@@ -30,7 +30,7 @@ export async function executeUnsubscribe(
     return {
       success: false,
       method: "mailto",
-      message: "No HTTPS unsubscribe URL — use mailto link manually",
+      message: "No HTTPS unsubscribe URL - use mailto link manually",
     };
   }
 

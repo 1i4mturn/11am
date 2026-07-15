@@ -17,7 +17,7 @@ export async function saveStripeKey(key: string, userId = "default") {
 
 export async function getStripeMetrics(userId = "default") {
   const key = await getStripeKey(userId);
-  if (!key) throw new Error("Stripe not configured — set STRIPE_RESTRICTED_KEY");
+  if (!key) throw new Error("Stripe not configured - set STRIPE_RESTRICTED_KEY");
 
   const stripe = new Stripe(key);
 

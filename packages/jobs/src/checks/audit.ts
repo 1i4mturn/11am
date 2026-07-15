@@ -29,9 +29,9 @@ export async function runDependencyAudit(
 
   const vulnMatch = npm_audit.stdout.match(/"vulnerabilities"/);
   const summary = vulnMatch
-    ? "Dependency audit completed — review npm_audit output for vulnerabilities."
+    ? "Dependency audit completed - review npm_audit output for vulnerabilities."
     : npm_audit.stdout.includes("no package.json")
-      ? "No package.json — skipped npm audit."
+      ? "No package.json - skipped npm audit."
       : "Dependency audit completed.";
 
   return { npm_audit, osv_scanner, summary };

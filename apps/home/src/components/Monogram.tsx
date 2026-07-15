@@ -9,7 +9,7 @@ interface MonogramProps {
   title?: string;
 }
 
-/** Source SVGs ship with fill="#000000" on paths — strip so layer fill colours apply. */
+/** Source SVGs ship with fill="#000000" on paths - strip so layer fill colours apply. */
 function normalizePaths(raw: string): string {
   return raw
     .replace(/<title>[\s\S]*?<\/title>\s*/g, "")

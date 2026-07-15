@@ -51,7 +51,7 @@ export default function SearchPage() {
       <PageHeader
         title="Search memory"
         description={
-          '"What did we decide about William\'s voice profile?" — natural language, cited source cards.'
+          '"What did we decide about William\'s voice profile?" - natural language, cited source cards.'
         }
       />
       <form onSubmit={handleSearch} className="am-section flex gap-3">

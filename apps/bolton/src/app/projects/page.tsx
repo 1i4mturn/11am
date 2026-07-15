@@ -25,7 +25,7 @@ export default function ProjectsPage() {
     <>
       <PageHeader
         title="Projects"
-        description="Active project memory from all agents — sourced from Bolton entries tagged as projects."
+        description="Active project memory from all agents - sourced from Bolton entries tagged as projects."
       />
 
       <div className="space-y-8">

@@ -86,7 +86,7 @@ export async function fetchBoltonContext(
   if (pack.raw_entries.length === 0) {
     pack.raw_entries.push({
       title: "Bolton offline",
-      summary: "Context fetch unavailable — job continues with repo-only analysis.",
+      summary: "Context fetch unavailable - job continues with repo-only analysis.",
       tags: ["fallback"],
     });
   }

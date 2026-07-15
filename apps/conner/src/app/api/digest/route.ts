@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { runWeeklyDigest } from "@/lib/strategy/engine";
 
-/** Manual on-demand weekly digest — no scheduler in v1 */
+/** Manual on-demand weekly digest - no scheduler in v1 */
 export async function POST() {
   try {
     const result = await runWeeklyDigest();

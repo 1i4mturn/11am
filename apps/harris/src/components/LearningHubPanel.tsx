@@ -16,7 +16,7 @@ export function LearningHubPanel({ hub, onProgressUpdate, updating }: LearningHu
       <Card padding="md">
         <p className="am-label mb-2">learning hub</p>
         <p className="am-copy text-sm text-[var(--am-muted)]">
-          No plans yet — generate one below. Full detail lives here; Bolton gets a short pointer only.
+          No plans yet - generate one below. Full detail lives here; Bolton gets a short pointer only.
         </p>
       </Card>
     );

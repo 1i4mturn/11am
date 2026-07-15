@@ -1,10 +1,10 @@
-import Link from "next/link";
 import type { AgentId } from "../tokens";
-import { agents } from "../tokens";
+import { agents, suite } from "../tokens";
 import { CursorLamp } from "./CursorLamp";
 import { SuiteAgentRail } from "./SuiteAgentRail";
 import { SuiteAtmosphere } from "./SuiteAtmosphere";
 import { SuiteLogo } from "./SuiteLogo";
+import { SuiteNavProvider } from "./SuiteNavContext";
 
 export interface NavItem {
   href: string;
@@ -13,68 +13,53 @@ export interface NavItem {
 
 export interface AppShellProps {
   agent: AgentId;
-  /** In-app section links — rendered inside <main>, not in the locked shell */
+  /** In-app section links - rendered below the page title via PageHeader */
   nav?: NavItem[];
+  /** @deprecated Merged into nav - pass one combined list instead */
   secondaryNav?: NavItem[];
   children: React.ReactNode;
-  /** @deprecated Shell uses embossed text monograms — logoSrc is ignored */
+  /** @deprecated Shell uses SVG monograms from /logos - logoSrc is ignored */
   logoSrc?: string;
   actions?: React.ReactNode;
 }
 
 export function AppShell({ agent, nav, secondaryNav, children, actions }: AppShellProps) {
   const config = agents[agent];
+  const sectionNav = [...(nav ?? []), ...(secondaryNav ?? [])];
 
   return (
-    <div className="am-suite">
-      <SuiteAtmosphere />
-      <CursorLamp />
+    <SuiteNavProvider items={sectionNav} actions={actions}>
+      <div className="am-suite">
+        <SuiteAtmosphere />
+        <CursorLamp />
 
-      <header className="am-suite-bar am-page">
-        <SuiteLogo />
-        <div className="am-suite-agent-marker">
-          <span className="am-mono-emboss am-suite-agent-mono" aria-hidden="true">
-            {config.monogram}
-          </span>
-          <span className="am-suite-agent-label">
-            {config.name.toLowerCase()}{" "}
-            <span className="am-suite-agent-role">· {config.role}</span>
-          </span>
+        <header className="am-suite-bar am-page">
+          <div className="am-suite-bar-brand">
+            <SuiteLogo />
+          </div>
+          <div className="am-suite-agent-marker">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={`/logos/${config.logoFile}`}
+              alt=""
+              className="am-suite-agent-mono-img"
+              aria-hidden="true"
+            />
+            <span className="am-suite-agent-label">
+              {config.name.toLowerCase()}{" "}
+              <span className="am-suite-agent-role">· {config.role}</span>
+            </span>
+          </div>
+        </header>
+
+        <div className="am-suite-shell">
+          <aside className="am-suite-rail">
+            <SuiteAgentRail current={agent} />
+          </aside>
+
+          <main className="am-page am-suite-main">{children}</main>
         </div>
-      </header>
-
-      <div className="am-suite-shell">
-        <SuiteAgentRail current={agent} />
-
-        <main className="am-page am-suite-main">
-          {(nav?.length || actions) && (
-            <div className="am-suite-subnav-row">
-              {nav && nav.length > 0 && (
-                <nav className="am-suite-subnav" aria-label="sections">
-                  {nav.map((item) => (
-                    <Link key={item.href} href={item.href} className="am-suite-subnav-link">
-                      {item.label}
-                    </Link>
-                  ))}
-                </nav>
-              )}
-              {actions && <div className="am-suite-actions">{actions}</div>}
-            </div>
-          )}
-
-          {secondaryNav && secondaryNav.length > 0 && (
-            <nav className="am-suite-subnav am-suite-subnav-secondary" aria-label="more sections">
-              {secondaryNav.map((item) => (
-                <Link key={item.href} href={item.href} className="am-suite-subnav-link am-suite-subnav-link-sub">
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
-          )}
-
-          {children}
-        </main>
       </div>
-    </div>
+    </SuiteNavProvider>
   );
 }

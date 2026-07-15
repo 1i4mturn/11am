@@ -23,7 +23,7 @@ export default function ConflictsPage() {
     <>
       <PageHeader
         title="Conflict review"
-        description="Outdated or contradictory memory — marked, not silently deleted."
+        description="Outdated or contradictory memory - marked, not silently deleted."
         actions={
           <Button onClick={runScan} disabled={scanning}>
             {scanning ? "Scanning…" : "Scan for conflicts"}

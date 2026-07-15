@@ -86,7 +86,7 @@ export async function suggestCleanupCandidates(
       reason = "Likely cold outreach sequence";
     } else if (labels.includes("CATEGORY_UPDATES") && !msg.isUnread) {
       category = "recurring_fyi";
-      reason = "Read FYI/update email — safe to archive";
+      reason = "Read FYI/update email - safe to archive";
     }
 
     if (category) {

@@ -18,7 +18,7 @@ interface InvokeResponse {
 export default function InvokePage() {
   const [toAgent, setToAgent] = useState("james");
   const [task, setTask] = useState(
-    "Compare voice-fidelity tools for solo founders — differentiation vs generic AI writing assistants"
+    "Compare voice-fidelity tools for solo founders - differentiation vs generic AI writing assistants"
   );
   const [priority, setPriority] = useState<"normal" | "urgent">("normal");
   const [loading, setLoading] = useState(false);
@@ -55,7 +55,7 @@ export default function InvokePage() {
     <div className="am-section space-y-6">
       <PageHeader
         title="Route agent"
-        description="Shared agent-invocation contract — v1 synchronous, one agent at a time."
+        description="Shared agent-invocation contract - v1 synchronous, one agent at a time."
       />
 
       <Card padding="md">

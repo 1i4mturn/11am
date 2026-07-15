@@ -132,7 +132,7 @@ function IntegrationsContent() {
           ) : (
             <div>
               <p className="am-copy mb-2 text-sm text-[var(--am-muted)]">
-                Uncertified OAuth — works immediately for your org.
+                Uncertified OAuth - works immediately for your org.
               </p>
               {typeof xero?.authUrl === "string" && (
                 <a href={xero.authUrl} className="am-btn am-btn-primary px-3 py-1.5 am-label inline-block">

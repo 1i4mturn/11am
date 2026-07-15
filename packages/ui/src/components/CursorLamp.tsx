@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 
-/** Dark cursor lamp — soft graphite wash following the pointer */
+/** Dark cursor lamp - soft graphite wash following the pointer */
 export function CursorLamp() {
   useEffect(() => {
     const lamp = document.getElementById("am-cursor-lamp");

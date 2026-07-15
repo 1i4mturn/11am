@@ -256,7 +256,7 @@ export default function LearnPage() {
     <div className="am-section space-y-6">
       <PageHeader
         title="Learn"
-        description="Study paths and skill-building — standalone today, sharper when James's skill-gap feed lands."
+        description="Study paths and skill-building - standalone today, sharper when James's skill-gap feed lands."
       />
 
       {hub && (

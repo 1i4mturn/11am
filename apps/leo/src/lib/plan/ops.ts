@@ -37,7 +37,7 @@ ${JSON.stringify(
   const write = await writeToBolton({
     source_agent: "Leo",
     entry_type: "other",
-    title: `${period === "weekly" ? "Weekly" : "Monthly"} ops summary — ${new Date().toISOString().slice(0, 10)}`,
+    title: `${period === "weekly" ? "Weekly" : "Monthly"} ops summary - ${new Date().toISOString().slice(0, 10)}`,
     summary: summary.slice(0, 500),
     full_content: summary,
     tags: ["ops_summary", period],

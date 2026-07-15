@@ -42,6 +42,7 @@
     "deploy:configure": "bash scripts/vercel-configure-projects.sh",
     "deploy:one": "bash scripts/vercel-deploy-one.sh",
     "deploy:fix-git": "bash scripts/fix-git-author.sh",
+    "env:pull": "bash scripts/vercel-env-pull-all.sh",
     "notion:file-builds": "tsx apps/bolton/scripts/file-agent-builds-jul6.ts",
     "postinstall": "bash scripts/ensure-native-bindings.sh"
   },

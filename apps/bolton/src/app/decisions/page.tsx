@@ -12,7 +12,7 @@ export default function DecisionsPage() {
 
   return (
     <>
-      <PageHeader title="Decision log" description="First-class decisions — plain English, searchable, supersedeable." />
+      <PageHeader title="Decision log" description="First-class decisions - plain English, searchable, supersedeable." />
       <div className="space-y-8">
         {decisions.map((d) => (
           <Card key={String(d.id)} grain padding="md">

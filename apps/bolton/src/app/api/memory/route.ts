@@ -12,7 +12,7 @@ import { resolveUserId } from "@/lib/config";
 import { EntryTypeSchema, CadenceSchema } from "@/lib/types";
 import { archiveNotionPageByTitle } from "@/lib/notion";
 
-/** Agent read/write API — POST /api/memory from any 11am agent app */
+/** Agent read/write API - POST /api/memory from any 11am agent app */
 
 export async function GET(request: NextRequest) {
   const userId = resolveUserId(request.headers.get("x-user-id"));
@@ -94,7 +94,7 @@ export async function PATCH(request: NextRequest) {
   return NextResponse.json({ success: true });
 }
 
-/** Archive only — Bolton never hard-deletes memory */
+/** Archive only - Bolton never hard-deletes memory */
 export async function DELETE(request: NextRequest) {
   const userId = resolveUserId(request.headers.get("x-user-id"));
   const id = request.nextUrl.searchParams.get("id");

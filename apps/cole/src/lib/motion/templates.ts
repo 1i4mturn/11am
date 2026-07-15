@@ -23,13 +23,13 @@ export function listMotionTemplates() {
   return Object.entries(TEMPLATES).map(([id, t]) => ({ id, ...t }));
 }
 
-/** Basic tier — apply Robert's tokens to a simple HTML/CSS template spec */
+/** Basic tier - apply Robert's tokens to a simple HTML/CSS template spec */
 export async function renderMotionTemplate(
   templateId: string
 ): Promise<MotionTemplateResult> {
   const brand = await getBrandContext();
   if (!brand.motion_tokens_ready) {
-    throw new Error("motion_tokens required — confirm Robert brand-system is in Bolton");
+    throw new Error("motion_tokens required - confirm Robert brand-system is in Bolton");
   }
 
   const template = TEMPLATES[templateId];

@@ -1,4 +1,4 @@
-/** Single-user debug build — tier/quota gates disabled unless explicitly turned off */
+/** Single-user debug build - tier/quota gates disabled unless explicitly turned off */
 export const SINGLE_USER_DEBUG = process.env.BOLTON_SINGLE_USER !== "false";
 
 export function effectiveTier(storedTier: string): "pro" | "free" {

@@ -75,7 +75,7 @@ export default function MemoryFeedPage() {
   }
 
   async function archiveEntry(id: string, title: string) {
-    if (!confirm(`Archive "${title}"? Bolton never deletes — this marks it archived.`)) return;
+    if (!confirm(`Archive "${title}"? Bolton never deletes - this marks it archived.`)) return;
     await fetch(`/api/memory?id=${id}&confirmed=true`, { method: "DELETE" });
     setNotice(`Archived "${title}"`);
     await loadEntries();
@@ -100,7 +100,7 @@ export default function MemoryFeedPage() {
     <>
       <PageHeader
         title="Memory feed"
-        description="Curated institutional memory — tidy, inspectable, source-backed."
+        description="Curated institutional memory - tidy, inspectable, source-backed."
         actions={
           <a href="/api/export" className="am-label text-graphite underline">
             export json

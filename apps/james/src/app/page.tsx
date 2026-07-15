@@ -17,7 +17,7 @@ const REQUEST_TYPES: { value: RequestType; label: string }[] = [
 
 export default function ResearchPage() {
   const [query, setQuery] = useState(
-    "Compare voice-fidelity AI writing tools for solo founders — differentiation vs generic assistants"
+    "Compare voice-fidelity AI writing tools for solo founders - differentiation vs generic assistants"
   );
   const [requestType, setRequestType] = useState<RequestType>("market");
   const [handoff, setHandoff] = useState<JamesHandoff | null>(null);
@@ -53,7 +53,7 @@ export default function ResearchPage() {
     <div className="am-section space-y-6">
       <PageHeader
         title="Research"
-        description="Web search with citations. James returns a structured brief — never a raw thread dump."
+        description="Web search with citations. James returns a structured brief - never a raw thread dump."
       />
 
       <div className="flex flex-wrap gap-2">

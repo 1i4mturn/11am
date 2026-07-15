@@ -20,7 +20,7 @@ interface AskBoltonBarProps {
   onScheduled?: (message: string) => void;
 }
 
-/** Dark ask bar — Bolton's stays in his domain: natural-language memory search. */
+/** Dark ask bar - Bolton's stays in his domain: natural-language memory search. */
 export function AskBoltonBar({ value, onChange, onAsk, loading, onScheduled }: AskBoltonBarProps) {
   const [showSchedule, setShowSchedule] = useState(false);
   const [cadence, setCadence] = useState<Cadence>("weekly");
@@ -68,7 +68,7 @@ export function AskBoltonBar({ value, onChange, onAsk, loading, onScheduled }: A
               onAsk();
             }
           }}
-          placeholder="Ask Bolton — find anything in memory…"
+          placeholder="Ask Bolton - find anything in memory…"
           className="am-ask-input min-w-0 flex-1 px-4 py-4 text-sm"
           disabled={loading}
         />

@@ -1,6 +1,6 @@
 import type { AgentId } from "@/data/agents";
 
-/** Local dev defaults — one port per agent */
+/** Local dev defaults - one port per agent */
 const LOCAL_APP_URLS: Record<AgentId, string> = {
   william: "http://localhost:3000",
   marc: "http://localhost:3001",

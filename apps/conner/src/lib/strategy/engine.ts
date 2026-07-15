@@ -100,9 +100,9 @@ Respond with JSON ONLY using this exact shape:
 {
   "source_agent": "conner",
   "as_of": "YYYY-MM-DD",
-  "positioning_update": "string — current positioning in 1-2 sentences",
-  "target_segment": "string — who we're building for",
-  "key_decisions": ["string — concrete decisions made or recommended"],
+  "positioning_update": "string - current positioning in 1-2 sentences",
+  "target_segment": "string - who we're building for",
+  "key_decisions": ["string - concrete decisions made or recommended"],
   "confidence": "high" | "medium" | "low"
 }`;
 
@@ -243,7 +243,7 @@ export async function runPricingStrategy(context: string): Promise<PricingResult
 export async function runWeeklyDigest(): Promise<DigestResult> {
   const summaries = await getAvailableAgentSummaries();
   const contextPack = await getBoltonContext(
-    "Latest summaries from all agents — George finance, James research, Conner strategy"
+    "Latest summaries from all agents - George finance, James research, Conner strategy"
   );
 
   const agentsAvailable: string[] = [];

@@ -80,7 +80,7 @@ export default function SendersPage() {
     <>
       <PageHeader
         title="Sender memory"
-        description="Marc's relationship layer — view, edit, disable, or delete."
+        description="Marc's relationship layer - view, edit, disable, or delete."
       />
 
       <div className="space-y-8">

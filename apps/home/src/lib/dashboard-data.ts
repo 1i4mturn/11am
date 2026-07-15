@@ -125,7 +125,7 @@ async function fetchInboxGlance(): Promise<GlanceCard> {
   }
 
   if (rows.length === 0) {
-    rows.push({ text: "marc offline — start marc on :3001 to load inbox triage" });
+    rows.push({ text: "marc offline - start marc on :3001 to load inbox triage" });
   }
 
   return { kicker: "inbox, from marc", agentId: "marc", rows };
@@ -179,9 +179,9 @@ async function fetchCalendarGlance(): Promise<GlanceCard> {
   }
 
   if (eventCount <= 1) {
-    rows.push({ text: "Tomorrow looks light — good window to plan the next sprint" });
+    rows.push({ text: "Tomorrow looks light - good window to plan the next sprint" });
   } else if (rows.length === 0) {
-    rows.push({ text: "leo calendar offline — connect on :3006" });
+    rows.push({ text: "leo calendar offline - connect on :3006" });
   }
 
   return { kicker: "calendar, from leo", agentId: "leo", rows };
@@ -219,7 +219,7 @@ async function fetchWipGlance(): Promise<GlanceCard> {
   }
 
   if (rows.length === 0) {
-    rows.push({ text: "no ready deliverables in bolton — tag entries ready when complete" });
+    rows.push({ text: "no ready deliverables in bolton - tag entries ready when complete" });
   }
 
   return { kicker: "work in progress", agentId: "johnny", rows };
@@ -261,7 +261,7 @@ async function fetchActivity(): Promise<ActivityEntry[]> {
         combined.push({
           agentId: agentIdFromSource(source),
           time: relativeTime(created),
-          text: decision + (context ? ` — ${context}` : ""),
+          text: decision + (context ? ` - ${context}` : ""),
           at: new Date(created).getTime(),
         });
       }

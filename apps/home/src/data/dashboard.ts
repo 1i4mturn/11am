@@ -1,6 +1,6 @@
 import type { AgentId } from "./agents";
 
-/** Grayscale roster status — July 6 spec */
+/** Grayscale roster status - July 6 spec */
 export type BuildStatus = "live" | "build" | "urgent";
 
 export interface GlanceRow {
@@ -42,7 +42,7 @@ export const SIDEBAR_ORDER: AgentId[] = [
 ];
 
 /**
- * Manual build_status per agent — update as each agent's Definition of Done completes.
+ * Manual build_status per agent - update as each agent's Definition of Done completes.
  * Cross-check against Full Suite Build Plan (no automated sync in v1).
  */
 export const AGENT_BUILD_STATUS: AgentBuildStatusEntry[] = [

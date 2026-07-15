@@ -3,7 +3,7 @@ import { AppShell } from "@11am/ui";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "William — 11am Writing Agent",
+  title: "William - 11am Writing Agent",
   description: "Copy in your voice, not generic AI output.",
 };
 

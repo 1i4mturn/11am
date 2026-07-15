@@ -62,7 +62,7 @@ export const emailMessages = pgTable(
   ]
 );
 
-/** Bolton sender memory — persistent relationship context */
+/** Bolton sender memory - persistent relationship context */
 export const boltonSenderProfiles = pgTable("bolton_sender_profiles", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: text("user_id").notNull().default("default"),
@@ -112,7 +112,7 @@ export const boltonMemories = pgTable("bolton_memories", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-/** William voice profile — read from shared Bolton layer */
+/** William voice profile - read from shared Bolton layer */
 export const boltonVoiceProfiles = pgTable("bolton_voice_profiles", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: text("user_id").notNull().default("default"),
@@ -126,7 +126,7 @@ export const boltonVoiceProfiles = pgTable("bolton_voice_profiles", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-/** Confirmed user actions log — rollback support */
+/** Confirmed user actions log - rollback support */
 export const actionLog = pgTable("action_log", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: text("user_id").notNull().default("default"),

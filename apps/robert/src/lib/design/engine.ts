@@ -28,12 +28,12 @@ import {
 const BRAND_DIRECTION_PROMPT = `Give brand direction advice grounded in Conner's commercial context.
 Respond with JSON ONLY:
 {
-  "advice": "string — 2-4 paragraphs of direction",
-  "recommended_updates": ["string — specific brand-system updates to consider"],
+  "advice": "string - 2-4 paragraphs of direction",
+  "recommended_updates": ["string - specific brand-system updates to consider"],
   "confidence": "high" | "medium" | "low"
 }`;
 
-const TOKEN_RECOMMENDATION_PROMPT = `Recommend colour and typography as structured tokens ONLY — no prose paragraphs.
+const TOKEN_RECOMMENDATION_PROMPT = `Recommend colour and typography as structured tokens ONLY - no prose paragraphs.
 Use the living brand-system as baseline. Output JSON ONLY:
 {
   "color_tokens": { "token_name": "#hex or css value" },
@@ -58,12 +58,12 @@ Output JSON ONLY with this EXACT shape:
   },
   "do_dont_rules": [{ "type": "do" | "dont", "rule": "string" }]
 }
-motion_tokens are REQUIRED — Cole's pipeline depends on them.`;
+motion_tokens are REQUIRED - Cole's pipeline depends on them.`;
 
-const LOGO_DIRECTION_PROMPT = `Provide logo direction and concept descriptions ONLY — not production SVG.
+const LOGO_DIRECTION_PROMPT = `Provide logo direction and concept descriptions ONLY - not production SVG.
 Output JSON ONLY:
 {
-  "direction": "string — overall logo direction",
+  "direction": "string - overall logo direction",
   "concepts": [
     { "id": "string", "description": "string", "notes": "string", "image_prompt": "string for image gen" }
   ]
@@ -73,7 +73,7 @@ const AUDIT_PROMPT = `Audit this asset against the brand-system tokens. Flag inc
 Output JSON ONLY:
 {
   "inconsistencies": [{ "area": "string", "expected": "string", "observed": "string", "severity": "high"|"medium"|"low" }],
-  "passes": ["string — what is on-brand"],
+  "passes": ["string - what is on-brand"],
   "overall_verdict": "on_brand" | "needs_revision" | "off_brand",
   "summary": "string"
 }`;
@@ -87,7 +87,7 @@ Output JSON ONLY:
   "recommendation": "string"
 }`;
 
-const IMPLEMENTATION_BRIEF_PROMPT = `Produce a structured design brief for implementation — NO code.
+const IMPLEMENTATION_BRIEF_PROMPT = `Produce a structured design brief for implementation - NO code.
 Output JSON ONLY:
 {
   "source_agent": "Robert",
@@ -154,7 +154,7 @@ export async function runColorTypographyRecommendation(
     color_tokens: brand.color_tokens,
     type_scale: brand.type_scale,
     spacing_tokens: brand.spacing_tokens,
-    rationale: { fallback: "Could not parse — returned current tokens" },
+    rationale: { fallback: "Could not parse - returned current tokens" },
   };
 }
 
@@ -207,7 +207,7 @@ export async function runMoodboard(
   for (let i = 0; i < capped; i++) {
     const variant =
       capped > 1
-        ? `${enrichedPrompt.trim()} — variation ${i + 1}, editorial moodboard reference`
+        ? `${enrichedPrompt.trim()} - variation ${i + 1}, editorial moodboard reference`
         : enrichedPrompt.trim();
     const img = await generateImage(variant, sessionId);
     images.push(img);
@@ -249,7 +249,7 @@ export async function runLogoConcepts(
     if (getImagesRemaining(sessionId) > 0 && c.image_prompt) {
       try {
         const img = await generateImage(
-          `${c.image_prompt} — logo concept sketch only, not final vector, monochrome friendly`,
+          `${c.image_prompt} - logo concept sketch only, not final vector, monochrome friendly`,
           sessionId,
           { size: "1024x1024" }
         );
@@ -271,7 +271,7 @@ export async function runLogoConcepts(
     direction: json?.direction ?? direction,
     concepts,
     disclaimer:
-      "Direction and concept images only — production-ready vector logos are a human/Later step.",
+      "Direction and concept images only - production-ready vector logos are a human/Later step.",
   };
 }
 

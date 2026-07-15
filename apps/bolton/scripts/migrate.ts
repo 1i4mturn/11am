@@ -299,7 +299,7 @@ async function migrate() {
 
   await sql`
     INSERT INTO bolton_agent_summaries (agent_id, user_id, summary, session_note)
-    SELECT 'conner', 'default', '{"source_agent":"conner","as_of":"2026-07-01","positioning_update":"11am is the voice-fidelity layer for solo operators — agents that sound like you, not generic AI","target_segment":"Founders building with AI agents who care about authentic output","key_decisions":["Bolton as shared memory before Marc","William leads copy; Robert handles visual handoff"],"confidence":"high"}'::jsonb, 'Strategy session'
+    SELECT 'conner', 'default', '{"source_agent":"conner","as_of":"2026-07-01","positioning_update":"11am is the voice-fidelity layer for solo operators - agents that sound like you, not generic AI","target_segment":"Founders building with AI agents who care about authentic output","key_decisions":["Bolton as shared memory before Marc","William leads copy; Robert handles visual handoff"],"confidence":"high"}'::jsonb, 'Strategy session'
     WHERE NOT EXISTS (SELECT 1 FROM bolton_agent_summaries WHERE agent_id = 'conner' LIMIT 1)
   `;
 
@@ -311,7 +311,7 @@ async function migrate() {
 
   await sql`
     UPDATE bolton_agent_summaries
-    SET summary = '{"source_agent":"conner","as_of":"2026-07-01","positioning_update":"11am is the voice-fidelity layer for solo operators — agents that sound like you, not generic AI","target_segment":"Founders building with AI agents who care about authentic output","key_decisions":["Bolton as shared memory before Marc","William leads copy; Robert handles visual handoff"],"confidence":"high"}'::jsonb
+    SET summary = '{"source_agent":"conner","as_of":"2026-07-01","positioning_update":"11am is the voice-fidelity layer for solo operators - agents that sound like you, not generic AI","target_segment":"Founders building with AI agents who care about authentic output","key_decisions":["Bolton as shared memory before Marc","William leads copy; Robert handles visual handoff"],"confidence":"high"}'::jsonb
     WHERE agent_id = 'conner' AND NOT (summary ? 'source_agent')
   `;
 
@@ -325,28 +325,28 @@ async function migrate() {
   await sql`
     INSERT INTO memory_entries (user_id, source_agent, entry_type, title, summary, tags, importance_score, confidence)
     SELECT * FROM (VALUES
-      ('default', 'Conner', 'decision', 'Bolton before Marc', 'Build shared memory layer before inbox agent — Marc moat depends on Bolton sender memory.', '["decision","architecture"]'::jsonb, 0.9, 'high'),
-      ('default', 'William', 'voice', 'Liam voice profile direction', 'Warm, clear, conversational — avoid corporate filler and generic AI phrasing in all copy.', '["voice","william"]'::jsonb, 0.85, 'high'),
+      ('default', 'Conner', 'decision', 'Bolton before Marc', 'Build shared memory layer before inbox agent - Marc moat depends on Bolton sender memory.', '["decision","architecture"]'::jsonb, 0.9, 'high'),
+      ('default', 'William', 'voice', 'Liam voice profile direction', 'Warm, clear, conversational - avoid corporate filler and generic AI phrasing in all copy.', '["voice","william"]'::jsonb, 0.85, 'high'),
       ('default', 'William', 'preference', 'LinkedIn tone preference', 'Hook in first line, no hashtag spam, authentic not performative.', '["linkedin","tone"]'::jsonb, 0.7, 'medium'),
-      ('default', 'Marc', 'sender_memory', 'Sender: JC franchisee', 'JC is a franchisee contact — high importance, concise tone, prompt response expected.', '["sender","franchisee"]'::jsonb, 0.8, 'high'),
-      ('default', 'Conner', 'project', '11am agent suite', 'Voice-fidelity layer for solo operators — William, Marc, Bolton, Leo as core agents.', '["project","11am"]'::jsonb, 0.85, 'high'),
+      ('default', 'Marc', 'sender_memory', 'Sender: JC franchisee', 'JC is a franchisee contact - high importance, concise tone, prompt response expected.', '["sender","franchisee"]'::jsonb, 0.8, 'high'),
+      ('default', 'Conner', 'project', '11am agent suite', 'Voice-fidelity layer for solo operators - William, Marc, Bolton, Leo as core agents.', '["project","11am"]'::jsonb, 0.85, 'high'),
       ('default', 'George', 'research', 'Q1 revenue snapshot', 'AUD 42k MRR, 18% QoQ growth, 14 months runway, Stripe payout delay flagged.', '["finance","george"]'::jsonb, 0.75, 'high'),
       ('default', 'Bolton', 'reference', 'Memory capture rules', 'Never store secrets or credentials. Supersede instead of delete. Link related entries.', '["bolton","policy"]'::jsonb, 0.9, 'high'),
-      ('default', 'William', 'task', 'Weekly LinkedIn post', 'Draft LinkedIn post about voice fidelity as moat — include business context from George.', '["task","william","cadence:weekly"]'::jsonb, 0.6, 'medium'),
+      ('default', 'William', 'task', 'Weekly LinkedIn post', 'Draft LinkedIn post about voice fidelity as moat - include business context from George.', '["task","william","cadence:weekly"]'::jsonb, 0.6, 'medium'),
       ('default', 'Marc', 'task', 'Daily inbox review', 'Review unread inbox, triage high-priority senders, draft replies for needs_reply items.', '["task","marc","cadence:daily"]'::jsonb, 0.65, 'medium'),
-      ('default', 'James', 'research', 'Competitor voice tools scan', 'Most AI writing tools optimize for generic output — differentiation is voice fidelity and sender memory.', '["research","competitive"]'::jsonb, 0.6, 'medium'),
-      ('default', 'Conner', 'preference', 'Platform language', 'Say voice fidelity not AI writing assistant — emphasize authentic output over speed.', '["positioning","language"]'::jsonb, 0.7, 'medium'),
-      ('default', 'William', 'output', 'Launch announcement draft', '11am is live — agents that sound like you, starting with William for copy and Marc for inbox.', '["announcement","launch"]'::jsonb, 0.5, 'medium'),
-      ('default', 'Marc', 'preference', 'Inbox rule: newsletters', 'Auto-archive promotional newsletters after reading — never touch billing or security emails.', '["inbox","rules"]'::jsonb, 0.7, 'medium'),
+      ('default', 'James', 'research', 'Competitor voice tools scan', 'Most AI writing tools optimize for generic output - differentiation is voice fidelity and sender memory.', '["research","competitive"]'::jsonb, 0.6, 'medium'),
+      ('default', 'Conner', 'preference', 'Platform language', 'Say voice fidelity not AI writing assistant - emphasize authentic output over speed.', '["positioning","language"]'::jsonb, 0.7, 'medium'),
+      ('default', 'William', 'output', 'Launch announcement draft', '11am is live - agents that sound like you, starting with William for copy and Marc for inbox.', '["announcement","launch"]'::jsonb, 0.5, 'medium'),
+      ('default', 'Marc', 'preference', 'Inbox rule: newsletters', 'Auto-archive promotional newsletters after reading - never touch billing or security emails.', '["inbox","rules"]'::jsonb, 0.7, 'medium'),
       ('default', 'Leo', 'task', 'Weekly planning sync', 'Review scheduled agent tasks and calendar cadence from William and Marc.', '["task","leo","cadence:weekly"]'::jsonb, 0.6, 'medium'),
-      ('default', 'Bolton', 'person', 'Liam Turner', 'Founder and sole user of 11am debug build — all agents serve Liam only for now.', '["person","founder"]'::jsonb, 0.95, 'high'),
+      ('default', 'Bolton', 'person', 'Liam Turner', 'Founder and sole user of 11am debug build - all agents serve Liam only for now.', '["person","founder"]'::jsonb, 0.95, 'high'),
       ('default', 'Robert', 'reference', 'Brand guidelines July 2026', 'Dark ask bars with inverted monogram, editorial white space, warm not corporate.', '["brand","design"]'::jsonb, 0.8, 'high'),
       ('default', 'William', 'research', 'Email platform rules', 'Email copy: professional but personal, subject line when appropriate, no preamble.', '["email","platform"]'::jsonb, 0.55, 'medium'),
-      ('default', 'Marc', 'decision', 'Gmail Testing mode OAuth', 'Keep Google Cloud app in Testing with Liam as sole test user — no CASA until second user.', '["gmail","oauth"]'::jsonb, 0.85, 'high'),
-      ('default', 'Conner', 'project', 'William voice RAG', 'pgvector writing samples for few-shot retrieval at generation time — edits feed back into store.', '["william","rag"]'::jsonb, 0.75, 'medium'),
-      ('default', 'George', 'reference', 'Burn rate baseline', 'AUD 8.2k monthly burn — monitor against MRR growth for runway projections.', '["finance","burn"]'::jsonb, 0.7, 'medium'),
-      ('default', 'Bolton', 'preference', 'Notion parallel archive', 'Postgres is operational source; Notion is long-term brain — sync on save, archive on supersede.', '["notion","sync"]'::jsonb, 0.65, 'medium'),
-      ('default', 'Marc', 'sender_memory', 'Sender: billing@stripe.com', 'Stripe billing notifications — protected from cleanup, finance-relevant, do not unsubscribe.', '["sender","billing","protected"]'::jsonb, 0.9, 'high')
+      ('default', 'Marc', 'decision', 'Gmail Testing mode OAuth', 'Keep Google Cloud app in Testing with Liam as sole test user - no CASA until second user.', '["gmail","oauth"]'::jsonb, 0.85, 'high'),
+      ('default', 'Conner', 'project', 'William voice RAG', 'pgvector writing samples for few-shot retrieval at generation time - edits feed back into store.', '["william","rag"]'::jsonb, 0.75, 'medium'),
+      ('default', 'George', 'reference', 'Burn rate baseline', 'AUD 8.2k monthly burn - monitor against MRR growth for runway projections.', '["finance","burn"]'::jsonb, 0.7, 'medium'),
+      ('default', 'Bolton', 'preference', 'Notion parallel archive', 'Postgres is operational source; Notion is long-term brain - sync on save, archive on supersede.', '["notion","sync"]'::jsonb, 0.65, 'medium'),
+      ('default', 'Marc', 'sender_memory', 'Sender: billing@stripe.com', 'Stripe billing notifications - protected from cleanup, finance-relevant, do not unsubscribe.', '["sender","billing","protected"]'::jsonb, 0.9, 'high')
     ) AS v(user_id, source_agent, entry_type, title, summary, tags, importance_score, confidence)
     WHERE (SELECT count(*) FROM memory_entries) < 5
   `;
@@ -366,8 +366,8 @@ async function migrate() {
       ('default', 'person', 'Liam Turner', 'Founder and sole 11am user', 'high'),
       ('default', 'project', '11am agent suite', 'Voice-fidelity agent platform for solo operators', 'high'),
       ('default', 'project', 'William voice RAG', 'pgvector writing sample retrieval for copy generation', 'medium'),
-      ('default', 'person', 'JC franchisee', 'Franchisee contact — high importance sender for Marc', 'high'),
-      ('default', 'concept', 'Voice fidelity', 'Core positioning — authentic output over generic AI', 'high')
+      ('default', 'person', 'JC franchisee', 'Franchisee contact - high importance sender for Marc', 'high'),
+      ('default', 'concept', 'Voice fidelity', 'Core positioning - authentic output over generic AI', 'high')
     ) AS v(user_id, entity_type, name, summary, importance_level)
     WHERE (SELECT count(*) FROM entities) < 2
   `;

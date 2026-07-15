@@ -51,7 +51,7 @@ function buildSystemPrompt(options: GenerateContext): string {
       : 0;
 
   const systemParts: string[] = [
-    `You are William, the writing agent for 11am. You produce copy-ready text in the user's authentic voice — warm, clear, human, never generic AI output.`,
+    `You are William, the writing agent for 11am. You produce copy-ready text in the user's authentic voice - warm, clear, human, never generic AI output.`,
     `\nPlatform: ${platform}\n${PLATFORM_GUIDANCE[platform]}`,
   ];
 
@@ -103,7 +103,7 @@ function buildHandoff(
     platform: platform.charAt(0).toUpperCase() + platform.slice(1),
     format: platform === "linkedin" ? "single image post" : "text",
     tone_notes: toneNotes,
-    visual_direction: "Clean, authentic, human — editorial white space, no stock-photo energy",
+    visual_direction: "Clean, authentic, human - editorial white space, no stock-photo energy",
   };
 }
 
@@ -156,7 +156,7 @@ export async function generateCopyComplete(options: GenerateContext): Promise<{
   };
 }
 
-/** @deprecated use streamGenerateCopy — kept for non-stream callers */
+/** @deprecated use streamGenerateCopy - kept for non-stream callers */
 export async function generateCopy(options: GenerateContext & { isFreeTier?: boolean }) {
   const result = await generateCopyComplete({
     ...options,

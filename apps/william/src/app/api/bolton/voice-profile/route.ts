@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getVoiceProfile, getSampleCount } from "@/lib/bolton";
 
 /**
- * Bolton read endpoint — voice profile is identity data shared across 11am agents.
+ * Bolton read endpoint - voice profile is identity data shared across 11am agents.
  * Robert, Conner, and others pull from here rather than William's session store.
  */
 export async function GET() {

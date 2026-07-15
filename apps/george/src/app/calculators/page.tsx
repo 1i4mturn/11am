@@ -62,7 +62,7 @@ export default function CalculatorsPage() {
     <div className="am-section space-y-6">
       <PageHeader
         title="Custom calculators"
-        description="Claude generates self-contained HTML artifacts — stored in Supabase, linked from Bolton."
+        description="Claude generates self-contained HTML artifacts - stored in Supabase, linked from Bolton."
       />
       <TaxDisclaimer />
 
@@ -80,7 +80,7 @@ export default function CalculatorsPage() {
 
       {previewHtml && (
         <Card padding="md">
-          <p className="am-label mb-2">Preview (local — Supabase not configured)</p>
+          <p className="am-label mb-2">Preview (local - Supabase not configured)</p>
           <iframe
             title="Calculator preview"
             srcDoc={previewHtml}

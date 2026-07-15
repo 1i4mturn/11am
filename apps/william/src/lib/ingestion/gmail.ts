@@ -37,7 +37,7 @@ export async function saveGmailTokens(
     .where(eq(users.id, userId));
 }
 
-/** Gmail OAuth Testing mode — refresh tokens expire after ~7 days */
+/** Gmail OAuth Testing mode - refresh tokens expire after ~7 days */
 const GMAIL_TESTING_REFRESH_DAYS = 7;
 
 export async function getGmailAuthStatus(userId = "default") {

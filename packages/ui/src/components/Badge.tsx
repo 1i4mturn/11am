@@ -23,7 +23,7 @@ export interface BadgeProps {
   className?: string;
 }
 
-/** Grayscale status pill — tonal ladder only, no colour */
+/** Grayscale status pill - tonal ladder only, no colour */
 export function Badge({ tone = "default", children, className = "" }: BadgeProps) {
   return <span className={`${tones[tone]} ${className}`}>{children}</span>;
 }

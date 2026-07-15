@@ -10,7 +10,7 @@ import {
   index,
 } from "drizzle-orm/pg-core";
 
-/** Bolton shared memory — voice profiles are identity data, not session data */
+/** Bolton shared memory - voice profiles are identity data, not session data */
 export const boltonVoiceProfiles = pgTable("bolton_voice_profiles", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: text("user_id").notNull().default("default"),
@@ -46,7 +46,7 @@ export const writingSamples = pgTable(
   ]
 );
 
-/** Bolton agent summaries — George (finance) and Conner (strategy) */
+/** Bolton agent summaries - George (finance) and Conner (strategy) */
 export const boltonAgentSummaries = pgTable("bolton_agent_summaries", {
   id: uuid("id").defaultRandom().primaryKey(),
   agentId: text("agent_id").notNull(), // george | conner

@@ -126,7 +126,7 @@ export const conflicts = pgTable("conflicts", {
   resolvedAt: timestamp("resolved_at"),
 });
 
-/** William — voice profiles */
+/** William - voice profiles */
 export const boltonVoiceProfiles = pgTable("bolton_voice_profiles", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: text("user_id").notNull().default("default"),
@@ -142,7 +142,7 @@ export const boltonVoiceProfiles = pgTable("bolton_voice_profiles", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-/** William — writing samples for RAG */
+/** William - writing samples for RAG */
 export const writingSamples = pgTable(
   "writing_samples",
   {
@@ -163,7 +163,7 @@ export const writingSamples = pgTable(
   ]
 );
 
-/** Marc — sender memory */
+/** Marc - sender memory */
 export const boltonSenderProfiles = pgTable("bolton_sender_profiles", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: text("user_id").notNull().default("default"),
@@ -186,7 +186,7 @@ export const boltonSenderProfiles = pgTable("bolton_sender_profiles", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-/** Marc — inbox rules */
+/** Marc - inbox rules */
 export const boltonInboxRules = pgTable("bolton_inbox_rules", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: text("user_id").notNull().default("default"),
@@ -213,7 +213,7 @@ export const boltonAgentSummaries = pgTable("bolton_agent_summaries", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-/** George — full financial models (not stored in Bolton) */
+/** George - full financial models (not stored in Bolton) */
 export const georgeFinancialModels = pgTable("george_financial_models", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: text("user_id").notNull().default("default"),
@@ -227,7 +227,7 @@ export const georgeFinancialModels = pgTable("george_financial_models", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-/** George — generated calculator artifacts (HTML in Supabase storage) */
+/** George - generated calculator artifacts (HTML in Supabase storage) */
 export const georgeCalculators = pgTable("george_calculators", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: text("user_id").notNull().default("default"),
@@ -239,7 +239,7 @@ export const georgeCalculators = pgTable("george_calculators", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-/** Marc — email index */
+/** Marc - email index */
 export const emailMessages = pgTable(
   "email_messages",
   {

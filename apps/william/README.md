@@ -1,16 +1,16 @@
-# William — 11am Writing Agent
+# William - 11am Writing Agent
 
 Web-first writing agent that produces copy in the user's authentic voice. Voice profiles are assembled from real outputs (emails, documents, posts) and stored in Bolton's shared memory layer.
 
 ## Stack
 
-- **Next.js 16** — App Router, TypeScript, Tailwind
-- **@11am/ui** — Shared design system
-- **PostgreSQL + pgvector** — Writing sample embeddings and voice profile storage
-- **Bolton** — Shared memory layer (voice profiles, George/Conner summaries)
-- **Claude Sonnet** — Generation and voice analysis (Anthropic API)
-- **OpenAI embeddings** — text-embedding-3-small for RAG retrieval
-- **Gmail OAuth** — Sent mail ingestion (highest-value training data)
+- **Next.js 16** - App Router, TypeScript, Tailwind
+- **@11am/ui** - Shared design system
+- **PostgreSQL + pgvector** - Writing sample embeddings and voice profile storage
+- **Bolton** - Shared memory layer (voice profiles, George/Conner summaries)
+- **Claude Sonnet** - Generation and voice analysis (Anthropic API)
+- **OpenAI embeddings** - text-embedding-3-small for RAG retrieval
+- **Gmail OAuth** - Sent mail ingestion (highest-value training data)
 
 ## Quick start
 
@@ -39,12 +39,12 @@ Open [http://localhost:3000](http://localhost:3000).
 | Copy generation | ✓ (10/month) | ✓ unlimited |
 | Platform selector | ✓ | ✓ |
 | Basic tone guidance | ✓ | ✓ |
-| Living voice profile | — | ✓ |
-| Asset ingestion | — | ✓ |
-| Gmail OAuth | — | ✓ |
-| Cross-agent context | — | ✓ |
-| Edit → vector store learning | — | ✓ |
-| Voice drift detection | — | ✓ |
+| Living voice profile | - | ✓ |
+| Asset ingestion | - | ✓ |
+| Gmail OAuth | - | ✓ |
+| Cross-agent context | - | ✓ |
+| Edit → vector store learning | - | ✓ |
+| Voice drift detection | - | ✓ |
 
 Use the **Switch to Pro** toggle on the Write page for local testing (no payment integration in v1).
 
@@ -60,14 +60,14 @@ User edits → High-signal sample + async profile update job
 
 ## API routes
 
-- `POST /api/generate` — Generate copy
-- `GET/POST /api/voice-profile` — Profile status / text ingestion
-- `POST /api/ingest` — Paste, upload, URL ingestion
-- `POST /api/edits` — Log edits back to vector store
-- `GET /api/bolton/context` — George + Conner summaries
-- `GET /api/bolton/voice-profile` — Voice profile for cross-agent reads (Robert, etc.)
-- `GET/POST /api/gmail` — OAuth status + sent mail sync
-- `GET/POST /api/tier` — Tier management
+- `POST /api/generate` - Generate copy
+- `GET/POST /api/voice-profile` - Profile status / text ingestion
+- `POST /api/ingest` - Paste, upload, URL ingestion
+- `POST /api/edits` - Log edits back to vector store
+- `GET /api/bolton/context` - George + Conner summaries
+- `GET /api/bolton/voice-profile` - Voice profile for cross-agent reads (Robert, etc.)
+- `GET/POST /api/gmail` - OAuth status + sent mail sync
+- `GET/POST /api/tier` - Tier management
 
 ## Environment variables
 

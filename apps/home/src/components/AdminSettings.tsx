@@ -65,7 +65,7 @@ export function AdminSettings() {
       </div>
 
       <p className="admin-settings-note">
-        Single-user debug — Google Cloud apps stay in Testing mode. OAuth links open the provider
+        Single-user debug - Google Cloud apps stay in Testing mode. OAuth links open the provider
         consent screen directly when credentials are configured.
       </p>
 

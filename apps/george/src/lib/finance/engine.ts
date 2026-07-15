@@ -9,7 +9,7 @@ const MODEL_PROMPTS: Record<ModelType, string> = {
   cashflow: "Focus on cash in/out timing, operating vs investing vs financing, net cash movement.",
   breakeven: "Focus on fixed costs, variable cost per unit, contribution margin, break-even units and revenue.",
   unit_economics: "Focus on CAC, LTV, LTV:CAC ratio, payback period, gross margin.",
-  general: "General financial modelling — clarify assumptions and show workings.",
+  general: "General financial modelling - clarify assumptions and show workings.",
 };
 
 export async function runModelConversation(
@@ -48,11 +48,11 @@ export async function generateCalculatorHtml(prompt: string): Promise<string> {
   return askGeorge(
     `Generate a COMPLETE self-contained HTML file for a business calculator based on the user's request.
 Requirements:
-- Single file with inline <style> and <script> — no external dependencies except optional CDN for React if needed
+- Single file with inline <style> and <script> - no external dependencies except optional CDN for React if needed
 - Use a clean, minimal design (white background, dark text, simple inputs)
 - Interactive: user can change inputs and see results update
 - Include a title and brief instructions
-- Output ONLY the raw HTML starting with <!DOCTYPE html> — no markdown fences`,
+- Output ONLY the raw HTML starting with <!DOCTYPE html> - no markdown fences`,
     prompt,
     8000
   );

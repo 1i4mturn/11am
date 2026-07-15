@@ -151,7 +151,7 @@ export default function WritePage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed to save edit");
       setOutput(editedOutput);
-      setNotice("Edit saved — William learned from your changes.");
+      setNotice("Edit saved - William learned from your changes.");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to save edit");
     } finally {
@@ -163,7 +163,7 @@ export default function WritePage() {
     <>
       <PageHeader
         title="Write in your voice"
-        description="William produces copy-ready drafts — warm, clear, authentically you."
+        description="William produces copy-ready drafts - warm, clear, authentically you."
         meta={
           sampleCount > 0
             ? `${sampleCount} writing samples in your voice profile`
@@ -262,7 +262,7 @@ export default function WritePage() {
 
           {output && editedOutput !== output && (
             <Button onClick={handleSaveEdit} disabled={savingEdit} variant="secondary">
-              {savingEdit ? "Saving…" : "Save edit — teach William your voice"}
+              {savingEdit ? "Saving…" : "Save edit - teach William your voice"}
             </Button>
           )}
 

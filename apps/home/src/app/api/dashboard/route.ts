@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 
 /**
  * Short in-memory cache. The dashboard polls every 60s and each load fans out
- * to Marc, Leo, and Bolton — caching for 45s dedupes bursts (multiple tabs,
+ * to Marc, Leo, and Bolton - caching for 45s dedupes bursts (multiple tabs,
  * manual refreshes) without the UI ever being more than one poll stale.
  */
 const CACHE_TTL_MS = 45_000;

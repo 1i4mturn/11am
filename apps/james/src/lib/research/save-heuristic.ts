@@ -14,7 +14,7 @@ export function shouldSaveToBolton(input: {
 }): boolean {
   const q = input.research_question.toLowerCase();
 
-  // RETURN ONLY — immediate / ephemeral scope
+  // RETURN ONLY - immediate / ephemeral scope
   const returnOnlyPatterns = [
     /\b(just for|only for)\s+(today|this|now)\b/i,
     /\bfor this (email|reply|meeting|draft|message)\b/i,
@@ -28,7 +28,7 @@ export function shouldSaveToBolton(input: {
   if (input.context_ref?.toLowerCase().includes("ephemeral")) return false;
   if (input.context_ref?.toLowerCase().includes("return-only")) return false;
 
-  // SAVE — durable cross-session value
+  // SAVE - durable cross-session value
   const savePatterns = [
     /\bcompetitive landscape\b/i,
     /\bmarket (size|sizing|map)\b/i,
@@ -46,10 +46,10 @@ export function shouldSaveToBolton(input: {
   ];
   if (savePatterns.some((p) => p.test(q))) return true;
 
-  // SAVE — research types that are typically reusable
+  // SAVE - research types that are typically reusable
   if (["market", "pricing", "academic"].includes(input.request_type)) return true;
 
-  // SAVE — multiple substantive findings suggest reference value
+  // SAVE - multiple substantive findings suggest reference value
   if (input.key_findings.length >= 3) return true;
 
   // Default RETURN ONLY for narrow tactical questions
