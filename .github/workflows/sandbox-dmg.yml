@@ -1,0 +1,75 @@
+name: Sandbox DMG
+
+# Builds a Release copy of the sandbox, signs it ad hoc, checks it launches, and packages a DMG.
+# Runs on demand, or on a push whose commit message contains [dmg].
+on:
+  push:
+    paths:
+      - "sandbox/**"
+      - ".github/workflows/sandbox-dmg.yml"
+  workflow_dispatch:
+
+jobs:
+  dmg:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[dmg]')
+    runs-on: macos-26
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Build Release
+        working-directory: sandbox
+        run: |
+          set -o pipefail
+          xcodegen generate
+          xcodebuild -project ElevenAm.xcodeproj -scheme ElevenAm -configuration Release \
+            -destination 'platform=macOS' -derivedDataPath build \
+            ARCHS=arm64 ONLY_ACTIVE_ARCH=NO CODE_SIGNING_ALLOWED=NO build \
+            | grep -E "error:|BUILD" || true
+          test -d build/Build/Products/Release/ElevenAm.app
+
+      - name: Sign ad hoc and check it launches
+        working-directory: sandbox
+        run: |
+          APP=build/Build/Products/Release/ElevenAm.app
+          codesign --force --deep --sign - "$APP"
+          codesign --verify --deep --strict --verbose=2 "$APP"
+          "$APP/Contents/MacOS/ElevenAm" > launch.log 2>&1 &
+          pid=$!
+          sleep 8
+          if kill -0 "$pid" 2>/dev/null; then echo "Launched fine"; else echo "App exited early"; cat launch.log; exit 1; fi
+          kill "$pid" || true
+
+      - name: Make DMG
+        working-directory: sandbox
+        run: |
+          VERSION=$(/usr/libexec/PlistBuddy -c "Print CFBundleShortVersionString" build/Build/Products/Release/ElevenAm.app/Contents/Info.plist)
+          mkdir -p dist/root
+          cp -R build/Build/Products/Release/ElevenAm.app "dist/root/11am.app"
+          ln -s /Applications dist/root/Applications
+          hdiutil create -volname "11am sandbox" -srcfolder dist/root -ov -format UDZO "dist/11am-sandbox-${VERSION}.dmg"
+          hdiutil verify "dist/11am-sandbox-${VERSION}.dmg"
+          rm -rf dist/root
+          shasum -a 256 dist/*.dmg | tee dist/SHA256.txt
+          ls -la dist
+
+      - name: Publish to the ci/sandbox-dmg branch
+        working-directory: sandbox/dist
+        run: |
+          git init -q
+          git checkout -q -b ci/sandbox-dmg
+          git add .
+          git -c user.name="sandbox-ci" -c user.email="sandbox-ci@users.noreply.github.com" commit -q -m "Sandbox DMG for ${GITHUB_SHA}"
+          git push -q -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" ci/sandbox-dmg
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: sandbox-dmg
+          path: sandbox/dist
+          retention-days: 14
