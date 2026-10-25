@@ -11,9 +11,9 @@ struct NotchView: View {
     var body: some View {
         VStack(spacing: 0) {
             island
-                // Open fits its content; idle and peek match fixed notch sizes.
+                // Open takes its content's height; idle and peek match fixed notch sizes.
                 .frame(width: size.width, height: state.mode == .open ? nil : size.height, alignment: .top)
-                .frame(maxHeight: 440, alignment: .top)
+                .fixedSize(horizontal: false, vertical: state.mode == .open)
                 .background(NotchShape(radius: radius).fill(Color.black))
                 .clipShape(NotchShape(radius: radius))
                 .contentShape(NotchShape(radius: radius))
