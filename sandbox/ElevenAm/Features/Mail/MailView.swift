@@ -328,11 +328,10 @@ private struct DraftCard: View {
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .fixedSize(horizontal: false, vertical: true)
             }
-            HStack(spacing: 6) {
+            FlowLayout(spacing: 6) {
                 ForEach(directions, id: \.self) { direction in
                     Button(direction) { mail.draftReply(to: message, direction: direction) }
                         .buttonStyle(.vellumSecondary)
-                        .controlSize(.small)
                         .disabled(brain.isBusy)
                 }
             }
