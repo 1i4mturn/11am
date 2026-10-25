@@ -1,0 +1,42 @@
+name: Sandbox build
+
+on:
+  push:
+    paths:
+      - "sandbox/**"
+      - ".github/workflows/sandbox-build.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: sandbox-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Show Xcode
+        run: xcodebuild -version
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate project
+        working-directory: sandbox
+        run: xcodegen generate
+
+      - name: Build
+        working-directory: sandbox
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project ElevenAm.xcodeproj \
+            -scheme ElevenAm \
+            -configuration Debug \
+            -destination 'platform=macOS' \
+            CODE_SIGNING_ALLOWED=NO \
+            build 2>&1 | tee build.log | grep -E "error:|warning:|BUILD" || true
+          grep -q "BUILD SUCCEEDED" build.log

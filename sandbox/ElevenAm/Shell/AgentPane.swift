@@ -1,0 +1,84 @@
+import SwiftUI
+
+/// The quiet assistant beside every app: who's working, a scoped ask, and what the team just did.
+struct AgentPane: View {
+    @EnvironmentObject private var model: AppModel
+    @EnvironmentObject private var theme: Theme
+    @EnvironmentObject private var brain: Brain
+    @EnvironmentObject private var files: FileIndex
+    @Environment(\.colorScheme) private var scheme
+
+    @State private var askText = ""
+    @State private var run: BrainRun?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(spacing: 10) {
+                Monogram(text: agent.monogram, size: 30, inverted: true)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(agent.name)
+                        .font(theme.display(18))
+                        .foregroundStyle(theme.ink(scheme))
+                    Text(agent.role)
+                        .font(.system(size: 11.5))
+                        .foregroundStyle(theme.inkTertiary(scheme))
+                }
+            }
+
+            AskField(placeholder: "Ask \(agent.name.lowercased())…", text: $askText) {
+                let text = askText.trimmingCharacters(in: .whitespacesAndNewlines)
+                guard !text.isEmpty else { return }
+                run = brain.run(AskRouter.request(for: text, files: files))
+            }
+
+            if let run {
+                ScrollView {
+                    RunView(run: run)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .frame(maxHeight: 260)
+            }
+
+            Divider().opacity(0.5)
+
+            SectionLabel(text: "Activity")
+            ScrollView {
+                VStack(alignment: .leading, spacing: 10) {
+                    ForEach(model.activity) { item in
+                        HStack(alignment: .top, spacing: 8) {
+                            Text(item.monogram)
+                                .font(theme.monogramFont(10.5))
+                                .foregroundStyle(theme.inkSecondary(scheme))
+                                .frame(width: 18, alignment: .leading)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(item.text)
+                                    .font(.system(size: 12))
+                                    .foregroundStyle(theme.ink(scheme))
+                                    .fixedSize(horizontal: false, vertical: true)
+                                Text(item.date.formatted(date: .omitted, time: .shortened))
+                                    .font(.system(size: 10.5))
+                                    .foregroundStyle(theme.inkTertiary(scheme))
+                            }
+                        }
+                    }
+                    if model.activity.isEmpty {
+                        Text("Nothing yet. The team's work shows up here, with where it ran.")
+                            .font(.system(size: 12))
+                            .foregroundStyle(theme.inkTertiary(scheme))
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+        .padding(18)
+    }
+
+    private var agent: (monogram: String, name: String, role: String) {
+        switch model.section {
+        case .today, .overnight: return ("le", "Leo", "Chief of staff · plans your day")
+        case .files: return ("bn", "Bolton", "Memory and files · finds anything")
+        case .suite: return ("le", "Leo", "Routes your asks to the right app")
+        case .lab: return ("rt", "Robert", "Design · keeps the look considered")
+        }
+    }
+}

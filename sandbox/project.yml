@@ -1,0 +1,43 @@
+name: ElevenAm
+options:
+  bundleIdPrefix: au.elevenam
+  deploymentTarget:
+    macOS: "14.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+targets:
+  ElevenAm:
+    type: application
+    platform: macOS
+    sources:
+      - path: ElevenAm
+    info:
+      path: Support/Info.plist
+      properties:
+        CFBundleName: 11am
+        CFBundleDisplayName: 11am
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        LSApplicationCategoryType: public.app-category.productivity
+        LSMinimumSystemVersion: $(MACOSX_DEPLOYMENT_TARGET)
+        NSHumanReadableCopyright: 11am sandbox build
+        NSCalendarsFullAccessUsageDescription: 11am reads today's events to build your brief and the 11am check-in. Nothing leaves your Mac unless you allow cloud help.
+        NSCalendarsUsageDescription: 11am reads today's events to build your brief and the 11am check-in.
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
+    settings:
+      base:
+        PRODUCT_NAME: ElevenAm
+        PRODUCT_BUNDLE_IDENTIFIER: au.elevenam.sandbox
+        GENERATE_INFOPLIST_FILE: NO
+        CODE_SIGN_STYLE: Manual
+        CODE_SIGN_IDENTITY: "-"
+        DEVELOPMENT_TEAM: ""
+        ENABLE_HARDENED_RUNTIME: NO
+        COMBINE_HIDPI_IMAGES: YES
+    scheme:
+      testTargets: []
