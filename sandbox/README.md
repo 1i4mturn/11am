@@ -30,7 +30,9 @@ The app is signed "to run locally" (no Apple Developer account needed). Because 
 | **The Suite** | The apps that replace the subscription pile, and which ones are in this sandbox | Look, react, tell us what's missing or unnecessary |
 | **Design Lab** | Live sliders for paper tone, frost, grain, depth, ink, radius, display face and backdrop | Tune it until it feels right, then **Copy Values** and paste them into your feedback |
 
-Shortcuts: **⌘1–⌘5** switch apps · **⌘\\** shows or hides the agent pane · **⌥Space** asks from anywhere · **⇧⌘R** runs tonight's work now · **⌘,** opens settings.
+Shortcuts: **⌘1–⌘5** switch apps · **⌘\\** shows or hides the agent pane (it also steps aside on narrow windows) · **⌥Space** asks from anywhere · **⇧⌘R** runs tonight's work now · **⌘,** opens settings.
+
+Screenshots from the CI Mac (a small virtual display without a notch, so the notch shows as a pill) are on the `ci/sandbox-shots` branch. Push a commit with `[shots]` in its message to refresh them.
 
 ## On an 8 GB MacBook Air (M2)
 
