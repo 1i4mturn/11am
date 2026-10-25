@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>marc inbox</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+@font-face{font-family:"Alte Haas Grotesk";src:url("/_blob/308e43393c945b4291129730b495b94b") format("truetype");font-weight:700;font-style:normal}
+@font-face{font-family:"Alte Haas Grotesk";src:url("/_blob/8ec106ac037f64a14618d5994adecde9") format("truetype");font-weight:400;font-style:normal}
+body{margin:0}
+a{color:#f5f5f5}a:hover{color:#ffffff}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; position: relative; overflow: hidden; background: #0b0b0c; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', Inter, system-ui, sans-serif; color: #f5f5f5;">
+  <div aria-hidden="true" style="position: absolute; left: -200px; top: -200px; width: 900px; height: 900px; border-radius: 50%; background: radial-gradient(closest-side, rgba(255,255,255,0.18), rgba(255,255,255,0));"></div>
+  <div aria-hidden="true" style="position: absolute; right: -300px; bottom: -300px; width: 1000px; height: 1000px; border-radius: 50%; background: radial-gradient(closest-side, rgba(255,255,255,0.10), rgba(255,255,255,0));"></div>
+
+  <div style="position: absolute; left: 60px; top: 40px; width: 1320px; height: 830px; border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; border: 1px solid rgba(255,255,255,0.10); box-shadow: 0 30px 80px rgba(0,0,0,0.6);">
+    <div style="height: 52px; display: flex; align-items: center; gap: 16px; padding: 0 16px; background: rgba(36,36,38,0.6); backdrop-filter: blur(30px) saturate(1.3); -webkit-backdrop-filter: blur(30px) saturate(1.3); border-bottom: 1px solid rgba(255,255,255,0.07);">
+      <div style="display: flex; gap: 7px;"><span style="width: 12px; height: 12px; border-radius: 50%; background: #48484a;"></span><span style="width: 12px; height: 12px; border-radius: 50%; background: #48484a;"></span><span style="width: 12px; height: 12px; border-radius: 50%; background: #48484a;"></span></div>
+      <span style="font-family: 'Alte Haas Grotesk', Inter, sans-serif; font-weight: 700; font-size: 18px; margin-left: 8px;">mc</span>
+      <span style="font-size: 14px; font-weight: 600;">marc</span>
+      <div style="flex-grow: 1; display: flex; justify-content: center;"><div style="width: 420px; padding: 8px 16px; border-radius: 999px; background: rgba(255,255,255,0.08); font-size: 13px; color: #8e8e93;">⌕  Search mail or ask marc…</div></div>
+      <span style="font-size: 13px; color: #8e8e93;">✎  ◐  ⋯</span>
+    </div>
+    <div style="flex-grow: 1; display: flex; min-height: 0;">
+      <div style="width: 210px; padding: 16px 12px; display: flex; flex-direction: column; gap: 2px; background: rgba(30,30,32,0.55); backdrop-filter: blur(30px) saturate(1.3); -webkit-backdrop-filter: blur(30px) saturate(1.3); border-right: 1px solid rgba(255,255,255,0.07); font-size: 13px;">
+        <sc-for list="{{nav}}" as="n" hint-placeholder-count="12">
+          <div style="display: flex; justify-content: space-between; padding: {{n.pad}}; border-radius: 8px; background: {{n.bg}}; color: {{n.fg}}; font-size: {{n.size}};"><span>{{n.label}}</span><span style="color: #8e8e93;">{{n.count}}</span></div>
+        </sc-for>
+        <div style="flex-grow: 1;"></div>
+        <div style="padding: 7px 10px; color: #8e8e93;">+ Tune…</div>
+      </div>
+      <div style="width: 400px; background: #0e0e0f; border-right: 1px solid rgba(255,255,255,0.07); display: flex; flex-direction: column;">
+        <div style="padding: 14px 18px 8px; font-size: 11px; letter-spacing: 0.7px; text-transform: uppercase; color: #8e8e93;">needs you · 4</div>
+        <sc-for list="{{mail}}" as="m" hint-placeholder-count="6">
+          <div style="padding: 13px 18px; display: flex; flex-direction: column; gap: 4px; background: {{m.bg}}; border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <div style="display: flex; justify-content: space-between; font-size: 14px;"><span style="font-weight: 600;">{{m.from}}</span><span style="font-size: 12px; color: #8e8e93;">{{m.time}}</span></div>
+            <div style="font-size: 13px; color: #e5e5ea;">{{m.subject}}</div>
+            <div style="font-size: 12px; color: #8e8e93;">{{m.reason}}</div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="flex-grow: 1; background: #000000; padding: 26px 34px; display: flex; flex-direction: column; gap: 16px; overflow: hidden;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+          <div style="display: flex; flex-direction: column; gap: 4px;"><div style="font-size: 20px; font-weight: 600;">Re: Following up on the deck</div><div style="font-size: 13px; color: #8e8e93;">Sarah Lee · Northfield Ventures · to you · 09:12</div></div>
+          <div style="font-size: 12px; padding: 5px 12px; border-radius: 999px; border: 1px solid #3a3a3c; color: #e5e5ea;">needs you · asked a direct question</div>
+        </div>
+        <div style="font-size: 14px; line-height: 1.6; color: #e5e5ea; max-width: 640px;">Hi Liam,<br>Thanks again for Tuesday. Before Thursday’s partner meeting, could you send through churn by cohort for the last six months? A rough cut is fine.<br>Sarah</div>
+        <div style="height: 1px; background: rgba(255,255,255,0.08);"></div>
+        <div style="padding: 18px 20px; border-radius: 18px; background: rgba(40,40,42,0.55); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,0.10); display: flex; flex-direction: column; gap: 12px; max-width: 700px;">
+          <div style="display: flex; justify-content: space-between; font-size: 12px; color: #8e8e93;"><span><b style="font-family: 'Alte Haas Grotesk', Inter, sans-serif; font-size: 15px; color: #f5f5f5;">marc</b>  draft in your voice</span><span>sounds like you · 88</span></div>
+          <div style="font-size: 14px; line-height: 1.6;">Hi Sarah, yes, attaching the cohort view now. Short version: churn is 2.1% and falling, with the March cohort the strongest. Happy to walk through it Thursday.<br>Cheers, Liam</div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap; font-size: 11px;"><span style="padding: 4px 10px; border-radius: 999px; background: #f5f5f5; color: #000;">attached · cohort-churn.pdf · from ge</span><span style="padding: 4px 10px; border-radius: 999px; border: 1px solid #48484a;">● on-device · qwen3.6</span></div>
+          <div style="display: flex; gap: 8px;">
+            <button style="font: inherit; font-size: 13px; padding: 8px 18px; border-radius: 999px; border: none; background: #f5f5f5; color: #000; font-weight: 600;">Approve &amp; send  ⏎</button>
+            <button style="font: inherit; font-size: 13px; padding: 8px 16px; border-radius: 999px; border: 1px solid #3a3a3c; background: transparent; color: #f5f5f5;">Edit</button>
+            <button style="font: inherit; font-size: 13px; padding: 8px 16px; border-radius: 999px; border: 1px solid #3a3a3c; background: transparent; color: #f5f5f5;">Warmer</button>
+            <button style="font: inherit; font-size: 13px; padding: 8px 16px; border-radius: 999px; border: 1px solid #3a3a3c; background: transparent; color: #f5f5f5;">Reject</button>
+          </div>
+        </div>
+        <div style="flex-grow: 1;"></div>
+        <div style="display: flex; gap: 24px; font-size: 12px; color: #8e8e93; padding: 12px 16px; border-radius: 14px; background: #0e0e0f;"><span><b style="color: #f5f5f5;">Sarah Lee</b> · partner</span><span>last contact 2d</span><span>prefers short emails</span><span>decision 21 Oct: raise at [CAP]</span></div>
+      </div>
+    </div>
+    <div style="height: 30px; display: flex; align-items: center; gap: 18px; padding: 0 16px; font-size: 12px; color: #8e8e93; background: rgba(36,36,38,0.7); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); border-top: 1px solid rgba(255,255,255,0.07);"><span>j/k move</span><span>e done</span><span>r reply</span><span>a approve draft</span><span>s snooze</span><span style="flex-grow: 1;"></span><span>remote images blocked · ● on-device</span></div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const nav = [
+      { label: 'Needs you', count: '4', on: true }, { label: 'FYI', count: '12' }, { label: 'Later', count: '31' }, { label: 'Noise', count: '16' },
+      { label: 'Tracking', head: true }, { label: 'Waiting on', count: '3' }, { label: 'Follow-ups', count: '2' },
+      { label: 'Channels', head: true }, { label: 'Messages', count: '5' }, { label: 'People' },
+      { label: 'Saved views', head: true }, { label: 'Investors', count: '7' }
+    ];
+    return {
+      nav: nav.map((n) => ({
+        label: n.label, count: n.count || '',
+        bg: n.on ? 'rgba(255,255,255,0.12)' : 'transparent',
+        fg: n.head ? '#8e8e93' : '#f5f5f5',
+        size: n.head ? '11px' : '13px',
+        pad: n.head ? '14px 10px 4px' : '6px 10px'
+      })),
+      mail: [
+        { from: 'Sarah Lee', time: '09:12', subject: 'Re: Following up on the deck', reason: 'asked you a direct question · draft ready', bg: 'rgba(255,255,255,0.08)' },
+        { from: 'Tom Reid', time: '08:47', subject: 'Contract redlines v2', reason: 'needs your sign-off · draft ready', bg: 'transparent' },
+        { from: 'Priya Shah', time: 'Mon', subject: 'Pilot for 20 seats?', reason: 'possible lead → conner · no reply in 6 days', bg: 'transparent' },
+        { from: 'Ben (accountant)', time: 'Mon', subject: 'Q1 BAS documents', reason: 'deadline 28 Nov → leo · george prepared', bg: 'transparent' },
+        { from: 'Bank of Melbourne', time: '08:30', subject: 'Statement ready', reason: 'handled · sent to george', bg: 'transparent' },
+        { from: 'The Hustle', time: '07:02', subject: 'Morning newsletter', reason: 'in your 6pm digest', bg: 'transparent' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

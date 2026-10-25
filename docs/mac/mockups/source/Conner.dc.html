@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>conner pipeline</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+@font-face{font-family:"Alte Haas Grotesk";src:url("/_blob/308e43393c945b4291129730b495b94b") format("truetype");font-weight:700;font-style:normal}
+@font-face{font-family:"Alte Haas Grotesk";src:url("/_blob/8ec106ac037f64a14618d5994adecde9") format("truetype");font-weight:400;font-style:normal}
+body{margin:0}
+a{color:#0a0a0a}a:hover{color:#3a3a3c}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; position: relative; overflow: hidden; background: #d8d8da; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', Inter, system-ui, sans-serif; color: #0a0a0a;">
+  <div aria-hidden="true" style="position: absolute; left: -100px; top: -300px; width: 1100px; height: 1100px; border-radius: 50%; background: radial-gradient(closest-side, rgba(255,255,255,0.95), rgba(255,255,255,0));"></div>
+  <div aria-hidden="true" style="position: absolute; right: -200px; bottom: -400px; width: 900px; height: 900px; border-radius: 50%; background: radial-gradient(closest-side, rgba(100,100,104,0.5), rgba(100,100,104,0));"></div>
+
+  <div style="position: absolute; left: 60px; top: 40px; width: 1320px; height: 830px; border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; border: 1px solid rgba(0,0,0,0.10); box-shadow: 0 30px 80px rgba(0,0,0,0.22);">
+    <div style="height: 52px; display: flex; align-items: center; gap: 16px; padding: 0 16px; background: rgba(248,248,249,0.7); backdrop-filter: blur(30px) saturate(1.4); -webkit-backdrop-filter: blur(30px) saturate(1.4); border-bottom: 1px solid rgba(0,0,0,0.06);">
+      <div style="display: flex; gap: 7px;"><span style="width: 12px; height: 12px; border-radius: 50%; background: #c7c7cc;"></span><span style="width: 12px; height: 12px; border-radius: 50%; background: #c7c7cc;"></span><span style="width: 12px; height: 12px; border-radius: 50%; background: #c7c7cc;"></span></div>
+      <span style="font-family: 'Alte Haas Grotesk', Inter, sans-serif; font-weight: 700; font-size: 18px; margin-left: 8px;">cr</span>
+      <span style="font-size: 14px; font-weight: 600;">conner · pipeline</span>
+      <div style="flex-grow: 1; display: flex; justify-content: center;"><div style="width: 420px; padding: 8px 16px; border-radius: 999px; background: rgba(0,0,0,0.05); font-size: 13px; color: #6e6e73;">⌕  Ask conner, e.g. “red-team the enterprise plan”</div></div>
+      <span style="font-size: 13px; color: #6e6e73;">Board ⌄  ◐  ⋯</span>
+    </div>
+    <div style="flex-grow: 1; display: flex; min-height: 0;">
+      <div style="width: 200px; padding: 16px 12px; display: flex; flex-direction: column; gap: 2px; background: rgba(244,244,246,0.62); backdrop-filter: blur(30px) saturate(1.4); -webkit-backdrop-filter: blur(30px) saturate(1.4); border-right: 1px solid rgba(0,0,0,0.06); font-size: 13px;">
+        <div style="padding: 6px 10px; border-radius: 8px; background: rgba(0,0,0,0.08);">Pipeline</div>
+        <div style="padding: 6px 10px;">People</div>
+        <div style="padding: 6px 10px;">Strategy</div>
+        <div style="padding: 6px 10px;">Decks</div>
+        <div style="padding: 6px 10px;">Proposals</div>
+        <div style="padding: 6px 10px;">Experiments</div>
+        <div style="padding: 6px 10px;">Weekly digest</div>
+        <div style="flex-grow: 1;"></div>
+        <div style="padding: 7px 10px; color: #6e6e73;">+ Tune…</div>
+      </div>
+      <div style="flex-grow: 1; background: #ffffff; padding: 24px 26px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; overflow: hidden; align-content: start;">
+        <sc-for list="{{cols}}" as="col" hint-placeholder-count="4">
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: flex; justify-content: space-between; font-size: 12px; color: #6e6e73; padding: 0 4px;"><span style="font-weight: 600; color: #0a0a0a;">{{col.name}}</span><span>{{col.total}}</span></div>
+            <sc-for list="{{col.cards}}" as="c" hint-placeholder-count="2">
+              <div style="padding: 14px; border-radius: 14px; border: 1px solid rgba(0,0,0,0.09); background: #fafafa; display: flex; flex-direction: column; gap: 6px; font-size: 13px;">
+                <div style="display: flex; justify-content: space-between;"><span style="font-weight: 600;">{{c.org}}</span><span style="font-variant-numeric: tabular-nums;">{{c.value}}</span></div>
+                <div style="color: #3a3a3c;">{{c.title}}</div>
+                <div style="font-size: 12px; color: #6e6e73;">{{c.next}}</div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-for>
+      </div>
+      <div style="width: 300px; padding: 20px 18px; display: flex; flex-direction: column; gap: 12px; background: rgba(244,244,246,0.62); backdrop-filter: blur(30px) saturate(1.4); -webkit-backdrop-filter: blur(30px) saturate(1.4); border-left: 1px solid rgba(0,0,0,0.06); font-size: 13px; line-height: 1.5;">
+        <div style="font-family: 'Alte Haas Grotesk', Inter, sans-serif; font-weight: 700; font-size: 20px;">conner</div>
+        <div style="display: flex; justify-content: space-between;"><span style="color: #6e6e73;">Pipeline</span><span style="font-weight: 600;">[TOTAL]</span></div>
+        <div style="display: flex; justify-content: space-between;"><span style="color: #6e6e73;">Weighted</span><span style="font-weight: 600;">[WEIGHTED]</span></div>
+        <div style="padding: 12px 14px; border-radius: 14px; background: #ffffff; border: 1px solid rgba(0,0,0,0.06); display: flex; flex-direction: column; gap: 6px;">
+          <div style="font-weight: 600;">New lead from email</div>
+          <div style="color: #3a3a3c;">Priya Shah asked about a 20-seat pilot (via marc). Add as a lead?</div>
+          <div style="display: flex; gap: 6px;"><button style="font: inherit; font-size: 12px; padding: 5px 12px; border-radius: 999px; border: none; background: #0a0a0a; color: #fff;">Add lead</button><button style="font: inherit; font-size: 12px; padding: 5px 12px; border-radius: 999px; border: 1px solid rgba(0,0,0,0.15); background: transparent;">Not a lead</button></div>
+        </div>
+        <div style="padding: 12px 14px; border-radius: 14px; background: #ffffff; border: 1px solid rgba(0,0,0,0.06); display: flex; flex-direction: column; gap: 6px;">
+          <div style="font-weight: 600;">Nudge · Northwind</div>
+          <div style="color: #3a3a3c;">Proposal sent 6 days ago, no reply. Marc has a short follow-up ready.</div>
+          <button style="font: inherit; font-size: 12px; padding: 5px 12px; border-radius: 999px; border: none; background: #0a0a0a; color: #fff; align-self: flex-start;">Review draft</button>
+        </div>
+        <div style="padding: 12px 14px; border-radius: 14px; border: 1px dashed rgba(0,0,0,0.25); color: #3a3a3c;">Red-team: your Q4 plan depends on a 4% trial conversion you haven’t measured yet.</div>
+        <div style="flex-grow: 1;"></div>
+        <div style="padding: 10px 14px; border-radius: 999px; background: rgba(0,0,0,0.05); color: #6e6e73;">Ask conner…</div>
+      </div>
+    </div>
+    <div style="height: 30px; display: flex; align-items: center; gap: 18px; padding: 0 16px; font-size: 12px; color: #6e6e73; background: rgba(248,248,249,0.75); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); border-top: 1px solid rgba(0,0,0,0.06);"><span>⌘N new deal</span><span>←/→ move stage</span><span>⌘⇧T red-team</span><span style="flex-grow: 1;"></span><span>activity auto-logged from marc + leo · ● on-device</span></div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      cols: [
+        { name: 'Lead', total: '5', cards: [
+          { org: 'Brightly', value: '[VALUE]', title: '20-seat pilot', next: 'from ✉ · reply drafted' },
+          { org: 'Kite Co', value: '[VALUE]', title: 'Founder plan', next: 'intro via Tom Reid' }
+        ] },
+        { name: 'Talking', total: '3', cards: [
+          { org: 'Acme', value: '[VALUE]', title: 'Team rollout', next: 'meeting Thu · prep by leo' },
+          { org: 'Fernwood', value: '[VALUE]', title: 'Annual plan', next: 'asked for security doc' }
+        ] },
+        { name: 'Proposal', total: '2', cards: [
+          { org: 'Northwind', value: '[VALUE]', title: 'Pilot → annual', next: 'sent 6 days ago · nudge?' }
+        ] },
+        { name: 'Won', total: '4', cards: [
+          { org: 'Harbour & Co', value: '[VALUE]', title: 'Annual', next: 'invoice → george' }
+        ] }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

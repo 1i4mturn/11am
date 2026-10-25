@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>george dashboard</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+@font-face{font-family:"Alte Haas Grotesk";src:url("/_blob/308e43393c945b4291129730b495b94b") format("truetype");font-weight:700;font-style:normal}
+@font-face{font-family:"Alte Haas Grotesk";src:url("/_blob/8ec106ac037f64a14618d5994adecde9") format("truetype");font-weight:400;font-style:normal}
+body{margin:0}
+a{color:#f5f5f5}a:hover{color:#ffffff}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; position: relative; overflow: hidden; background: #0b0b0c; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', Inter, system-ui, sans-serif; color: #f5f5f5;">
+  <div aria-hidden="true" style="position: absolute; left: -200px; top: 300px; width: 900px; height: 900px; border-radius: 50%; background: radial-gradient(closest-side, rgba(255,255,255,0.14), rgba(255,255,255,0));"></div>
+  <div aria-hidden="true" style="position: absolute; right: -200px; top: -300px; width: 900px; height: 900px; border-radius: 50%; background: radial-gradient(closest-side, rgba(255,255,255,0.12), rgba(255,255,255,0));"></div>
+
+  <div style="position: absolute; left: 60px; top: 40px; width: 1320px; height: 830px; border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; border: 1px solid rgba(255,255,255,0.10); box-shadow: 0 30px 80px rgba(0,0,0,0.6);">
+    <div style="height: 52px; display: flex; align-items: center; gap: 16px; padding: 0 16px; background: rgba(36,36,38,0.6); backdrop-filter: blur(30px) saturate(1.3); -webkit-backdrop-filter: blur(30px) saturate(1.3); border-bottom: 1px solid rgba(255,255,255,0.07);">
+      <div style="display: flex; gap: 7px;"><span style="width: 12px; height: 12px; border-radius: 50%; background: #48484a;"></span><span style="width: 12px; height: 12px; border-radius: 50%; background: #48484a;"></span><span style="width: 12px; height: 12px; border-radius: 50%; background: #48484a;"></span></div>
+      <span style="font-family: 'Alte Haas Grotesk', Inter, sans-serif; font-weight: 700; font-size: 18px; margin-left: 8px;">ge</span>
+      <span style="font-size: 14px; font-weight: 600;">george · october 2026</span>
+      <div style="flex-grow: 1; display: flex; justify-content: center;"><div style="width: 420px; padding: 8px 16px; border-radius: 999px; background: rgba(255,255,255,0.08); font-size: 13px; color: #8e8e93;">⌕  Ask george, e.g. “what if I hire two in March?”</div></div>
+      <span style="font-size: 13px; color: #8e8e93;">◐  ⋯</span>
+    </div>
+    <div style="flex-grow: 1; display: flex; min-height: 0;">
+      <div style="width: 200px; padding: 16px 12px; display: flex; flex-direction: column; gap: 2px; background: rgba(30,30,32,0.55); backdrop-filter: blur(30px) saturate(1.3); -webkit-backdrop-filter: blur(30px) saturate(1.3); border-right: 1px solid rgba(255,255,255,0.07); font-size: 13px;">
+        <div style="padding: 6px 10px; border-radius: 8px; background: rgba(255,255,255,0.12);">Dashboard</div>
+        <div style="padding: 6px 10px;">Sheets</div>
+        <div style="padding: 6px 10px;">Transactions</div>
+        <div style="padding: 6px 10px; display: flex; justify-content: space-between;"><span>Receipts</span><span style="color: #8e8e93;">3</span></div>
+        <div style="padding: 6px 10px;">Forecast</div>
+        <div style="padding: 6px 10px;">Models</div>
+        <div style="padding: 6px 10px;">Calculators</div>
+        <div style="padding: 6px 10px;">Integrations</div>
+        <div style="flex-grow: 1;"></div>
+        <div style="padding: 7px 10px; color: #8e8e93;">+ Tune…</div>
+      </div>
+      <div style="flex-grow: 1; background: #000000; padding: 28px 34px; display: flex; flex-direction: column; gap: 22px; overflow: hidden;">
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px;">
+          <sc-for list="{{tiles}}" as="t" hint-placeholder-count="3">
+            <div style="padding: 18px 20px; border-radius: 18px; background: #0e0e0f; border: 1px solid rgba(255,255,255,0.07); display: flex; flex-direction: column; gap: 6px;">
+              <span style="font-size: 12px; color: #8e8e93;">{{t.label}}</span>
+              <span style="font-family: 'Alte Haas Grotesk', Inter, sans-serif; font-weight: 700; font-size: 40px; letter-spacing: -1px; line-height: 1;">{{t.value}}</span>
+              <span style="font-size: 12px; color: #c7c7cc;">{{t.delta}}</span>
+            </div>
+          </sc-for>
+        </div>
+        <figure style="margin: 0; padding: 18px 20px; border-radius: 18px; background: #0e0e0f; border: 1px solid rgba(255,255,255,0.07); display: flex; flex-direction: column; gap: 10px;">
+          <figcaption style="display: flex; justify-content: space-between; font-size: 13px;"><span style="font-weight: 600;">Cash, next 12 months</span><span style="color: #8e8e93;">solid: base · dashed: hire two engineers in March</span></figcaption>
+          <svg role="img" aria-label="Cash forecast: base case declines gently to about 14 months of runway; hiring scenario declines faster, reaching about 9 months." viewBox="0 0 760 240" style="width: 100%; height: 240px;">
+            <line x1="40" y1="20" x2="40" y2="210" stroke="#2c2c2e"/>
+            <line x1="40" y1="210" x2="750" y2="210" stroke="#2c2c2e"/>
+            <line x1="40" y1="70" x2="750" y2="70" stroke="#1c1c1e"/>
+            <line x1="40" y1="140" x2="750" y2="140" stroke="#1c1c1e"/>
+            <polyline points="40,40 100,46 160,52 220,57 280,63 340,69 400,75 460,80 520,86 580,92 640,97 700,103 750,108" fill="none" stroke="#f5f5f5" stroke-width="2.5"/>
+            <polyline points="280,63 340,75 400,92 460,108 520,125 580,142 640,158 700,175 750,190" fill="none" stroke="#f5f5f5" stroke-width="2" stroke-dasharray="6 6"/>
+            <circle cx="40" cy="40" r="4" fill="#f5f5f5"/>
+            <text x="48" y="34" fill="#c7c7cc" font-size="12" font-family="Inter, sans-serif">today [CASH]</text>
+            <text x="640" y="96" fill="#c7c7cc" font-size="12" font-family="Inter, sans-serif">base · 14.2 mo</text>
+            <text x="610" y="200" fill="#c7c7cc" font-size="12" font-family="Inter, sans-serif">hire 2 · 9.1 mo</text>
+            <text x="40" y="232" fill="#8e8e93" font-size="11" font-family="Inter, sans-serif">Nov</text>
+            <text x="390" y="232" fill="#8e8e93" font-size="11" font-family="Inter, sans-serif">May</text>
+            <text x="722" y="232" fill="#8e8e93" font-size="11" font-family="Inter, sans-serif">Oct</text>
+          </svg>
+        </figure>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; font-size: 13px;">
+          <div style="padding: 14px 18px; border-radius: 16px; background: #0e0e0f; border: 1px solid rgba(255,255,255,0.07); display: flex; flex-direction: column; gap: 8px;">
+            <div style="font-weight: 600;">Upcoming</div>
+            <div style="display: flex; justify-content: space-between; color: #e5e5ea;"><span>BAS due · worksheet ready</span><span style="font-variant-numeric: tabular-nums;">28 Nov</span></div>
+            <div style="display: flex; justify-content: space-between; color: #e5e5ea;"><span>Cloud hosting</span><span style="font-variant-numeric: tabular-nums;">3 Nov</span></div>
+            <div style="display: flex; justify-content: space-between; color: #e5e5ea;"><span>Invoice #1042 overdue · chaser drafted (mc)</span><span style="font-variant-numeric: tabular-nums;">6 days</span></div>
+          </div>
+          <div style="padding: 14px 18px; border-radius: 16px; background: #0e0e0f; border: 1px solid rgba(255,255,255,0.07); display: flex; flex-direction: column; gap: 8px;">
+            <div style="font-weight: 600;">Where it went</div>
+            <sc-for list="{{costs}}" as="c" hint-placeholder-count="3">
+              <div style="display: flex; align-items: center; gap: 10px; color: #e5e5ea;"><span style="width: 90px;">{{c.label}}</span><span style="flex-grow: 1; height: 8px; border-radius: 4px; background: #1c1c1e; position: relative; overflow: hidden;"><span style="position: absolute; left: 0; top: 0; bottom: 0; width: {{c.w}}; background: #f5f5f5;"></span></span><span style="width: 36px; text-align: right; font-variant-numeric: tabular-nums;">{{c.pct}}</span></div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+      <div style="width: 300px; padding: 20px 18px; display: flex; flex-direction: column; gap: 12px; background: rgba(30,30,32,0.55); backdrop-filter: blur(30px) saturate(1.3); -webkit-backdrop-filter: blur(30px) saturate(1.3); border-left: 1px solid rgba(255,255,255,0.07); font-size: 13px; line-height: 1.5;">
+        <div style="font-family: 'Alte Haas Grotesk', Inter, sans-serif; font-weight: 700; font-size: 20px;">george</div>
+        <div style="color: #e5e5ea;">October so far: revenue up 6%, mostly two new annual plans. Software costs up [AMOUNT] from three new tools. Burn is steady.</div>
+        <div style="font-size: 12px; color: #8e8e93;">how was this calculated? ▸</div>
+        <div style="padding: 12px 14px; border-radius: 14px; border: 1px solid #3a3a3c; display: flex; flex-direction: column; gap: 6px;">
+          <div style="font-weight: 600;">3 receipts unmatched</div>
+          <div style="color: #c7c7cc;">Dropped in the notch this week. Two have likely matches.</div>
+          <button style="font: inherit; font-size: 12px; padding: 5px 12px; border-radius: 999px; border: none; background: #f5f5f5; color: #000; align-self: flex-start;">Review matches</button>
+        </div>
+        <div style="padding: 12px 14px; border-radius: 14px; border: 1px solid #3a3a3c; color: #c7c7cc;">You pay for 3 note-taking apps. Bolton covers this. Cancel 2?</div>
+        <div style="flex-grow: 1;"></div>
+        <div style="font-size: 11px; color: #8e8e93;">General information, not tax or financial advice.</div>
+        <div style="padding: 10px 14px; border-radius: 999px; background: rgba(255,255,255,0.08); color: #8e8e93;">Ask george…</div>
+      </div>
+    </div>
+    <div style="height: 30px; display: flex; align-items: center; gap: 18px; padding: 0 16px; font-size: 12px; color: #8e8e93; background: rgba(36,36,38,0.7); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); border-top: 1px solid rgba(255,255,255,0.07);"><span>Xero ✓ synced 6m ago</span><span>Stripe ✓</span><span style="flex-grow: 1;"></span><span>● on-device · finance never leaves this Mac</span></div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      tiles: [
+        { label: 'Cash', value: '[CASH]', delta: 'from Xero + 2 bank feeds' },
+        { label: 'Burn / month', value: '[BURN]', delta: '3-month average · steady' },
+        { label: 'Runway', value: '14.2 mo', delta: 'down 0.3 vs last month' }
+      ],
+      costs: [
+        { label: 'Payroll', w: '61%', pct: '61%' },
+        { label: 'Software', w: '14%', pct: '14%' },
+        { label: 'Contractors', w: '11%', pct: '11%' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

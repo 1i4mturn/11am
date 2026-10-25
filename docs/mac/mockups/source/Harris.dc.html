@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>harris today</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+@font-face{font-family:"Alte Haas Grotesk";src:url("/_blob/308e43393c945b4291129730b495b94b") format("truetype");font-weight:700;font-style:normal}
+@font-face{font-family:"Alte Haas Grotesk";src:url("/_blob/8ec106ac037f64a14618d5994adecde9") format("truetype");font-weight:400;font-style:normal}
+body{margin:0}
+a{color:#0a0a0a}a:hover{color:#3a3a3c}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; position: relative; overflow: hidden; background: #dadadc; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', Inter, system-ui, sans-serif; color: #0a0a0a;">
+  <div aria-hidden="true" style="position: absolute; left: -200px; top: -300px; width: 1000px; height: 1000px; border-radius: 50%; background: radial-gradient(closest-side, rgba(255,255,255,0.95), rgba(255,255,255,0));"></div>
+  <div aria-hidden="true" style="position: absolute; right: -260px; bottom: -360px; width: 900px; height: 900px; border-radius: 50%; background: radial-gradient(closest-side, rgba(100,100,104,0.45), rgba(100,100,104,0));"></div>
+
+  <div style="position: absolute; left: 60px; top: 40px; width: 1320px; height: 830px; border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; border: 1px solid rgba(0,0,0,0.10); box-shadow: 0 30px 80px rgba(0,0,0,0.22);">
+    <div style="height: 52px; display: flex; align-items: center; gap: 16px; padding: 0 16px; background: rgba(248,248,249,0.7); backdrop-filter: blur(30px) saturate(1.4); -webkit-backdrop-filter: blur(30px) saturate(1.4); border-bottom: 1px solid rgba(0,0,0,0.06);">
+      <div style="display: flex; gap: 7px;"><span style="width: 12px; height: 12px; border-radius: 50%; background: #c7c7cc;"></span><span style="width: 12px; height: 12px; border-radius: 50%; background: #c7c7cc;"></span><span style="width: 12px; height: 12px; border-radius: 50%; background: #c7c7cc;"></span></div>
+      <span style="font-family: 'Alte Haas Grotesk', Inter, sans-serif; font-weight: 700; font-size: 18px; margin-left: 8px;">hr</span>
+      <span style="font-size: 14px; font-weight: 600;">harris · today</span>
+      <div style="flex-grow: 1; display: flex; justify-content: center;"><div style="width: 420px; padding: 8px 16px; border-radius: 999px; background: rgba(0,0,0,0.05); font-size: 13px; color: #6e6e73;">⌕  What do you want to understand better?</div></div>
+      <span style="font-size: 13px; color: #6e6e73;">◐  ⋯</span>
+    </div>
+    <div style="flex-grow: 1; display: flex; min-height: 0;">
+      <div style="width: 200px; padding: 16px 12px; display: flex; flex-direction: column; gap: 2px; background: rgba(244,244,246,0.62); backdrop-filter: blur(30px) saturate(1.4); -webkit-backdrop-filter: blur(30px) saturate(1.4); border-right: 1px solid rgba(0,0,0,0.06); font-size: 13px;">
+        <div style="padding: 6px 10px; border-radius: 8px; background: rgba(0,0,0,0.08);">Today</div>
+        <div style="padding: 14px 10px 4px; font-size: 11px; color: #6e6e73;">Paths</div>
+        <div style="padding: 6px 10px;">SaaS metrics</div>
+        <div style="padding: 6px 10px;">French · B1</div>
+        <div style="padding: 14px 10px 4px; font-size: 11px; color: #6e6e73;">Practice</div>
+        <div style="padding: 6px 10px; display: flex; justify-content: space-between;"><span>Cards</span><span style="color: #6e6e73;">8</span></div>
+        <div style="padding: 6px 10px;">Library</div>
+        <div style="padding: 6px 10px;">Languages</div>
+        <div style="padding: 6px 10px;">Progress</div>
+        <div style="flex-grow: 1;"></div>
+        <div style="padding: 7px 10px; color: #6e6e73;">+ Tune…</div>
+      </div>
+      <div style="flex-grow: 1; background: #ffffff; padding: 36px 48px; display: flex; flex-direction: column; gap: 18px; overflow: hidden;">
+        <div style="font-family: 'Alte Haas Grotesk', Inter, sans-serif; font-weight: 700; font-size: 44px; letter-spacing: -1px;">10 minutes today</div>
+        <div style="padding: 22px 24px; border-radius: 20px; border: 1px solid rgba(0,0,0,0.08); display: flex; flex-direction: column; gap: 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; gap: 6px; align-items: center;">
+              <sc-for list="{{steps}}" as="s" hint-placeholder-count="5">
+                <span style="width: 12px; height: 12px; border-radius: 50%; background: {{s.bg}}; border: 1.5px solid #0a0a0a; box-sizing: border-box;"></span>
+              </sc-for>
+              <span style="font-size: 13px; color: #6e6e73; margin-left: 8px;">SaaS metrics · session 4 of 5 · board meeting Friday</span>
+            </div>
+            <span style="font-size: 13px; color: #6e6e73;">6 min</span>
+          </div>
+          <div style="font-size: 22px; font-weight: 600;">Net revenue retention, using your numbers</div>
+          <div style="font-size: 14px; line-height: 1.55; color: #3a3a3c; max-width: 640px;">Examples come from George’s figures (local only). The definitions come from three sources James checked.</div>
+          <button style="font: inherit; align-self: flex-start; font-size: 14px; font-weight: 600; padding: 10px 20px; border-radius: 999px; border: none; background: #0a0a0a; color: #ffffff;">Start</button>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px;">
+          <div style="padding: 20px 22px; border-radius: 20px; background: #0a0a0a; color: #f5f5f5; display: flex; flex-direction: column; gap: 10px; min-height: 180px;">
+            <div style="display: flex; justify-content: space-between; font-size: 12px; color: #aeaeb2;"><span>card 3 of 8</span><span>from your note · 3 Sep</span></div>
+            <div style="font-family: 'Alte Haas Grotesk', Inter, sans-serif; font-weight: 700; font-size: 34px; letter-spacing: -0.5px; flex-grow: 1; display: flex; align-items: center;">NRR</div>
+            <div style="display: flex; gap: 6px;">
+              <button style="font: inherit; font-size: 12px; padding: 6px 12px; border-radius: 999px; border: 1px solid #48484a; background: transparent; color: #f5f5f5;">1 again</button>
+              <button style="font: inherit; font-size: 12px; padding: 6px 12px; border-radius: 999px; border: 1px solid #48484a; background: transparent; color: #f5f5f5;">2 hard</button>
+              <button style="font: inherit; font-size: 12px; padding: 6px 12px; border-radius: 999px; border: none; background: #f5f5f5; color: #000;">3 good</button>
+              <button style="font: inherit; font-size: 12px; padding: 6px 12px; border-radius: 999px; border: 1px solid #48484a; background: transparent; color: #f5f5f5;">4 easy</button>
+            </div>
+          </div>
+          <div style="padding: 20px 22px; border-radius: 20px; border: 1px solid rgba(0,0,0,0.08); display: flex; flex-direction: column; gap: 10px; min-height: 180px;">
+            <div style="display: flex; justify-content: space-between; font-size: 12px; color: #6e6e73;"><span>French · speaking drill</span><span>3 min</span></div>
+            <div style="font-size: 20px; font-weight: 600; flex-grow: 1;">« On se voit jeudi à dix heures ? »</div>
+            <div style="display: flex; gap: 10px; align-items: center; font-size: 13px; color: #3a3a3c;"><span style="width: 36px; height: 36px; border-radius: 50%; background: #0a0a0a; color: #fff; display: flex; align-items: center; justify-content: center;">●</span><span>Hold to speak · last try: “jeudi” sounded like “jeudis”</span></div>
+          </div>
+        </div>
+      </div>
+      <div style="width: 300px; padding: 20px 18px; display: flex; flex-direction: column; gap: 12px; background: rgba(244,244,246,0.62); backdrop-filter: blur(30px) saturate(1.4); -webkit-backdrop-filter: blur(30px) saturate(1.4); border-left: 1px solid rgba(0,0,0,0.06); font-size: 13px; line-height: 1.5;">
+        <div style="font-family: 'Alte Haas Grotesk', Inter, sans-serif; font-weight: 700; font-size: 20px;">harris</div>
+        <div style="color: #3a3a3c;">Board meeting Friday: you’re on track. One session left after today.</div>
+        <div style="padding: 12px 14px; border-radius: 14px; background: #ffffff; border: 1px solid rgba(0,0,0,0.06); display: flex; flex-direction: column; gap: 6px;">
+          <div style="font-weight: 600;">New cards from 2 notes</div>
+          <div style="color: #3a3a3c;">“Payback period” and “Cohort churn” from bolton highlights.</div>
+          <div style="display: flex; gap: 6px;"><button style="font: inherit; font-size: 12px; padding: 5px 12px; border-radius: 999px; border: none; background: #0a0a0a; color: #fff;">Add</button><button style="font: inherit; font-size: 12px; padding: 5px 12px; border-radius: 999px; border: 1px solid rgba(0,0,0,0.15); background: transparent;">Skip</button></div>
+        </div>
+        <div style="color: #6e6e73; font-size: 12px;">This week: 46 minutes · 31 cards · no streaks, no guilt</div>
+        <div style="flex-grow: 1;"></div>
+        <div style="padding: 10px 14px; border-radius: 999px; background: rgba(0,0,0,0.05); color: #6e6e73;">Explain anything…</div>
+      </div>
+    </div>
+    <div style="height: 30px; display: flex; align-items: center; gap: 18px; padding: 0 16px; font-size: 12px; color: #6e6e73; background: rgba(248,248,249,0.75); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); border-top: 1px solid rgba(0,0,0,0.06);"><span>space flip</span><span>1–4 grade</span><span>⌘J explain</span><span style="flex-grow: 1;"></span><span>scheduling: FSRS · ● on-device</span></div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      steps: [1, 2, 3, 4, 5].map((n) => ({ bg: n <= 3 ? '#0a0a0a' : 'transparent' }))
+    };
+  }
+}
+</script>
+</body>
+</html>

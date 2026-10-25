@@ -1,0 +1,36 @@
+{
+  "v": 3,
+  "createdOnFiles": { "v": 1, "at": "2026-10-25T12:00:00Z" },
+  "title": "11am Mac Suite Mockups",
+  "launch": { "view": "canvas" },
+  "pages": [],
+  "boards": {
+    "Main.dc.html": { "x": 0, "y": 0, "w": 1440, "h": 900, "title": "The notch: all states (interactive)", "is_interactive": true },
+    "Identity.dc.html": { "x": 1520, "y": 0, "w": 1440, "h": 900, "title": "Identity: monograms, patterns, type, components" },
+    "iPhone.dc.html": { "x": 3040, "y": 0, "w": 1440, "h": 900, "title": "iPhone: island, Today, Approvals" },
+    "Leo.dc.html": { "x": 0, "y": 1300, "w": 1440, "h": 900, "title": "leo: Today (light)" },
+    "Bolton.dc.html": { "x": 1520, "y": 1300, "w": 1440, "h": 900, "title": "bolton: search (light)" },
+    "Marc.dc.html": { "x": 3040, "y": 1300, "w": 1440, "h": 900, "title": "marc: inbox (dark)" },
+    "William.dc.html": { "x": 4560, "y": 1300, "w": 1440, "h": 900, "title": "william: editor (light)" },
+    "James.dc.html": { "x": 0, "y": 2600, "w": 1440, "h": 900, "title": "james: research report (dark)" },
+    "Johnny.dc.html": { "x": 1520, "y": 2600, "w": 1440, "h": 900, "title": "johnny: Tune + terminal (dark)" },
+    "George.dc.html": { "x": 3040, "y": 2600, "w": 1440, "h": 900, "title": "george: dashboard (dark)" },
+    "Conner.dc.html": { "x": 4560, "y": 2600, "w": 1440, "h": 900, "title": "conner: pipeline (light)" },
+    "Robert.dc.html": { "x": 0, "y": 3900, "w": 1440, "h": 900, "title": "robert: canvas + brand kit (light)" },
+    "Cole.dc.html": { "x": 1520, "y": 3900, "w": 1440, "h": 900, "title": "cole: transcript editor (dark)" },
+    "Harris.dc.html": { "x": 3040, "y": 3900, "w": 1440, "h": 900, "title": "harris: today (light)" }
+  },
+  "order": [
+    "Main.dc.html", "Identity.dc.html", "iPhone.dc.html",
+    "Leo.dc.html", "Bolton.dc.html", "Marc.dc.html", "William.dc.html",
+    "James.dc.html", "Johnny.dc.html", "George.dc.html", "Conner.dc.html",
+    "Robert.dc.html", "Cole.dc.html", "Harris.dc.html"
+  ],
+  "notes": {
+    "t_system": { "x": 0, "y": -300, "text": "The notch, the identity, the iPhone", "kind": "title1", "maxW": 4480 },
+    "t_core": { "x": 0, "y": 1000, "text": "Core and communication: leo · bolton · marc · william", "kind": "title1", "maxW": 6000 },
+    "t_work": { "x": 0, "y": 2300, "text": "Research, build, money, business: james · johnny · george · conner", "kind": "title1", "maxW": 6000 },
+    "t_create": { "x": 0, "y": 3600, "text": "Create and grow: robert · cole · harris", "kind": "title1", "maxW": 4480 }
+  },
+  "designSystems": []
+}

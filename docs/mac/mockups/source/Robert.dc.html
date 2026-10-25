@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>robert canvas</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+@font-face{font-family:"Alte Haas Grotesk";src:url("/_blob/308e43393c945b4291129730b495b94b") format("truetype");font-weight:700;font-style:normal}
+@font-face{font-family:"Alte Haas Grotesk";src:url("/_blob/8ec106ac037f64a14618d5994adecde9") format("truetype");font-weight:400;font-style:normal}
+body{margin:0}
+a{color:#0a0a0a}a:hover{color:#3a3a3c}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; position: relative; overflow: hidden; background: #d7d7d9; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', Inter, system-ui, sans-serif; color: #0a0a0a;">
+  <div aria-hidden="true" style="position: absolute; right: -200px; top: -260px; width: 1000px; height: 1000px; border-radius: 50%; background: radial-gradient(closest-side, rgba(255,255,255,0.95), rgba(255,255,255,0));"></div>
+
+  <div style="position: absolute; left: 60px; top: 40px; width: 1320px; height: 830px; border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; border: 1px solid rgba(0,0,0,0.10); box-shadow: 0 30px 80px rgba(0,0,0,0.22);">
+    <div style="height: 52px; display: flex; align-items: center; gap: 16px; padding: 0 16px; background: rgba(248,248,249,0.7); backdrop-filter: blur(30px) saturate(1.4); -webkit-backdrop-filter: blur(30px) saturate(1.4); border-bottom: 1px solid rgba(0,0,0,0.06);">
+      <div style="display: flex; gap: 7px;"><span style="width: 12px; height: 12px; border-radius: 50%; background: #c7c7cc;"></span><span style="width: 12px; height: 12px; border-radius: 50%; background: #c7c7cc;"></span><span style="width: 12px; height: 12px; border-radius: 50%; background: #c7c7cc;"></span></div>
+      <span style="font-family: 'Alte Haas Grotesk', Inter, sans-serif; font-weight: 700; font-size: 18px; margin-left: 8px;">rt</span>
+      <span style="font-size: 14px; font-weight: 600;">Enterprise launch</span><span style="font-size: 13px; color: #6e6e73;">· LinkedIn 1200×627</span>
+      <span style="flex-grow: 1;"></span>
+      <span style="font-size: 12px; padding: 5px 12px; border-radius: 999px; border: 1px solid rgba(0,0,0,0.12);">Brand: 11am</span>
+      <span style="font-size: 13px; color: #6e6e73;">Export ⌄  ⋯</span>
+    </div>
+    <div style="flex-grow: 1; display: flex; min-height: 0;">
+      <div style="width: 56px; padding: 14px 0; display: flex; flex-direction: column; align-items: center; gap: 8px; background: rgba(244,244,246,0.62); backdrop-filter: blur(30px) saturate(1.4); -webkit-backdrop-filter: blur(30px) saturate(1.4); border-right: 1px solid rgba(0,0,0,0.06);">
+        <sc-for list="{{tools}}" as="t" hint-placeholder-count="8">
+          <button aria-label="{{t.name}}" style="font: inherit; width: 36px; height: 36px; border-radius: 10px; border: none; background: {{t.bg}}; color: {{t.fg}}; font-size: 15px;">{{t.glyph}}</button>
+        </sc-for>
+      </div>
+      <div style="flex-grow: 1; background: #ececee; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; position: relative; overflow: hidden;">
+        <div aria-hidden="true" style="position: absolute; inset: 0; background-image: radial-gradient(rgba(0,0,0,0.10) 1px, transparent 1px); background-size: 18px 18px;"></div>
+        <div style="position: relative; width: 720px; height: 376px; background: #0a0a0a; color: #f5f5f5; border-radius: 4px; box-shadow: 0 20px 50px rgba(0,0,0,0.25); display: flex; overflow: hidden;">
+          <div style="flex-grow: 1; padding: 44px 40px; display: flex; flex-direction: column; justify-content: space-between;">
+            <div style="font-size: 13px; color: #aeaeb2;">new · for teams</div>
+            <div style="font-family: 'Alte Haas Grotesk', Inter, sans-serif; font-weight: 700; font-size: 54px; letter-spacing: -1.6px; line-height: 1;">Your team,<br>now for teams.</div>
+            <div style="font-family: 'Alte Haas Grotesk', Inter, sans-serif; font-weight: 700; font-size: 20px;">11am</div>
+          </div>
+          <div style="width: 300px; background: #1c1c1e; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #8e8e93; border-left: 1px solid #2c2c2e;">[ product image · subject lifted ]</div>
+          <div aria-hidden="true" style="position: absolute; left: 36px; top: 36px; width: 640px; height: 304px; border: 1px dashed rgba(255,255,255,0.25); border-radius: 2px;"></div>
+        </div>
+        <div style="position: relative; display: flex; gap: 12px; align-items: center; font-size: 12px; color: #3a3a3c;">
+          <span>Sizes</span>
+          <span style="padding: 4px 10px; border-radius: 999px; background: #0a0a0a; color: #fff;">LinkedIn ✓</span>
+          <span style="padding: 4px 10px; border-radius: 999px; background: #0a0a0a; color: #fff;">Square 1080 ✓</span>
+          <span style="padding: 4px 10px; border-radius: 999px; background: #0a0a0a; color: #fff;">Story ✓</span>
+          <span style="padding: 4px 10px; border-radius: 999px; border: 1px solid rgba(0,0,0,0.2);">+ size</span>
+        </div>
+      </div>
+      <div style="width: 300px; padding: 20px 18px; display: flex; flex-direction: column; gap: 12px; background: rgba(244,244,246,0.62); backdrop-filter: blur(30px) saturate(1.4); -webkit-backdrop-filter: blur(30px) saturate(1.4); border-left: 1px solid rgba(0,0,0,0.06); font-size: 13px; line-height: 1.45;">
+        <div style="font-family: 'Alte Haas Grotesk', Inter, sans-serif; font-weight: 700; font-size: 20px;">robert</div>
+        <div style="font-weight: 600;">Variants</div>
+        <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px;">
+          <div style="height: 40px; border-radius: 6px; background: #0a0a0a; outline: 2px solid #0a0a0a; outline-offset: 2px;"></div>
+          <div style="height: 40px; border-radius: 6px; background: #ffffff; border: 1px solid rgba(0,0,0,0.15);"></div>
+          <div style="height: 40px; border-radius: 6px; background: linear-gradient(90deg, #0a0a0a 55%, #8e8e93 55%);"></div>
+          <div style="height: 40px; border-radius: 6px; background: #3a3a3c;"></div>
+        </div>
+        <div style="font-weight: 600;">Critique</div>
+        <div style="color: #3a3a3c;">Headline is strong and reads at thumbnail size.</div>
+        <div style="color: #3a3a3c;">Logo sits 8 px from the safe margin. Move it to the baseline grid.</div>
+        <div style="color: #3a3a3c;">Contrast passes (AAA).</div>
+        <button style="font: inherit; font-size: 12px; padding: 5px 12px; border-radius: 999px; border: none; background: #0a0a0a; color: #fff; align-self: flex-start;">Apply fix as variant</button>
+        <div style="height: 1px; background: rgba(0,0,0,0.08);"></div>
+        <div style="font-weight: 600;">Brand kit</div>
+        <div style="display: flex; gap: 6px;"><span style="width: 22px; height: 22px; border-radius: 6px; background: #0a0a0a;"></span><span style="width: 22px; height: 22px; border-radius: 6px; background: #ffffff; border: 1px solid rgba(0,0,0,0.15);"></span><span style="width: 22px; height: 22px; border-radius: 6px; background: #8e8e93;"></span></div>
+        <div style="color: #3a3a3c;">Alte Haas Grotesk · SF Pro · imagery: monochrome, high contrast</div>
+        <div style="flex-grow: 1;"></div>
+        <div style="padding: 10px 14px; border-radius: 999px; background: rgba(0,0,0,0.05); color: #6e6e73;">Ask robert…</div>
+      </div>
+    </div>
+    <div style="height: 30px; display: flex; align-items: center; gap: 18px; padding: 0 16px; font-size: 12px; color: #6e6e73; background: rgba(248,248,249,0.75); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); border-top: 1px solid rgba(0,0,0,0.06);"><span>V select · T text · R rect</span><span>⌘⇧C critique</span><span style="flex-grow: 1;"></span><span>image: subject lift (Vision) · ● on-device</span></div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const tools = [
+      { name: 'Select', glyph: '↖', on: true }, { name: 'Frame', glyph: '#' }, { name: 'Text', glyph: 'T' },
+      { name: 'Shape', glyph: '□' }, { name: 'Image', glyph: '▣' }, { name: 'Subject lift', glyph: '✂' },
+      { name: 'Generate', glyph: '✦' }, { name: 'Critique', glyph: '◎' }
+    ];
+    return {
+      tools: tools.map((t) => ({ ...t, bg: t.on ? '#0a0a0a' : 'transparent', fg: t.on ? '#ffffff' : '#0a0a0a' }))
+    };
+  }
+}
+</script>
+</body>
+</html>

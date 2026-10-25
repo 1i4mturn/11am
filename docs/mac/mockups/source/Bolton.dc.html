@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>bolton search</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+@font-face{font-family:"Alte Haas Grotesk";src:url("/_blob/308e43393c945b4291129730b495b94b") format("truetype");font-weight:700;font-style:normal}
+@font-face{font-family:"Alte Haas Grotesk";src:url("/_blob/8ec106ac037f64a14618d5994adecde9") format("truetype");font-weight:400;font-style:normal}
+body{margin:0}
+a{color:#0a0a0a}a:hover{color:#3a3a3c}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; position: relative; overflow: hidden; background: #d9d9db; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', Inter, system-ui, sans-serif; color: #0a0a0a;">
+  <div aria-hidden="true" style="position: absolute; right: -160px; top: -240px; width: 1000px; height: 1000px; border-radius: 50%; background: radial-gradient(closest-side, rgba(255,255,255,0.95), rgba(255,255,255,0));"></div>
+  <div aria-hidden="true" style="position: absolute; left: -260px; bottom: -380px; width: 900px; height: 900px; border-radius: 50%; background: radial-gradient(closest-side, rgba(110,110,115,0.5), rgba(110,110,115,0));"></div>
+
+  <div style="position: absolute; left: 60px; top: 40px; width: 1320px; height: 830px; border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; border: 1px solid rgba(0,0,0,0.10); box-shadow: 0 30px 80px rgba(0,0,0,0.22);">
+    <div style="height: 52px; display: flex; align-items: center; gap: 16px; padding: 0 16px; background: rgba(248,248,249,0.7); backdrop-filter: blur(30px) saturate(1.4); -webkit-backdrop-filter: blur(30px) saturate(1.4); border-bottom: 1px solid rgba(0,0,0,0.06);">
+      <div style="display: flex; gap: 7px;"><span style="width: 12px; height: 12px; border-radius: 50%; background: #c7c7cc;"></span><span style="width: 12px; height: 12px; border-radius: 50%; background: #c7c7cc;"></span><span style="width: 12px; height: 12px; border-radius: 50%; background: #c7c7cc;"></span></div>
+      <span style="font-family: 'Alte Haas Grotesk', Inter, sans-serif; font-weight: 700; font-size: 18px; margin-left: 8px;">bn</span>
+      <span style="font-size: 14px; font-weight: 600;">bolton</span>
+      <span style="flex-grow: 1;"></span>
+      <span style="font-size: 13px; color: #6e6e73;">☰  ▦  ◐  ⋯</span>
+    </div>
+    <div style="flex-grow: 1; display: flex; min-height: 0;">
+      <div style="width: 220px; padding: 16px 12px; display: flex; flex-direction: column; gap: 2px; background: rgba(244,244,246,0.62); backdrop-filter: blur(30px) saturate(1.4); -webkit-backdrop-filter: blur(30px) saturate(1.4); border-right: 1px solid rgba(0,0,0,0.06); font-size: 13px;">
+        <sc-for list="{{nav}}" as="n" hint-placeholder-count="12">
+          <div style="display: flex; justify-content: space-between; padding: {{n.pad}}; border-radius: 8px; background: {{n.bg}}; color: {{n.fg}}; font-size: {{n.size}};"><span>{{n.label}}</span><span style="color: #6e6e73;">{{n.count}}</span></div>
+        </sc-for>
+        <div style="flex-grow: 1;"></div>
+        <div style="padding: 7px 10px; color: #6e6e73;">+ Tune…</div>
+      </div>
+      <div style="flex-grow: 1; background: #ffffff; padding: 34px 44px; display: flex; flex-direction: column; gap: 16px; overflow: hidden;">
+        <div style="font-family: 'Alte Haas Grotesk', Inter, sans-serif; font-weight: 700; font-size: 36px; letter-spacing: -0.8px;">What are you looking for?</div>
+        <label for="bq" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);">Search bolton</label>
+        <input id="bq" type="text" value="acme contract signed last year" style="font: inherit; font-size: 17px; padding: 14px 18px; border-radius: 16px; border: 1px solid rgba(0,0,0,0.14); background: #fafafa; color: #0a0a0a; outline: none;">
+        <div style="display: flex; gap: 8px; font-size: 12px; color: #3a3a3c;">
+          <span style="color: #6e6e73;">understood as</span>
+          <span style="padding: 4px 10px; border-radius: 999px; background: #0a0a0a; color: #fff;">org = Acme</span>
+          <span style="padding: 4px 10px; border-radius: 999px; background: #0a0a0a; color: #fff;">kind = contract</span>
+          <span style="padding: 4px 10px; border-radius: 999px; background: #0a0a0a; color: #fff;">2025</span>
+        </div>
+        <div style="padding: 16px 18px; border-radius: 16px; background: #f4f4f5; display: flex; flex-direction: column; gap: 8px; font-size: 14px; line-height: 1.5;">
+          <div style="font-size: 11px; letter-spacing: 0.7px; text-transform: uppercase; color: #6e6e73;">answer</div>
+          <div>The Acme MSA was signed on <b>14 Mar 2025</b> for a 24-month term. It auto-renews unless either side gives 60 days’ notice <span style="font-size: 11px; padding: 2px 7px; border-radius: 999px; background: #0a0a0a; color: #fff;">p.3</span>. Renewal decision is due by <b>13 Jan 2027</b>.</div>
+          <div style="display: flex; gap: 8px;"><button style="font: inherit; font-size: 12px; padding: 5px 12px; border-radius: 999px; border: none; background: #0a0a0a; color: #fff;">Add reminder to leo</button><button style="font: inherit; font-size: 12px; padding: 5px 12px; border-radius: 999px; border: 1px solid rgba(0,0,0,0.15); background: transparent; color: #0a0a0a;">Open document</button></div>
+        </div>
+        <div style="display: flex; flex-direction: column;">
+          <sc-for list="{{results}}" as="r" hint-placeholder-count="4">
+            <div style="display: flex; align-items: center; gap: 16px; padding: 13px 4px; border-bottom: 1px solid rgba(0,0,0,0.07);">
+              <span style="width: 34px; height: 42px; border-radius: 6px; border: 1px solid rgba(0,0,0,0.14); display: flex; align-items: center; justify-content: center; font-size: 10px; color: #6e6e73;">{{r.ext}}</span>
+              <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 15px; font-weight: 500;">{{r.name}}</span><span style="font-size: 12px; color: #6e6e73;">{{r.why}}</span></span>
+              <span style="font-size: 12px; color: #6e6e73; width: 130px;">{{r.meta}}</span>
+              <span style="font-size: 12px; font-variant-numeric: tabular-nums; color: #3a3a3c;">{{r.score}}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="width: 320px; padding: 20px 18px; display: flex; flex-direction: column; gap: 14px; background: rgba(244,244,246,0.62); backdrop-filter: blur(30px) saturate(1.4); -webkit-backdrop-filter: blur(30px) saturate(1.4); border-left: 1px solid rgba(0,0,0,0.06); font-size: 13px; line-height: 1.45;">
+        <div style="display: flex; align-items: center; gap: 8px;"><span style="font-family: 'Alte Haas Grotesk', Inter, sans-serif; font-weight: 700; font-size: 20px;">bolton</span><span style="color: #6e6e73;">· about this file</span></div>
+        <div style="font-weight: 600; font-size: 14px;">Acme_MSA_signed.pdf</div>
+        <div style="color: #3a3a3c;">Master services agreement between your company and Acme Pty Ltd. 14 pages, signed by both parties.</div>
+        <div style="display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; border-radius: 14px; background: #ffffff; border: 1px solid rgba(0,0,0,0.06);">
+          <div style="display: flex; justify-content: space-between;"><span style="color: #6e6e73;">Parties</span><span>You · Acme Pty Ltd</span></div>
+          <div style="display: flex; justify-content: space-between;"><span style="color: #6e6e73;">Signed</span><span>14 Mar 2025</span></div>
+          <div style="display: flex; justify-content: space-between;"><span style="color: #6e6e73;">Term</span><span>24 months, auto-renew</span></div>
+          <div style="display: flex; justify-content: space-between;"><span style="color: #6e6e73;">Notice</span><span>60 days</span></div>
+          <div style="display: flex; justify-content: space-between;"><span style="color: #6e6e73;">Fees</span><span>A$[AMOUNT]/month</span></div>
+        </div>
+        <div style="color: #6e6e73; font-size: 12px;">Came from</div>
+        <div>✉ legal@acme.com · 14 Mar 2025 (via marc)</div>
+        <div style="color: #6e6e73; font-size: 12px;">Related</div>
+        <div>Acme_SOW_v3.docx · “Re: MSA signature” · Acme (org)</div>
+        <div style="flex-grow: 1;"></div>
+        <div style="padding: 10px 14px; border-radius: 999px; background: rgba(0,0,0,0.05); color: #6e6e73;">Ask about this document…</div>
+      </div>
+    </div>
+    <div style="height: 30px; display: flex; align-items: center; gap: 18px; padding: 0 16px; font-size: 12px; color: #6e6e73; background: rgba(248,248,249,0.75); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); border-top: 1px solid rgba(0,0,0,0.06);"><span>⌘F search</span><span>⌥N quick note</span><span>space Quick Look</span><span style="flex-grow: 1;"></span><span>indexed 48,211 items · ● on-device</span></div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const nav = [
+      { label: 'Search', on: true }, { label: 'Recent' }, { label: 'Notes', count: '214' }, { label: 'Projects', count: '3' },
+      { label: 'Locations', head: true }, { label: 'Documents' }, { label: 'Downloads', count: '12' }, { label: 'iCloud · 11am' },
+      { label: 'Smart folders', head: true }, { label: 'Receipts', count: '26' }, { label: 'Contracts', count: '9' },
+      { label: 'Memory', head: true }, { label: 'People', count: '148' }, { label: 'Decisions', count: '37' },
+      { label: 'Shelf', count: '4' }
+    ];
+    return {
+      nav: nav.map((n) => ({
+        label: n.label, count: n.count || '',
+        bg: n.on ? 'rgba(0,0,0,0.08)' : 'transparent',
+        fg: n.head ? '#6e6e73' : '#0a0a0a',
+        size: n.head ? '11px' : '13px',
+        pad: n.head ? '14px 10px 4px' : '6px 10px'
+      })),
+      results: [
+        { ext: 'PDF', name: 'Acme_MSA_signed.pdf', why: '“…term of 24 months commencing on…” · matched org, kind, date', meta: 'Contract · 14 Mar 2025', score: '0.94' },
+        { ext: 'DOCX', name: 'Acme_SOW_v3.docx', why: 'statement of work referenced by the MSA', meta: 'Draft · 2 Mar 2025', score: '0.71' },
+        { ext: 'EML', name: 'Re: MSA signature', why: 'email thread with legal@acme.com', meta: 'Email · 13 Mar 2025', score: '0.66' },
+        { ext: 'MD', name: 'Acme kickoff notes', why: 'your note mentions “contract terms agreed”', meta: 'Note · 20 Mar 2025', score: '0.52' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

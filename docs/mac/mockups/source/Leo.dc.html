@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>leo today</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+@font-face{font-family:"Alte Haas Grotesk";src:url("/_blob/308e43393c945b4291129730b495b94b") format("truetype");font-weight:700;font-style:normal}
+@font-face{font-family:"Alte Haas Grotesk";src:url("/_blob/8ec106ac037f64a14618d5994adecde9") format("truetype");font-weight:400;font-style:normal}
+body{margin:0}
+a{color:#0a0a0a}a:hover{color:#3a3a3c}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; position: relative; overflow: hidden; background: #d6d6d8; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', Inter, system-ui, sans-serif; color: #0a0a0a;">
+  <div aria-hidden="true" style="position: absolute; left: -140px; top: -200px; width: 900px; height: 900px; border-radius: 50%; background: radial-gradient(closest-side, rgba(255,255,255,0.9), rgba(255,255,255,0));"></div>
+  <div aria-hidden="true" style="position: absolute; right: -200px; bottom: -300px; width: 900px; height: 900px; border-radius: 50%; background: radial-gradient(closest-side, rgba(120,120,124,0.55), rgba(120,120,124,0));"></div>
+
+  <div style="position: absolute; left: 0; top: 0; width: 1440px; height: 32px; display: flex; align-items: center; justify-content: space-between; padding: 0 18px; box-sizing: border-box; background: rgba(255,255,255,0.4); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); font-size: 13px;">
+    <div style="display: flex; gap: 20px;"><span style="font-family: 'Alte Haas Grotesk', Inter, sans-serif; font-weight: 700; font-size: 15px;">11am</span><span>File</span><span>Edit</span><span>View</span><span>Window</span></div>
+    <div style="position: absolute; left: 576px; top: 0; width: 288px; height: 32px; background: #000000; border-radius: 0 0 14px 14px; display: flex; align-items: center; justify-content: space-between; padding: 0 14px; box-sizing: border-box; color: #f5f5f5;"><span style="font-family: 'Alte Haas Grotesk', Inter, sans-serif; font-weight: 700; font-size: 13px;">le</span><span style="font-size: 12px;">45m</span></div>
+    <div style="display: flex; gap: 18px;"><span>● on-device</span><span>Tue 28 Oct  8:15</span></div>
+  </div>
+
+  <div style="position: absolute; left: 60px; top: 58px; width: 1320px; height: 812px; border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; border: 1px solid rgba(0,0,0,0.10); box-shadow: 0 30px 80px rgba(0,0,0,0.22);">
+    <div style="height: 52px; display: flex; align-items: center; gap: 16px; padding: 0 16px; background: rgba(248,248,249,0.7); backdrop-filter: blur(30px) saturate(1.4); -webkit-backdrop-filter: blur(30px) saturate(1.4); border-bottom: 1px solid rgba(0,0,0,0.06);">
+      <div style="display: flex; gap: 7px;"><span style="width: 12px; height: 12px; border-radius: 50%; background: #c7c7cc;"></span><span style="width: 12px; height: 12px; border-radius: 50%; background: #c7c7cc;"></span><span style="width: 12px; height: 12px; border-radius: 50%; background: #c7c7cc;"></span></div>
+      <span style="font-family: 'Alte Haas Grotesk', Inter, sans-serif; font-weight: 700; font-size: 18px; margin-left: 8px;">le</span>
+      <span style="font-size: 14px; font-weight: 600;">today · tue 28 oct</span>
+      <div style="flex-grow: 1; display: flex; justify-content: center;"><div style="width: 420px; padding: 8px 16px; border-radius: 999px; background: rgba(0,0,0,0.05); font-size: 13px; color: #6e6e73;">⌕  Ask the team…  <span style="float: right;">⌥ Space</span></div></div>
+      <span style="font-size: 13px; color: #6e6e73;">◐  ⋯</span>
+    </div>
+    <div style="flex-grow: 1; display: flex; min-height: 0;">
+      <div style="width: 220px; padding: 16px 12px; display: flex; flex-direction: column; gap: 2px; background: rgba(244,244,246,0.62); backdrop-filter: blur(30px) saturate(1.4); -webkit-backdrop-filter: blur(30px) saturate(1.4); border-right: 1px solid rgba(0,0,0,0.06); font-size: 13px;">
+        <sc-for list="{{nav}}" as="n" hint-placeholder-count="7">
+          <div style="display: flex; justify-content: space-between; padding: 7px 10px; border-radius: 8px; background: {{n.bg}};"><span>{{n.label}}</span><span style="color: #6e6e73;">{{n.count}}</span></div>
+        </sc-for>
+        <div style="flex-grow: 1;"></div>
+        <div style="padding: 7px 10px; color: #6e6e73;">+ Tune…</div>
+      </div>
+      <div style="flex-grow: 1; background: #ffffff; padding: 30px 40px; display: flex; flex-direction: column; gap: 22px; overflow: hidden;">
+        <div style="display: flex; flex-direction: column; gap: 12px; padding: 22px 24px; border-radius: 20px; background: #0a0a0a; color: #f5f5f5;">
+          <div style="display: flex; justify-content: space-between; font-size: 11px; letter-spacing: 0.7px; text-transform: uppercase; color: #aeaeb2;"><span>morning brief</span><span>since 18:00 yesterday</span></div>
+          <div style="font-family: 'Alte Haas Grotesk', Inter, sans-serif; font-weight: 700; font-size: 34px; letter-spacing: -0.8px; line-height: 1.1;">3 meetings. 4 emails need you. Runway steady.</div>
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; font-size: 13px; line-height: 1.45; color: #e5e5ea;">
+            <div><b style="font-family: 'Alte Haas Grotesk', Inter, sans-serif; color: #fff;">mc</b>  triaged 63 emails overnight. 3 replies drafted in your voice.</div>
+            <div><b style="font-family: 'Alte Haas Grotesk', Inter, sans-serif; color: #fff;">jm</b>  competitor scan finished: 2 pricing changes worth a look.</div>
+            <div><b style="font-family: 'Alte Haas Grotesk', Inter, sans-serif; color: #fff;">ge</b>  11 receipts matched. Runway 14.2 months (down 0.3).</div>
+          </div>
+        </div>
+        <div style="font-size: 11px; letter-spacing: 0.7px; text-transform: uppercase; color: #6e6e73;">timeline</div>
+        <div style="display: flex; flex-direction: column;">
+          <sc-for list="{{timeline}}" as="t" hint-placeholder-count="6">
+            <div style="display: flex; align-items: center; gap: 18px; padding: 13px 0; border-bottom: 1px solid rgba(0,0,0,0.07);">
+              <span style="width: 52px; font-size: 14px; font-variant-numeric: tabular-nums; color: #3a3a3c;">{{t.time}}</span>
+              <span style="width: 3px; height: 30px; border-radius: 2px; background: {{t.bar}};"></span>
+              <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 15px; font-weight: 500;">{{t.title}}</span><span style="font-size: 12px; color: #6e6e73;">{{t.meta}}</span></span>
+              <span style="font-size: 12px; padding: 4px 10px; border-radius: 999px; border: 1px solid rgba(0,0,0,0.12); color: #3a3a3c;">{{t.tag}}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="width: 320px; padding: 20px 18px; display: flex; flex-direction: column; gap: 14px; background: rgba(244,244,246,0.62); backdrop-filter: blur(30px) saturate(1.4); -webkit-backdrop-filter: blur(30px) saturate(1.4); border-left: 1px solid rgba(0,0,0,0.06); font-size: 13px;">
+        <div style="display: flex; align-items: center; gap: 8px;"><span style="font-family: 'Alte Haas Grotesk', Inter, sans-serif; font-weight: 700; font-size: 20px;">leo</span><span style="color: #6e6e73;">· prep for 09:00</span></div>
+        <div style="padding: 14px; border-radius: 16px; background: #ffffff; border: 1px solid rgba(0,0,0,0.06); display: flex; flex-direction: column; gap: 9px; line-height: 1.4;">
+          <div style="font-weight: 600; font-size: 14px;">Sarah Lee · Northfield Ventures</div>
+          <div><span style="color: #6e6e73;">Open ask</span>  churn by cohort (not yet sent) → <b style="font-family: 'Alte Haas Grotesk', Inter, sans-serif;">ge</b></div>
+          <div><span style="color: #6e6e73;">Their news</span>  closed Fund III (<b style="font-family: 'Alte Haas Grotesk', Inter, sans-serif;">jm</b> · 2 sources)</div>
+          <div><span style="color: #6e6e73;">Your note</span>  “wants 3 months of 10%+ MoM” (<b style="font-family: 'Alte Haas Grotesk', Inter, sans-serif;">bn</b> · 3 Sep)</div>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap; font-size: 11px;"><span style="padding: 3px 9px; border-radius: 999px; background: #0a0a0a; color: #fff;">✉ 6 emails</span><span style="padding: 3px 9px; border-radius: 999px; background: #0a0a0a; color: #fff;">▤ call notes</span></div>
+        </div>
+        <div style="padding: 12px 14px; border-radius: 16px; background: rgba(255,255,255,0.7); border: 1px solid rgba(0,0,0,0.06); display: flex; flex-direction: column; gap: 8px;">
+          <div style="font-weight: 600;">Approvals · 2</div>
+          <div style="color: #3a3a3c;">Move 14:00 sync to Thu · note to 3 people</div>
+          <div style="display: flex; gap: 6px;"><button style="font: inherit; font-size: 12px; padding: 5px 12px; border-radius: 999px; border: none; background: #0a0a0a; color: #fff;">Approve</button><button style="font: inherit; font-size: 12px; padding: 5px 12px; border-radius: 999px; border: 1px solid rgba(0,0,0,0.15); background: transparent; color: #0a0a0a;">Edit</button></div>
+        </div>
+        <div style="flex-grow: 1;"></div>
+        <div style="font-size: 11px; letter-spacing: 0.7px; text-transform: uppercase; color: #6e6e73;">activity</div>
+        <div style="display: flex; justify-content: space-between; color: #3a3a3c;"><span>08:12  routed “payroll” → jm</span><span style="color: #6e6e73;">↩</span></div>
+        <div style="display: flex; justify-content: space-between; color: #3a3a3c;"><span>08:10  protected 13:00–15:00</span><span style="color: #6e6e73;">↩</span></div>
+        <div style="padding: 10px 14px; border-radius: 999px; background: rgba(0,0,0,0.05); color: #6e6e73;">Ask leo…</div>
+      </div>
+    </div>
+    <div style="height: 30px; display: flex; align-items: center; gap: 18px; padding: 0 16px; font-size: 12px; color: #6e6e73; background: rgba(248,248,249,0.75); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); border-top: 1px solid rgba(0,0,0,0.06);"><span>⌘K command</span><span>⌘J ask leo</span><span>⌘⇧A approvals (2)</span><span style="flex-grow: 1;"></span><span>● on-device · qwen3.6</span></div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const nav = [
+      { label: 'Today', count: '', on: true }, { label: 'Week', count: '' }, { label: 'Tasks', count: '6' },
+      { label: 'Projects', count: '2' }, { label: 'Meetings', count: '' }, { label: 'Approvals', count: '2' }, { label: 'Activity', count: '' }
+    ];
+    return {
+      nav: nav.map((n) => ({ ...n, bg: n.on ? 'rgba(0,0,0,0.08)' : 'transparent' })),
+      timeline: [
+        { time: '09:00', title: 'Investor call · Sarah Lee', meta: 'Northfield Ventures · prep ready', tag: 'prep ✓', bar: '#0a0a0a' },
+        { time: '10:30', title: 'Supplier contract renewal', meta: 'from bolton · term ends 14 Mar 2027', tag: 'bn', bar: '#aeaeb2' },
+        { time: '11:00', title: 'The 11am check-in', meta: 'done / waiting on you / afternoon', tag: 'le', bar: '#0a0a0a' },
+        { time: '13:00', title: 'Deep work (protected)', meta: '14:00 sync moved to Thursday · approval pending', tag: 'focus', bar: '#6e6e73' },
+        { time: '15:30', title: 'Design review', meta: 'robert’s brief attached', tag: 'rt', bar: '#0a0a0a' },
+        { time: 'live', title: 'Researching AU payroll tools', meta: 'james · 18 of 30 sources', tag: '◯ 60%', bar: '#c7c7cc' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>
