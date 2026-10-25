@@ -171,6 +171,11 @@ final class NotchController {
         }
     }
 
+    /// Opens the Now page and keeps it open (used for screenshots).
+    func openPreview() {
+        state.open(.now)
+    }
+
     func openAsk() {
         state.open(.ask)
         panel?.makeKeyAndOrderFront(nil)

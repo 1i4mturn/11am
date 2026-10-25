@@ -20,6 +20,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         model.start()
+        applyLaunchArguments(notch: notch)
+    }
+
+    /// Developer flags for screenshots and quick checks, e.g.
+    /// `ElevenAm -startSection lab -forceAppearance dark -openNotch YES -activate YES`
+    private func applyLaunchArguments(notch: NotchController) {
+        let arguments = UserDefaults.standard
+        if let start = arguments.string(forKey: "startSection"), let section = AppSection(rawValue: start) {
+            model.section = section
+        }
+        if let appearance = arguments.string(forKey: "forceAppearance"), let value = Appearance(rawValue: appearance) {
+            model.theme.values.appearance = value
+        }
+        if arguments.bool(forKey: "openNotch") {
+            notch.openPreview()
+        }
+        if arguments.bool(forKey: "activate") {
+            NSApp.activate()
+        }
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {

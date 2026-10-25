@@ -1,0 +1,58 @@
+name: Sandbox screenshots
+
+# Builds the sandbox, launches it in a few states and captures the screen.
+# Runs on demand, or on a push whose commit message contains [shots].
+on:
+  push:
+    paths:
+      - "sandbox/**"
+  workflow_dispatch:
+
+jobs:
+  screenshots:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[shots]')
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Build
+        working-directory: sandbox
+        run: |
+          set -o pipefail
+          xcodegen generate
+          xcodebuild -project ElevenAm.xcodeproj -scheme ElevenAm -configuration Debug \
+            -destination 'platform=macOS' -derivedDataPath build CODE_SIGNING_ALLOWED=NO build \
+            | grep -E "error:|BUILD" || true
+          test -d build/Build/Products/Debug/ElevenAm.app
+
+      - name: Capture
+        working-directory: sandbox
+        run: |
+          mkdir -p shots
+          APP="build/Build/Products/Debug/ElevenAm.app/Contents/MacOS/ElevenAm"
+          capture() {
+            name="$1"; shift
+            "$APP" -activate YES "$@" > "shots/$name.log" 2>&1 &
+            pid=$!
+            sleep 9
+            screencapture -x "shots/$name.png" || echo "screencapture failed for $name"
+            if ! kill -0 "$pid" 2>/dev/null; then echo "App exited early for $name"; cat "shots/$name.log"; fi
+            kill "$pid" 2>/dev/null || true
+            sleep 2
+          }
+          capture today-light -startSection today -forceAppearance light -openNotch YES
+          capture lab-light -startSection lab -forceAppearance light
+          capture suite-dark -startSection suite -forceAppearance dark
+          capture overnight-dark -startSection overnight -forceAppearance dark -openNotch YES
+          ls -la shots
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: sandbox-screenshots
+          path: sandbox/shots
+          retention-days: 7

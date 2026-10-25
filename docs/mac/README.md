@@ -54,6 +54,8 @@
 | 7 | [07-roadmap.md](./07-roadmap.md) | **Every single thing to do**, phase by phase, with checklists, week one day by day, what to salvage from the current repo |
 | 8 | [08-shipping-and-business.md](./08-shipping-and-business.md) | Distribution, payments, add-ons, legal, privacy, Google/Microsoft verification, support |
 | 9 | [agents/](./agents/README.md) | **The 11 agent briefs**: features, AI, design, mockups, Mac integration, backend, low-end behaviour, build checklist |
+| 9b | [09-direction-v2.md](./09-direction-v2.md) | **Round-two update:** the rewritten narrative (own it, works with your Mac, replaces apps), the frosted-vellum look, 8 GB-first model strategy. Wins over earlier docs where they conflict |
+| 9c | [../../sandbox/](../../sandbox/README.md) | **The sandbox app:** a runnable native Mac build to lock the look and core flows |
 | 10 | [mockups/](./mockups/README.md) · [open the canvas](https://claude.ai/artifact/WG7JfdUvy8fdtykjd8v3sE) | Visual mockups: the interactive notch, identity sheet, iPhone, and a main screen for each of the 11 apps |
 
 ## The team at a glance
