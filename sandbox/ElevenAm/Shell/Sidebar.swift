@@ -13,11 +13,11 @@ struct Sidebar: View {
             // Shares a row with the window buttons, so the list starts high.
             HStack {
                 Spacer()
-                Wordmark(height: 17)
+                Wordmark(height: 16)
                     .padding(.trailing, 8)
             }
-            .frame(height: 22)
-            .padding(.bottom, 16)
+            .frame(height: 14)
+            .padding(.bottom, 22)
 
             SectionLabel(text: "Apps")
                 .padding(.horizontal, 10)
@@ -85,7 +85,7 @@ private struct SidebarRow: View {
                 Text(section.title)
                     .font(.system(size: 13, weight: selected ? .semibold : .regular))
                 Spacer()
-                AgentLogo(code: section.monogram, size: 20, color: theme.ink(scheme).opacity(selected ? 0.9 : 0.42))
+                AgentLogo(code: section.monogram, size: 20, color: theme.ink(scheme).opacity(selected ? 0.9 : 0.55))
             }
             .foregroundStyle(theme.ink(scheme))
             .padding(.horizontal, 10)

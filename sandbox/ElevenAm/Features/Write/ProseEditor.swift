@@ -8,7 +8,7 @@ struct ProseEditor: NSViewRepresentable {
     @Binding var selection: NSRange
     var font: NSFont
     var textColor: NSColor
-    var lineSpacing: CGFloat = 6
+    var lineSpacing: CGFloat = 4
 
     func makeCoordinator() -> Coordinator {
         Coordinator(self)
@@ -64,7 +64,7 @@ struct ProseEditor: NSViewRepresentable {
     private func apply(to textView: NSTextView) {
         let paragraph = NSMutableParagraphStyle()
         paragraph.lineSpacing = lineSpacing
-        paragraph.paragraphSpacing = lineSpacing * 1.5
+        paragraph.paragraphSpacing = 2
         let attributes: [NSAttributedString.Key: Any] = [
             .font: font,
             .foregroundColor: textColor,

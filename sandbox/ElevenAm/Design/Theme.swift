@@ -183,7 +183,7 @@ final class Theme: ObservableObject {
     var backdropOpacity: Double { 1 - values.clarity * 0.8 }
 
     /// Sheets keep more frost than the window so text stays easy to read.
-    var sheetBackdropOpacity: Double { 1 - values.clarity * 0.45 }
+    var sheetBackdropOpacity: Double { 1 - values.clarity * 0.25 }
 
     /// Opacity of the vellum wash for a level: 0 = window and sidebar, 1 = side sheet, 2 = main sheet, 3 = card.
     /// Sheets carry their own frosted backdrop, so these don't stack on the window wash.

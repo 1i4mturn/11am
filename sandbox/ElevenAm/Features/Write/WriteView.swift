@@ -94,7 +94,7 @@ private struct DocumentRow: View {
                     .font(.system(size: 12.5, weight: .semibold))
                     .lineLimit(2)
                     .foregroundStyle(theme.ink(scheme))
-                Text("\(document.modified.formatted(.relative(presentation: .named))) · \(document.wordCount) words")
+                Text(document.modified.formatted(.relative(presentation: .named, unitsStyle: .abbreviated)))
                     .font(.system(size: 11))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .lineLimit(1)

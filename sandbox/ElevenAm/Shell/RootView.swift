@@ -48,6 +48,8 @@ struct RootView: View {
                 .padding(.top, 10)
                 .padding([.horizontal, .bottom], 10)
             }
+            // The hidden title bar still reserves a safe area; reclaim it so there's no band at the top.
+            .ignoresSafeArea(.container, edges: .top)
         }
         .background(WindowConfigurator())
         .preferredColorScheme(theme.values.appearance.colorScheme)
