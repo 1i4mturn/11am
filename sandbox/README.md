@@ -21,18 +21,20 @@ The app is signed "to run locally" (no Apple Developer account needed). Because 
 
 | Part | What it does | Try this |
 |---|---|---|
-| **Vellum shell** | Frosted window that blurs your desktop, faint paper tint, grain, layered sheets, Alte Haas display type | Move the window over a busy wallpaper. Switch dark mode |
-| **The notch** | Black island at the camera. Idle ears, hover to peek, click to open: **Now**, **Ask**, **Overnight** | Move the pointer to the notch. Press **⌥Space** anywhere to ask |
+| **Vellum shell** | A window you can see through: the desktop reads through the sidebar, sheets are frosted white paper, real brand monograms and wordmark | Move the window over a busy wallpaper or other windows. Switch dark mode |
+| **The notch** | Black island that grows out of the camera notch. Idle ears, hover to peek, click to open: **Now**, **Ask**, **Overnight** | Move the pointer to the notch. Press **⌥Space** anywhere to ask |
 | **Brain** | Routes each request to the cheapest brain that can do it: Apple's on-device model → a local model server (optional) → Claude with your key (optional) | Settings › Brain. Try "On this Mac only", then "Balanced" with a key |
 | **Today** (Leo) | Your real calendar (or a sample day), the brief, an optional 11am check-in notification | "Connect Calendars", then "Write my brief" |
+| **Mail** (Marc) | Mail sorted into **Needs you · FYI · Later · Noise**, each with a reason. Replies drafted in your voice, opened in your own Mail app to send | Start with the sample inbox. Then **Read Apple Mail on this Mac** (needs Full Disk Access) or open an exported .mbox. Right-click an email to move it: Marc remembers the sender |
+| **Write** (William) | Plain documents on your Mac. Select text (or nothing, for the whole draft), choose **Shorter**, **Clearer**, **Warmer** or **In my voice**, then accept or reject the suggestion | Try **In my voice** on the sample investor update. Edit **Your voice**: Marc uses it too |
 | **Files** (Bolton) | Local index of folders you choose (PDF, Word, RTF, Markdown, text), with name, content and meaning search | Add a folder, search, then "Ask Bolton about these results" |
 | **Overnight** | Heavy jobs wait for the charger, a cool Mac and idle time or your overnight window. Writes tomorrow's brief ahead of time | "Run Now" to see it work immediately. **⇧⌘R** does the same |
 | **The Suite** | The apps that replace the subscription pile, and which ones are in this sandbox | Look, react, tell us what's missing or unnecessary |
-| **Design Lab** | Live sliders for paper tone, frost, grain, depth, ink, radius, display face and backdrop | Tune it until it feels right, then **Copy Values** and paste them into your feedback |
+| **Design Lab** | Live sliders for paper tone, frost, **clarity** (how much of the desktop shows through), grain, depth, ink, **motion**, radius, display face and backdrop. Starts from your round-one picks | Tune it until it feels right, then **Copy Values** and paste them into your feedback |
 
-Shortcuts: **⌘1–⌘5** switch apps · **⌘\\** shows or hides the agent pane (it also steps aside on narrow windows) · **⌥Space** asks from anywhere · **⇧⌘R** runs tonight's work now · **⌘,** opens settings.
+Shortcuts: **⌘1–⌘7** switch apps · **⌘\\** shows or hides the agent pane (it also steps aside on narrow windows) · **⌥Space** asks from anywhere · **⇧⌘R** runs tonight's work now · **⌘,** opens settings.
 
-Screenshots from the CI Mac (a small virtual display without a notch, so the notch shows as a pill) are on the `ci/sandbox-shots` branch. Push a commit with `[shots]` in its message to refresh them.
+Screenshots from the CI Mac (a small virtual display without a notch, so the notch shows as a pill, with a busy test desktop behind the app) are on the `ci/sandbox-shots` branch. Push a commit with `[shots]` in its message to refresh them.
 
 ## On an 8 GB MacBook Air (M2)
 
