@@ -61,9 +61,9 @@ enum BackdropMaterial: String, CaseIterable, Identifiable, Codable {
 struct ThemeValues: Codable, Equatable {
     var appearance: Appearance = .system
     /// 0 = pure white paper, 1 = warm vellum.
-    var paperTone: Double = 0.35
+    var paperTone: Double = 0.3
     /// 0 = clear glass, 1 = nearly opaque paper.
-    var frost: Double = 0.55
+    var frost: Double = 0.6
     /// Paper fibre / grain strength.
     var grain: Double = 0.35
     /// How far layers lift off each other (shadow + separation).
@@ -152,7 +152,7 @@ final class Theme: ObservableObject {
     func frostOpacity(level: Int) -> Double {
         let base = 0.18 + values.frost * 0.62
         switch level {
-        case 0: return min(base * 0.45, 0.9)
+        case 0: return min(base * 0.55, 0.9)
         case 1: return min(base * 0.8, 0.92)
         default: return min(base, 0.95)
         }

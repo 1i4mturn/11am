@@ -17,23 +17,27 @@ struct RootView: View {
             GrainOverlay()
                 .ignoresSafeArea()
 
-            HStack(spacing: 12) {
-                Sidebar()
-                    .frame(width: 214)
+            GeometryReader { proxy in
+                // On smaller screens (or larger text) the agent pane steps aside so the app keeps its room.
+                let roomForPane = proxy.size.width >= 1120
+                HStack(spacing: 12) {
+                    Sidebar()
+                        .frame(width: 214)
 
-                SectionContent(section: model.section)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .vellum(level: 2)
+                    SectionContent(section: model.section)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .vellum(level: 2)
 
-                if model.showsPane {
-                    AgentPane()
-                        .frame(width: 292)
-                        .vellum(level: 1)
-                        .transition(.move(edge: .trailing).combined(with: .opacity))
+                    if model.showsPane && roomForPane {
+                        AgentPane()
+                            .frame(width: 292)
+                            .vellum(level: 1)
+                            .transition(.move(edge: .trailing).combined(with: .opacity))
+                    }
                 }
+                .padding(.top, 40)
+                .padding([.horizontal, .bottom], 12)
             }
-            .padding(.top, 40)
-            .padding([.horizontal, .bottom], 12)
         }
         .background(WindowConfigurator())
         .preferredColorScheme(theme.values.appearance.colorScheme)

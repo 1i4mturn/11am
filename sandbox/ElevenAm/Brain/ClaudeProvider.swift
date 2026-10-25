@@ -31,6 +31,7 @@ enum Pricing {
     }
 
     static func format(_ usd: Double) -> String {
+        if usd == 0 { return "US$0.00" }
         if usd < 0.01 { return String(format: "US$%.4f", usd) }
         return String(format: "US$%.2f", usd)
     }

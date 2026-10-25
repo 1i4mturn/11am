@@ -11,7 +11,9 @@ struct NotchView: View {
     var body: some View {
         VStack(spacing: 0) {
             island
-                .frame(width: size.width, height: size.height, alignment: .top)
+                // Open fits its content; idle and peek match fixed notch sizes.
+                .frame(width: size.width, height: state.mode == .open ? nil : size.height, alignment: .top)
+                .frame(maxHeight: 440, alignment: .top)
                 .background(NotchShape(radius: radius).fill(Color.black))
                 .clipShape(NotchShape(radius: radius))
                 .contentShape(NotchShape(radius: radius))
@@ -48,7 +50,7 @@ struct NotchView: View {
         case .peek:
             return CGSize(width: max(notch.width + 240, 460), height: notch.height + 42)
         case .open:
-            return CGSize(width: 660, height: 400)
+            return CGSize(width: 660, height: 0) // height comes from the content
         }
     }
 
@@ -214,7 +216,7 @@ private struct OpenPanel: View {
                 case .overnight: NotchOvernightPage()
                 }
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .frame(maxWidth: .infinity, alignment: .topLeading)
         }
     }
 }
@@ -347,6 +349,7 @@ private struct NotchAskPage: View {
                     RunView(run: run)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
+                .frame(maxHeight: 230)
             } else {
                 Text("Questions about your files go to Bolton. Everything else goes to Leo. Quick answers run on this Mac.")
                     .font(.system(size: 12))

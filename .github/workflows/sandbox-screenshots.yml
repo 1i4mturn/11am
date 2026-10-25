@@ -47,10 +47,10 @@ jobs:
             kill "$pid" 2>/dev/null || true
             sleep 2
           }
-          capture today-light -startSection today -forceAppearance light -openNotch YES
+          capture today-light -startSection today -forceAppearance light
           capture lab-light -startSection lab -forceAppearance light
-          capture suite-dark -startSection suite -forceAppearance dark
-          capture overnight-dark -startSection overnight -forceAppearance dark -openNotch YES
+          capture files-dark -startSection files -forceAppearance dark
+          capture notch-dark -startSection overnight -forceAppearance dark -openNotch YES
           ls -la shots
 
       - name: Publish to the ci/sandbox-shots branch

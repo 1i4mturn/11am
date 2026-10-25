@@ -27,11 +27,18 @@ struct DesignLabView: View {
                     }
                 }
 
-                HStack(alignment: .top, spacing: 22) {
-                    controls
-                        .frame(width: 300)
-                    preview
-                        .frame(maxWidth: .infinity)
+                // Side by side when there's room, stacked when the window is narrow.
+                ViewThatFits(in: .horizontal) {
+                    HStack(alignment: .top, spacing: 22) {
+                        controls
+                            .frame(width: 270)
+                        preview
+                            .frame(minWidth: 420, maxWidth: .infinity)
+                    }
+                    VStack(alignment: .leading, spacing: 22) {
+                        preview
+                        controls
+                    }
                 }
             }
             .padding(28)
@@ -89,9 +96,9 @@ struct DesignLabView: View {
                     .foregroundStyle(theme.ink(scheme))
             }
             .padding(20)
-            .frame(width: 320, height: 150, alignment: .topLeading)
+            .frame(width: 260, height: 140, alignment: .topLeading)
             .vellum(level: 1)
-            .offset(x: -110, y: -70)
+            .offset(x: -80, y: -80)
 
             VStack(alignment: .leading, spacing: 8) {
                 SectionLabel(text: "Layer 2 · main sheet")
@@ -104,9 +111,9 @@ struct DesignLabView: View {
                 }
             }
             .padding(20)
-            .frame(width: 320, height: 150, alignment: .topLeading)
+            .frame(width: 260, height: 150, alignment: .topLeading)
             .vellum(level: 2)
-            .offset(x: 40, y: 20)
+            .offset(x: 30, y: 20)
 
             VStack(alignment: .leading, spacing: 8) {
                 SectionLabel(text: "Layer 3 · card")
@@ -118,9 +125,9 @@ struct DesignLabView: View {
                     .foregroundStyle(theme.inkTertiary(scheme))
             }
             .padding(18)
-            .frame(width: 200, height: 130, alignment: .topLeading)
+            .frame(width: 180, height: 120, alignment: .topLeading)
             .vellum(level: 3)
-            .offset(x: 170, y: 110)
+            .offset(x: 120, y: 120)
         }
         .frame(height: 420)
         .clipShape(RoundedRectangle(cornerRadius: theme.radius, style: .continuous))
