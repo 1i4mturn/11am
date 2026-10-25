@@ -6,6 +6,7 @@ on:
   push:
     paths:
       - "sandbox/**"
+      - ".github/workflows/sandbox-screenshots.yml"
   workflow_dispatch:
 
 jobs:
@@ -13,6 +14,8 @@ jobs:
     if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[shots]')
     runs-on: macos-26
     timeout-minutes: 30
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -49,6 +52,16 @@ jobs:
           capture suite-dark -startSection suite -forceAppearance dark
           capture overnight-dark -startSection overnight -forceAppearance dark -openNotch YES
           ls -la shots
+
+      - name: Publish to the ci/sandbox-shots branch
+        working-directory: sandbox/shots
+        run: |
+          sips -Z 1600 *.png > /dev/null
+          git init -q
+          git checkout -q -b ci/sandbox-shots
+          git add .
+          git -c user.name="sandbox-ci" -c user.email="sandbox-ci@users.noreply.github.com" commit -q -m "Sandbox screenshots for ${GITHUB_SHA}"
+          git push -q -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" ci/sandbox-shots
 
       - name: Upload
         uses: actions/upload-artifact@v4
