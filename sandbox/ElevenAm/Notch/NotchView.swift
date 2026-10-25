@@ -1,30 +1,33 @@
 import SwiftUI
 
 /// The island that hangs from the notch: idle (matches the hardware), peek (one line), open (pages).
+/// One black shape grows and shrinks between sizes; content fades in just behind it and leaves first.
 struct NotchView: View {
     @EnvironmentObject private var state: NotchState
     @EnvironmentObject private var brain: Brain
     @EnvironmentObject private var files: FileIndex
     @EnvironmentObject private var today: TodayModel
     @EnvironmentObject private var nightShift: NightShift
+    @State private var openHeight: CGFloat = 300
 
     var body: some View {
         VStack(spacing: 0) {
-            island
-                // Open takes its content's height; idle and peek match fixed notch sizes.
-                .frame(width: size.width, height: state.mode == .open ? nil : size.height, alignment: .top)
-                .fixedSize(horizontal: false, vertical: state.mode == .open)
-                .background(NotchShape(radius: radius).fill(Color.black))
-                .clipShape(NotchShape(radius: radius))
-                .contentShape(NotchShape(radius: radius))
-                .shadow(color: .black.opacity(state.mode == .open ? 0.45 : 0), radius: 24, y: 10)
-                .onHover { inside in
-                    if inside { state.pointerEntered() } else { state.pointerLeft() }
-                }
+            ZStack(alignment: .top) {
+                NotchShape(topRadius: shape.top, bottomRadius: shape.bottom)
+                    .fill(Color.black)
+                island
+                    .padding(.horizontal, shape.top)
+            }
+            .frame(width: size.width, height: size.height, alignment: .top)
+            .clipShape(NotchShape(topRadius: shape.top, bottomRadius: shape.bottom))
+            .contentShape(NotchShape(topRadius: shape.top, bottomRadius: shape.bottom))
+            .shadow(color: .black.opacity(state.mode == .open ? 0.4 : 0), radius: 22, y: 10)
+            .onHover { inside in
+                if inside { state.pointerEntered() } else { state.pointerLeft() }
+            }
             Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .animation(.spring(response: 0.42, dampingFraction: 0.8), value: state.mode)
         .environment(\.colorScheme, .dark)
     }
 
@@ -43,22 +46,23 @@ struct NotchView: View {
 
     private var showsEars: Bool { isLive || countdown != nil || !state.geometry.hasNotch }
 
-    private var size: CGSize {
+    /// Top corners flare outward into the menu bar, like the island is pouring out of the notch.
+    private var shape: (top: CGFloat, bottom: CGFloat) {
         switch state.mode {
-        case .idle:
-            return CGSize(width: notch.width + (showsEars ? 96 : 0), height: notch.height)
-        case .peek:
-            return CGSize(width: max(notch.width + 240, 460), height: notch.height + 42)
-        case .open:
-            return CGSize(width: 660, height: 0) // height comes from the content
+        case .idle: return (6, 10)
+        case .peek: return (10, 18)
+        case .open: return (14, 28)
         }
     }
 
-    private var radius: CGFloat {
+    private var size: CGSize {
         switch state.mode {
-        case .idle: return 10
-        case .peek: return 20
-        case .open: return 30
+        case .idle:
+            return CGSize(width: notch.width + (showsEars ? 96 : 0) + shape.top * 2, height: notch.height)
+        case .peek:
+            return CGSize(width: max(notch.width + 240, 460) + shape.top * 2, height: notch.height + 42)
+        case .open:
+            return CGSize(width: 660 + shape.top * 2, height: min(openHeight, 440))
         }
     }
 
@@ -70,15 +74,18 @@ struct NotchView: View {
         case .idle:
             IdleEars(isLive: isLive, countdown: countdown, hasNotch: state.geometry.hasNotch)
                 .frame(height: notch.height)
+                .transition(.opacity.animation(.easeOut(duration: 0.18)))
         case .peek:
             Button { state.open() } label: {
                 VStack(spacing: 0) {
                     Spacer().frame(height: notch.height)
                     PeekLine()
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 42)
                 }
             }
             .buttonStyle(.plain)
+            .transition(.notchContent)
         case .open:
             VStack(spacing: 0) {
                 Spacer().frame(height: max(notch.height - 6, 8))
@@ -86,27 +93,64 @@ struct NotchView: View {
                     .padding(.horizontal, 22)
                     .padding(.bottom, 18)
             }
+            .fixedSize(horizontal: false, vertical: true)
+            .readHeight { height in
+                guard height > 0, abs(height - openHeight) > 0.5 else { return }
+                withAnimation(.smooth(duration: 0.3)) { openHeight = height }
+            }
+            .transition(.notchContent)
         }
     }
 }
 
-/// Hangs flush from the top edge, rounded at the bottom like the hardware notch.
-struct NotchShape: Shape {
+private struct BlurModifier: ViewModifier {
     var radius: CGFloat
 
-    var animatableData: CGFloat {
-        get { radius }
-        set { radius = newValue }
+    func body(content: Content) -> some View {
+        content.blur(radius: radius)
+    }
+}
+
+private extension AnyTransition {
+    /// Arrives a beat after the shape starts growing, softly out of focus; leaves quickly before it shrinks.
+    static var notchContent: AnyTransition {
+        .asymmetric(
+            insertion: .opacity
+                .combined(with: .scale(scale: 0.94, anchor: .top))
+                .combined(with: .modifier(active: BlurModifier(radius: 6), identity: BlurModifier(radius: 0)))
+                .animation(.spring(response: 0.42, dampingFraction: 0.9).delay(0.07)),
+            removal: .opacity.animation(.easeOut(duration: 0.12))
+        )
+    }
+}
+
+/// Hangs flush from the top edge: flared top corners that meet the menu bar, rounded bottom corners like the hardware.
+struct NotchShape: Shape {
+    var topRadius: CGFloat
+    var bottomRadius: CGFloat
+
+    var animatableData: AnimatablePair<CGFloat, CGFloat> {
+        get { AnimatablePair(topRadius, bottomRadius) }
+        set {
+            topRadius = newValue.first
+            bottomRadius = newValue.second
+        }
     }
 
     func path(in rect: CGRect) -> Path {
-        UnevenRoundedRectangle(
-            topLeadingRadius: 0,
-            bottomLeadingRadius: radius,
-            bottomTrailingRadius: radius,
-            topTrailingRadius: 0,
-            style: .continuous
-        ).path(in: rect)
+        let top = min(topRadius, rect.width / 4, rect.height / 2)
+        let bottom = max(0, min(bottomRadius, (rect.width - top * 2) / 2, rect.height - top))
+        var path = Path()
+        path.move(to: CGPoint(x: rect.minX, y: rect.minY))
+        path.addQuadCurve(to: CGPoint(x: rect.minX + top, y: rect.minY + top), control: CGPoint(x: rect.minX + top, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.minX + top, y: rect.maxY - bottom))
+        path.addQuadCurve(to: CGPoint(x: rect.minX + top + bottom, y: rect.maxY), control: CGPoint(x: rect.minX + top, y: rect.maxY))
+        path.addLine(to: CGPoint(x: rect.maxX - top - bottom, y: rect.maxY))
+        path.addQuadCurve(to: CGPoint(x: rect.maxX - top, y: rect.maxY - bottom), control: CGPoint(x: rect.maxX - top, y: rect.maxY))
+        path.addLine(to: CGPoint(x: rect.maxX - top, y: rect.minY + top))
+        path.addQuadCurve(to: CGPoint(x: rect.maxX, y: rect.minY), control: CGPoint(x: rect.maxX - top, y: rect.minY))
+        path.closeSubpath()
+        return path
     }
 }
 
@@ -121,7 +165,7 @@ private struct IdleEars: View {
             if isLive {
                 PulsingMonogram()
             } else if !hasNotch {
-                Text("11am").font(theme.monogramFont(12)).foregroundStyle(.white.opacity(0.85))
+                Wordmark(height: 11, color: Color.white.opacity(0.85))
             }
             Spacer(minLength: 0)
             if let countdown {
@@ -139,9 +183,7 @@ private struct PulsingMonogram: View {
     @State private var dim = false
 
     var body: some View {
-        Text("le")
-            .font(theme.monogramFont(12))
-            .foregroundStyle(.white)
+        AgentLogo(code: "le", size: 22, color: Color.white)
             .opacity(dim ? 0.35 : 1)
             .onAppear {
                 withAnimation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true)) { dim = true }
@@ -158,7 +200,7 @@ private struct PeekLine: View {
 
     var body: some View {
         HStack(spacing: 10) {
-            Text("le").font(theme.monogramFont(14)).foregroundStyle(.white)
+            AgentLogo(code: "le", size: 24, color: Color.white)
             Text(summary)
                 .font(.system(size: 13, weight: .medium))
                 .foregroundStyle(.white.opacity(0.92))
@@ -192,7 +234,7 @@ private struct OpenPanel: View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(spacing: 6) {
                 ForEach(NotchPage.allCases) { page in
-                    Button(page.title) { state.page = page }
+                    Button(page.title) { withAnimation(.smooth(duration: 0.3)) { state.page = page } }
                         .buttonStyle(NotchTabStyle(selected: state.page == page))
                 }
                 Spacer()
@@ -209,14 +251,22 @@ private struct OpenPanel: View {
                 .accessibilityLabel("Close")
             }
 
-            Group {
-                switch state.page {
-                case .now: NotchNowPage()
-                case .ask: NotchAskPage()
-                case .overnight: NotchOvernightPage()
-                }
+            // Pages cross-fade in place; the island's height follows the new page.
+            ZStack(alignment: .topLeading) {
+                page(state.page)
+                    .id(state.page)
+                    .transition(.opacity.animation(.easeInOut(duration: 0.2)))
             }
             .frame(maxWidth: .infinity, alignment: .topLeading)
+        }
+    }
+
+    @ViewBuilder
+    private func page(_ page: NotchPage) -> some View {
+        switch page {
+        case .now: NotchNowPage()
+        case .ask: NotchAskPage()
+        case .overnight: NotchOvernightPage()
         }
     }
 }
@@ -244,10 +294,7 @@ private struct NotchRow<Trailing: View>: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            Text(monogram)
-                .font(theme.monogramFont(13))
-                .foregroundStyle(.white)
-                .frame(width: 24)
+            AgentLogo(code: monogram, size: 26, color: Color.white)
             VStack(alignment: .leading, spacing: 2) {
                 Text(title).font(.system(size: 13, weight: .semibold)).foregroundStyle(.white)
                 Text(detail).font(.system(size: 11.5)).foregroundStyle(.white.opacity(0.55)).lineLimit(2)
@@ -267,6 +314,15 @@ private struct NotchNowPage: View {
     @EnvironmentObject private var today: TodayModel
     @EnvironmentObject private var nightShift: NightShift
     @EnvironmentObject private var machine: MachineProfile
+    @EnvironmentObject private var mail: MailModel
+
+    private var mailDetail: String {
+        let needs = mail.count(.needsYou)
+        var parts = [needs == 1 ? "1 needs you" : "\(needs) need you"]
+        if mail.draftsReady > 0 { parts.append("\(mail.draftsReady) drafted") }
+        parts.append("\(mail.count(.noise)) noise held back")
+        return parts.joined(separator: " · ")
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -287,6 +343,8 @@ private struct NotchNowPage: View {
                         .disabled(brain.isBusy)
                 }
             }
+
+            NotchRow(monogram: "mc", title: "Mail", detail: mailDetail) { EmptyView() }
 
             NotchRow(monogram: "bn", title: "Files", detail: files.isIndexing ? "Indexing…" : files.status) { EmptyView() }
 
@@ -328,6 +386,7 @@ private struct NotchAskPage: View {
     @EnvironmentObject private var brain: Brain
     @EnvironmentObject private var files: FileIndex
     @FocusState private var focused: Bool
+    @State private var answerHeight: CGFloat = 24
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -348,8 +407,9 @@ private struct NotchAskPage: View {
                 ScrollView {
                     RunView(run: run)
                         .frame(maxWidth: .infinity, alignment: .leading)
+                        .readHeight { answerHeight = $0 }
                 }
-                .frame(maxHeight: 230)
+                .frame(height: min(max(answerHeight, 20), 230))
             } else {
                 Text("Questions about your files go to Bolton. Everything else goes to Leo. Quick answers run on this Mac.")
                     .font(.system(size: 12))

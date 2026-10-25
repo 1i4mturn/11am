@@ -19,6 +19,7 @@ struct TodayView: View {
                 }
 
                 BriefCard()
+                    .entrance()
 
                 if today.access != .granted {
                     Card {
@@ -52,8 +53,9 @@ struct TodayView: View {
                 VStack(alignment: .leading, spacing: 0) {
                     SectionLabel(text: "Timeline")
                         .padding(.bottom, 8)
-                    ForEach(today.shownEvents) { event in
+                    ForEach(Array(today.shownEvents.enumerated()), id: \.element.id) { index, event in
                         TimelineRow(event: event)
+                            .entrance(index + 1)
                     }
                     if today.shownEvents.isEmpty {
                         Text("Nothing scheduled. A good day for deep work.")
@@ -63,7 +65,7 @@ struct TodayView: View {
                     }
                 }
             }
-            .padding(28)
+            .padding(24)
         }
         .scrollContentBackground(.hidden)
         .onAppear { today.loadEvents() }

@@ -95,7 +95,7 @@ struct FilesView: View {
                     }
                 }
             }
-            .padding(28)
+            .padding(24)
         }
         .scrollContentBackground(.hidden)
     }

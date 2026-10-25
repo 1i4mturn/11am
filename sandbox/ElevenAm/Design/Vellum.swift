@@ -2,21 +2,41 @@ import AppKit
 import SwiftUI
 
 /// Real behind-window blur from the system: the frosted layer that lets the desktop show through.
+/// Drawn at partial opacity, the rest of the window shows the desktop unblurred (Clarity in the Design Lab).
 struct FrostedBackdrop: NSViewRepresentable {
     var material: NSVisualEffectView.Material
     var blending: NSVisualEffectView.BlendingMode = .behindWindow
+    var opacity: Double = 1
+    /// Rounds the blur itself. AppKit views ignore SwiftUI clipping, so this uses a mask image.
+    var cornerRadius: CGFloat = 0
 
     func makeNSView(context: Context) -> NSVisualEffectView {
         let view = NSVisualEffectView()
-        view.material = material
-        view.blendingMode = blending
         view.state = .active
+        updateNSView(view, context: context)
         return view
     }
 
     func updateNSView(_ view: NSVisualEffectView, context: Context) {
         view.material = material
         view.blendingMode = blending
+        view.alphaValue = CGFloat(opacity)
+        if view.maskImage?.size.width != cornerRadius * 2 + 1 {
+            view.maskImage = cornerRadius > 0 ? FrostedBackdrop.mask(radius: cornerRadius) : nil
+        }
+    }
+
+    /// A stretchable rounded-rect mask: only the corners are drawn, the middle stretches.
+    private static func mask(radius: CGFloat) -> NSImage {
+        let edge = radius * 2 + 1
+        let image = NSImage(size: NSSize(width: edge, height: edge), flipped: false) { rect in
+            NSColor.black.setFill()
+            NSBezierPath(roundedRect: rect, xRadius: radius, yRadius: radius).fill()
+            return true
+        }
+        image.capInsets = NSEdgeInsets(top: radius, left: radius, bottom: radius, right: radius)
+        image.resizingMode = .stretch
+        return image
     }
 }
 
@@ -71,45 +91,75 @@ struct GrainOverlay: View {
 }
 
 /// A sheet of vellum: frosted, faintly tinted, grained, with a hairline edge and a lit top edge.
-/// Higher levels sit "on top" and are more opaque, like paper laid over paper.
+/// Sheets (levels 1-2) carry their own frosted backdrop, so they read as frosted paper over the clearer window.
+/// Cards (level 3+) are paper laid on a sheet: a wash only.
 struct VellumSheet: ViewModifier {
     @EnvironmentObject private var theme: Theme
     @Environment(\.colorScheme) private var scheme
 
     var level: Int
     var radius: CGFloat?
+    var blending: NSVisualEffectView.BlendingMode
 
     func body(content: Content) -> some View {
-        let shape = RoundedRectangle(cornerRadius: radius ?? theme.radius, style: .continuous)
+        let corner = radius ?? theme.radius
+        let shape = RoundedRectangle(cornerRadius: corner, style: .circular)
         content
             .background {
-                shape
-                    .fill(theme.paper(scheme).opacity(theme.frostOpacity(level: level)))
-                    .background(.ultraThinMaterial, in: shape)
-                    .overlay { GrainOverlay().clipShape(shape) }
-                    .overlay {
-                        shape.strokeBorder(
-                            LinearGradient(
-                                colors: [theme.highlight(scheme), theme.edge(scheme), theme.edge(scheme)],
-                                startPoint: .top,
-                                endPoint: .bottom
-                            ),
-                            lineWidth: 0.75
-                        )
-                    }
-                    .shadow(
+                ZStack {
+                    OuterShadow(
+                        shape: shape,
                         color: Color.black.opacity(theme.shadowOpacity(scheme)),
                         radius: 6 + 18 * theme.values.depth,
-                        x: 0,
                         y: 2 + 8 * theme.values.depth
                     )
+                    if level <= 2 {
+                        FrostedBackdrop(
+                            material: theme.values.backdrop.material,
+                            blending: blending,
+                            opacity: theme.sheetBackdropOpacity,
+                            cornerRadius: corner
+                        )
+                    }
+                    shape.fill(theme.paper(scheme).opacity(theme.frostOpacity(level: level)))
+                    GrainOverlay().clipShape(shape)
+                    shape.strokeBorder(
+                        LinearGradient(
+                            colors: [theme.highlight(scheme), theme.edge(scheme), theme.edge(scheme)],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        ),
+                        lineWidth: 0.75
+                    )
+                }
             }
     }
 }
 
+/// A shadow cast only outside the sheet. A plain shadow would show through the translucent paper and grey it.
+private struct OuterShadow: View {
+    var shape: RoundedRectangle
+    var color: Color
+    var radius: CGFloat
+    var y: CGFloat
+
+    var body: some View {
+        shape.fill(Color.black)
+            .shadow(color: color, radius: radius, x: 0, y: y)
+            .mask {
+                Rectangle()
+                    .padding(-(radius * 2 + abs(y) + 8))
+                    .overlay(shape.fill(Color.black).blendMode(.destinationOut))
+                    .compositingGroup()
+            }
+            .allowsHitTesting(false)
+    }
+}
+
 extension View {
-    func vellum(level: Int = 2, radius: CGFloat? = nil) -> some View {
-        modifier(VellumSheet(level: level, radius: radius))
+    /// `blending: .withinWindow` frosts what's inside the window instead of the desktop (the Design Lab preview).
+    func vellum(level: Int = 2, radius: CGFloat? = nil, blending: NSVisualEffectView.BlendingMode = .behindWindow) -> some View {
+        modifier(VellumSheet(level: level, radius: radius, blending: blending))
     }
 }
 

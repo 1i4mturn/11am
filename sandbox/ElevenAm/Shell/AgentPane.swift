@@ -14,7 +14,9 @@ struct AgentPane: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(spacing: 10) {
-                Monogram(text: agent.monogram, size: 30, inverted: true)
+                Monogram(text: agent.monogram, size: 32, inverted: true)
+                    .id(agent.monogram)
+                    .transition(.scale(scale: 0.8).combined(with: .opacity))
                 VStack(alignment: .leading, spacing: 1) {
                     Text(agent.name)
                         .font(theme.display(18))
@@ -46,10 +48,8 @@ struct AgentPane: View {
                 VStack(alignment: .leading, spacing: 10) {
                     ForEach(model.activity) { item in
                         HStack(alignment: .top, spacing: 8) {
-                            Text(item.monogram)
-                                .font(theme.monogramFont(10.5))
-                                .foregroundStyle(theme.inkSecondary(scheme))
-                                .frame(width: 18, alignment: .leading)
+                            AgentLogo(code: item.monogram, size: 20, color: theme.inkSecondary(scheme))
+                                .offset(y: -3)
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(item.text)
                                     .font(.system(size: 12))
@@ -60,6 +60,7 @@ struct AgentPane: View {
                                     .foregroundStyle(theme.inkTertiary(scheme))
                             }
                         }
+                        .transition(.rise(-theme.rise))
                     }
                     if model.activity.isEmpty {
                         Text("Nothing yet. The team's work shows up here, with where it ran.")
@@ -68,14 +69,18 @@ struct AgentPane: View {
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
+                .animation(theme.spring, value: model.activity.first?.id)
             }
         }
         .padding(18)
+        .animation(theme.spring, value: model.section)
     }
 
     private var agent: (monogram: String, name: String, role: String) {
         switch model.section {
         case .today, .overnight: return ("le", "Leo", "Chief of staff · plans your day")
+        case .mail: return ("mc", "Marc", "Mail and people · drafts in your voice")
+        case .write: return ("wm", "William", "Writing and voice · you only review")
         case .files: return ("bn", "Bolton", "Memory and files · finds anything")
         case .suite: return ("le", "Leo", "Routes your asks to the right app")
         case .lab: return ("rt", "Robert", "Design · keeps the look considered")

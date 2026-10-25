@@ -28,7 +28,7 @@ struct ElevenAmApp: App {
             }
             CommandGroup(after: .sidebar) {
                 ForEach(AppSection.allCases) { section in
-                    Button(section.title) { appDelegate.model.section = section }
+                    Button(section.title) { appDelegate.model.go(to: section) }
                         .keyboardShortcut(KeyEquivalent(Character("\(section.shortcutNumber)")), modifiers: .command)
                 }
             }
@@ -52,5 +52,8 @@ extension View {
             .environmentObject(model.files)
             .environmentObject(model.today)
             .environmentObject(model.nightShift)
+            .environmentObject(model.voice)
+            .environmentObject(model.mail)
+            .environmentObject(model.write)
     }
 }

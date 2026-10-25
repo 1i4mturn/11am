@@ -98,7 +98,7 @@ struct OvernightView: View {
                         .foregroundStyle(theme.inkTertiary(scheme))
                 }
             }
-            .padding(28)
+            .padding(24)
         }
         .scrollContentBackground(.hidden)
     }

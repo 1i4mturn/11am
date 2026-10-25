@@ -18,8 +18,8 @@ struct SuiteView: View {
     private let apps: [SuiteApp] = [
         SuiteApp(id: "today", name: "Today", monogram: "le", does: "Calendar, tasks, the brief and the 11am check-in", replaces: "Calendar planners, daily-planning apps", stage: .sandbox),
         SuiteApp(id: "files", name: "Files", monogram: "bn", does: "Search and memory for everything on your Mac", replaces: "Note apps, search tools, clipboard managers", stage: .sandbox),
-        SuiteApp(id: "mail", name: "Mail", monogram: "mc", does: "Triage, replies drafted in your voice, people", replaces: "Premium email clients", stage: .next),
-        SuiteApp(id: "write", name: "Write", monogram: "wm", does: "Documents, rewrite anywhere, your voice", replaces: "Writing assistants, doc subscriptions", stage: .next),
+        SuiteApp(id: "mail", name: "Mail", monogram: "mc", does: "Triage, replies drafted in your voice, people", replaces: "Premium email clients", stage: .sandbox),
+        SuiteApp(id: "write", name: "Write", monogram: "wm", does: "Documents, rewrite anywhere, your voice", replaces: "Writing assistants, doc subscriptions", stage: .sandbox),
         SuiteApp(id: "research", name: "Research", monogram: "jm", does: "A WebKit browser with cited research", replaces: "Answer engines, read-later apps", stage: .next),
         SuiteApp(id: "money", name: "Money", monogram: "ge", does: "Sheets, runway, receipts", replaces: "Budgeting apps, receipt scanners", stage: .later),
         SuiteApp(id: "business", name: "Business", monogram: "cr", does: "Pipeline, strategy, decks", replaces: "Solo CRM plans, deck tools", stage: .later),
@@ -40,7 +40,7 @@ struct SuiteView: View {
                     .fixedSize(horizontal: false, vertical: true)
 
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 220), spacing: 14)], spacing: 14) {
-                    ForEach(apps) { app in
+                    ForEach(Array(apps.enumerated()), id: \.element.id) { index, app in
                         VStack(alignment: .leading, spacing: 10) {
                             HStack {
                                 Monogram(text: app.monogram, size: 32, inverted: app.stage == .sandbox)
@@ -62,10 +62,12 @@ struct SuiteView: View {
                         .padding(16)
                         .frame(maxWidth: .infinity, minHeight: 170, alignment: .topLeading)
                         .vellum(level: 3, radius: max(theme.radius - 4, 8))
+                        .hoverLift()
+                        .entrance(index)
                     }
                 }
             }
-            .padding(28)
+            .padding(24)
         }
         .scrollContentBackground(.hidden)
     }

@@ -41,7 +41,7 @@ struct DesignLabView: View {
                     }
                 }
             }
-            .padding(28)
+            .padding(24)
         }
         .scrollContentBackground(.hidden)
     }
@@ -49,10 +49,12 @@ struct DesignLabView: View {
     private var controls: some View {
         VStack(alignment: .leading, spacing: 16) {
             LabSlider(title: "Paper tone", detail: "Pure white → warm vellum", value: $theme.values.paperTone)
-            LabSlider(title: "Frost", detail: "Clear glass → opaque paper", value: $theme.values.frost)
+            LabSlider(title: "Frost", detail: "Clear glass → white paper", value: $theme.values.frost)
+            LabSlider(title: "Clarity", detail: "All frosted → see the desktop through it", value: $theme.values.clarity)
             LabSlider(title: "Grain", detail: "Smooth → fibrous", value: $theme.values.grain)
             LabSlider(title: "Depth", detail: "Flat → layered", value: $theme.values.depth)
             LabSlider(title: "Ink softness", detail: "Black → graphite", value: $theme.values.inkSoftness)
+            LabSlider(title: "Motion", detail: "Still → lively (Reduce Motion always wins)", value: $theme.values.motion)
             VStack(alignment: .leading, spacing: 4) {
                 Text("Corner radius: \(Int(theme.values.cornerRadius))")
                     .font(.system(size: 12.5, weight: .medium))
@@ -97,7 +99,7 @@ struct DesignLabView: View {
             }
             .padding(20)
             .frame(width: 260, height: 140, alignment: .topLeading)
-            .vellum(level: 1)
+            .vellum(level: 1, blending: .withinWindow)
             .offset(x: -80, y: -80)
 
             VStack(alignment: .leading, spacing: 8) {
@@ -112,7 +114,7 @@ struct DesignLabView: View {
             }
             .padding(20)
             .frame(width: 260, height: 150, alignment: .topLeading)
-            .vellum(level: 2)
+            .vellum(level: 2, blending: .withinWindow)
             .offset(x: 30, y: 20)
 
             VStack(alignment: .leading, spacing: 8) {

@@ -58,21 +58,45 @@ enum BackdropMaterial: String, CaseIterable, Identifiable, Codable {
 }
 
 /// Every tunable value of the look. The Design Lab edits these live; "Copy values" exports them as JSON.
+/// Defaults are the values picked in the first round of feedback.
 struct ThemeValues: Codable, Equatable {
     var appearance: Appearance = .system
     /// 0 = pure white paper, 1 = warm vellum.
-    var paperTone: Double = 0.3
-    /// 0 = clear glass, 1 = nearly opaque paper.
-    var frost: Double = 0.6
+    var paperTone: Double = 0.152
+    /// How milky the vellum is: 0 = clear glass, 1 = white paper.
+    var frost: Double = 0.896
+    /// How much of the desktop shows through as it is, unblurred: 0 = all frosted, 1 = see-through.
+    var clarity: Double = 0.55
     /// Paper fibre / grain strength.
-    var grain: Double = 0.35
+    var grain: Double = 0.2
     /// How far layers lift off each other (shadow + separation).
-    var depth: Double = 0.45
-    var cornerRadius: Double = 18
+    var depth: Double = 0.2
+    var cornerRadius: Double = 10.69
     /// 0 = pure black ink, 1 = soft graphite.
-    var inkSoftness: Double = 0.12
-    var displayFace: DisplayFace = .alteHaas
-    var backdrop: BackdropMaterial = .underWindow
+    var inkSoftness: Double = 1
+    /// 0 = still, 1 = lively. Reduce Motion in System Settings always wins.
+    var motion: Double = 0.6
+    var displayFace: DisplayFace = .sfPro
+    var backdrop: BackdropMaterial = .sidebar
+
+    init() {}
+
+    /// Missing keys fall back to defaults, so adding a value never wipes someone's tuned look.
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        let d = ThemeValues()
+        appearance = (try? c.decodeIfPresent(Appearance.self, forKey: .appearance)) ?? d.appearance
+        paperTone = (try? c.decodeIfPresent(Double.self, forKey: .paperTone)) ?? d.paperTone
+        frost = (try? c.decodeIfPresent(Double.self, forKey: .frost)) ?? d.frost
+        clarity = (try? c.decodeIfPresent(Double.self, forKey: .clarity)) ?? d.clarity
+        grain = (try? c.decodeIfPresent(Double.self, forKey: .grain)) ?? d.grain
+        depth = (try? c.decodeIfPresent(Double.self, forKey: .depth)) ?? d.depth
+        cornerRadius = (try? c.decodeIfPresent(Double.self, forKey: .cornerRadius)) ?? d.cornerRadius
+        inkSoftness = (try? c.decodeIfPresent(Double.self, forKey: .inkSoftness)) ?? d.inkSoftness
+        motion = (try? c.decodeIfPresent(Double.self, forKey: .motion)) ?? d.motion
+        displayFace = (try? c.decodeIfPresent(DisplayFace.self, forKey: .displayFace)) ?? d.displayFace
+        backdrop = (try? c.decodeIfPresent(BackdropMaterial.self, forKey: .backdrop)) ?? d.backdrop
+    }
 }
 
 @MainActor
@@ -81,7 +105,8 @@ final class Theme: ObservableObject {
         didSet { persist() }
     }
 
-    private static let storageKey = "theme.values.v1"
+    // v2: the round-one picks became the defaults, so everyone starts from them.
+    private static let storageKey = "theme.values.v2"
 
     init() {
         if let data = UserDefaults.standard.data(forKey: Theme.storageKey),
@@ -143,18 +168,32 @@ final class Theme: ObservableObject {
         scheme == .dark ? Color.white.opacity(0.10) : Color.white.opacity(0.75)
     }
 
-    /// Wells and inputs pressed into the paper.
+    /// Wells, inputs and badges. In light mode they're a brighter sheet laid on the paper, never a grey dip.
     func well(_ scheme: ColorScheme) -> Color {
-        scheme == .dark ? Color.white.opacity(0.06) : Color.black.opacity(0.045)
+        scheme == .dark ? Color.white.opacity(0.07) : Color.white.opacity(0.62)
     }
 
-    /// Opacity of the vellum tint for a stacking level: 0 = window wash, 1 = side sheet, 2 = main sheet.
+    /// A raised tab: the selected row, a hovered tile.
+    func raised(_ scheme: ColorScheme) -> Color {
+        scheme == .dark ? Color.white.opacity(0.11) : Color.white.opacity(0.92)
+    }
+
+    /// How much of the blurred backdrop is drawn behind the window and sidebar.
+    /// The rest shows the desktop exactly as it is, so windows and wallpaper read through.
+    var backdropOpacity: Double { 1 - values.clarity * 0.8 }
+
+    /// Sheets keep more frost than the window so text stays easy to read.
+    var sheetBackdropOpacity: Double { 1 - values.clarity * 0.45 }
+
+    /// Opacity of the vellum wash for a level: 0 = window and sidebar, 1 = side sheet, 2 = main sheet, 3 = card.
+    /// Sheets carry their own frosted backdrop, so these don't stack on the window wash.
     func frostOpacity(level: Int) -> Double {
-        let base = 0.18 + values.frost * 0.62
+        let f = values.frost
         switch level {
-        case 0: return min(base * 0.55, 0.9)
-        case 1: return min(base * 0.8, 0.92)
-        default: return min(base, 0.95)
+        case 0: return min(0.08 + f * 0.46, 0.94)
+        case 1: return min(0.16 + f * 0.48, 0.95)
+        case 2: return min(0.22 + f * 0.5, 0.96)
+        default: return min(0.10 + f * 0.34, 0.9)
         }
     }
 
@@ -163,6 +202,25 @@ final class Theme: ObservableObject {
     }
 
     var radius: CGFloat { CGFloat(values.cornerRadius) }
+
+    // MARK: Motion
+
+    var motionEnabled: Bool {
+        values.motion > 0.02 && !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
+    }
+
+    /// The spring for most UI changes. A little livelier as Motion goes up; none when motion is off.
+    var spring: Animation? {
+        guard motionEnabled else { return nil }
+        let m = values.motion
+        return .spring(response: 0.46 - 0.1 * m, dampingFraction: 0.9 - 0.1 * m)
+    }
+
+    /// How far things rise as they appear, in points.
+    var rise: CGFloat { motionEnabled ? 4 + 8 * values.motion : 0 }
+
+    /// How far a hovered tile lifts, in points.
+    var lift: CGFloat { motionEnabled ? 1 + 2 * values.motion : 0 }
 
     // MARK: Type
 

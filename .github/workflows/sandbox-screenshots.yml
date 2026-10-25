@@ -32,6 +32,13 @@ jobs:
             | grep -E "error:|BUILD" || true
           test -d build/Build/Products/Debug/ElevenAm.app
 
+      - name: Put a busy desktop behind the app
+        working-directory: sandbox
+        run: |
+          swiftc -O ci/Backdrop.swift -o backdrop
+          ./backdrop > backdrop.log 2>&1 &
+          sleep 3
+
       - name: Capture
         working-directory: sandbox
         run: |
@@ -48,9 +55,11 @@ jobs:
             sleep 2
           }
           capture today-light -startSection today -forceAppearance light
+          capture mail-light -startSection mail -forceAppearance light
+          capture write-light -startSection write -forceAppearance light
           capture lab-light -startSection lab -forceAppearance light
-          capture files-dark -startSection files -forceAppearance dark
-          capture notch-dark -startSection overnight -forceAppearance dark -openNotch YES
+          capture mail-dark -startSection mail -forceAppearance dark
+          capture notch-dark -startSection suite -forceAppearance dark -openNotch YES
           ls -la shots
 
       - name: Publish to the ci/sandbox-shots branch

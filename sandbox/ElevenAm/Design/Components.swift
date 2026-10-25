@@ -1,6 +1,68 @@
 import SwiftUI
 
-/// The two-letter agent monogram, set in Alte Haas.
+/// An agent's monogram from the brand SVGs (Resources/Assets.xcassets/Logos), tinted like ink.
+/// Every monogram shares one box, so letter size and baseline match across the team.
+struct AgentLogo: View {
+    @EnvironmentObject private var theme: Theme
+    @Environment(\.colorScheme) private var scheme
+
+    var code: String
+    var size: CGFloat = 20
+    var color: Color?
+
+    var body: some View {
+        Image(AgentLogo.assetName(for: code))
+            .renderingMode(.template)
+            .resizable()
+            .interpolation(.high)
+            .aspectRatio(contentMode: .fit)
+            .frame(width: size, height: size)
+            .foregroundStyle(color ?? theme.ink(scheme))
+            .accessibilityLabel(AgentLogo.name(for: code))
+    }
+
+    static func assetName(for code: String) -> String {
+        code == "11" ? "logo-11am" : "logo-\(code)"
+    }
+
+    static func name(for code: String) -> String {
+        switch code {
+        case "le": return "Leo"
+        case "bn": return "Bolton"
+        case "mc": return "Marc"
+        case "wm": return "William"
+        case "jm": return "James"
+        case "ge": return "George"
+        case "cr": return "Conner"
+        case "rt": return "Robert"
+        case "co": return "Cole"
+        case "hr": return "Harris"
+        case "jo": return "Johnny"
+        default: return "11am"
+        }
+    }
+}
+
+/// The 11am wordmark from the brand SVG.
+struct Wordmark: View {
+    @EnvironmentObject private var theme: Theme
+    @Environment(\.colorScheme) private var scheme
+    var height: CGFloat = 20
+    var color: Color?
+
+    var body: some View {
+        Image("logo-11am")
+            .renderingMode(.template)
+            .resizable()
+            .interpolation(.high)
+            .aspectRatio(contentMode: .fit)
+            .frame(height: height)
+            .foregroundStyle(color ?? theme.ink(scheme))
+            .accessibilityLabel("11am")
+    }
+}
+
+/// An agent monogram on a small tile: ink on white, or inverted for the agent that's working.
 struct Monogram: View {
     @EnvironmentObject private var theme: Theme
     @Environment(\.colorScheme) private var scheme
@@ -10,15 +72,11 @@ struct Monogram: View {
     var inverted = false
 
     var body: some View {
-        Text(text)
-            .font(theme.monogramFont(size * 0.5))
-            .foregroundStyle(inverted ? theme.paper(scheme) : theme.ink(scheme))
+        let tile = RoundedRectangle(cornerRadius: size * 0.3, style: .continuous)
+        AgentLogo(code: text, size: size * 0.76, color: inverted ? theme.paper(scheme) : theme.ink(scheme))
             .frame(width: size, height: size)
-            .background {
-                RoundedRectangle(cornerRadius: size * 0.3, style: .continuous)
-                    .fill(inverted ? theme.ink(scheme) : theme.well(scheme))
-            }
-            .accessibilityLabel("\(text) monogram")
+            .background { tile.fill(inverted ? theme.ink(scheme) : theme.well(scheme)) }
+            .overlay { tile.strokeBorder(inverted ? Color.clear : theme.edge(scheme), lineWidth: 0.5) }
     }
 }
 
@@ -89,11 +147,11 @@ struct Card<Content: View>: View {
             .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background {
-                RoundedRectangle(cornerRadius: max(theme.radius - 6, 8), style: .continuous)
-                    .fill(theme.well(scheme).opacity(0.7))
+                RoundedRectangle(cornerRadius: max(theme.radius - 4, 8), style: .continuous)
+                    .fill(theme.well(scheme))
             }
             .overlay {
-                RoundedRectangle(cornerRadius: max(theme.radius - 6, 8), style: .continuous)
+                RoundedRectangle(cornerRadius: max(theme.radius - 4, 8), style: .continuous)
                     .strokeBorder(theme.edge(scheme), lineWidth: 0.5)
             }
     }
@@ -152,6 +210,9 @@ private struct VellumButtonBody: View {
     @EnvironmentObject private var theme: Theme
     @Environment(\.colorScheme) private var scheme
 
+    @Environment(\.isEnabled) private var isEnabled
+    @State private var hovering = false
+
     let label: ButtonStyleConfiguration.Label
     let isPressed: Bool
     let kind: VellumButtonStyle.Kind
@@ -163,13 +224,18 @@ private struct VellumButtonBody: View {
             .padding(.vertical, 7)
             .foregroundStyle(kind == .primary ? theme.paper(scheme) : theme.ink(scheme))
             .background {
-                Capsule().fill(kind == .primary ? theme.ink(scheme) : Color.clear)
+                Capsule().fill(kind == .primary ? theme.ink(scheme).opacity(hovering ? 0.86 : 1) : (hovering ? theme.raised(scheme) : theme.well(scheme).opacity(0.5)))
             }
             .overlay {
                 Capsule().strokeBorder(kind == .primary ? Color.clear : theme.edge(scheme).opacity(2), lineWidth: 0.75)
             }
-            .opacity(isPressed ? 0.7 : 1)
+            .opacity(isEnabled ? (isPressed ? 0.75 : 1) : 0.45)
+            .scaleEffect(isPressed && theme.motionEnabled ? 0.97 : 1)
             .contentShape(Capsule())
+            .onHover { inside in
+                withAnimation(theme.motionEnabled ? .easeOut(duration: 0.15) : nil) { hovering = inside && isEnabled }
+            }
+            .animation(theme.motionEnabled ? .spring(response: 0.25, dampingFraction: 0.7) : nil, value: isPressed)
     }
 }
 
@@ -209,6 +275,9 @@ struct AskField: View {
         .padding(.vertical, 9)
         .background {
             RoundedRectangle(cornerRadius: 12, style: .continuous).fill(theme.well(scheme))
+        }
+        .overlay {
+            RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5)
         }
     }
 }

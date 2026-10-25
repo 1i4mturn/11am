@@ -60,21 +60,38 @@ final class NotchState: ObservableObject {
         self.geometry = geometry
     }
 
+    // Opening has a little life in it; closing settles without a bounce.
+    private var reduceMotion: Bool { NSWorkspace.shared.accessibilityDisplayShouldReduceMotion }
+    private var openAnimation: Animation { reduceMotion ? .easeInOut(duration: 0.2) : .spring(response: 0.5, dampingFraction: 0.78) }
+    private var peekAnimation: Animation { reduceMotion ? .easeInOut(duration: 0.2) : .spring(response: 0.42, dampingFraction: 0.82) }
+    private var closeAnimation: Animation { reduceMotion ? .easeInOut(duration: 0.2) : .spring(response: 0.38, dampingFraction: 1) }
+
+    private func set(_ newMode: NotchMode) {
+        guard newMode != mode else { return }
+        let animation: Animation
+        switch newMode {
+        case .open: animation = openAnimation
+        case .peek: animation = peekAnimation
+        case .idle: animation = closeAnimation
+        }
+        withAnimation(animation) { mode = newMode }
+    }
+
     func open(_ page: NotchPage? = nil) {
         cancelCollapse()
         if let page { self.page = page }
-        mode = .open
+        set(.open)
     }
 
     func peek() {
         cancelCollapse()
         guard mode == .idle else { return }
-        mode = .peek
+        set(.peek)
         // If the pointer never actually reaches the notch, fold away again.
         collapseTask = Task { @MainActor in
             try? await Task.sleep(nanoseconds: 1_500_000_000)
             guard !Task.isCancelled, self.mode == .peek else { return }
-            self.mode = .idle
+            self.set(.idle)
         }
     }
 
@@ -85,7 +102,7 @@ final class NotchState: ObservableObject {
         collapseTask = Task { @MainActor in
             try? await Task.sleep(nanoseconds: 450_000_000)
             guard !Task.isCancelled else { return }
-            self.mode = .idle
+            self.set(.idle)
         }
     }
 
@@ -96,7 +113,7 @@ final class NotchState: ObservableObject {
     func close() {
         cancelCollapse()
         focusAsk = false
-        mode = .idle
+        set(.idle)
     }
 
     private func cancelCollapse() {
