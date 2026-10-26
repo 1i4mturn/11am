@@ -145,9 +145,9 @@ final class DesignModel: ObservableObject {
         imageNotice = nil
     }
 
-    func liftSubject() { process(ImageTools.liftSubject) }
+    func liftSubject() { process { try ImageTools.liftSubject(from: $0) } }
 
-    func monochrome() { process(ImageTools.monochrome) }
+    func monochrome() { process { try ImageTools.monochrome($0) } }
 
     private func process(_ work: @escaping @Sendable (CGImage) throws -> CGImage) {
         guard let source = result ?? original else { return }
