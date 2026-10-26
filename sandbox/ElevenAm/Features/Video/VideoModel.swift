@@ -202,7 +202,17 @@ final class VideoModel: ObservableObject {
         let asset = AVURLAsset(url: source)
         let duration = try await asset.load(.duration)
         let composition = AVMutableComposition()
-        try composition.insertTimeRange(CMTimeRange(start: .zero, duration: duration), of: asset, at: .zero)
+        let whole = CMTimeRange(start: .zero, duration: duration)
+        // Copy each video and audio track in, keeping the video's rotation.
+        for type in [AVMediaType.video, .audio] {
+            for sourceTrack in try await asset.loadTracks(withMediaType: type) {
+                guard let track = composition.addMutableTrack(withMediaType: type, preferredTrackID: kCMPersistentTrackID_Invalid) else { continue }
+                try track.insertTimeRange(whole, of: sourceTrack, at: .zero)
+                if type == .video {
+                    track.preferredTransform = try await sourceTrack.load(.preferredTransform)
+                }
+            }
+        }
         // Remove from the end backwards so earlier times stay valid.
         for range in ranges.sorted(by: { $0.start > $1.start }) {
             let start = CMTime(seconds: range.start, preferredTimescale: 600)
