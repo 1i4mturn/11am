@@ -104,7 +104,9 @@ final class ResearchModel: NSObject, ObservableObject {
 
     func back() { webView.goBack() }
     func forward() { webView.goForward() }
-    func reload() { isOnWebPage ? webView.reload() : showStartPage() }
+    func reload() {
+        if isOnWebPage { webView.reload() } else { showStartPage() }
+    }
 
     func showStartPage() {
         address = ""

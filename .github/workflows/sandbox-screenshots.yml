@@ -30,7 +30,7 @@ jobs:
           xcodebuild -project ElevenAm.xcodeproj -scheme ElevenAm -configuration Debug \
             -destination 'platform=macOS' -derivedDataPath build CODE_SIGNING_ALLOWED=NO build \
             | grep -E "error:|BUILD" || true
-          test -d build/Build/Products/Debug/ElevenAm.app
+          test -f build/Build/Products/Debug/ElevenAm.app/Contents/MacOS/ElevenAm
 
       - name: Put a busy desktop behind the app
         working-directory: sandbox
