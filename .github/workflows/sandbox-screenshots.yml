@@ -57,8 +57,14 @@ jobs:
           capture today-light -startSection today -forceAppearance light
           capture mail-light -startSection mail -forceAppearance light
           capture write-light -startSection write -forceAppearance light
+          capture research-light -startSection research -forceAppearance light
+          capture money-light -startSection money -forceAppearance light
+          capture business-light -startSection business -forceAppearance light
+          capture design-light -startSection design -forceAppearance light
+          capture video-light -startSection video -forceAppearance light
+          capture learn-light -startSection learn -forceAppearance light
+          capture build-dark -startSection build -forceAppearance dark
           capture lab-light -startSection lab -forceAppearance light
-          capture mail-dark -startSection mail -forceAppearance dark
           capture notch-dark -startSection suite -forceAppearance dark -openNotch YES
           ls -la shots
 

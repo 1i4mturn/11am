@@ -2,7 +2,7 @@ import SwiftUI
 
 /// The places in the sandbox. Apps come first; the agent behind each one is the quiet worker.
 enum AppSection: String, CaseIterable, Identifiable {
-    case today, mail, write, files, overnight, suite, lab
+    case today, mail, write, files, research, money, business, design, video, learn, build, overnight, suite, lab
 
     var id: String { rawValue }
 
@@ -12,6 +12,13 @@ enum AppSection: String, CaseIterable, Identifiable {
         case .mail: return "Mail"
         case .write: return "Write"
         case .files: return "Files"
+        case .research: return "Research"
+        case .money: return "Money"
+        case .business: return "Business"
+        case .design: return "Design"
+        case .video: return "Video"
+        case .learn: return "Learn"
+        case .build: return "Build"
         case .overnight: return "Overnight"
         case .suite: return "The Suite"
         case .lab: return "Design Lab"
@@ -24,6 +31,13 @@ enum AppSection: String, CaseIterable, Identifiable {
         case .mail: return "mc"
         case .write: return "wm"
         case .files: return "bn"
+        case .research: return "jm"
+        case .money: return "ge"
+        case .business: return "cr"
+        case .design: return "rt"
+        case .video: return "co"
+        case .learn: return "hr"
+        case .build: return "jo"
         case .overnight: return "le"
         case .suite: return "11"
         case .lab: return "rt"
@@ -36,15 +50,23 @@ enum AppSection: String, CaseIterable, Identifiable {
         case .mail: return "tray"
         case .write: return "pencil.line"
         case .files: return "doc.text.magnifyingglass"
+        case .research: return "safari"
+        case .money: return "chart.line.uptrend.xyaxis"
+        case .business: return "briefcase"
+        case .design: return "paintbrush.pointed"
+        case .video: return "film"
+        case .learn: return "graduationcap"
+        case .build: return "hammer"
         case .overnight: return "moon.stars"
         case .suite: return "square.grid.2x2"
         case .lab: return "slider.horizontal.3"
         }
     }
 
-    /// ⌘1…⌘7
-    var shortcutNumber: Int {
-        (AppSection.allCases.firstIndex(of: self) ?? 0) + 1
+    /// ⌘1…⌘9 for the first nine; the rest have no shortcut.
+    var shortcutNumber: Int? {
+        let number = (AppSection.allCases.firstIndex(of: self) ?? 0) + 1
+        return number <= 9 ? number : nil
     }
 
     var subtitle: String {
@@ -53,6 +75,13 @@ enum AppSection: String, CaseIterable, Identifiable {
         case .mail: return "What needs you, with replies drafted"
         case .write: return "Writes like you, so you only review"
         case .files: return "Find anything on this Mac"
+        case .research: return "Browse, ask, and get a sourced answer"
+        case .money: return "Where it is, where it goes, what's next"
+        case .business: return "Pipeline, grounded in real conversations"
+        case .design: return "On-brand graphics and image tools"
+        case .video: return "Edit video by editing the words"
+        case .learn: return "Ten minutes a day, not homework"
+        case .build: return "Make the software fit you"
         case .overnight: return "Heavy work, done while you sleep"
         case .suite: return "The apps that replace the subscriptions"
         case .lab: return "Tune the vellum, lock the look"
@@ -82,21 +111,37 @@ final class AppModel: ObservableObject {
     let voice: VoiceProfile
     let mail: MailModel
     let write: WriteModel
+    let research: ResearchModel
+    let money: MoneyModel
+    let business: BusinessModel
+    let design: DesignModel
+    let video: VideoModel
+    let learn: LearnModel
+    let build: BuildModel
 
     init() {
         let machine = MachineProfile()
         let brain = Brain()
         let files = FileIndex()
         let voice = VoiceProfile()
-        self.theme = Theme()
+        let theme = Theme()
+        self.theme = theme
         self.machine = machine
         self.brain = brain
         self.files = files
         self.today = TodayModel(brain: brain, files: files)
         self.nightShift = NightShift(machine: machine)
         self.voice = voice
+        let write = WriteModel(brain: brain, voice: voice)
         self.mail = MailModel(brain: brain, voice: voice)
-        self.write = WriteModel(brain: brain, voice: voice)
+        self.write = write
+        self.research = ResearchModel(brain: brain, write: write)
+        self.money = MoneyModel(brain: brain)
+        self.business = BusinessModel(brain: brain, voice: voice)
+        self.design = DesignModel(brain: brain)
+        self.video = VideoModel(brain: brain)
+        self.learn = LearnModel(brain: brain)
+        self.build = BuildModel(brain: brain, theme: theme)
         nightShift.attach(to: self)
     }
 

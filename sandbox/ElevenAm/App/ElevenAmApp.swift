@@ -27,9 +27,12 @@ struct ElevenAmApp: App {
                 .keyboardShortcut("\\", modifiers: .command)
             }
             CommandGroup(after: .sidebar) {
-                ForEach(AppSection.allCases) { section in
+                ForEach(AppSection.allCases.filter { $0.shortcutNumber != nil }) { section in
                     Button(section.title) { appDelegate.model.go(to: section) }
-                        .keyboardShortcut(KeyEquivalent(Character("\(section.shortcutNumber)")), modifiers: .command)
+                        .keyboardShortcut(KeyEquivalent(Character("\(section.shortcutNumber ?? 1)")), modifiers: .command)
+                }
+                ForEach(AppSection.allCases.filter { $0.shortcutNumber == nil }) { section in
+                    Button(section.title) { appDelegate.model.go(to: section) }
                 }
             }
         }
@@ -55,5 +58,12 @@ extension View {
             .environmentObject(model.voice)
             .environmentObject(model.mail)
             .environmentObject(model.write)
+            .environmentObject(model.research)
+            .environmentObject(model.money)
+            .environmentObject(model.business)
+            .environmentObject(model.design)
+            .environmentObject(model.video)
+            .environmentObject(model.learn)
+            .environmentObject(model.build)
     }
 }

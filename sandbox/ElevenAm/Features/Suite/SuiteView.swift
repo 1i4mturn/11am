@@ -2,6 +2,7 @@ import SwiftUI
 
 /// The apps that replace the subscription pile. The agents are how they work, not what you buy.
 struct SuiteView: View {
+    @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var theme: Theme
     @Environment(\.colorScheme) private var scheme
 
@@ -20,13 +21,13 @@ struct SuiteView: View {
         SuiteApp(id: "files", name: "Files", monogram: "bn", does: "Search and memory for everything on your Mac", replaces: "Note apps, search tools, clipboard managers", stage: .sandbox),
         SuiteApp(id: "mail", name: "Mail", monogram: "mc", does: "Triage, replies drafted in your voice, people", replaces: "Premium email clients", stage: .sandbox),
         SuiteApp(id: "write", name: "Write", monogram: "wm", does: "Documents, rewrite anywhere, your voice", replaces: "Writing assistants, doc subscriptions", stage: .sandbox),
-        SuiteApp(id: "research", name: "Research", monogram: "jm", does: "A WebKit browser with cited research", replaces: "Answer engines, read-later apps", stage: .next),
-        SuiteApp(id: "money", name: "Money", monogram: "ge", does: "Sheets, runway, receipts", replaces: "Budgeting apps, receipt scanners", stage: .later),
-        SuiteApp(id: "business", name: "Business", monogram: "cr", does: "Pipeline, strategy, decks", replaces: "Solo CRM plans, deck tools", stage: .later),
-        SuiteApp(id: "design", name: "Design", monogram: "rt", does: "Brand kit, quick graphics, image tools", replaces: "Design-tool subscriptions for everyday graphics", stage: .later),
-        SuiteApp(id: "video", name: "Video", monogram: "co", does: "Record, edit by transcript, captions", replaces: "Screen recorders, transcript editors", stage: .later),
-        SuiteApp(id: "learn", name: "Learn", monogram: "hr", does: "Paths, flashcards, languages", replaces: "Flashcard and language-app subscriptions", stage: .later),
-        SuiteApp(id: "build", name: "Build", monogram: "jo", does: "Terminal, automations, tune any app", replaces: "Automation subscriptions", stage: .later),
+        SuiteApp(id: "research", name: "Research", monogram: "jm", does: "A WebKit browser with cited research", replaces: "Answer engines, read-later apps", stage: .sandbox),
+        SuiteApp(id: "money", name: "Money", monogram: "ge", does: "Sheets, runway, receipts", replaces: "Budgeting apps, receipt scanners", stage: .sandbox),
+        SuiteApp(id: "business", name: "Business", monogram: "cr", does: "Pipeline, strategy, decks", replaces: "Solo CRM plans, deck tools", stage: .sandbox),
+        SuiteApp(id: "design", name: "Design", monogram: "rt", does: "Brand kit, quick graphics, image tools", replaces: "Design-tool subscriptions for everyday graphics", stage: .sandbox),
+        SuiteApp(id: "video", name: "Video", monogram: "co", does: "Record, edit by transcript, captions", replaces: "Screen recorders, transcript editors", stage: .sandbox),
+        SuiteApp(id: "learn", name: "Learn", monogram: "hr", does: "Paths, flashcards, languages", replaces: "Flashcard and language-app subscriptions", stage: .sandbox),
+        SuiteApp(id: "build", name: "Build", monogram: "jo", does: "Terminal, automations, tune any app", replaces: "Automation subscriptions", stage: .sandbox),
     ]
 
     var body: some View {
@@ -34,7 +35,7 @@ struct SuiteView: View {
             VStack(alignment: .leading, spacing: 22) {
                 SectionHeader(title: "the suite", subtitle: "Software you own, on the Mac you have.")
 
-                Text("One set of apps for the work a founder actually does. Most thinking happens on your Mac, heavy work happens overnight, and the cloud is optional, so the bill doesn't keep growing.")
+                Text("One set of apps for the work a founder actually does. Most thinking happens on your Mac, heavy work happens overnight, and the cloud is optional, so the bill doesn't keep growing. All eleven have a first baseline in this sandbox.")
                     .font(theme.display(20))
                     .foregroundStyle(theme.inkSecondary(scheme))
                     .fixedSize(horizontal: false, vertical: true)
@@ -64,6 +65,11 @@ struct SuiteView: View {
                         .vellum(level: 3, radius: max(theme.radius - 4, 8))
                         .hoverLift()
                         .entrance(index)
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            if let section = AppSection(rawValue: app.id) { model.go(to: section) }
+                        }
+                        .help("Open \(app.name)")
                     }
                 }
             }

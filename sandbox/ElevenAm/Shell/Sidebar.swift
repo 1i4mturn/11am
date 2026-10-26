@@ -1,6 +1,13 @@
 import SwiftUI
 
 struct Sidebar: View {
+    static let groups: [(title: String, sections: [AppSection])] = [
+        ("Every day", [.today, .mail, .write, .files, .overnight]),
+        ("Work", [.research, .money, .business]),
+        ("Make", [.design, .video, .learn, .build]),
+        ("Sandbox", [.suite, .lab]),
+    ]
+
     @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var theme: Theme
     @EnvironmentObject private var machine: MachineProfile
@@ -19,22 +26,22 @@ struct Sidebar: View {
             .frame(height: 14)
             .padding(.bottom, 22)
 
-            SectionLabel(text: "Apps")
-                .padding(.horizontal, 10)
-                .padding(.bottom, 3)
-            ForEach([AppSection.today, .mail, .write, .files, .overnight]) { section in
-                SidebarRow(section: section, selection: selection)
+            // Scrolls on short screens so the footer always fits.
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 2) {
+                    ForEach(Array(Sidebar.groups.enumerated()), id: \.offset) { index, group in
+                        SectionLabel(text: group.title)
+                            .padding(.horizontal, 10)
+                            .padding(.top, index == 0 ? 0 : 14)
+                            .padding(.bottom, 3)
+                        ForEach(group.sections) { section in
+                            SidebarRow(section: section, selection: selection)
+                        }
+                    }
+                }
             }
 
-            SectionLabel(text: "Sandbox")
-                .padding(.horizontal, 10)
-                .padding(.top, 16)
-                .padding(.bottom, 3)
-            ForEach([AppSection.suite, .lab]) { section in
-                SidebarRow(section: section, selection: selection)
-            }
-
-            Spacer()
+            Spacer(minLength: 8)
 
             VStack(alignment: .leading, spacing: 6) {
                 SectionLabel(text: "This Mac")
@@ -89,7 +96,7 @@ private struct SidebarRow: View {
             }
             .foregroundStyle(theme.ink(scheme))
             .padding(.horizontal, 10)
-            .padding(.vertical, 6)
+            .padding(.vertical, 5)
             .background {
                 if selected {
                     // One highlight that slides between rows.
@@ -112,6 +119,6 @@ private struct SidebarRow: View {
         .onHover { inside in
             withAnimation(theme.motionEnabled ? .easeOut(duration: 0.12) : nil) { hovering = inside }
         }
-        .help("\(section.subtitle) · ⌘\(section.shortcutNumber)")
+        .help(section.shortcutNumber.map { "\(section.subtitle) · ⌘\($0)" } ?? section.subtitle)
     }
 }

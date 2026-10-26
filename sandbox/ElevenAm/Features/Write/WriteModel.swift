@@ -125,6 +125,14 @@ final class WriteModel: ObservableObject {
         write(document)
     }
 
+    /// Other agents hand finished text to William (a research report, a proposal).
+    func addDocument(text: String) {
+        let document = WriteDocument(id: UUID(), text: text, modified: Date())
+        documents.insert(document, at: 0)
+        selectedID = document.id
+        write(document)
+    }
+
     func delete(_ id: UUID) {
         try? FileManager.default.removeItem(at: url(for: id))
         documents.removeAll { $0.id == id }

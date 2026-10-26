@@ -82,6 +82,13 @@ struct AgentPane: View {
         case .mail: return ("mc", "Marc", "Mail and people · drafts in your voice")
         case .write: return ("wm", "William", "Writing and voice · you only review")
         case .files: return ("bn", "Bolton", "Memory and files · finds anything")
+        case .research: return ("jm", "James", "Research · sourced, honest answers")
+        case .money: return ("ge", "George", "Finance · never invents a number")
+        case .business: return ("cr", "Conner", "Business · what's worth building and selling")
+        case .design: return ("rt", "Robert", "Design · a considered look for everything")
+        case .video: return ("co", "Cole", "Video · talking into publishable video")
+        case .learn: return ("hr", "Harris", "Learning · sharper, without homework")
+        case .build: return ("jo", "Johnny", "Build · makes the software fit you")
         case .suite: return ("le", "Leo", "Routes your asks to the right app")
         case .lab: return ("rt", "Robert", "Design · keeps the look considered")
         }

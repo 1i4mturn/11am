@@ -28,11 +28,18 @@ The app is signed "to run locally" (no Apple Developer account needed). Because 
 | **Mail** (Marc) | Mail sorted into **Needs you · FYI · Later · Noise**, each with a reason. Replies drafted in your voice, opened in your own Mail app to send | Start with the sample inbox. Then **Read Apple Mail on this Mac** (needs Full Disk Access) or open an exported .mbox. Right-click an email to move it: Marc remembers the sender |
 | **Write** (William) | Plain documents on your Mac. Select text (or nothing, for the whole draft), choose **Shorter**, **Clearer**, **Warmer** or **In my voice**, then accept or reject the suggestion | Try **In my voice** on the sample investor update. Edit **Your voice**: Marc uses it too |
 | **Files** (Bolton) | Local index of folders you choose (PDF, Word, RTF, Markdown, text), with name, content and meaning search | Add a folder, search, then "Ask Bolton about these results" |
+| **Research** (James) | A WebKit browser with James beside it: summarise or ask the page, add pages as sources, then a report that cites them, sent to Write | Open a start-page link, **Add to sources**, then ask a question under **Report** |
+| **Money** (George) | Cash, burn, runway, six months in and out, where it goes, and "ask your numbers". Imports a bank CSV; change a category and George remembers the payee | Ask "What happens if we hire one more engineer at 10k a month?" |
+| **Business** (Conner) | The pipeline as a board: drag deals between stages, weighted value, "going quiet" nudges, follow-ups drafted in your voice | Drag a deal to **Proposal**, open it, **Draft follow-up** |
+| **Design** (Robert) | Quick on-brand graphics exported as PNG, subject lift and black-and-white on this Mac, and the brand kit | Make a **Big number** graphic and **Export PNG**. Drop a photo into **Image tools** and **Lift subject** |
+| **Video** (Cole) | Open a video, transcribe it on this Mac, click a line to jump there, strike lines to cut them, export the cut and the captions | Strike a line in the sample transcript, then open a real video and **Transcribe** |
+| **Learn** (Harris) | Flashcards with spaced repetition and a flip-card review, cards made from your notes, learning paths | Review the sample deck. Paste notes and **Make cards** |
+| **Build** (Johnny) | Tune 11am by describing the change (preview, apply, undo), and a terminal where Johnny suggests commands but only you run them | Try "Warmer, and a bit more see-through", then **Revert** |
 | **Overnight** | Heavy jobs wait for the charger, a cool Mac and idle time or your overnight window. Writes tomorrow's brief ahead of time | "Run Now" to see it work immediately. **⇧⌘R** does the same |
 | **The Suite** | The apps that replace the subscription pile, and which ones are in this sandbox | Look, react, tell us what's missing or unnecessary |
 | **Design Lab** | Live sliders for paper tone, frost, **clarity** (how much of the desktop shows through), grain, depth, ink, **motion**, radius, display face and backdrop. Starts from your round-one picks | Tune it until it feels right, then **Copy Values** and paste them into your feedback |
 
-Shortcuts: **⌘1–⌘7** switch apps · **⌘\\** shows or hides the agent pane (it also steps aside on narrow windows) · **⌥Space** asks from anywhere · **⇧⌘R** runs tonight's work now · **⌘,** opens settings.
+Shortcuts: **⌘1–⌘9** switch between the first nine apps · **⌘\\** shows or hides the agent pane (it also steps aside on narrow windows) · **⌥Space** asks from anywhere · **⇧⌘R** runs tonight's work now · **⌘,** opens settings.
 
 Screenshots from the CI Mac (a small virtual display without a notch, so the notch shows as a pill, with a busy test desktop behind the app) are on the `ci/sandbox-shots` branch. Push a commit with `[shots]` in its message to refresh them.
 

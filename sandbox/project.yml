@@ -7,7 +7,7 @@ options:
 settings:
   base:
     SWIFT_VERSION: "5.0"
-    MARKETING_VERSION: "0.2.0"
+    MARKETING_VERSION: "0.3.0"
     CURRENT_PROJECT_VERSION: "1"
 targets:
   ElevenAm:
@@ -28,8 +28,10 @@ targets:
         NSHumanReadableCopyright: 11am sandbox build
         NSCalendarsFullAccessUsageDescription: 11am reads today's events to build your brief and the 11am check-in. Nothing leaves your Mac unless you allow cloud help.
         NSCalendarsUsageDescription: 11am reads today's events to build your brief and the 11am check-in.
+        NSSpeechRecognitionUsageDescription: Video transcribes your recordings on this Mac so you can edit them by editing the words.
         NSAppTransportSecurity:
           NSAllowsLocalNetworking: true
+          NSAllowsArbitraryLoadsInWebContent: true
     settings:
       base:
         PRODUCT_NAME: ElevenAm
