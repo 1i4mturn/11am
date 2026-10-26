@@ -304,7 +304,7 @@ enum MoneySamples {
                   let date = calendar.date(byAdding: .day, value: day - 1, to: month), date <= Date() else { return }
             items.append(MoneyTransaction(date: date, description: description, amount: amount, category: category))
         }
-        let revenue: [Double] = [16_400, 18_200, 19_900, 21_700, 23_600, 25_100]
+        let revenue: [Double] = [19_200, 21_000, 22_700, 24_500, 26_400, 27_900]
         for offset in 0..<6 {
             let index = 5 - offset
             add(offset, 3, "Stripe payout", revenue[index] * 0.55, "Revenue")
