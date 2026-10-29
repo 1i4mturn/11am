@@ -13,6 +13,7 @@ struct VideoTimeline: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 10) {
                 SectionLabel(text: "Timeline")
+                    .fixedSize()
                 Text("\(video.clips.count) \(video.clips.count == 1 ? "clip" : "clips") · \(VideoModel.clock(video.totalDuration))")
                     .font(.system(size: 11).monospacedDigit())
                     .foregroundStyle(theme.inkTertiary(scheme))
