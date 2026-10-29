@@ -138,11 +138,13 @@ struct MailView: View {
     private var subtitle: String {
         let needs = mail.count(.needsYou)
         let accounts = mail.accounts.count
-        let across = accounts > 1 ? " across \(accounts) accounts" : ""
+        if accounts > 1 {
+            return "\(needs == 0 ? "Nothing" : "\(needs)") \(needs == 1 ? "needs" : "need") you · \(accounts) accounts"
+        }
         switch needs {
-        case 0: return "Nothing needs you\(across). Marc sorted the rest."
-        case 1: return "1 email needs you\(across). Marc sorted the rest."
-        default: return "\(needs) emails need you\(across). Marc sorted the rest."
+        case 0: return "Nothing needs you. Marc sorted the rest."
+        case 1: return "1 email needs you. Marc sorted the rest."
+        default: return "\(needs) emails need you. Marc sorted the rest."
         }
     }
 
@@ -578,10 +580,12 @@ private struct MessageReader: View {
                                         .font(.system(size: 11.5))
                                         .foregroundStyle(theme.inkTertiary(scheme))
                                 }
-                                Text(message.date.formatted(date: .abbreviated, time: .shortened))
+                                Text(message.date.formatted(.dateTime.day().month(.abbreviated).hour().minute()))
                                     .font(.system(size: 11.5))
                                     .foregroundStyle(theme.inkTertiary(scheme))
+                                    .fixedSize()
                             }
+                            .lineLimit(1)
                             .foregroundStyle(theme.ink(scheme))
 
                             ReasonLine(message: message)

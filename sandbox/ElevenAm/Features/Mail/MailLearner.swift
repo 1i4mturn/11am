@@ -340,7 +340,9 @@ struct MailLearner: Codable, Sendable {
         let lane = MailLane.allCases[best]
         let factors = explain(x, lane: best, sender: sender, name: name, domain: message.senderDomain, traits: traits, excluding: records[message.id])
         // Lead with what you did, then what the email is like.
-        let behaviour = factors.first { MailLearner.behaviourFactors.contains($0.id) }
+        var behaviour = factors.first { MailLearner.behaviourFactors.contains($0.id) }
+        // "Replied 9 of 10 times" says more than "written to 11 times"; prefer it when both count.
+        if behaviour?.id == "wroteTo", let replied = factors.first(where: { $0.id == "replyRate" }) { behaviour = replied }
         let content = factors.first { !MailLearner.behaviourFactors.contains($0.id) }
         let reason = [behaviour?.text, content?.text].compactMap { $0 }.joined(separator: " · ")
         return MailVerdict(lane: lane, reason: reason.isEmpty ? traits.ruleReason : reason, factors: factors,
@@ -464,7 +466,8 @@ struct MailLearner: Codable, Sendable {
             .prefix(limit)
             .map { address, s in
                 Sender(address: address, name: MailLearner.shortName(names[address] ?? address, address),
-                       detail: s.replied > 0 ? "replied \(s.replied) of \(s.count)" : "read \(s.readLong) of \(s.count)")
+                       detail: [s.replied > 0 ? "replied \(s.replied)" : nil, s.readLong > 0 ? "read properly \(s.readLong)" : nil]
+                           .compactMap { $0 }.joined(separator: ", ") + " of \(s.count)")
             }
         let ignored = senders
             .filter { $0.value.count >= 3 && Double($0.value.ignored) / Double($0.value.count) >= 0.6 }

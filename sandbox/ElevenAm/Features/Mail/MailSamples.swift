@@ -83,7 +83,7 @@ enum MailSamples {
             Pattern(account: work, name: "Priya Shah", address: "priya@northwind.vc", count: 10, opened: 10, replied: 9, readLong: 6, removed: 0, question: true),
             Pattern(account: work, name: "Tom Becker", address: "tom@acme.co", count: 6, opened: 6, replied: 5, readLong: 2, removed: 0, question: true),
             Pattern(account: personal, name: "Mum", address: "mum@family.net", count: 20, opened: 20, replied: 14, readLong: 4, removed: 0, question: true),
-            Pattern(account: work, name: "Sam Ortiz", address: "sam@elevenam.app", count: 30, opened: 28, replied: 6, readLong: 22, removed: 0),
+            Pattern(account: work, name: "Sam Ortiz", address: "sam@elevenam.app", count: 30, opened: 28, replied: 3, readLong: 24, removed: 0),
             Pattern(account: work, name: "Alex Kim", address: "alex@kimdesign.co", count: 8, opened: 8, replied: 0, readLong: 0, removed: 0, subject: "Invoice"),
             Pattern(account: work, name: "Stripe", address: "receipts@stripe.com", count: 30, opened: 2, replied: 0, readLong: 0, removed: 10, subject: "Your receipt"),
             Pattern(account: work, name: "Linear", address: "notifications@linear.app", count: 25, opened: 22, replied: 0, readLong: 1, removed: 0),
