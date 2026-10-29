@@ -179,12 +179,13 @@ private struct TransportBar: View {
             } else if video.isWorking {
                 ProgressView().controlSize(.small)
             }
-            Text(video.status)
-                .font(.system(size: 11.5))
-                .foregroundStyle(theme.inkTertiary(scheme))
-                .lineLimit(2)
-                .frame(maxWidth: 320, alignment: .trailing)
         }
+        Text(video.status)
+            .font(.system(size: 11.5))
+            .foregroundStyle(theme.inkTertiary(scheme))
+            .lineLimit(1)
+            .truncationMode(.tail)
+            .help(video.status)
     }
 }
 

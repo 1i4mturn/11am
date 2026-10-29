@@ -16,6 +16,7 @@ struct VideoTimeline: View {
                 Text("\(video.clips.count) \(video.clips.count == 1 ? "clip" : "clips") · \(VideoModel.clock(video.totalDuration))")
                     .font(.system(size: 11).monospacedDigit())
                     .foregroundStyle(theme.inkTertiary(scheme))
+                    .fixedSize()
                 Spacer(minLength: 8)
                 Picker("Shape", selection: $video.aspect) {
                     ForEach(VideoAspect.allCases) { aspect in Text(aspect.title).tag(aspect) }
