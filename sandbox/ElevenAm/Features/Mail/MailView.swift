@@ -119,6 +119,9 @@ struct MailView: View {
                         if account.kind == .imap {
                             Button("Check now") { Task { await mail.sync(account) } }
                         }
+                        if account.microsoft != nil {
+                            Button("Sign in again with Microsoft") { mail.signInAgain(account) }
+                        }
                         Button("Remove from 11am", role: .destructive) { mail.removeAccount(account) }
                     }
                 }

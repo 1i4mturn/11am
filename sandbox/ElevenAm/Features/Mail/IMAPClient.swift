@@ -170,6 +170,42 @@ actor IMAPClient {
 
     /// Reads the greeting (once), then signs in. Safe to call again with other details after a refused sign-in.
     func login(username: String, password: String) async throws {
+        if try await readGreeting() {
+            do {
+                try await command("LOGIN \(IMAPClient.quote(username)) \(IMAPClient.quote(password))")
+            } catch let error as MailError {
+                throw MailError("Sign-in failed: \(error.message)")
+            }
+        }
+        try await loadCapabilities()
+    }
+
+    /// Signs in with an OAuth access token (SASL XOAUTH2), as Microsoft requires now that app passwords are gone.
+    func authenticate(user: String, token: String) async throws {
+        if try await readGreeting() {
+            let payload = Data("user=\(user)\u{1}auth=Bearer \(token)\u{1}\u{1}".utf8).base64EncodedString()
+            let tag = nextTag()
+            let prefix = Data((tag + " ").utf8)
+            try await socket.write("\(tag) AUTHENTICATE XOAUTH2\r\n")
+            var answered = false
+            while true {
+                let response = try await readResponse()
+                if response.first == 43 { // "+": the go-ahead, or an error report after a refused token
+                    try await socket.write(answered ? "\r\n" : payload + "\r\n")
+                    answered = true
+                    continue
+                }
+                guard response.starts(with: prefix) else { continue }
+                let status = String(decoding: response.dropFirst(prefix.count), as: UTF8.self)
+                if status.uppercased().hasPrefix("OK") { break }
+                throw MailError("Sign-in was refused: \(IMAPClient.readable(status))")
+            }
+        }
+        try await loadCapabilities()
+    }
+
+    /// True when the server still wants a sign-in (it didn't greet with PREAUTH).
+    private func readGreeting() async throws -> Bool {
         if greeting == nil {
             let hello = String(decoding: try await readResponse(), as: UTF8.self)
             guard hello.uppercased().hasPrefix("* OK") || hello.uppercased().hasPrefix("* PREAUTH") else {
@@ -177,13 +213,10 @@ actor IMAPClient {
             }
             greeting = hello
         }
-        if greeting?.uppercased().hasPrefix("* PREAUTH") == false {
-            do {
-                try await command("LOGIN \(IMAPClient.quote(username)) \(IMAPClient.quote(password))")
-            } catch let error as MailError {
-                throw MailError("Sign-in failed: \(error.message)")
-            }
-        }
+        return greeting?.uppercased().hasPrefix("* PREAUTH") == false
+    }
+
+    private func loadCapabilities() async throws {
         for line in try await command("CAPABILITY") {
             let text = String(decoding: line, as: UTF8.self)
             guard text.uppercased().hasPrefix("* CAPABILITY") else { continue }

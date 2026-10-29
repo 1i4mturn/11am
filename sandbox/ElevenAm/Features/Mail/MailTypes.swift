@@ -136,6 +136,7 @@ enum MailProvider: String, Codable, CaseIterable, Identifiable, Sendable {
     var savesSentItself: Bool { self == .gmail || self == .outlook }
 
     /// Microsoft switched off app passwords; those accounts need Microsoft sign-in.
+    /// Microsoft switched off app passwords; these accounts sign in with Microsoft instead.
     var needsMicrosoftSignIn: Bool { self == .outlook }
 
     var passwordHelp: String {
@@ -144,7 +145,7 @@ enum MailProvider: String, Codable, CaseIterable, Identifiable, Sendable {
         case .gmail: return "Use an app password (needs 2-Step Verification): myaccount.google.com/apppasswords."
         case .fastmail: return "Use an app password: Settings › Privacy & Security › Manage app passwords, with IMAP and SMTP access."
         case .yahoo: return "Use an app password: Account Security › Generate app password."
-        case .outlook: return "Microsoft has switched off app passwords for Outlook and Microsoft 365."
+        case .outlook: return "Sign in with Microsoft. It needs a free app registration with Microsoft, once."
         case .other: return "Your provider's IMAP and SMTP details, and an app password if it offers one."
         }
     }
@@ -225,6 +226,8 @@ struct MailAccount: Identifiable, Codable, Hashable, Sendable {
     var trashFolder: String?
     var sentFolder: String?
     var uidValidity: UInt32?
+    /// Set for Outlook and Microsoft 365: signs in with Microsoft (the refresh token is in the Keychain).
+    var microsoft: MicrosoftApp?
 
     var canSend: Bool { kind == .imap }
     var canChangeServer: Bool { kind == .imap }

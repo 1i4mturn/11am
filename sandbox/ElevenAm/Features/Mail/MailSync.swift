@@ -27,6 +27,12 @@ extension MailMessage {
     }
 }
 
+/// How an account signs in: an app password, or an OAuth access token (Microsoft).
+enum MailCredential: Sendable {
+    case password(String)
+    case token(String)
+}
+
 enum MailAction: Sendable {
     case seen(Bool)
     case flagged(Bool)
@@ -45,29 +51,32 @@ enum MailSync {
 
     static let headerFields = "FROM TO CC REPLY-TO SUBJECT DATE MESSAGE-ID IN-REPLY-TO REFERENCES LIST-ID LIST-UNSUBSCRIBE LIST-UNSUBSCRIBE-POST PRECEDENCE AUTO-SUBMITTED"
 
-    /// Signs in. iCloud accepts the name part or the whole address, depending on the account; try both.
-    static func connect(_ account: MailAccount, password: String) async throws -> IMAPClient {
+    /// Signs in with an app password or a Microsoft token. iCloud accepts the name part or the whole address,
+    /// depending on the account, so both are tried.
+    static func connect(_ account: MailAccount, credential: MailCredential) async throws -> IMAPClient {
         let client = IMAPClient(host: account.imapHost, port: account.imapPort, security: account.imapSecurity)
         do {
-            try await client.login(username: account.imapUsername, password: password)
+            switch credential {
+            case .password(let password):
+                do {
+                    try await client.login(username: account.imapUsername, password: password)
+                } catch {
+                    guard account.provider == .icloud, account.imapUsername != account.address else { throw error }
+                    try await client.login(username: account.address, password: password)
+                }
+            case .token(let token):
+                try await client.authenticate(user: account.address, token: token)
+            }
         } catch {
-            guard account.provider == .icloud, account.imapUsername != account.address else {
-                await client.logout()
-                throw error
-            }
-            do {
-                try await client.login(username: account.address, password: password)
-            } catch {
-                await client.logout()
-                throw error
-            }
+            await client.logout()
+            throw error
         }
         return client
     }
 
     /// Checks the details work, and finds the folders that matter.
-    static func test(_ account: MailAccount, password: String) async throws -> IMAPSpecialFolders {
-        let client = try await connect(account, password: password)
+    static func test(_ account: MailAccount, credential: MailCredential) async throws -> IMAPSpecialFolders {
+        let client = try await connect(account, credential: credential)
         do {
             let folders = IMAPSpecialFolders(try await client.folders())
             await client.logout()
@@ -80,8 +89,8 @@ enum MailSync {
 
     /// The last few weeks of the inbox: headers and flags for all of it, the full text for the newest.
     /// `haveBodies` are UIDs already cached with their text, so they aren't downloaded again.
-    static func inbox(_ account: MailAccount, password: String, haveBodies: Set<UInt32>, days: Int = 30) async throws -> Inbox {
-        let client = try await connect(account, password: password)
+    static func inbox(_ account: MailAccount, credential: MailCredential, haveBodies: Set<UInt32>, days: Int = 30) async throws -> Inbox {
+        let client = try await connect(account, credential: credential)
         do {
             let folders = IMAPSpecialFolders(try await client.folders())
             let selected = try await client.select("INBOX")
@@ -129,8 +138,8 @@ enum MailSync {
 
     /// Day one: what you've already done with six months of mail (opened, answered, flagged, left unread),
     /// and who you write to, from the Sent folder. Only headers and flags are read.
-    static func history(_ account: MailAccount, password: String, myAddresses: Set<String>, skipping recent: Set<String>) async throws -> (records: [MailRecord], sentTo: [String: Int]) {
-        let client = try await connect(account, password: password)
+    static func history(_ account: MailAccount, credential: MailCredential, myAddresses: Set<String>, skipping recent: Set<String>) async throws -> (records: [MailRecord], sentTo: [String: Int]) {
+        let client = try await connect(account, credential: credential)
         do {
             let folders = IMAPSpecialFolders(try await client.folders())
             let since = IMAPClient.searchDate(Date().addingTimeInterval(-180 * 86_400))
@@ -178,8 +187,8 @@ enum MailSync {
     }
 
     /// Archive, delete, read, flag or mark answered, on the server. Refuses if the inbox was rebuilt since the UIDs were read.
-    static func perform(_ action: MailAction, uids: [UInt32], validity: UInt32, account: MailAccount, password: String) async throws {
-        let client = try await connect(account, password: password)
+    static func perform(_ action: MailAction, uids: [UInt32], validity: UInt32, account: MailAccount, credential: MailCredential) async throws {
+        let client = try await connect(account, credential: credential)
         do {
             let selected = try await client.select("INBOX")
             guard selected.uidValidity == validity else {
@@ -203,12 +212,21 @@ enum MailSync {
         }
     }
 
-    /// Sends, files a copy in Sent where the provider doesn't, and marks the original as answered.
-    static func send(_ mail: OutgoingMail, account: MailAccount, password: String, original: (uid: UInt32, validity: UInt32)?) async throws {
-        try await SMTPClient.send(mail, host: account.smtpHost, port: account.smtpPort, security: account.smtpSecurity,
-                                  username: account.smtpUsername.isEmpty ? account.address : account.smtpUsername, password: password)
+    /// Sends (through Microsoft Graph for Microsoft accounts, SMTP otherwise), files a copy in Sent where the provider
+    /// doesn't, and marks the original as answered.
+    static func send(_ mail: OutgoingMail, account: MailAccount, credential: MailCredential, original: (uid: UInt32, validity: UInt32)?,
+                     graphToken: String? = nil) async throws {
+        if let graphToken {
+            try await MicrosoftGraph.send(mail, token: graphToken)
+        } else {
+            guard case .password(let password) = credential else {
+                throw MailError("\(account.name) needs Microsoft sign-in to send. Sign in again from the Accounts menu.")
+            }
+            try await SMTPClient.send(mail, host: account.smtpHost, port: account.smtpPort, security: account.smtpSecurity,
+                                      username: account.smtpUsername.isEmpty ? account.address : account.smtpUsername, password: password)
+        }
         guard (account.saveSentCopy && account.sentFolder != nil) || original != nil,
-              let client = try? await connect(account, password: password) else { return }
+              let client = try? await connect(account, credential: credential) else { return }
         if account.saveSentCopy, let sent = account.sentFolder {
             try? await client.append(mail.rfc5322(), to: sent, flags: ["\\Seen"])
         }

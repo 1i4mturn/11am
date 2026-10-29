@@ -1,16 +1,20 @@
 #!/usr/bin/env python3
 """A tiny IMAP and SMTP server for 11am's mail protocol tests. Plain TCP on localhost, one fake account.
 
-IMAP on 127.0.0.1:1143, SMTP on 127.0.0.1:1025. Login: you@example.com / secret.
+IMAP on 127.0.0.1:1143, SMTP on 127.0.0.1:1025, a Microsoft token endpoint and Graph sendMail on 127.0.0.1:1080.
+Login: you@example.com / secret, or XOAUTH2 with the token "good-token".
 Messages sent over SMTP are written to ./smtp-received.eml; IMAP commands are logged to ./imap.log.
 """
 import base64
 import email.utils
+import http.server
+import json
 import re
 import socketserver
 import sys
 import threading
 import time
+import urllib.parse
 
 USER, PASSWORD = "you@example.com", "secret"
 LOG = open("imap.log", "w", buffering=1)
@@ -95,6 +99,16 @@ class IMAPHandler(socketserver.StreamRequestHandler):
                         self.send(f"{tag} OK Logged in\r\n")
                     else:
                         self.send(f"{tag} NO [AUTHENTICATIONFAILED] Invalid credentials\r\n")
+                elif command == "AUTHENTICATE":
+                    self.send("+ \r\n")
+                    answer = base64.b64decode(self.rfile.readline().strip() or b"").decode(errors="replace")
+                    parts = dict(p.split("=", 1) for p in answer.split("\x01") if "=" in p)
+                    if parts.get("user") == USER and parts.get("auth") == "Bearer good-token":
+                        self.send(f"{tag} OK AUTHENTICATE completed\r\n")
+                    else:
+                        self.send("+ eyJzdGF0dXMiOiI0MDEifQ==\r\n")
+                        self.rfile.readline()
+                        self.send(f"{tag} NO AUTHENTICATE failed\r\n")
                 elif command == "CAPABILITY":
                     self.send("* CAPABILITY IMAP4rev1 MOVE UIDPLUS LITERAL+\r\n" + f"{tag} OK CAPABILITY done\r\n")
                 elif command == "LIST":
@@ -216,6 +230,49 @@ class SMTPHandler(socketserver.StreamRequestHandler):
                 self.send("500 Unknown\r\n")
 
 
+class MicrosoftHandler(http.server.BaseHTTPRequestHandler):
+    """Stands in for login.microsoftonline.com and graph.microsoft.com."""
+
+    def reply(self, status, body):
+        data = json.dumps(body).encode()
+        self.send_response(status)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(data)))
+        self.end_headers()
+        self.wfile.write(data)
+
+    def log_message(self, *args):
+        pass
+
+    def do_POST(self):
+        length = int(self.headers.get("Content-Length", 0))
+        body = self.rfile.read(length)
+        if self.path.endswith("/oauth2/v2.0/token"):
+            form = {k: v[0] for k, v in urllib.parse.parse_qs(body.decode()).items()}
+            claims = base64.urlsafe_b64encode(json.dumps({"email": USER, "name": "You Test"}).encode()).decode().rstrip("=")
+            ok = {"access_token": "good-token", "refresh_token": "refresh-2", "expires_in": 3599, "token_type": "Bearer",
+                  "id_token": f"eyJhbGciOiJub25lIn0.{claims}."}
+            if form.get("client_id") != "11111111-2222-3333-4444-555555555555":
+                self.reply(400, {"error": "unauthorized_client", "error_description": "AADSTS700016: Application not found."})
+            elif form.get("grant_type") == "authorization_code" and form.get("code") == "code-1" and len(form.get("code_verifier", "")) >= 43:
+                self.reply(200, ok)
+            elif form.get("grant_type") == "refresh_token" and form.get("refresh_token") == "refresh-1":
+                self.reply(200, ok)
+            else:
+                self.reply(400, {"error": "invalid_grant", "error_description": "AADSTS70000: The provided grant is invalid.\r\nTrace ID: x"})
+        elif self.path == "/v1.0/me/sendMail":
+            if self.headers.get("Authorization") != "Bearer good-token":
+                self.reply(401, {"error": {"code": "InvalidAuthenticationToken", "message": "Access token is empty."}})
+                return
+            with open("graph-sent.eml", "wb") as handle:
+                handle.write(base64.b64decode(body))
+            self.send_response(202)
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+        else:
+            self.reply(404, {"error": "not found"})
+
+
 class Server(socketserver.ThreadingTCPServer):
     allow_reuse_address = True
     daemon_threads = True
@@ -225,6 +282,8 @@ if __name__ == "__main__":
     imap = Server(("127.0.0.1", 1143), IMAPHandler)
     smtp = Server(("127.0.0.1", 1025), SMTPHandler)
     threading.Thread(target=smtp.serve_forever, daemon=True).start()
+    web = http.server.ThreadingHTTPServer(("127.0.0.1", 1080), MicrosoftHandler)
+    threading.Thread(target=web.serve_forever, daemon=True).start()
     print("fake mail server on 1143 (IMAP) and 1025 (SMTP)", flush=True)
     try:
         imap.serve_forever()

@@ -229,7 +229,7 @@ final class MailModel: ObservableObject {
         let cleanAddress = address.trimmingCharacters(in: .whitespaces).lowercased()
         guard cleanAddress.contains("@"), !password.isEmpty else { return "Enter the email address and its app password." }
         if provider.needsMicrosoftSignIn {
-            return "Microsoft has switched off app passwords. Add this account to Apple Mail, then choose Read Apple Mail on this Mac."
+            return "Outlook and Microsoft 365 sign in with Microsoft instead of a password."
         }
         var account = MailAccount.imap(provider: provider, name: name.isEmpty ? provider.title : name, address: cleanAddress)
         if let imapHost, !imapHost.isEmpty { account.imapHost = imapHost }
@@ -237,7 +237,7 @@ final class MailModel: ObservableObject {
         guard !account.imapHost.isEmpty else { return "Enter the IMAP server, for example imap.example.com." }
         account.colorIndex = liveAccounts.count
         do {
-            let folders = try await MailSync.test(account, password: password)
+            let folders = try await MailSync.test(account, credential: .password(password))
             apply(folders, to: &account)
         } catch {
             return error.localizedDescription
@@ -250,7 +250,82 @@ final class MailModel: ObservableObject {
         return nil
     }
 
+    /// Signs in with Microsoft in a system web sheet, then checks mail access and adds (or refreshes) the account.
+    func addMicrosoftAccount(app: MicrosoftApp, name: String, loginHint: String? = nil) async -> String? {
+        let clientID = app.clientID.trimmingCharacters(in: .whitespaces)
+        guard UUID(uuidString: clientID) != nil else {
+            return "Paste the Application (client) ID from your app registration. It looks like 1234abcd-…"
+        }
+        let tenant = app.tenant.trimmingCharacters(in: .whitespaces)
+        let cleanApp = MicrosoftApp(clientID: clientID, tenant: tenant.isEmpty ? "common" : tenant)
+        UserDefaults.standard.set(cleanApp.clientID, forKey: "mail.microsoft.clientID")
+        UserDefaults.standard.set(cleanApp.tenant, forKey: "mail.microsoft.tenant")
+        do {
+            let result = try await MicrosoftSignIn().signIn(app: cleanApp, loginHint: loginHint)
+            guard let refresh = result.tokens.refreshToken else {
+                return "Microsoft didn't allow 11am to stay signed in. Check the registration allows offline_access."
+            }
+            var account = liveAccounts.first { $0.address == result.address && $0.microsoft != nil }
+                ?? MailAccount.imap(provider: .outlook, name: name.isEmpty ? "Outlook" : name, address: result.address)
+            account.microsoft = cleanApp
+            account.saveSentCopy = false
+            let folders = try await MailSync.test(account, credential: .token(result.tokens.accessToken))
+            apply(folders, to: &account)
+            Keychain.save(refresh, account: account.keychainKey)
+            await MicrosoftTokenStore.shared.forget(account)
+            await MicrosoftTokenStore.shared.remember(result.tokens, for: account, scope: MicrosoftAuth.imapScope)
+            if let index = liveAccounts.firstIndex(where: { $0.id == account.id }) {
+                liveAccounts[index] = account
+            } else {
+                account.colorIndex = liveAccounts.count
+                liveAccounts.append(account)
+            }
+            saveAccounts()
+            goLive()
+            notice = "Signed in to \(result.address) with Microsoft."
+            Task { await sync(account) }
+            return nil
+        } catch {
+            let text = error.localizedDescription
+            if text.contains("AADSTS50194") || text.contains("AADSTS700016") {
+                return "\(text) If your registration is for your organisation only, paste its Directory (tenant) ID."
+            }
+            if text.lowercased().contains("imap") || text.contains("Sign-in was refused") {
+                return "\(text) If this is a Microsoft 365 business mailbox, IMAP may be switched off for it: Microsoft 365 admin centre › Users › your user › Mail › Manage email apps › IMAP."
+            }
+            return text
+        }
+    }
+
+    /// When Microsoft asks you to sign in again (a password change, or months without use).
+    func signInAgain(_ account: MailAccount) {
+        guard let app = account.microsoft else { return }
+        Task {
+            if let problem = await addMicrosoftAccount(app: app, name: account.name, loginHint: account.address) {
+                notice = problem
+            }
+        }
+    }
+
+    /// An app password from the Keychain, or a fresh Microsoft token.
+    private func signInDetails(for account: MailAccount) async throws -> MailCredential {
+        if account.microsoft != nil {
+            return .token(try await MicrosoftTokenStore.shared.accessToken(for: account, scope: MicrosoftAuth.imapScope))
+        }
+        guard let password = Keychain.read(account: account.keychainKey) else {
+            throw MailError("The password isn't in the Keychain any more. Remove the account and add it again.")
+        }
+        return .password(password)
+    }
+
+    /// Microsoft accounts send through Graph; everyone else uses SMTP.
+    private func graphToken(for account: MailAccount) async throws -> String? {
+        guard account.microsoft != nil else { return nil }
+        return try await MicrosoftTokenStore.shared.accessToken(for: account, scope: MicrosoftAuth.graphSendScope)
+    }
+
     func removeAccount(_ account: MailAccount) {
+        Task { await MicrosoftTokenStore.shared.forget(account) }
         Keychain.delete(account: account.keychainKey)
         liveAccounts.removeAll { $0.id == account.id }
         saveAccounts()
@@ -357,16 +432,13 @@ final class MailModel: ObservableObject {
 
     func sync(_ account: MailAccount) async {
         guard source == .live, !syncing.contains(account.id) else { return }
-        guard let password = Keychain.read(account: account.keychainKey) else {
-            notice = "\(account.name): the password isn't in the Keychain any more. Remove the account and add it again."
-            return
-        }
         syncing.insert(account.id)
         defer { syncing.remove(account.id) }
         let cached = messages.filter { $0.accountID == account.id }
         let haveBodies = Set(cached.filter { !$0.body.isEmpty }.compactMap(\.uid))
         do {
-            let inbox = try await MailSync.inbox(account, password: password, haveBodies: haveBodies)
+            let credential = try await signInDetails(for: account)
+            let inbox = try await MailSync.inbox(account, credential: credential, haveBodies: haveBodies)
             var current = liveAccounts.first { $0.id == account.id } ?? account
             let sameMailbox = current.uidValidity == inbox.uidValidity
             let previous = Dictionary(cached.compactMap { message in message.uid.map { ($0, message) } }, uniquingKeysWith: { first, _ in first })
@@ -383,18 +455,18 @@ final class MailModel: ObservableObject {
             saveCache(for: account.id)
             refreshLanes()
             if selectedID == nil { selectQuietly(inLane.first?.id) }
-            if !current.historyImported { await importHistory(current, password: password) }
+            if !current.historyImported { await importHistory(current, credential: credential) }
         } catch {
             notice = "\(account.name): \(error.localizedDescription)"
         }
     }
 
-    private func importHistory(_ account: MailAccount, password: String) async {
+    private func importHistory(_ account: MailAccount, credential: MailCredential) async {
         progress = "Marc is reading how you've handled \(account.name) mail…"
         defer { progress = nil }
         let recent = Set(messages.filter { $0.accountID == account.id }.map(\.messageID).filter { !$0.isEmpty })
         do {
-            let result = try await MailSync.history(account, password: password, myAddresses: myAddresses, skipping: recent)
+            let result = try await MailSync.history(account, credential: credential, myAddresses: myAddresses, skipping: recent)
             learner.importHistory(result.records, sentTo: result.sentTo)
             var updated = account
             updated.historyImported = true
@@ -496,10 +568,11 @@ final class MailModel: ObservableObject {
     /// Carries an action out on the server for IMAP accounts. Other accounts keep the change on this Mac.
     private func onServer(_ action: MailAction, _ message: MailMessage, undo: (() -> Void)? = nil) {
         guard source == .live, let account = account(for: message), account.kind == .imap, let uid = message.uid,
-              let validity = validity(of: message), let password = Keychain.read(account: account.keychainKey) else { return }
+              let validity = validity(of: message) else { return }
         Task {
             do {
-                try await MailSync.perform(action, uids: [uid], validity: validity, account: account, password: password)
+                let credential = try await signInDetails(for: account)
+                try await MailSync.perform(action, uids: [uid], validity: validity, account: account, credential: credential)
             } catch {
                 notice = "\(account.name): \(error.localizedDescription)"
                 undo?()
@@ -702,8 +775,7 @@ final class MailModel: ObservableObject {
     }
 
     private func deliver(_ draft: MailDraft) async {
-        guard let account = accounts.first(where: { $0.id == draft.accountID }), account.canSend,
-              let password = Keychain.read(account: account.keychainKey) else {
+        guard let account = accounts.first(where: { $0.id == draft.accountID }), account.canSend else {
             pendingSend = nil
             composer = draft
             notice = "Choose an account that can send."
@@ -714,7 +786,9 @@ final class MailModel: ObservableObject {
         let original = draft.replyingTo.flatMap { id in messages.first { $0.id == id } }
         let reference = original.flatMap { message in message.uid.flatMap { uid in validity(of: message).map { (uid: uid, validity: $0) } } }
         do {
-            try await MailSync.send(mail, account: account, password: password, original: reference)
+            let credential = try await signInDetails(for: account)
+            let graph = try await graphToken(for: account)
+            try await MailSync.send(mail, account: account, credential: credential, original: reference, graphToken: graph)
             pendingSend = nil
             learner.noteSent(to: mail.recipients.map(SMTPClient.bareAddress))
             if let original {
@@ -732,10 +806,11 @@ final class MailModel: ObservableObject {
     }
 
     private func sendQuietly(_ mail: OutgoingMail, from account: MailAccount, done: String) {
-        guard let password = Keychain.read(account: account.keychainKey) else { return }
         Task {
             do {
-                try await MailSync.send(mail, account: account, password: password, original: nil)
+                let credential = try await signInDetails(for: account)
+                let graph = try await graphToken(for: account)
+                try await MailSync.send(mail, account: account, credential: credential, original: nil, graphToken: graph)
                 notice = done
             } catch {
                 notice = "Not sent: \(error.localizedDescription)"

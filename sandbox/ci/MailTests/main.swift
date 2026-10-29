@@ -77,13 +77,13 @@ account.smtpPort = 1025
 account.smtpSecurity = .plainForTesting
 
 do {
-    let folders = try await MailSync.test(account, password: "secret")
+    let folders = try await MailSync.test(account, credential: .password("secret"))
     check(folders.archive == "Archive" && folders.sent == "Sent Messages" && folders.trash == "Trash", "special-use folders (one sent as a literal)")
     account.archiveFolder = folders.archive
     account.trashFolder = folders.trash
     account.sentFolder = folders.sent
 
-    let inbox = try await MailSync.inbox(account, password: "secret", haveBodies: [])
+    let inbox = try await MailSync.inbox(account, credential: .password("secret"), haveBodies: [])
     check(inbox.messages.count == 3, "inbox: 3 messages")
     check(inbox.uidValidity == 42, "inbox: UIDVALIDITY")
     let tom = inbox.messages.first { $0.fromAddress == "tom@acme.co" }
@@ -95,20 +95,20 @@ do {
     check(lenny?.isBulk == true && lenny?.unsubscribe?.oneClick == true, "inbox: list headers")
     check(inbox.messages.first { $0.fromAddress == "priya@northwind.vc" }?.seen == true, "inbox: seen flag")
 
-    let history = try await MailSync.history(account, password: "secret", myAddresses: ["you@example.com"],
+    let history = try await MailSync.history(account, credential: .password("secret"), myAddresses: ["you@example.com"],
                                              skipping: Set(inbox.messages.map(\.messageID)))
     check(history.records.count == 4, "history: archive read for day-one learning (\(history.records.count))")
     check(history.records.filter(\.replied).count == 2, "history: answered flags")
     check(history.records.filter(\.ignored).count == 2, "history: unread for days")
     check(history.sentTo["priya@northwind.vc"] == 2 && history.sentTo["tom@acme.co"] == 1, "history: who you write to")
 
-    try await MailSync.perform(.seen(true), uids: [102], validity: 42, account: account, password: "secret")
-    try await MailSync.perform(.archive, uids: [103], validity: 42, account: account, password: "secret")
-    let after = try await MailSync.inbox(account, password: "secret", haveBodies: [])
+    try await MailSync.perform(.seen(true), uids: [102], validity: 42, account: account, credential: .password("secret"))
+    try await MailSync.perform(.archive, uids: [103], validity: 42, account: account, credential: .password("secret"))
+    let after = try await MailSync.inbox(account, credential: .password("secret"), haveBodies: [])
     check(after.messages.count == 2, "archive: left the inbox")
     check(after.messages.first { $0.uid == 102 }?.seen == true, "mark read: stored on the server")
     do {
-        try await MailSync.perform(.archive, uids: [102], validity: 7, account: account, password: "secret")
+        try await MailSync.perform(.archive, uids: [102], validity: 7, account: account, credential: .password("secret"))
         check(false, "a stale UIDVALIDITY is refused")
     } catch {
         check(true, "a stale UIDVALIDITY is refused")
@@ -116,7 +116,7 @@ do {
 
     let mail = OutgoingMail(fromName: "You Test", fromAddress: "you@example.com", to: ["Priya <priya@northwind.vc>"],
                             subject: "Re: Café", body: "Hi Priya,\n.starts with a dot\nThanks", inReplyTo: "<x@fake>", references: "<x@fake>")
-    try await MailSync.send(mail, account: account, password: "secret", original: (uid: 102, validity: 42))
+    try await MailSync.send(mail, account: account, credential: .password("secret"), original: (uid: 102, validity: 42))
     let received = (try? String(contentsOfFile: "smtp-received.eml", encoding: .utf8)) ?? ""
     check(received.contains("In-Reply-To: <x@fake>"), "send: threading headers")
     check(received.contains("=2Estarts with a dot"), "send: a leading dot can't end the message")
@@ -128,13 +128,91 @@ do {
     var wrong = account
     wrong.imapUsername = "someone@else.com"
     do {
-        _ = try await MailSync.test(wrong, password: "nope")
+        _ = try await MailSync.test(wrong, credential: .password("nope"))
         check(false, "a wrong password is reported")
     } catch {
         check(error.localizedDescription.contains("Sign-in failed"), "a wrong password is reported: \(error.localizedDescription)")
     }
 } catch {
     check(false, "protocol run: \(error.localizedDescription)")
+}
+
+// MARK: Microsoft sign-in, against the fake token endpoint and Graph
+
+MicrosoftAuth.authorityHost = "http://127.0.0.1:1080"
+MicrosoftGraph.baseURL = "http://127.0.0.1:1080/v1.0"
+let app = MicrosoftApp(clientID: "11111111-2222-3333-4444-555555555555", tenant: "common")
+let pkce = MicrosoftAuth.PKCE.make()
+check(pkce.verifier.count >= 43 && pkce.challenge != pkce.verifier && !pkce.challenge.contains("="), "Microsoft: PKCE verifier and S256 challenge")
+let authorize = MicrosoftAuth.authorizeURL(app: app, pkce: pkce, loginHint: "you@example.com")?.absoluteString ?? ""
+check(authorize.contains("code_challenge_method=S256") && authorize.contains("offline_access") && authorize.contains("IMAP.AccessAsUser.All")
+      && authorize.contains("Mail.Send") && authorize.contains("redirect_uri=au.elevenam.sandbox://auth"), "Microsoft: authorize URL")
+let callback = URL(string: "au.elevenam.sandbox://auth?code=code-1&state=\(pkce.state)")!
+check((try? MicrosoftAuth.code(from: callback, state: pkce.state)) == "code-1", "Microsoft: code from the redirect")
+check((try? MicrosoftAuth.code(from: callback, state: "someone-else")) == nil, "Microsoft: a redirect with the wrong state is refused")
+let denied = URL(string: "au.elevenam.sandbox://auth?error=access_denied&error_description=The%20user%20declined&state=\(pkce.state)")!
+do {
+    _ = try MicrosoftAuth.code(from: denied, state: pkce.state)
+    check(false, "Microsoft: a declined sign-in is reported")
+} catch {
+    check(error.localizedDescription.contains("declined"), "Microsoft: a declined sign-in is reported")
+}
+
+do {
+    let tokens = try await MicrosoftAuth.redeem(code: "code-1", pkce: pkce, app: app)
+    check(tokens.accessToken == "good-token" && tokens.refreshToken == "refresh-2", "Microsoft: code redeemed for tokens")
+    check(tokens.expiresAt > Date().addingTimeInterval(3_000), "Microsoft: expiry read")
+    let identity = MicrosoftAuth.identity(from: tokens.idToken)
+    check(identity?.address == "you@example.com" && identity?.name == "You Test", "Microsoft: who signed in, from the ID token")
+    let refreshed = try await MicrosoftAuth.refresh("refresh-1", app: app, scope: MicrosoftAuth.graphSendScope)
+    check(refreshed.accessToken == "good-token", "Microsoft: refresh token gives a new access token")
+    do {
+        _ = try await MicrosoftAuth.refresh("expired", app: app, scope: MicrosoftAuth.imapScope)
+        check(false, "Microsoft: a dead refresh token is reported")
+    } catch {
+        check(error.localizedDescription.contains("AADSTS70000") && !error.localizedDescription.contains("Trace ID"), "Microsoft: a dead refresh token is reported: \(error.localizedDescription)")
+    }
+    do {
+        _ = try await MicrosoftAuth.refresh("refresh-1", app: MicrosoftApp(clientID: "wrong"), scope: MicrosoftAuth.imapScope)
+        check(false, "Microsoft: an unknown client ID is reported")
+    } catch {
+        check(error.localizedDescription.contains("AADSTS700016"), "Microsoft: an unknown client ID is reported")
+    }
+
+    var outlook = account
+    outlook.provider = .outlook
+    outlook.microsoft = app
+    outlook.saveSentCopy = false
+    let folders = try await MailSync.test(outlook, credential: .token(tokens.accessToken))
+    check(folders.archive == "Archive", "Microsoft: IMAP sign-in with the token (XOAUTH2)")
+    let inbox = try await MailSync.inbox(outlook, credential: .token("good-token"), haveBodies: [])
+    check(!inbox.messages.isEmpty, "Microsoft: inbox read with the token")
+    do {
+        _ = try await MailSync.test(outlook, credential: .token("stale"))
+        check(false, "Microsoft: a refused token is reported")
+    } catch {
+        check(error.localizedDescription.contains("Sign-in was refused"), "Microsoft: a refused token is reported")
+    }
+
+    let mail = OutgoingMail(fromName: "You Test", fromAddress: "you@example.com", to: ["priya@northwind.vc"],
+                            subject: "Sent through Graph", body: "Hello from 11am")
+    try await MailSync.send(mail, account: outlook, credential: .token("good-token"), original: (uid: 102, validity: 42), graphToken: "good-token")
+    let graphSent = (try? String(contentsOfFile: "graph-sent.eml", encoding: .utf8)) ?? ""
+    check(graphSent.contains("Subject: Sent through Graph") && graphSent.contains("Hello from 11am"), "Microsoft: sent through Graph as MIME")
+    do {
+        try await MicrosoftGraph.send(mail, token: "stale")
+        check(false, "Microsoft: Graph refusal is reported")
+    } catch {
+        check(error.localizedDescription.contains("Access token is empty"), "Microsoft: Graph refusal is reported")
+    }
+    do {
+        try await MailSync.send(mail, account: outlook, credential: .token("good-token"), original: nil, graphToken: nil)
+        check(false, "Microsoft: never falls back to SMTP without a password")
+    } catch {
+        check(true, "Microsoft: never falls back to SMTP without a password")
+    }
+} catch {
+    check(false, "Microsoft run: \(error.localizedDescription)")
 }
 
 print(failures == 0 ? "ALL PASSED" : "\(failures) FAILED")

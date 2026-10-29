@@ -49,7 +49,7 @@ jobs:
           python3 ../ci/fake_mail_server.py > server.log 2>&1 &
           sleep 1
           swiftc -O -o mailtests \
-            ../ElevenAm/Features/Mail/{MailTypes,MailSocket,IMAPClient,SMTPClient,MailParser,MailTriage,MailLearner,MailSync,MailSamples}.swift \
+            ../ElevenAm/Features/Mail/{MailTypes,MailSocket,IMAPClient,SMTPClient,MailParser,MailTriage,MailLearner,MailSync,MailSamples,MicrosoftAuth}.swift \
             ../ci/MailTests/main.swift 2>&1 | grep -E "error|warning: unre" || true
           test -x mailtests
           ./mailtests

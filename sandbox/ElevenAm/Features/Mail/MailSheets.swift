@@ -155,7 +155,8 @@ struct AddAccountView: View {
     @EnvironmentObject private var mail: MailModel
     @Environment(\.colorScheme) private var scheme
     @Environment(\.dismiss) private var dismiss
-    @State private var provider: MailProvider = .icloud
+    // -mailProvider outlook preselects a provider, for screenshots.
+    @State private var provider = MailProvider(rawValue: UserDefaults.standard.string(forKey: "mailProvider") ?? "") ?? .icloud
     @State private var name = ""
     @State private var address = ""
     @State private var password = ""
@@ -163,6 +164,9 @@ struct AddAccountView: View {
     @State private var smtpHost = ""
     @State private var checking = false
     @State private var error: String?
+    @State private var clientID = UserDefaults.standard.string(forKey: "mail.microsoft.clientID") ?? ""
+    @State private var tenant = UserDefaults.standard.string(forKey: "mail.microsoft.tenant") ?? "common"
+    @State private var showingSteps = UserDefaults.standard.string(forKey: "mail.microsoft.clientID") == nil
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -178,16 +182,7 @@ struct AddAccountView: View {
             }
 
             if provider.needsMicrosoftSignIn {
-                Card {
-                    Text("Microsoft has switched off app passwords for Outlook and Microsoft 365, so these accounts need Microsoft sign-in, which 11am doesn't have yet. Until then: add the account to Apple Mail (it handles Microsoft sign-in), and Marc reads and learns from it there.")
-                        .font(.system(size: 12.5))
-                        .fixedSize(horizontal: false, vertical: true)
-                    Button("Read Apple Mail on this Mac") {
-                        mail.readAppleMail()
-                        dismiss()
-                    }
-                    .buttonStyle(.vellumPrimary)
-                }
+                microsoftSetup
             } else {
                 labelled("Name") {
                     TextField("Work, Personal…", text: $name)
@@ -226,19 +221,20 @@ struct AddAccountView: View {
                             .textFieldStyle(.roundedBorder)
                     }
                 }
-                if let error {
-                    Text(error)
-                        .font(.system(size: 12))
-                        .foregroundStyle(theme.ink(scheme))
-                        .padding(10)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(RoundedRectangle(cornerRadius: 8).fill(theme.well(scheme)))
-                        .fixedSize(horizontal: false, vertical: true)
-                }
+            }
+
+            if let error {
+                Text(error)
+                    .font(.system(size: 12))
+                    .foregroundStyle(theme.ink(scheme))
+                    .padding(10)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(RoundedRectangle(cornerRadius: 8).fill(theme.well(scheme)))
+                    .fixedSize(horizontal: false, vertical: true)
             }
 
             HStack(spacing: 8) {
-                Text("The password is kept in your Mac's Keychain.")
+                Text(provider.needsMicrosoftSignIn ? "11am never sees your Microsoft password." : "The password is kept in your Mac's Keychain.")
                     .font(.system(size: 11))
                     .foregroundStyle(theme.inkTertiary(scheme))
                 Spacer()
@@ -246,7 +242,12 @@ struct AddAccountView: View {
                 Button("Cancel") { dismiss() }
                     .buttonStyle(.vellumSecondary)
                     .keyboardShortcut(.cancelAction)
-                if !provider.needsMicrosoftSignIn {
+                if provider.needsMicrosoftSignIn {
+                    Button(checking ? "Signing in…" : "Sign in with Microsoft") { signInWithMicrosoft() }
+                        .buttonStyle(.vellumPrimary)
+                        .disabled(checking || clientID.trimmingCharacters(in: .whitespaces).isEmpty)
+                        .keyboardShortcut(.defaultAction)
+                } else {
                     Button(checking ? "Checking…" : "Add account") { add() }
                         .buttonStyle(.vellumPrimary)
                         .disabled(checking || address.isEmpty || password.isEmpty)
@@ -255,9 +256,99 @@ struct AddAccountView: View {
             }
         }
         .padding(24)
-        .frame(width: 520)
+        .frame(width: 560)
         .animation(theme.spring, value: provider)
         .animation(theme.spring, value: error)
+    }
+
+    private var microsoftSetup: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Microsoft only lets apps it knows sign in to mail, so 11am needs its own registration with Microsoft. It's free, takes about five minutes, and you do it once.")
+                .font(.system(size: 12.5))
+                .foregroundStyle(theme.inkSecondary(scheme))
+                .fixedSize(horizontal: false, vertical: true)
+            labelled("Name") {
+                TextField("Personal, Work…", text: $name)
+                    .textFieldStyle(.roundedBorder)
+            }
+            labelled("Client ID") {
+                TextField("Application (client) ID", text: $clientID)
+                    .textFieldStyle(.roundedBorder)
+                    .font(.system(size: 12.5).monospaced())
+            }
+            labelled("Directory") {
+                TextField("common", text: $tenant)
+                    .textFieldStyle(.roundedBorder)
+                    .font(.system(size: 12.5).monospaced())
+            }
+            Text("Leave Directory as common unless you registered 11am for your organisation only; then paste its Directory (tenant) ID.")
+                .font(.system(size: 11))
+                .foregroundStyle(theme.inkTertiary(scheme))
+                .fixedSize(horizontal: false, vertical: true)
+            DisclosureGroup("How to get a client ID", isExpanded: $showingSteps) {
+                VStack(alignment: .leading, spacing: 7) {
+                    step(1, "Open Microsoft Entra and sign in with your Microsoft 365 account.") {
+                        Button("Open Entra") {
+                            if let url = URL(string: "https://entra.microsoft.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade") {
+                                NSWorkspace.shared.open(url)
+                            }
+                        }
+                        .buttonStyle(.vellumSecondary)
+                    }
+                    step(2, "App registrations › New registration. Name it 11am.") { EmptyView() }
+                    step(3, "Supported account types: the option that includes personal Microsoft accounts (any organisation and personal).") { EmptyView() }
+                    step(4, "Redirect URI: choose Public client/native (mobile & desktop), paste this, then Register:") {
+                        HStack(spacing: 6) {
+                            Text(MicrosoftAuth.redirectURI)
+                                .font(.system(size: 12).monospaced())
+                                .textSelection(.enabled)
+                            Button("Copy") {
+                                NSPasteboard.general.clearContents()
+                                NSPasteboard.general.setString(MicrosoftAuth.redirectURI, forType: .string)
+                            }
+                            .buttonStyle(.vellumSecondary)
+                        }
+                    }
+                    step(5, "Copy the Application (client) ID into the box above and choose Sign in with Microsoft.") { EmptyView() }
+                    Text("If your organisation needs an admin to approve apps: in the registration, API permissions › Add a permission › APIs my organisation uses › Office 365 Exchange Online › IMAP.AccessAsUser.All, and Microsoft Graph › Mail.Send and offline_access, then Grant admin consent.")
+                        .font(.system(size: 11))
+                        .foregroundStyle(theme.inkTertiary(scheme))
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .padding(.top, 6)
+            }
+            .font(.system(size: 12.5, weight: .medium))
+        }
+    }
+
+    private func step<Accessory: View>(_ number: Int, _ text: String, @ViewBuilder accessory: () -> Accessory) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            Text("\(number)")
+                .font(.system(size: 11, weight: .bold).monospacedDigit())
+                .foregroundStyle(theme.inkTertiary(scheme))
+                .frame(width: 12)
+            VStack(alignment: .leading, spacing: 5) {
+                Text(text)
+                    .font(.system(size: 12))
+                    .foregroundStyle(theme.ink(scheme))
+                    .fixedSize(horizontal: false, vertical: true)
+                accessory()
+            }
+        }
+    }
+
+    private func signInWithMicrosoft() {
+        checking = true
+        error = nil
+        Task {
+            let problem = await mail.addMicrosoftAccount(app: MicrosoftApp(clientID: clientID, tenant: tenant), name: name)
+            checking = false
+            if let problem {
+                error = problem
+            } else {
+                dismiss()
+            }
+        }
     }
 
     private func add() {
