@@ -36,6 +36,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if arguments.bool(forKey: "openNotch") {
             notch.openPreview()
         }
+        if let tool = arguments.string(forKey: "photoTool"), let value = PhotoTool(rawValue: tool) {
+            model.photo.tool = value
+        }
+        if arguments.bool(forKey: "videoSample") {
+            model.video.loadSamples()
+        }
         if arguments.bool(forKey: "activate") {
             NSApp.activate()
         }

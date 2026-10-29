@@ -2,7 +2,7 @@ import SwiftUI
 
 /// The places in the sandbox. Apps come first; the agent behind each one is the quiet worker.
 enum AppSection: String, CaseIterable, Identifiable {
-    case today, mail, write, files, research, money, business, design, video, learn, build, overnight, suite, lab
+    case today, mail, write, files, research, money, business, design, photo, video, learn, build, overnight, suite, lab
 
     var id: String { rawValue }
 
@@ -16,6 +16,7 @@ enum AppSection: String, CaseIterable, Identifiable {
         case .money: return "Money"
         case .business: return "Business"
         case .design: return "Design"
+        case .photo: return "Photo"
         case .video: return "Video"
         case .learn: return "Learn"
         case .build: return "Build"
@@ -35,6 +36,7 @@ enum AppSection: String, CaseIterable, Identifiable {
         case .money: return "ge"
         case .business: return "cr"
         case .design: return "rt"
+        case .photo: return "rt"
         case .video: return "co"
         case .learn: return "hr"
         case .build: return "jo"
@@ -54,6 +56,7 @@ enum AppSection: String, CaseIterable, Identifiable {
         case .money: return "chart.line.uptrend.xyaxis"
         case .business: return "briefcase"
         case .design: return "paintbrush.pointed"
+        case .photo: return "camera.aperture"
         case .video: return "film"
         case .learn: return "graduationcap"
         case .build: return "hammer"
@@ -79,7 +82,8 @@ enum AppSection: String, CaseIterable, Identifiable {
         case .money: return "Where it is, where it goes, what's next"
         case .business: return "Pipeline, grounded in real conversations"
         case .design: return "On-brand graphics and image tools"
-        case .video: return "Edit video by editing the words"
+        case .photo: return "Colour, crop and clean-ups"
+        case .video: return "Cut, colour and clean up the sound"
         case .learn: return "Ten minutes a day, not homework"
         case .build: return "Make the software fit you"
         case .overnight: return "Heavy work, done while you sleep"
@@ -115,6 +119,8 @@ final class AppModel: ObservableObject {
     let money: MoneyModel
     let business: BusinessModel
     let design: DesignModel
+    let looks: LookLibrary
+    let photo: PhotoModel
     let video: VideoModel
     let learn: LearnModel
     let build: BuildModel
@@ -139,9 +145,12 @@ final class AppModel: ObservableObject {
         self.money = MoneyModel(brain: brain)
         self.business = BusinessModel(brain: brain, voice: voice)
         self.design = DesignModel(brain: brain)
-        self.video = VideoModel(brain: brain)
+        let looks = LookLibrary()
+        self.looks = looks
+        self.photo = PhotoModel(looks: looks)
+        self.video = VideoModel(brain: brain, looks: looks)
         self.learn = LearnModel(brain: brain)
-        self.build = BuildModel(brain: brain, theme: theme)
+        self.build = BuildModel(brain: brain, theme: theme, looks: looks)
         nightShift.attach(to: self)
     }
 

@@ -109,6 +109,9 @@ private struct TunePanel: View {
                     }
                 }
 
+                LookMaker()
+                    .padding(.top, 6)
+
                 Text("This is Tune-lite: the look and feel. The full version changes what each app shows and does, with the same preview, history and undo.")
                     .font(.system(size: 11))
                     .foregroundStyle(theme.inkTertiary(scheme))
@@ -137,6 +140,73 @@ private struct TuneRunView: View {
         }
         .onChange(of: run.status) { _, status in
             if status == .done { build.adoptBrainProposal(from: run.text) }
+        }
+    }
+}
+
+// MARK: Looks
+
+/// Describe a colour look; Johnny saves it as a file Photo and Video both use.
+private struct LookMaker: View {
+    @EnvironmentObject private var theme: Theme
+    @EnvironmentObject private var build: BuildModel
+    @Environment(\.colorScheme) private var scheme
+
+    private let examples = ["Warm film with soft blacks", "Moody and blue", "Punchy black and white", "Bright and airy for skin"]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            SectionLabel(text: "Make a colour look")
+            Text("Describe a look for Photo and Video. It's saved as a small file you can reuse, share or tweak.")
+                .font(.system(size: 12))
+                .foregroundStyle(theme.inkTertiary(scheme))
+                .fixedSize(horizontal: false, vertical: true)
+            AskField(placeholder: "Golden hour, faded, a little grain", text: $build.lookRequest) {
+                withAnimation(theme.spring) { build.makeLook() }
+            }
+            FlowLayout(spacing: 6) {
+                ForEach(examples, id: \.self) { example in
+                    Button(example) {
+                        build.lookRequest = example
+                        withAnimation(theme.spring) { build.makeLook() }
+                    }
+                    .buttonStyle(.vellumSecondary)
+                }
+            }
+            if let run = build.lookRun {
+                LookRunView(run: run)
+            }
+            if let notice = build.lookNotice {
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    if build.madeLook != nil {
+                        Image(systemName: "checkmark.circle.fill").foregroundStyle(theme.ink(scheme))
+                    }
+                    Text(notice)
+                        .font(.system(size: 12))
+                        .foregroundStyle(theme.inkSecondary(scheme))
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .transition(.rise(theme.rise))
+            }
+        }
+        .animation(theme.spring, value: build.lookNotice)
+    }
+}
+
+private struct LookRunView: View {
+    @EnvironmentObject private var build: BuildModel
+    @ObservedObject var run: BrainRun
+
+    var body: some View {
+        Group {
+            if case .failed(_) = run.status {
+                RunView(run: run)
+            } else {
+                ThinkingLine(text: "Johnny is mixing the look…")
+            }
+        }
+        .onChange(of: run.status) { _, status in
+            if status == .done { build.adoptBrainLook(from: run.text) }
         }
     }
 }

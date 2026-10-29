@@ -90,6 +90,86 @@ enum TuneRules {
     }
 }
 
+/// Plain-English colour looks, understood without any model: "warm film with soft blacks", "moody and blue", "punchy black and white".
+enum LookRules {
+    static func settings(for request: String) -> GradeSettings? {
+        let text = request.lowercased()
+        func has(_ words: String...) -> Bool { words.contains { text.contains($0) } }
+        let lot = has("a lot", "very", "really", "heavy", "strong")
+        let gentle = has("subtle", "slight", "a bit", "a little", "gentle", "soft ")
+        let k = lot ? 1.4 : (gentle ? 0.6 : 1)
+        var s = GradeSettings()
+        var matched = false
+        func apply(_ change: (inout GradeSettings) -> Void) {
+            change(&s)
+            matched = true
+        }
+
+        if has("film", "analog", "analogue", "kodak", "portra", "35mm") {
+            apply {
+                $0.contrast += 0.15 * k
+                $0.fade += 0.3 * k
+                $0.saturation -= 0.1 * k
+                $0.lift = ColorWheel(hue: 190, amount: 0.22 * k, luma: 0)
+                $0.gain = ColorWheel(hue: 38, amount: 0.18 * k, luma: 0)
+                $0.grain += 0.3 * k
+            }
+        }
+        if has("teal", "orange", "cinematic", "blockbuster", "hollywood") {
+            apply {
+                $0.contrast += 0.15 * k
+                $0.lift = ColorWheel(hue: 195, amount: 0.35 * k, luma: $0.lift.luma)
+                $0.gain = ColorWheel(hue: 30, amount: 0.3 * k, luma: $0.gain.luma)
+                $0.hsl[1].saturation += 0.15 * k
+                $0.hsl[4].saturation += 0.2 * k
+            }
+        }
+        if has("warm", "golden", "sunset", "summer", "cosy", "cozy") { apply { $0.temperature += 0.3 * k; $0.tint += 0.03 * k } }
+        if has("cool", "cold", "icy", "winter", "blue") { apply { $0.temperature -= 0.3 * k } }
+        if has("moody", "dark", "dramatic", "noir") {
+            apply {
+                $0.exposure -= 0.3 * k
+                $0.contrast += 0.25 * k
+                $0.shadows -= 0.15 * k
+                $0.saturation -= 0.25 * k
+                $0.vignette += 0.3 * k
+            }
+        }
+        if has("bright", "airy", "light and", "clean") {
+            apply {
+                $0.exposure += 0.3 * k
+                $0.shadows += 0.3 * k
+                $0.highlights -= 0.25 * k
+                $0.vibrance += 0.15 * k
+            }
+        }
+        if has("faded", "matte", "vintage", "washed", "soft blacks", "lifted") { apply { $0.fade += 0.4 * k; $0.contrast -= 0.1 * k } }
+        if has("punchy", "vivid", "pop", "vibrant", "saturated") { apply { $0.vibrance += 0.35 * k; $0.contrast += 0.2 * k } }
+        if has("muted", "desaturated", "pastel", "calm") { apply { $0.saturation -= 0.35 * k } }
+        if has("black and white", "black & white", "b&w", "mono", "greyscale", "grayscale") {
+            apply {
+                $0.saturation = -1
+                $0.contrast += 0.25 * k
+            }
+        }
+        if has("grain", "gritty", "texture") { apply { $0.grain = max($0.grain, 0.35 * k) } }
+        if has("vignette") { apply { $0.vignette = max($0.vignette, 0.4 * k) } }
+        if has("green", "forest", "jungle") { apply { $0.hsl[3].saturation += 0.2 * k; $0.hsl[3].hue -= 0.1 * k } }
+        if has("skin", "portrait", "people") { apply { $0.hsl[1].luminance += 0.12 * k; $0.hsl[1].saturation -= 0.05 * k } }
+        if has("sharp", "crisp", "detail") { apply { $0.sharpen = max($0.sharpen, 0.4 * k) } }
+        guard matched else { return nil }
+        s.clamp()
+        return s
+    }
+
+    /// A short name for the look from what was asked.
+    static func name(for request: String) -> String {
+        let words = request.split(whereSeparator: { !$0.isLetter && !$0.isNumber && $0 != "&" }).prefix(4)
+        let name = words.map { $0.prefix(1).uppercased() + $0.dropFirst().lowercased() }.joined(separator: " ")
+        return name.isEmpty ? "My look" : String(name.prefix(32))
+    }
+}
+
 /// Johnny in the sandbox: Tune (describe a change to 11am, preview it, apply it, undo it) and a terminal
 /// where Johnny can suggest commands but nothing runs until you press Run.
 @MainActor
@@ -102,6 +182,12 @@ final class BuildModel: ObservableObject {
     @Published private(set) var tuneRun: BrainRun?
     @Published var tuneNotice: String?
 
+    // Looks
+    @Published var lookRequest = ""
+    @Published private(set) var lookRun: BrainRun?
+    @Published private(set) var madeLook: Look?
+    @Published var lookNotice: String?
+
     // Terminal
     @Published var command = ""
     @Published private(set) var output = ""
@@ -112,12 +198,15 @@ final class BuildModel: ObservableObject {
 
     private let brain: Brain
     private let theme: Theme
+    private let looks: LookLibrary
+    private var lookName = ""
     private var process: Process?
     private var pipe: Pipe?
 
-    init(brain: Brain, theme: Theme) {
+    init(brain: Brain, theme: Theme, looks: LookLibrary) {
         self.brain = brain
         self.theme = theme
+        self.looks = looks
     }
 
     var proposalChanges: [TuneChange] {
@@ -196,6 +285,54 @@ final class BuildModel: ObservableObject {
     func revert(_ record: TuneRecord) {
         history.insert(TuneRecord(request: "Undo: \(record.request)", before: theme.values, after: record.before), at: 0)
         theme.values = record.before
+    }
+
+    // MARK: Looks
+
+    /// Turns a description into a colour look saved for Photo and Video. Known words work offline; anything else asks the brain.
+    func makeLook() {
+        let text = lookRequest.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty else { return }
+        lookNotice = nil
+        madeLook = nil
+        lookName = LookRules.name(for: text)
+        if let settings = LookRules.settings(for: text) {
+            saveLook(settings)
+            return
+        }
+        let system = """
+        You are Johnny, the builder inside 11am. Turn the description into a colour grade for photos and video. \
+        Reply with only a JSON object containing the keys you'd change. Keys and ranges: \
+        exposure (-3 to 3 stops), contrast, highlights, shadows, temperature (-1 cool to 1 warm), tint (-1 green to 1 magenta), \
+        vibrance, saturation (all -1 to 1); lift, gamma, gain (shadow, midtone and highlight wheels), each an object \
+        {"hue": 0-360 degrees, "amount": 0-1, "luma": -1 to 1}; hsl, an array of 8 objects {"hue", "saturation", "luminance"} \
+        each -1 to 1, for red, orange, yellow, green, aqua, blue, purple, magenta; curve, 5 points {"x", "y"} from 0 to 1; \
+        sharpen, noiseReduction, fade, vignette, grain (all 0 to 1). Keep it tasteful: most values well under 0.5.
+        """
+        lookRun = brain.run(BrainRequest(system: system, prompt: text, weight: .quick))
+    }
+
+    /// Reads the grade the brain wrote. Unknown keys are ignored and every value is clamped.
+    func adoptBrainLook(from text: String) {
+        defer { lookRun = nil }
+        guard let start = text.firstIndex(of: "{"), let end = text.lastIndex(of: "}"),
+              let data = String(text[start...end]).data(using: .utf8),
+              let settings = try? JSONDecoder().decode(GradeSettings.self, from: data) else {
+            lookNotice = "Johnny couldn't turn that into a look. Try words like \"warm film\", \"moody blue\" or \"punchy black and white\"."
+            return
+        }
+        if settings == GradeSettings() {
+            lookNotice = "That wouldn't change anything."
+            return
+        }
+        saveLook(settings)
+    }
+
+    private func saveLook(_ settings: GradeSettings) {
+        let look = looks.save(settings, as: lookName)
+        madeLook = look
+        lookRequest = ""
+        lookNotice = "Saved \u{201C}\(look.name)\u{201D}. It's under Looks in Photo and Video, and in Looks/\(look.name).json if you want to tweak it by hand."
     }
 
     // MARK: Terminal

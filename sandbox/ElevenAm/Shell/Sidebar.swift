@@ -4,7 +4,7 @@ struct Sidebar: View {
     static let groups: [(title: String, sections: [AppSection])] = [
         ("Every day", [.today, .mail, .write, .files, .overnight]),
         ("Work", [.research, .money, .business]),
-        ("Make", [.design, .video, .learn, .build]),
+        ("Make", [.design, .photo, .video, .learn, .build]),
         ("Sandbox", [.suite, .lab]),
     ]
 

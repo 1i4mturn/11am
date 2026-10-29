@@ -25,7 +25,8 @@ struct SuiteView: View {
         SuiteApp(id: "money", name: "Money", monogram: "ge", does: "Sheets, runway, receipts", replaces: "Budgeting apps, receipt scanners", stage: .sandbox),
         SuiteApp(id: "business", name: "Business", monogram: "cr", does: "Pipeline, strategy, decks", replaces: "Solo CRM plans, deck tools", stage: .sandbox),
         SuiteApp(id: "design", name: "Design", monogram: "rt", does: "Brand kit, quick graphics, image tools", replaces: "Design-tool subscriptions for everyday graphics", stage: .sandbox),
-        SuiteApp(id: "video", name: "Video", monogram: "co", does: "Record, edit by transcript, captions", replaces: "Screen recorders, transcript editors", stage: .sandbox),
+        SuiteApp(id: "photo", name: "Photo", monogram: "rt", does: "Grade, crop, straighten, clean up, cut out", replaces: "Photo-editor subscriptions for everyday edits", stage: .sandbox),
+        SuiteApp(id: "video", name: "Video", monogram: "co", does: "Timeline, trims, colour, voice clean-up, transcript cuts", replaces: "Video-editor and transcript-editor subscriptions", stage: .sandbox),
         SuiteApp(id: "learn", name: "Learn", monogram: "hr", does: "Paths, flashcards, languages", replaces: "Flashcard and language-app subscriptions", stage: .sandbox),
         SuiteApp(id: "build", name: "Build", monogram: "jo", does: "Terminal, automations, tune any app", replaces: "Automation subscriptions", stage: .sandbox),
     ]

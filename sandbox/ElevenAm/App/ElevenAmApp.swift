@@ -62,6 +62,8 @@ extension View {
             .environmentObject(model.money)
             .environmentObject(model.business)
             .environmentObject(model.design)
+            .environmentObject(model.looks)
+            .environmentObject(model.photo)
             .environmentObject(model.video)
             .environmentObject(model.learn)
             .environmentObject(model.build)

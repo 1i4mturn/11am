@@ -48,23 +48,22 @@ jobs:
             name="$1"; shift
             "$APP" -activate YES "$@" > "shots/$name.log" 2>&1 &
             pid=$!
-            sleep 9
+            sleep "${WAIT:-9}"
             screencapture -x "shots/$name.png" || echo "screencapture failed for $name"
             if ! kill -0 "$pid" 2>/dev/null; then echo "App exited early for $name"; cat "shots/$name.log"; fi
             kill "$pid" 2>/dev/null || true
             sleep 2
           }
           capture today-light -startSection today -forceAppearance light
-          capture mail-light -startSection mail -forceAppearance light
-          capture write-light -startSection write -forceAppearance light
-          capture research-light -startSection research -forceAppearance light
-          capture money-light -startSection money -forceAppearance light
-          capture business-light -startSection business -forceAppearance light
+          capture photo-light -startSection photo -forceAppearance light
+          capture photo-crop-dark -startSection photo -forceAppearance dark -photoTool crop
+          capture photo-heal-light -startSection photo -forceAppearance light -photoTool heal
+          WAIT=20 capture video-light -startSection video -forceAppearance light -videoSample YES
+          WAIT=20 capture video-dark -startSection video -forceAppearance dark -videoSample YES
+          capture video-empty-light -startSection video -forceAppearance light
+          capture build-light -startSection build -forceAppearance light
           capture design-light -startSection design -forceAppearance light
-          capture video-light -startSection video -forceAppearance light
-          capture learn-light -startSection learn -forceAppearance light
-          capture build-dark -startSection build -forceAppearance dark
-          capture lab-light -startSection lab -forceAppearance light
+          capture suite-light -startSection suite -forceAppearance light
           capture notch-dark -startSection suite -forceAppearance dark -openNotch YES
           ls -la shots
 
