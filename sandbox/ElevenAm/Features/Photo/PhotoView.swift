@@ -80,35 +80,39 @@ private struct PhotoToolBar: View {
     @Environment(\.colorScheme) private var scheme
 
     var body: some View {
-        HStack(spacing: 12) {
-            Picker("Tool", selection: $photo.tool) {
-                ForEach(PhotoTool.allCases) { tool in
-                    Label(tool.title, systemImage: tool.symbol).tag(tool)
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 12) {
+                Picker("Tool", selection: $photo.tool) {
+                    ForEach(PhotoTool.allCases) { tool in
+                        Label(tool.title, systemImage: tool.symbol).tag(tool)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .fixedSize()
+
+                Spacer(minLength: 0)
+
+                if photo.isBusy { ProgressView().controlSize(.small) }
+                if let notice = photo.notice {
+                    HStack(spacing: 6) {
+                        Text(notice)
+                            .font(.system(size: 11.5))
+                            .foregroundStyle(theme.inkSecondary(scheme))
+                            .lineLimit(2)
+                        Button { photo.notice = nil } label: { Image(systemName: "xmark").font(.system(size: 9, weight: .bold)) }
+                            .buttonStyle(.plain)
+                            .foregroundStyle(theme.inkTertiary(scheme))
+                    }
+                    .transition(.opacity)
                 }
             }
-            .pickerStyle(.segmented)
-            .labelsHidden()
-            .fixedSize()
-
+            // A steady row, so the canvas doesn't jump when the tool changes.
             options
                 .font(.system(size: 12))
+                .lineLimit(1)
+                .frame(height: 30, alignment: .leading)
                 .transition(.opacity)
-
-            Spacer(minLength: 0)
-
-            if photo.isBusy { ProgressView().controlSize(.small) }
-            if let notice = photo.notice {
-                HStack(spacing: 6) {
-                    Text(notice)
-                        .font(.system(size: 11.5))
-                        .foregroundStyle(theme.inkSecondary(scheme))
-                        .lineLimit(2)
-                    Button { photo.notice = nil } label: { Image(systemName: "xmark").font(.system(size: 9, weight: .bold)) }
-                        .buttonStyle(.plain)
-                        .foregroundStyle(theme.inkTertiary(scheme))
-                }
-                .transition(.opacity)
-            }
         }
         .animation(theme.spring, value: photo.tool)
         .animation(theme.spring, value: photo.notice)

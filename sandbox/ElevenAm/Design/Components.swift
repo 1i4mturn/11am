@@ -220,6 +220,8 @@ private struct VellumButtonBody: View {
     var body: some View {
         label
             .font(.system(size: 12.5, weight: .semibold))
+            .lineLimit(1)
+            .fixedSize()
             .padding(.horizontal, 14)
             .padding(.vertical, 7)
             .foregroundStyle(kind == .primary ? theme.paper(scheme) : theme.ink(scheme))

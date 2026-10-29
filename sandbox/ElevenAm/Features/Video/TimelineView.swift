@@ -31,6 +31,7 @@ struct VideoTimeline: View {
                 Toggle("Fade in and out", isOn: $video.fades)
                     .toggleStyle(.checkbox)
                     .font(.system(size: 12))
+                    .fixedSize()
                 Image(systemName: "minus.magnifyingglass")
                     .foregroundStyle(theme.inkTertiary(scheme))
                 Slider(value: $zoom, in: 0...1)

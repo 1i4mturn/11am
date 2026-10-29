@@ -18,7 +18,7 @@ struct GradePanel: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 6) {
+            FlowLayout(spacing: 6) {
                 if let autoSource {
                     Button("Auto") {
                         if let image = autoSource() {

@@ -57,13 +57,15 @@ jobs:
           capture today-light -startSection today -forceAppearance light
           capture photo-light -startSection photo -forceAppearance light
           capture photo-crop-dark -startSection photo -forceAppearance dark -photoTool crop
-          capture photo-heal-light -startSection photo -forceAppearance light -photoTool heal
+          capture photo-film-light -startSection photo -forceAppearance light -photoLook Film
           WAIT=20 capture video-light -startSection video -forceAppearance light -videoSample YES
-          WAIT=20 capture video-dark -startSection video -forceAppearance dark -videoSample YES
+          WAIT=20 capture video-graded-dark -startSection video -forceAppearance dark -videoSample YES -videoLook "Teal & orange" -videoTab colour
           capture video-empty-light -startSection video -forceAppearance light
           capture build-light -startSection build -forceAppearance light
           capture design-light -startSection design -forceAppearance light
           capture suite-light -startSection suite -forceAppearance light
+          capture mail-light -startSection mail -forceAppearance light
+          capture learn-light -startSection learn -forceAppearance light
           capture notch-dark -startSection suite -forceAppearance dark -openNotch YES
           ls -la shots
 

@@ -39,8 +39,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if let tool = arguments.string(forKey: "photoTool"), let value = PhotoTool(rawValue: tool) {
             model.photo.tool = value
         }
+        // -photoLook and -videoLook take a built-in look's name, e.g. "Teal & orange".
+        if let name = arguments.string(forKey: "photoLook"), let look = LookLibrary.builtIns.first(where: { $0.name == name }) {
+            model.photo.settings = look.settings
+        }
         if arguments.bool(forKey: "videoSample") {
-            model.video.loadSamples()
+            let look = arguments.string(forKey: "videoLook").flatMap { name in LookLibrary.builtIns.first { $0.name == name } }
+            model.video.loadSamples(grade: look?.settings)
         }
         if arguments.bool(forKey: "activate") {
             NSApp.activate()

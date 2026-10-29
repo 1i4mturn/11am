@@ -206,6 +206,8 @@ final class VideoModel: ObservableObject {
     private var historyTask: Task<Void, Never>?
     private var restoring = false
     private var timeObserver: Any?
+    /// Where to put the playhead after the next rebuild, instead of where it was.
+    private var pendingSeek: Double?
     /// A frame of the selected clip, for Auto in the colour panel.
     private(set) var gradeFrame: CIImage?
 
@@ -245,7 +247,8 @@ final class VideoModel: ObservableObject {
 
     // MARK: Adding clips
 
-    func add(_ urls: [URL]) {
+    /// Adds clips to the end of the timeline, optionally with a grade already on them.
+    func add(_ urls: [URL], grade: GradeSettings? = nil) {
         guard !urls.isEmpty else { return }
         isWorking = true
         status = "Adding \(urls.count == 1 ? "a clip" : "\(urls.count) clips")…"
@@ -260,22 +263,26 @@ final class VideoModel: ObservableObject {
                 status = "That file couldn't be added. Cole works with video files (MOV, MP4, M4V)."
                 return
             }
+            let wasEmpty = clips.isEmpty
+            if let grade { for index in added.indices { added[index].grade = grade } }
             clips.append(contentsOf: added)
             if selection == nil { selection = added.first?.id }
+            // A first look at the picture, rather than the black at the start of the fade-in.
+            if wasEmpty { pendingSeek = min(1.5, totalDuration * 0.25) }
             added.forEach(makeThumbnails(for:))
             status = failed > 0 ? "\(added.count) added; \(failed) couldn't be read." : "Drag a clip's edges to trim. Split at the playhead with ⌘B."
             edited()
         }
     }
 
-    func loadSamples() {
+    func loadSamples(grade: GradeSettings? = nil) {
         isWorking = true
         status = "Making two sample clips…"
         Task {
             do {
                 let urls = try await SampleMedia.makeClips()
                 isWorking = false
-                add(urls)
+                add(urls, grade: grade)
             } catch {
                 isWorking = false
                 status = error.localizedDescription
@@ -507,7 +514,8 @@ final class VideoModel: ObservableObject {
             plan = built.plan
             renderSize = built.plan.renderSize
             player.replaceCurrentItem(with: item)
-            seek(to: min(time, max(built.plan.total - 0.05, 0)))
+            seek(to: min(pendingSeek ?? time, max(built.plan.total - 0.05, 0)))
+            pendingSeek = nil
             if wasPlaying { player.play() }
         } catch {
             status = error.localizedDescription

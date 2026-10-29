@@ -166,6 +166,7 @@ private struct TransportBar: View {
             Text("\(VideoModel.timecode(clock.time)) / \(VideoModel.timecode(video.totalDuration))")
                 .font(.system(size: 12).monospacedDigit())
                 .foregroundStyle(theme.inkSecondary(scheme))
+                .fixedSize()
             Button { video.splitAtPlayhead() } label: { Label("Split", systemImage: "scissors") }
                 .buttonStyle(.vellumSecondary)
                 .keyboardShortcut("b", modifiers: .command)
@@ -200,7 +201,7 @@ private struct VideoInspector: View {
     @EnvironmentObject private var theme: Theme
     @EnvironmentObject private var video: VideoModel
     @Environment(\.colorScheme) private var scheme
-    @State private var tab: InspectorTab = .clip
+    @State private var tab = InspectorTab(rawValue: UserDefaults.standard.string(forKey: "videoTab") ?? "") ?? .clip
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
