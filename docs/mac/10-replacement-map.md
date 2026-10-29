@@ -55,7 +55,7 @@
 
 ---
 
-## 2. Build seven engines, not nineteen apps
+## 2. Build seven engines, not eighteen apps
 
 Most of these apps are the same few things wearing different clothes. Build each engine once and every agent that needs it gets it for free.
 

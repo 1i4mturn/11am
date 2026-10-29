@@ -56,7 +56,7 @@
 | 9 | [agents/](./agents/README.md) | **The 11 agent briefs**: features, AI, design, mockups, Mac integration, backend, low-end behaviour, build checklist |
 | 9b | [09-direction-v2.md](./09-direction-v2.md) | **Round-two update:** the rewritten narrative (own it, works with your Mac, replaces apps), the frosted-vellum look, 8 GB-first model strategy. Wins over earlier docs where they conflict |
 | 9c | [../../sandbox/](../../sandbox/README.md) | **The sandbox app:** a runnable native Mac build to lock the look and core flows |
-| 9d | [10-replacement-map.md](./10-replacement-map.md) | **App by app:** Google Docs, Sheets, Slides, Canva, Photoshop, Acrobat, Final Cut, Audacity, Notes, Mail, Calendar, Notion, Health, Xero, Duolingo, Preview, Script Editor and Terminal broken into ~440 features, each assigned to an agent and tiered, plus learned mail triage, what to keep, and build order. Wins over 01-product where they conflict |
+| 9d | [10-replacement-map.md](./10-replacement-map.md) · [browse it](https://claude.ai/artifact/QrcuvP7wA2cN55d6uGwvMr) | **App by app:** Google Docs, Sheets, Slides, Canva, Photoshop, Acrobat, Final Cut, Audacity, Notes, Mail, Calendar, Notion, Health, Xero, Duolingo, Preview, Script Editor and Terminal broken into 426 features, each assigned to an agent and tiered, plus learned mail triage, what to keep, and build order. Wins over 01-product where they conflict |
 | 10 | [mockups/](./mockups/README.md) · [open the canvas](https://claude.ai/artifact/WG7JfdUvy8fdtykjd8v3sE) | Visual mockups: the interactive notch, identity sheet, iPhone, and a main screen for each of the 11 apps |
 
 ## The team at a glance
