@@ -124,7 +124,10 @@ final class NightShift: ObservableObject {
         let briefText = await model.today.prepareBrief(overnight: true, allowCloud: model.brain.allowCloudOvernight)
         record("Brief prepared", briefText)
 
-        // 3. Tidy
+        // 3. Mail: sync and retrain Marc on today's signals
+        record("Mail sorted", await model.mail.overnight())
+
+        // 4. Tidy
         let freed = NightShift.tidyCaches()
         record("Caches tidied", freed)
 

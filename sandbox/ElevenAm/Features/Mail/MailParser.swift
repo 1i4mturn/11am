@@ -27,23 +27,23 @@ enum MailParser {
     }
 
     /// Apple Mail's .emlx: a byte count on the first line, the raw message, then a property list.
-    static func parseEmlx(_ data: Data) -> ParsedMail? {
+    static func parseEmlx(_ data: Data, headersOnly: Bool = false) -> ParsedMail? {
         guard let newline = data.firstIndex(of: UInt8(ascii: "\n")),
               let count = Int(String(decoding: data[data.startIndex..<newline], as: UTF8.self).trimmingCharacters(in: .whitespaces))
         else { return nil }
         let start = data.index(after: newline)
         let end = min(data.endIndex, start + count)
         guard start < end else { return nil }
-        return parse(String(decoding: data[start..<end], as: UTF8.self))
+        return parse(String(decoding: data[start..<end], as: UTF8.self), headersOnly: headersOnly)
     }
 
     // MARK: Message
 
-    static func parse(_ raw: String) -> ParsedMail {
+    static func parse(_ raw: String, headersOnly: Bool = false) -> ParsedMail {
         let normalized = raw.replacingOccurrences(of: "\r\n", with: "\n")
         let (headerBlock, body) = splitHeaders(normalized)
         let headers = parseHeaders(headerBlock)
-        return ParsedMail(headers: headers, body: decodeBody(headers: headers, body: body, depth: 0))
+        return ParsedMail(headers: headers, body: headersOnly ? "" : decodeBody(headers: headers, body: body, depth: 0))
     }
 
     private static func splitHeaders(_ text: String) -> (String, String) {
@@ -224,11 +224,40 @@ enum MailParser {
         return (address, address)
     }
 
-    private static let dateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        return formatter
-    }()
+
+    /// Every address in a To or Cc header, lower-cased: "A <a@x.com>, \"B, Jr\" <b@y.com>" → ["a@x.com", "b@y.com"].
+    static func addresses(_ value: String?) -> [String] {
+        guard let value else { return [] }
+        var parts: [String] = []
+        var current = ""
+        var quoted = false
+        var angled = false
+        for character in value {
+            if character == "\"" { quoted.toggle() }
+            if character == "<" { angled = true }
+            if character == ">" { angled = false }
+            if character == ",", !quoted, !angled {
+                parts.append(current)
+                current = ""
+            } else {
+                current.append(character)
+            }
+        }
+        parts.append(current)
+        return parts.map { address($0).address.lowercased() }.filter { $0.contains("@") }
+    }
+
+    /// The read, answered and flagged marks Apple Mail keeps in the property list after an .emlx message.
+    static func emlxFlags(_ data: Data) -> (read: Bool, answered: Bool, flagged: Bool)? {
+        guard let newline = data.firstIndex(of: UInt8(ascii: "\n")),
+              let count = Int(String(decoding: data[data.startIndex..<newline], as: UTF8.self).trimmingCharacters(in: .whitespaces))
+        else { return nil }
+        let start = data.index(after: newline) + count
+        guard start < data.endIndex,
+              let plist = try? PropertyListSerialization.propertyList(from: data.subdata(in: start..<data.endIndex), format: nil) as? [String: Any],
+              let flags = (plist["flags"] as? NSNumber)?.intValue else { return nil }
+        return (flags & 1 != 0, flags & (1 << 2) != 0, flags & (1 << 4) != 0)
+    }
 
     private static let dateFormats = [
         "EEE, d MMM yyyy HH:mm:ss Z",
@@ -242,6 +271,9 @@ enum MailParser {
         guard var value else { return nil }
         if let comment = value.firstIndex(of: "(") { value = String(value[..<comment]) } // "(AEST)"
         value = value.trimmingCharacters(in: .whitespaces)
+        // A formatter per call: sync reads several accounts at once, and formatters aren't safe to share while changing.
+        let dateFormatter = DateFormatter()
+        dateFormatter.locale = Locale(identifier: "en_US_POSIX")
         for format in dateFormats {
             dateFormatter.dateFormat = format
             if let date = dateFormatter.date(from: value) { return date }

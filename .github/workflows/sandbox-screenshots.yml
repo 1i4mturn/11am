@@ -65,6 +65,9 @@ jobs:
           capture design-light -startSection design -forceAppearance light
           capture suite-light -startSection suite -forceAppearance light
           capture mail-light -startSection mail -forceAppearance light
+          capture mail-dark -startSection mail -forceAppearance dark
+          capture mail-learning-light -startSection mail -forceAppearance light -mailSheet learning
+          capture mail-add-dark -startSection mail -forceAppearance dark -mailSheet add
           capture learn-light -startSection learn -forceAppearance light
           capture notch-dark -startSection suite -forceAppearance dark -openNotch YES
           ls -la shots
