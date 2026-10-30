@@ -54,3 +54,15 @@ jobs:
             ../ci/MailTests/main.swift 2>&1 | grep -E "error|warning: unre" || true
           test -x mailtests
           TZ=Australia/Sydney ./mailtests
+
+      - name: Document and PDF tests
+        working-directory: sandbox
+        run: |
+          mkdir -p doctest
+          cd doctest
+          swiftc -O -o doctests \
+            ../ElevenAm/Features/Documents/{DocumentKit,DocxWriter,DocRender}.swift \
+            ../ElevenAm/Features/PDF/PDFEngine.swift \
+            ../ci/DocTests/main.swift 2>&1 | grep -E "error|warning: unre" || true
+          test -x doctests
+          ./doctests
