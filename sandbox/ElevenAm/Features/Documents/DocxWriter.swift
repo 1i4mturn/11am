@@ -13,7 +13,7 @@ enum DocxWriter {
     }
 
     /// `image` turns a Markdown image source into its bytes; return nil to leave the image out.
-    static func data(markdown: String, title: String, setup: PageSetup = PageSetup(), image: (String) -> Data? = { _ in nil }) -> Data {
+    static func data(markdown: String, title: String, setup: PageSetup = PageSetup(), image: @escaping (String) -> Data? = { _ in nil }) -> Data {
         var builder = Builder(image: image)
         let body = builder.body(MarkdownBlocks.blocks(markdown), setup: setup)
 
