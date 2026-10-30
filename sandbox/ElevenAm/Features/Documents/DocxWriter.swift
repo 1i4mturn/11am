@@ -170,6 +170,8 @@ enum DocxWriter {
         var highlight = false
         var code = false
         var link = false
+        /// Half-points, for headings (set directly as well as by the style, so every reader shows them).
+        var size: Int?
 
         var properties: String {
             var parts: [String] = []
@@ -178,7 +180,7 @@ enum DocxWriter {
             if bold { parts.append("<w:b/>") }
             if italic { parts.append("<w:i/>") }
             if strike { parts.append("<w:strike/>") }
-            if code { parts.append(#"<w:sz w:val="20"/>"#) }
+            if let fontSize = code ? 20 : size { parts.append("<w:sz w:val=\"\(fontSize)\"/><w:szCs w:val=\"\(fontSize)\"/>") }
             if highlight { parts.append(#"<w:highlight w:val="yellow"/>"#) }
             if underline && !link { parts.append(#"<w:u w:val="single"/>"#) }
             if code { parts.append(#"<w:shd w:val="clear" w:color="auto" w:fill="F4F3F0"/>"#) }
@@ -227,7 +229,8 @@ enum DocxWriter {
                 inList = false
                 switch block.kind {
                 case .heading(let level):
-                    xml.append("<w:p><w:pPr><w:pStyle w:val=\"Heading\(level)\"/></w:pPr>\(inline(block.text))</w:p>")
+                    let size = [36, 36, 30, 26, 24, 22, 22][min(max(level, 0), 6)]
+                    xml.append("<w:p><w:pPr><w:pStyle w:val=\"Heading\(level)\"/></w:pPr>\(inline(block.text, base: RunStyle(bold: true, size: size)))</w:p>")
                 case .paragraph:
                     xml.append("<w:p>\(inline(block.text))</w:p>")
                 case .quote(let callout):
@@ -235,10 +238,10 @@ enum DocxWriter {
                     if let callout {
                         content = run(callout.title.uppercased(), RunStyle(bold: true)) + "<w:r><w:br/></w:r>"
                     }
-                    xml.append("<w:p><w:pPr><w:pStyle w:val=\"Quote\"/></w:pPr>\(content)\(inline(block.text))</w:p>")
+                    xml.append("<w:p><w:pPr><w:pStyle w:val=\"Quote\"/></w:pPr>\(content)\(inline(block.text, base: RunStyle(italic: callout == nil)))</w:p>")
                 case .code:
                     for line in block.text.components(separatedBy: "\n") {
-                        xml.append("<w:p><w:pPr><w:pStyle w:val=\"Code\"/></w:pPr>\(run(line, RunStyle()))</w:p>")
+                        xml.append("<w:p><w:pPr><w:pStyle w:val=\"Code\"/></w:pPr>\(run(line, RunStyle(code: true)))</w:p>")
                     }
                     xml.append("<w:p/>")
                 case .table(let table):
@@ -283,8 +286,8 @@ enum DocxWriter {
             return "<w:r>\(style.properties)<w:t xml:space=\"preserve\">\(DocxWriter.escape(text))</w:t></w:r>"
         }
 
-        mutating func inline(_ markdown: String) -> String {
-            render(MarkdownInline.parse(markdown), RunStyle())
+        mutating func inline(_ markdown: String, base: RunStyle = RunStyle()) -> String {
+            render(MarkdownInline.parse(markdown), base)
         }
 
         mutating func render(_ inlines: [DocInline], _ style: RunStyle) -> String {

@@ -178,12 +178,24 @@ for part in ["word/styles.xml", "word/numbering.xml", "word/_rels/document.xml.r
 }
 if let read = try? NSAttributedString(url: docxURL, options: [.documentType: NSAttributedString.DocumentType.officeOpenXML], documentAttributes: nil) {
     check(read.string.contains("Quarterly plan") && read.string.contains("Hire a designer") && read.string.contains("Laptops"), "Word: opens in the system's Word reader")
-    let back = DocImport.markdown(from: read)
-    print("  imported back:\n" + back.split(separator: "\n").prefix(14).map { "    " + $0 }.joined(separator: "\n"))
-    check(back.contains("# Quarterly plan") && back.contains("**bold**") && back.contains("Ship single sign-on"), "Import: Word back to Markdown, with headings and bold")
-    check(back.contains("| Laptops |") || back.contains("Laptops"), "Import: the table came back")
+    let fallback = DocImport.markdown(from: read)
+    check(fallback.contains("**bold**") && fallback.contains("Hire a designer"), "Import: the system reader's text, as a fallback")
 } else {
     check(false, "Word: opens in the system's Word reader")
+}
+if let back = try? DocImport.markdown(from: docxURL) {
+    print("  imported back:\n" + back.split(separator: "\n").prefix(30).map { "    " + $0 }.joined(separator: "\n"))
+    check(back.hasPrefix("# Quarterly plan\n") && back.contains("\n## Goals\n"), "Import: Word headings become Markdown headings")
+    check(back.contains("**bold**") && back.contains("*italic*") && back.contains("`code`") && back.contains("==marked==") && back.contains("~~gone~~")
+          && back.contains("[link](https://example.com/a_b)"), "Import: bold, italic, code, highlight, strikethrough and links")
+    check(back.contains("1. Ship single sign-on\n1. Hire a designer") && back.contains("\n  - nested point"), "Import: numbered list with a nested bullet")
+    check(back.contains("- [ ] Book the offsite\n- [x] Send the update"), "Import: checklist")
+    check(back.contains("| Laptops | Sam | $4,800 |") && back.contains("| Item | Owner | Cost |\n| --- | --- | --- |"), "Import: table")
+    check(back.contains("```\nlet total = 1 + 2\n```") && back.contains("> A plain quote."), "Import: code block and quote")
+    let reparsed = MarkdownBlocks.blocks(back)
+    check(reparsed.filter { if case .listItem = $0.kind { return true }; return false }.count == 5, "Import: the result parses back into the same five list items")
+} else {
+    check(false, "Import: Word document read")
 }
 
 // Rich text in

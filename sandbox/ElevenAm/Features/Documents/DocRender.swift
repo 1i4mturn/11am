@@ -364,6 +364,12 @@ enum DocImport {
         case "md", "markdown", "txt", "text":
             if let text = try? String(contentsOf: url, encoding: .utf8) { return text }
             return try String(contentsOf: url, encoding: .isoLatin1)
+        case "docx":
+            if let markdown = try? DocxReader.markdown(from: url, saveImage: saveImage), !markdown.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                return markdown
+            }
+            let text = try NSAttributedString(url: url, options: [.documentType: NSAttributedString.DocumentType.officeOpenXML], documentAttributes: nil)
+            return markdown(from: text, saveImage: saveImage)
         default:
             let type: NSAttributedString.DocumentType
             switch ext {
@@ -506,7 +512,7 @@ enum DocImport {
         return inner.contains("**") ? line : inner
     }
 
-    private struct Style: Equatable {
+    struct Style: Equatable {
         var bold = false, italic = false, strike = false, underline = false, highlight = false, code = false
         var link: String?
     }
@@ -548,6 +554,19 @@ enum DocImport {
             }
         }
 
+        return render(segments)
+    }
+
+    /// Styled runs as inline Markdown, merging neighbours with the same style and keeping markers off the spaces.
+    static func render(_ runs: [(String, Style)]) -> String {
+        var segments: [(String, Style)] = []
+        for (piece, style) in runs {
+            if let last = segments.last, last.1 == style, !last.0.hasPrefix("![](") {
+                segments[segments.count - 1].0 += piece
+            } else {
+                segments.append((piece, style))
+            }
+        }
         var markdown = ""
         for (piece, style) in segments {
             if piece.hasPrefix("![](") && style.code {
@@ -618,5 +637,303 @@ enum DocExport {
     static func rtf(_ markdown: String, baseURL: URL?) -> Data? {
         let attributed = DocRenderer.attributed(markdown, baseURL: baseURL, width: 600)
         return attributed.rtf(from: NSRange(location: 0, length: attributed.length), documentAttributes: [.documentType: NSAttributedString.DocumentType.rtf])
+    }
+}
+
+// MARK: Word in
+
+/// Reads a .docx straight from its XML, so Word's paragraph styles come through: headings, numbered and bulleted lists
+/// (with their levels), checklists, quotes, code, links, tables and pictures. The system's Word reader drops most of these.
+enum DocxReader {
+    static func markdown(from url: URL, saveImage: @escaping (Data, String) -> String? = { _, _ in nil }) throws -> String {
+        guard let documentData = part(url, "word/document.xml"), let document = try? XMLDocument(data: documentData) else {
+            throw PDFEngine.Failure("\(url.lastPathComponent) isn't a Word document 11am can read.")
+        }
+        let styles = styleNames(part(url, "word/styles.xml"))
+        let formats = numberFormats(part(url, "word/numbering.xml"))
+        let targets = relationships(part(url, "word/_rels/document.xml.rels"))
+        var reader = Reader(styles: styles, formats: formats, targets: targets) { target in
+            guard let data = part(url, "word/" + target) else { return nil }
+            return saveImage(data, (target as NSString).lastPathComponent)
+        }
+        if let body = document.rootElement()?.elements(forLocalName: "body", uri: namespace).first {
+            reader.walk(body)
+        }
+        return reader.finish()
+    }
+
+    static let namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+
+    /// One file out of the .docx (a zip), with the system's unzip.
+    static func part(_ url: URL, _ name: String) -> Data? {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/unzip")
+        process.arguments = ["-p", url.path, name]
+        let pipe = Pipe()
+        process.standardOutput = pipe
+        process.standardError = FileHandle.nullDevice
+        guard (try? process.run()) != nil else { return nil }
+        let data = pipe.fileHandleForReading.readDataToEndOfFile()
+        process.waitUntilExit()
+        return process.terminationStatus == 0 && !data.isEmpty ? data : nil
+    }
+
+    private static func styleNames(_ data: Data?) -> [String: String] {
+        guard let data, let xml = try? XMLDocument(data: data), let root = xml.rootElement() else { return [:] }
+        var names: [String: String] = [:]
+        for style in root.elements(forLocalName: "style", uri: namespace) {
+            guard let id = style.attribute(forName: "w:styleId")?.stringValue,
+                  let name = style.elements(forLocalName: "name", uri: namespace).first?.attribute(forName: "w:val")?.stringValue else { continue }
+            names[id] = name.lowercased()
+        }
+        return names
+    }
+
+    /// numId → level → format ("bullet", "decimal", …).
+    private static func numberFormats(_ data: Data?) -> [String: [Int: String]] {
+        guard let data, let xml = try? XMLDocument(data: data), let root = xml.rootElement() else { return [:] }
+        var abstract: [String: [Int: String]] = [:]
+        for item in root.elements(forLocalName: "abstractNum", uri: namespace) {
+            guard let id = item.attribute(forName: "w:abstractNumId")?.stringValue else { continue }
+            var levels: [Int: String] = [:]
+            for level in item.elements(forLocalName: "lvl", uri: namespace) {
+                let index = Int(level.attribute(forName: "w:ilvl")?.stringValue ?? "0") ?? 0
+                levels[index] = level.elements(forLocalName: "numFmt", uri: namespace).first?.attribute(forName: "w:val")?.stringValue ?? "bullet"
+            }
+            abstract[id] = levels
+        }
+        var formats: [String: [Int: String]] = [:]
+        for item in root.elements(forLocalName: "num", uri: namespace) {
+            guard let id = item.attribute(forName: "w:numId")?.stringValue,
+                  let base = item.elements(forLocalName: "abstractNumId", uri: namespace).first?.attribute(forName: "w:val")?.stringValue else { continue }
+            formats[id] = abstract[base] ?? [:]
+        }
+        return formats
+    }
+
+    private static func relationships(_ data: Data?) -> [String: String] {
+        guard let data, let xml = try? XMLDocument(data: data), let root = xml.rootElement() else { return [:] }
+        var targets: [String: String] = [:]
+        for case let item as XMLElement in root.children ?? [] {
+            if let id = item.attribute(forName: "Id")?.stringValue, let target = item.attribute(forName: "Target")?.stringValue {
+                targets[id] = target
+            }
+        }
+        return targets
+    }
+
+    private struct Reader {
+        let styles: [String: String]
+        let formats: [String: [Int: String]]
+        let targets: [String: String]
+        let image: (String) -> String?
+        var lines: [String] = []
+        var code: [String] = []
+        var previousWasList = false
+
+        init(styles: [String: String], formats: [String: [Int: String]], targets: [String: String], image: @escaping (String) -> String?) {
+            self.styles = styles
+            self.formats = formats
+            self.targets = targets
+            self.image = image
+        }
+
+        mutating func walk(_ element: XMLElement) {
+            for case let child as XMLElement in element.children ?? [] {
+                switch child.localName ?? "" {
+                case "p": paragraph(child)
+                case "tbl": table(child)
+                case "sectPr": continue
+                default: walk(child)
+                }
+            }
+        }
+
+        func value(_ element: XMLElement?, _ name: String) -> String? {
+            element?.elements(forLocalName: name, uri: DocxReader.namespace).first?.attribute(forName: "w:val")?.stringValue
+        }
+
+        func on(_ properties: XMLElement?, _ name: String) -> Bool {
+            guard let element = properties?.elements(forLocalName: name, uri: DocxReader.namespace).first else { return false }
+            let flag = element.attribute(forName: "w:val")?.stringValue?.lowercased()
+            return flag == nil || !(flag == "0" || flag == "false" || flag == "none")
+        }
+
+        /// The runs of a paragraph (or a table cell's paragraph), with pictures pulled out.
+        func runs(_ element: XMLElement, link: String? = nil) -> (runs: [(String, DocImport.Style)], pictures: [String]) {
+            var result: [(String, DocImport.Style)] = []
+            var pictures: [String] = []
+            for case let child as XMLElement in element.children ?? [] {
+                switch child.localName ?? "" {
+                case "r":
+                    let properties = child.elements(forLocalName: "rPr", uri: DocxReader.namespace).first
+                    var style = DocImport.Style()
+                    style.bold = on(properties, "b")
+                    style.italic = on(properties, "i")
+                    style.underline = on(properties, "u") && link == nil
+                    style.strike = on(properties, "strike") || on(properties, "dstrike")
+                    style.highlight = on(properties, "highlight")
+                    let font = properties?.elements(forLocalName: "rFonts", uri: DocxReader.namespace).first?.attribute(forName: "w:ascii")?.stringValue ?? ""
+                    style.code = ["menlo", "courier", "consolas", "mono"].contains { font.lowercased().contains($0) }
+                    style.link = link
+                    var text = ""
+                    for case let piece as XMLElement in child.children ?? [] {
+                        switch piece.localName ?? "" {
+                        case "t": text += piece.stringValue ?? ""
+                        case "tab": text += " "
+                        case "br", "cr":
+                            if piece.attribute(forName: "w:type")?.stringValue != "page" { text += "\n" }
+                        case "drawing", "pict":
+                            if let blip = Self.find(piece, "blip"), let id = blip.attribute(forName: "r:embed")?.stringValue,
+                               let target = targets[id], let source = image(target) {
+                                pictures.append(source)
+                            }
+                        default:
+                            break
+                        }
+                    }
+                    if !text.isEmpty { result.append((text, style)) }
+                case "hyperlink":
+                    let target = child.attribute(forName: "r:id")?.stringValue.flatMap { targets[$0] }
+                    let inner = runs(child, link: target ?? link)
+                    result += inner.runs
+                    pictures += inner.pictures
+                case "ins", "smartTag", "fldSimple", "sdt", "sdtContent", "customXml":
+                    let inner = runs(child, link: link)
+                    result += inner.runs
+                    pictures += inner.pictures
+                default:
+                    break
+                }
+            }
+            return (result, pictures)
+        }
+
+        static func find(_ element: XMLElement, _ name: String) -> XMLElement? {
+            for case let child as XMLElement in element.children ?? [] {
+                if child.localName == name { return child }
+                if let found = find(child, name) { return found }
+            }
+            return nil
+        }
+
+        mutating func paragraph(_ element: XMLElement) {
+            let properties = element.elements(forLocalName: "pPr", uri: DocxReader.namespace).first
+            let styleID = value(properties, "pStyle") ?? ""
+            let style = styles[styleID] ?? styleID.lowercased()
+            let numbering = properties?.elements(forLocalName: "numPr", uri: DocxReader.namespace).first
+            let numID = value(numbering, "numId")
+            let level = Int(value(numbering, "ilvl") ?? "0") ?? 0
+            let content = runs(element)
+            let allCode = !content.runs.isEmpty && content.runs.allSatisfy { $0.1.code || $0.0.trimmingCharacters(in: .whitespaces).isEmpty }
+
+            if style.contains("code") || allCode {
+                code.append(content.runs.map { $0.0 }.joined())
+                return
+            }
+            flushCode()
+            var text = DocImport.render(content.runs).trimmingCharacters(in: .whitespaces)
+            for source in content.pictures {
+                blank()
+                lines.append("![](\(source))")
+                lines.append("")
+            }
+            guard !text.isEmpty else {
+                if !content.pictures.isEmpty { previousWasList = false }
+                return
+            }
+
+            if let numID, numID != "0", let levels = formats[numID] {
+                let format = levels[level] ?? "bullet"
+                var marker = format == "bullet" || format == "none" ? "-" : "1."
+                for (box, done) in [("☐", false), ("☑", true), ("☒", true)] where text.hasPrefix(box) {
+                    marker = done ? "- [x]" : "- [ ]"
+                    text = String(text.dropFirst()).trimmingCharacters(in: .whitespaces)
+                }
+                if !previousWasList { blank() }
+                let indent = String(repeating: "  ", count: level)
+                // Lines after a break stay inside the item.
+                let body = text.replacingOccurrences(of: "\n", with: "\n" + indent + String(repeating: " ", count: marker.count + 1))
+                lines.append(indent + marker + " " + body)
+                previousWasList = true
+                return
+            }
+            for (box, done) in [("☐", false), ("☑", true), ("☒", true)] where text.hasPrefix(box) {
+                if !previousWasList { blank() }
+                lines.append((done ? "- [x] " : "- [ ] ") + String(text.dropFirst()).trimmingCharacters(in: .whitespaces))
+                previousWasList = true
+                return
+            }
+            blank()
+            previousWasList = false
+            if style == "title" {
+                lines.append("# " + stripBold(text))
+            } else if style == "subtitle" {
+                lines.append("*" + stripBold(text) + "*")
+            } else if let match = style.range(of: #"heading\s*(\d)"#, options: .regularExpression),
+                      let number = Int(style[match].filter(\.isNumber)) {
+                lines.append(String(repeating: "#", count: min(max(number, 1), 6)) + " " + stripBold(text))
+            } else if style.contains("quote") {
+                // Quotes are italic by their style; the Markdown quote says it already.
+                let plain = text.hasPrefix("*") && text.hasSuffix("*") && !text.hasPrefix("**") && text.count > 2 ? String(text.dropFirst().dropLast()) : text
+                lines.append("> " + plain.replacingOccurrences(of: "\n", with: "\n> "))
+            } else {
+                lines.append(text)
+            }
+            lines.append("")
+        }
+
+        mutating func table(_ element: XMLElement) {
+            flushCode()
+            var rows: [[String]] = []
+            for case let row as XMLElement in element.children ?? [] where row.localName == "tr" {
+                var cells: [String] = []
+                for case let cell as XMLElement in row.children ?? [] where cell.localName == "tc" {
+                    let text = (cell.children ?? []).compactMap { $0 as? XMLElement }.filter { $0.localName == "p" }
+                        .map { DocImport.render(runs($0).runs).trimmingCharacters(in: .whitespaces) }
+                        .filter { !$0.isEmpty }
+                        .joined(separator: " ")
+                    cells.append(text.replacingOccurrences(of: "|", with: "\\|").replacingOccurrences(of: "\n", with: " "))
+                }
+                // A header row is bold by its look; the Markdown header says it already.
+                rows.append(rows.isEmpty ? cells.map { stripBold($0) } : cells)
+            }
+            guard let header = rows.first, !header.isEmpty else { return }
+            blank()
+            let columns = rows.map(\.count).max() ?? header.count
+            for (index, row) in rows.enumerated() {
+                let padded = row + Array(repeating: "", count: max(0, columns - row.count))
+                lines.append("| " + padded.joined(separator: " | ") + " |")
+                if index == 0 { lines.append("|" + String(repeating: " --- |", count: columns)) }
+            }
+            lines.append("")
+            previousWasList = false
+        }
+
+        mutating func flushCode() {
+            guard !code.isEmpty else { return }
+            blank()
+            lines.append("```\n" + code.joined(separator: "\n") + "\n```")
+            lines.append("")
+            code = []
+            previousWasList = false
+        }
+
+        mutating func blank() {
+            if let last = lines.last, !last.isEmpty { lines.append("") }
+        }
+
+        func stripBold(_ text: String) -> String {
+            guard text.hasPrefix("**"), text.hasSuffix("**"), text.count > 4 else { return text }
+            let inner = String(text.dropFirst(2).dropLast(2))
+            return inner.contains("**") ? text : inner
+        }
+
+        mutating func finish() -> String {
+            flushCode()
+            var markdown = lines.joined(separator: "\n")
+            while markdown.contains("\n\n\n") { markdown = markdown.replacingOccurrences(of: "\n\n\n", with: "\n\n") }
+            return markdown.trimmingCharacters(in: .whitespacesAndNewlines) + "\n"
+        }
     }
 }
