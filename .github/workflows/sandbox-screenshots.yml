@@ -74,6 +74,13 @@ jobs:
           capture calendar-month-light -startSection calendar -forceAppearance light -calendarMode month
           capture calendar-agenda-dark -startSection calendar -forceAppearance dark -calendarMode agenda -calendarEvent golive
           capture calendar-new-light -startSection calendar -forceAppearance light -calendarMode day -calendarNew YES
+          capture write-light -startSection write -forceAppearance light
+          capture write-welcome-dark -startSection write -forceAppearance dark -writeDoc 1
+          capture notes-light -startSection notes -forceAppearance light -notesNote "Acme pilot"
+          capture notes-dark -startSection notes -forceAppearance dark -notesFolder Work -notesNote "Board deck"
+          WAIT=12 capture pdf-light -startSection pdf -forceAppearance light -pdfSample YES
+          WAIT=12 capture pdf-pages-dark -startSection pdf -forceAppearance dark -pdfSample YES -pdfMode pages
+          capture pdf-empty-light -startSection pdf -forceAppearance light
           capture learn-light -startSection learn -forceAppearance light
           capture notch-dark -startSection suite -forceAppearance dark -openNotch YES
           ls -la shots
