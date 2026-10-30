@@ -13,6 +13,8 @@ struct CalendarView: View {
     @State private var findingTime = false
     @State private var choosingCalendars = false
     @State private var keyMonitor: Any?
+    /// How far down the grid the hours start, so the event card sits below the day names and all-day events.
+    @State private var gridTop: CGFloat = 0
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -89,13 +91,14 @@ struct CalendarView: View {
                 if let event = calendar.selected {
                     EventCard(event: event)
                         .frame(width: 292)
-                        .padding(.top, 44)
+                        .padding(.top, gridTop + 8)
                         .padding(.horizontal, 12)
                         .padding(.bottom, 12)
                         .id(event.id)
                         .transition(.rise(theme.rise))
                 }
             }
+            .onPreferenceChange(GridTopKey.self) { gridTop = $0 }
         }
         .padding(24)
         .animation(theme.spring, value: calendar.notice)
@@ -288,7 +291,7 @@ private struct QuickAddField: View {
             Image(systemName: "calendar.badge.plus")
                 .font(.system(size: 11.5))
                 .foregroundStyle(theme.inkTertiary(scheme))
-            TextField("Lunch with Tom Fri 1pm at Lune", text: $text)
+            TextField("Lunch Fri 1pm at Lune", text: $text)
                 .textFieldStyle(.plain)
                 .font(.system(size: 12.5))
                 .onSubmit(onSubmit)

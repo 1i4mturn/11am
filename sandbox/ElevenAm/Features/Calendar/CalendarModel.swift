@@ -79,7 +79,7 @@ final class CalendarModel: ObservableObject {
     private var loadTask: Task<Void, Never>?
     private var observer: NSObjectProtocol?
 
-    static let sampleCalendar = CalCalendar(id: "sample", title: "Sample week", color: "#4F7FD6", source: .sample, account: "Sample", writable: true)
+    static let sampleCalendar = CalCalendar(id: "sample", title: "Sample week", color: "#4F7FD6", source: .sample, account: "11am", writable: true)
     static let holidayCalendar = CalCalendar(id: "holidays", title: "Australian public holidays", color: "#9A9A9A", source: .holidays, account: "11am", writable: false)
 
     init(brain: Brain, mail: MailModel) {
@@ -121,16 +121,12 @@ final class CalendarModel: ObservableObject {
 
     var title: String {
         let range = visibleRange
-        let calendar = Calendar.current
         let last = range.end.addingTimeInterval(-1)
         switch mode {
         case .day: return anchor.formatted(.dateTime.weekday(.wide).day().month(.wide))
         case .month: return anchor.formatted(.dateTime.month(.wide).year())
-        default:
-            if calendar.isDate(range.start, equalTo: last, toGranularity: .month) {
-                return "\(range.start.formatted(.dateTime.day())) – \(last.formatted(.dateTime.day().month(.abbreviated).year()))"
-            }
-            return "\(range.start.formatted(.dateTime.day().month(.abbreviated))) – \(last.formatted(.dateTime.day().month(.abbreviated).year()))"
+        // The system's own range style: "26 Oct – 1 Nov 2026" here, "Oct 26 – Nov 1, 2026" in the US.
+        default: return (range.start..<last).formatted(.interval.day().month(.abbreviated).year())
         }
     }
 

@@ -16,16 +16,19 @@ struct TimeGrid: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            HStack(spacing: 0) {
-                Color.clear.frame(width: TimeGrid.gutter, height: 1)
-                ForEach(days, id: \.self) { day in
-                    DayHeader(day: day, wide: days.count == 1)
-                        .frame(maxWidth: .infinity)
+            VStack(spacing: 0) {
+                HStack(spacing: 0) {
+                    Color.clear.frame(width: TimeGrid.gutter, height: 1)
+                    ForEach(days, id: \.self) { day in
+                        DayHeader(day: day, wide: days.count == 1)
+                            .frame(maxWidth: .infinity)
+                    }
                 }
-            }
-            .padding(.vertical, 8)
+                .padding(.vertical, 8)
 
-            AllDayLane(days: days)
+                AllDayLane(days: days)
+            }
+            .reportGridTop()
 
             Rectangle().fill(theme.edge(scheme)).frame(height: 0.5)
 
@@ -42,8 +45,9 @@ struct TimeGrid: View {
                     .background(alignment: .top) { HourLines() }
                 }
                 .onAppear {
-                    let hour = firstHour
-                    DispatchQueue.main.async { proxy.scrollTo("hour-\(hour)", anchor: .top) }
+                    // Just above the hour line, so its label isn't cut off.
+                    let target = firstHour == 0 ? "hour-0" : "above-\(firstHour)"
+                    DispatchQueue.main.async { proxy.scrollTo(target, anchor: .top) }
                 }
             }
         }
@@ -98,14 +102,21 @@ private struct HourLabels: View {
     var body: some View {
         VStack(spacing: 0) {
             ForEach(0..<24, id: \.self) { hour in
-                Text(hour == 0 ? "" : HourLabels.label(hour))
-                    .font(.system(size: 10.5).monospacedDigit())
-                    .foregroundStyle(theme.inkTertiary(scheme))
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-                    .padding(.trailing, 8)
-                    .offset(y: -7)
-                    .frame(height: TimeGrid.hourHeight, alignment: .top)
-                    .id("hour-\(hour)")
+                VStack(spacing: 0) {
+                    Text(hour == 0 ? "" : HourLabels.label(hour))
+                        .font(.system(size: 10.5).monospacedDigit())
+                        .foregroundStyle(theme.inkTertiary(scheme))
+                        .frame(maxWidth: .infinity, alignment: .trailing)
+                        .padding(.trailing, 8)
+                        .offset(y: -7)
+                        .frame(height: TimeGrid.hourHeight - 12, alignment: .top)
+                    // A marker just above the next hour's line, to scroll to.
+                    Color.clear
+                        .frame(height: 12)
+                        .id("above-\(hour + 1)")
+                }
+                .frame(height: TimeGrid.hourHeight)
+                .id("hour-\(hour)")
             }
         }
     }
@@ -545,6 +556,7 @@ struct MonthGrid: View {
                 }
             }
             .padding(.vertical, 8)
+            .reportGridTop()
             ForEach(0..<(days.count / 7), id: \.self) { row in
                 HStack(spacing: 0) {
                     ForEach(0..<7, id: \.self) { column in
@@ -600,9 +612,10 @@ private struct MonthCell: View {
         }
         .padding(4)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .background(inMonth ? Color.clear : theme.ink(scheme).opacity(0.02))
-        .overlay(alignment: .top) { Rectangle().fill(theme.edge(scheme)).frame(height: 0.5) }
-        .overlay(alignment: .leading) { Rectangle().fill(theme.edge(scheme)).frame(width: 0.5) }
+        .background(inMonth ? Color.clear : theme.ink(scheme).opacity(0.025))
+        // A full point, so the lines survive cells that start between pixels.
+        .overlay(alignment: .top) { Rectangle().fill(theme.edge(scheme)).frame(height: 1) }
+        .overlay(alignment: .leading) { Rectangle().fill(theme.edge(scheme)).frame(width: 1) }
         .contentShape(Rectangle())
         .onTapGesture(count: 2) {
             let start = Calendar.current.date(bySettingHour: 9, minute: 0, second: 0, of: day) ?? day
@@ -768,5 +781,24 @@ private struct AgendaRow: View {
         if let name = calendar.calendar(for: event)?.title { parts.append(name) }
         if !event.attendees.isEmpty { parts.append(event.attendees.count == 1 ? "with \(event.attendees[0].name)" : "\(event.attendees.count) people") }
         return parts.joined(separator: " · ")
+    }
+}
+
+/// The height of a grid's headings (day names, all-day events), for placing the event card below them.
+struct GridTopKey: PreferenceKey {
+    static let defaultValue: CGFloat = 0
+
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
+    }
+}
+
+private extension View {
+    func reportGridTop() -> some View {
+        background {
+            GeometryReader { proxy in
+                Color.clear.preference(key: GridTopKey.self, value: proxy.size.height)
+            }
+        }
     }
 }
