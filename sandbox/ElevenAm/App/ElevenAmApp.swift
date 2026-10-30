@@ -16,6 +16,7 @@ struct ElevenAmApp: App {
             CommandMenu("Team") {
                 // ⌥Space is registered system-wide by AppDelegate, so the menu item carries no shortcut.
                 Button("Ask the Team (⌥Space)") { appDelegate.openAsk() }
+                Button("New Quick Note (⌥⇧N)") { appDelegate.quickNote() }
                 Button("Run Tonight's Work Now") {
                     Task { await appDelegate.model.nightShift.runNow() }
                 }
@@ -58,6 +59,8 @@ extension View {
             .environmentObject(model.voice)
             .environmentObject(model.mail)
             .environmentObject(model.calendar)
+            .environmentObject(model.notes)
+            .environmentObject(model.pdf)
             .environmentObject(model.write)
             .environmentObject(model.research)
             .environmentObject(model.money)

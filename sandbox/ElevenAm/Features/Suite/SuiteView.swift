@@ -19,9 +19,11 @@ struct SuiteView: View {
     private let apps: [SuiteApp] = [
         SuiteApp(id: "today", name: "Today", monogram: "le", does: "The brief, today's timeline and the 11am check-in", replaces: "Daily-planning apps", stage: .sandbox),
         SuiteApp(id: "calendar", name: "Calendar", monogram: "le", does: "Every calendar in one week, plain-words booking, free time and meeting prep", replaces: "Calendar apps and scheduling-link subscriptions", stage: .sandbox),
+        SuiteApp(id: "notes", name: "Notes", monogram: "bn", does: "Folders, tags, linked notes, a daily note and answers from all of it", replaces: "Apple Notes, Notion pages, note apps", stage: .sandbox),
         SuiteApp(id: "files", name: "Files", monogram: "bn", does: "Search and memory for everything on your Mac", replaces: "Note apps, search tools, clipboard managers", stage: .sandbox),
         SuiteApp(id: "mail", name: "Mail", monogram: "mc", does: "Triage, replies drafted in your voice, people", replaces: "Premium email clients", stage: .sandbox),
-        SuiteApp(id: "write", name: "Write", monogram: "wm", does: "Documents, rewrite anywhere, your voice", replaces: "Writing assistants, doc subscriptions", stage: .sandbox),
+        SuiteApp(id: "write", name: "Write", monogram: "wm", does: "Formatted documents, templates, versions, Word and PDF in and out, your voice", replaces: "Google Docs, Word, writing assistants", stage: .sandbox),
+        SuiteApp(id: "pdf", name: "PDF", monogram: "bn", does: "Read, highlight, sign, fill in, reorder pages, compress, protect and truly redact", replaces: "Acrobat, Preview for PDFs", stage: .sandbox),
         SuiteApp(id: "research", name: "Research", monogram: "jm", does: "A WebKit browser with cited research", replaces: "Answer engines, read-later apps", stage: .sandbox),
         SuiteApp(id: "money", name: "Money", monogram: "ge", does: "Sheets, runway, receipts", replaces: "Budgeting apps, receipt scanners", stage: .sandbox),
         SuiteApp(id: "business", name: "Business", monogram: "cr", does: "Pipeline, strategy, decks", replaces: "Solo CRM plans, deck tools", stage: .sandbox),

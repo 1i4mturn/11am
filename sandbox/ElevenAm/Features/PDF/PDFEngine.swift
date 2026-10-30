@@ -256,6 +256,7 @@ enum PDFEngine {
         return added
     }
 
+    @discardableResult
     static func note(_ text: String, at point: CGPoint, on page: PDFPage) -> PDFAnnotation {
         let annotation = PDFAnnotation(bounds: CGRect(x: point.x - 10, y: point.y - 10, width: 20, height: 20), forType: .text, withProperties: nil)
         annotation.contents = text
@@ -265,6 +266,7 @@ enum PDFEngine {
         return annotation
     }
 
+    @discardableResult
     static func textBox(_ text: String, at point: CGPoint, on page: PDFPage, size: CGFloat = 12) -> PDFAnnotation {
         let font = NSFont(name: "Helvetica", size: size) ?? .systemFont(ofSize: size)
         let measured = (text as NSString).boundingRect(with: CGSize(width: 320, height: 2_000), options: [.usesLineFragmentOrigin],
@@ -307,6 +309,7 @@ enum PDFEngine {
     }
 
     /// A typed signature in a handwriting face.
+    @discardableResult
     static func typedSignature(_ name: String, at point: CGPoint, on page: PDFPage) -> PDFAnnotation {
         let font = NSFont(name: "SnellRoundhand-Bold", size: 26) ?? NSFont(name: "Zapfino", size: 18) ?? .systemFont(ofSize: 24)
         let size = (name as NSString).size(withAttributes: [.font: font])
@@ -323,6 +326,7 @@ enum PDFEngine {
         return annotation
     }
 
+    @discardableResult
     static func box(_ rect: CGRect, on page: PDFPage, color: NSColor) -> PDFAnnotation {
         let annotation = PDFAnnotation(bounds: rect, forType: .square, withProperties: nil)
         annotation.color = color

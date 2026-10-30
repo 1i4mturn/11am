@@ -2,7 +2,7 @@ import SwiftUI
 
 /// The places in the sandbox. Apps come first; the agent behind each one is the quiet worker.
 enum AppSection: String, CaseIterable, Identifiable {
-    case today, calendar, mail, write, files, research, money, business, design, photo, video, learn, build, overnight, suite, lab
+    case today, calendar, mail, notes, write, files, pdf, research, money, business, design, photo, video, learn, build, overnight, suite, lab
 
     var id: String { rawValue }
 
@@ -11,8 +11,10 @@ enum AppSection: String, CaseIterable, Identifiable {
         case .today: return "Today"
         case .calendar: return "Calendar"
         case .mail: return "Mail"
+        case .notes: return "Notes"
         case .write: return "Write"
         case .files: return "Files"
+        case .pdf: return "PDF"
         case .research: return "Research"
         case .money: return "Money"
         case .business: return "Business"
@@ -32,8 +34,10 @@ enum AppSection: String, CaseIterable, Identifiable {
         case .today: return "le"
         case .calendar: return "le"
         case .mail: return "mc"
+        case .notes: return "bn"
         case .write: return "wm"
         case .files: return "bn"
+        case .pdf: return "bn"
         case .research: return "jm"
         case .money: return "ge"
         case .business: return "cr"
@@ -53,8 +57,10 @@ enum AppSection: String, CaseIterable, Identifiable {
         case .today: return "sun.horizon"
         case .calendar: return "calendar"
         case .mail: return "tray"
+        case .notes: return "note.text"
         case .write: return "pencil.line"
         case .files: return "doc.text.magnifyingglass"
+        case .pdf: return "doc.richtext"
         case .research: return "safari"
         case .money: return "chart.line.uptrend.xyaxis"
         case .business: return "briefcase"
@@ -80,8 +86,10 @@ enum AppSection: String, CaseIterable, Identifiable {
         case .today: return "Your day, and the 11am check-in"
         case .calendar: return "Every calendar, one week, planned for you"
         case .mail: return "What needs you, with replies drafted"
+        case .notes: return "Everything you jot down, linked and findable"
         case .write: return "Writes like you, so you only review"
         case .files: return "Find anything on this Mac"
+        case .pdf: return "Read, sign, fill in and fix PDFs"
         case .research: return "Browse, ask, and get a sourced answer"
         case .money: return "Where it is, where it goes, what's next"
         case .business: return "Pipeline, grounded in real conversations"
@@ -119,6 +127,8 @@ final class AppModel: ObservableObject {
     let voice: VoiceProfile
     let mail: MailModel
     let calendar: CalendarModel
+    let notes: NotesModel
+    let pdf: PDFModel
     let write: WriteModel
     let research: ResearchModel
     let money: MoneyModel
@@ -148,6 +158,8 @@ final class AppModel: ObservableObject {
         self.mail = mail
         let calendar = CalendarModel(brain: brain, mail: mail)
         self.calendar = calendar
+        self.notes = NotesModel(brain: brain, today: self.today)
+        self.pdf = PDFModel(brain: brain)
         self.write = write
         self.research = ResearchModel(brain: brain, write: write)
         self.money = MoneyModel(brain: brain)
@@ -176,6 +188,7 @@ final class AppModel: ObservableObject {
         machine.startMonitoring()
         files.load()
         write.load()
+        notes.load()
         today.refreshAccess()
         calendar.refreshAccess()
         nightShift.start()

@@ -23,6 +23,13 @@ struct Note: Identifiable, Equatable {
     }
 }
 
+struct NoteTag: Identifiable, Equatable {
+    var tag: String
+    var count: Int
+
+    var id: String { tag }
+}
+
 enum NotesScope: Hashable {
     case all, pinned
     case folder(String)
@@ -143,12 +150,12 @@ final class NotesModel: ObservableObject {
         }
     }
 
-    var tags: [(tag: String, count: Int)] {
+    var tags: [NoteTag] {
         var counts: [String: Int] = [:]
         for note in notes {
             for tag in MarkdownInfo.tags(note.text) { counts[tag, default: 0] += 1 }
         }
-        return counts.map { (tag: $0.key, count: $0.value) }.sorted { $0.count != $1.count ? $0.count > $1.count : $0.tag < $1.tag }
+        return counts.map { NoteTag(tag: $0.key, count: $0.value) }.sorted { $0.count != $1.count ? $0.count > $1.count : $0.tag < $1.tag }
     }
 
     func count(in folder: String) -> Int { notes.filter { $0.folder == folder }.count }

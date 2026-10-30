@@ -6,6 +6,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let model = AppModel()
     private var notch: NotchController?
     private var askHotKey: HotKey?
+    private var noteHotKey: HotKey?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         FontRegistry.registerBundledFonts()
@@ -17,6 +18,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // ⌥Space opens Ask in the notch from anywhere.
         askHotKey = HotKey(keyCode: UInt32(kVK_Space), modifiers: UInt32(optionKey)) { [weak self] in
             self?.openAsk()
+        }
+        // ⌥⇧N jots a note from anywhere.
+        noteHotKey = HotKey(keyCode: UInt32(kVK_ANSI_N), modifiers: UInt32(optionKey | shiftKey)) { [weak self] in
+            self?.quickNote()
         }
 
         model.start()
@@ -57,6 +62,28 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if arguments.bool(forKey: "calendarNew") {
             model.calendar.newEvent(at: CalendarView.suggestedStart(for: model.calendar))
         }
+        // -pdfSample YES opens the sample agreement; -pdfMode pages; -pdfTool redact.
+        if arguments.bool(forKey: "pdfSample") {
+            model.pdf.loadSample()
+        }
+        if let mode = arguments.string(forKey: "pdfMode").flatMap(PDFMode.init(rawValue:)) {
+            model.pdf.mode = mode
+        }
+        if let tool = arguments.string(forKey: "pdfTool").flatMap(PDFTool.init(rawValue:)) {
+            model.pdf.tool = tool
+        }
+        // -writeDoc 1 opens the second sample document; -writePageSetup YES opens page setup.
+        if arguments.object(forKey: "writeDoc") != nil {
+            let index = arguments.integer(forKey: "writeDoc")
+            if index < model.write.documents.count { model.write.selectedID = model.write.documents[index].id }
+        }
+        // -notesFolder Work picks a folder; -notesNote "Acme pilot" opens a note.
+        if let folder = arguments.string(forKey: "notesFolder") {
+            model.notes.scope = .folder(folder)
+        }
+        if let title = arguments.string(forKey: "notesNote"), let note = model.notes.note(titled: title) {
+            model.notes.selectedID = note.id
+        }
         if arguments.bool(forKey: "activate") {
             NSApp.activate()
         }
@@ -69,5 +96,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func openAsk() {
         notch?.openAsk()
+    }
+
+    /// A new note, ready to type into, from anywhere.
+    func quickNote() {
+        NSApp.activate()
+        NSApp.windows.first { $0.canBecomeMain }?.makeKeyAndOrderFront(nil)
+        model.go(to: .notes)
+        model.notes.scope = .all
+        model.notes.newNote()
+        model.notes.wantsFocus = true
     }
 }

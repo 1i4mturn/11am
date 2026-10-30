@@ -30,6 +30,7 @@ targets:
         NSCalendarsUsageDescription: Leo shows and edits your calendars in 11am, and uses today's events for your brief.
         NSRemindersFullAccessUsageDescription: Leo shows reminders that are due on your calendar, so you can tick them off there.
         NSRemindersUsageDescription: Leo shows reminders that are due on your calendar.
+        NSAppleEventsUsageDescription: Bolton reads your Apple Notes once, when you choose to import them into 11am. Your Apple Notes aren't changed.
         NSSpeechRecognitionUsageDescription: Video transcribes your recordings on this Mac so you can edit them by editing the words.
         NSAppTransportSecurity:
           NSAllowsLocalNetworking: true
