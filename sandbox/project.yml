@@ -7,7 +7,7 @@ options:
 settings:
   base:
     SWIFT_VERSION: "5.0"
-    MARKETING_VERSION: "0.4.0"
+    MARKETING_VERSION: "0.5.0"
     CURRENT_PROJECT_VERSION: "1"
 targets:
   ElevenAm:
@@ -26,8 +26,10 @@ targets:
         LSApplicationCategoryType: public.app-category.productivity
         LSMinimumSystemVersion: $(MACOSX_DEPLOYMENT_TARGET)
         NSHumanReadableCopyright: 11am sandbox build
-        NSCalendarsFullAccessUsageDescription: 11am reads today's events to build your brief and the 11am check-in. Nothing leaves your Mac unless you allow cloud help.
-        NSCalendarsUsageDescription: 11am reads today's events to build your brief and the 11am check-in.
+        NSCalendarsFullAccessUsageDescription: Leo shows and edits your calendars in 11am, and uses today's events for your brief and the 11am check-in. Nothing leaves your Mac unless you allow cloud help.
+        NSCalendarsUsageDescription: Leo shows and edits your calendars in 11am, and uses today's events for your brief.
+        NSRemindersFullAccessUsageDescription: Leo shows reminders that are due on your calendar, so you can tick them off there.
+        NSRemindersUsageDescription: Leo shows reminders that are due on your calendar.
         NSSpeechRecognitionUsageDescription: Video transcribes your recordings on this Mac so you can edit them by editing the words.
         NSAppTransportSecurity:
           NSAllowsLocalNetworking: true

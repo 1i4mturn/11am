@@ -17,7 +17,8 @@ struct SuiteView: View {
     }
 
     private let apps: [SuiteApp] = [
-        SuiteApp(id: "today", name: "Today", monogram: "le", does: "Calendar, tasks, the brief and the 11am check-in", replaces: "Calendar planners, daily-planning apps", stage: .sandbox),
+        SuiteApp(id: "today", name: "Today", monogram: "le", does: "The brief, today's timeline and the 11am check-in", replaces: "Daily-planning apps", stage: .sandbox),
+        SuiteApp(id: "calendar", name: "Calendar", monogram: "le", does: "Every calendar in one week, plain-words booking, free time and meeting prep", replaces: "Calendar apps and scheduling-link subscriptions", stage: .sandbox),
         SuiteApp(id: "files", name: "Files", monogram: "bn", does: "Search and memory for everything on your Mac", replaces: "Note apps, search tools, clipboard managers", stage: .sandbox),
         SuiteApp(id: "mail", name: "Mail", monogram: "mc", does: "Triage, replies drafted in your voice, people", replaces: "Premium email clients", stage: .sandbox),
         SuiteApp(id: "write", name: "Write", monogram: "wm", does: "Documents, rewrite anywhere, your voice", replaces: "Writing assistants, doc subscriptions", stage: .sandbox),

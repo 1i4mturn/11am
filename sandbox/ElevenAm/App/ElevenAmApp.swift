@@ -57,6 +57,7 @@ extension View {
             .environmentObject(model.nightShift)
             .environmentObject(model.voice)
             .environmentObject(model.mail)
+            .environmentObject(model.calendar)
             .environmentObject(model.write)
             .environmentObject(model.research)
             .environmentObject(model.money)

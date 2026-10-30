@@ -69,6 +69,11 @@ jobs:
           capture mail-learning-light -startSection mail -forceAppearance light -mailSheet learning
           capture mail-add-dark -startSection mail -forceAppearance dark -mailSheet add
           capture mail-microsoft-light -startSection mail -forceAppearance light -mailSheet add -mailProvider outlook
+          capture calendar-light -startSection calendar -forceAppearance light -calendarMode week -calendarEvent kickoff
+          capture calendar-dark -startSection calendar -forceAppearance dark -calendarMode week
+          capture calendar-month-light -startSection calendar -forceAppearance light -calendarMode month
+          capture calendar-agenda-dark -startSection calendar -forceAppearance dark -calendarMode agenda -calendarEvent golive
+          capture calendar-new-light -startSection calendar -forceAppearance light -calendarMode day -calendarNew YES
           capture learn-light -startSection learn -forceAppearance light
           capture notch-dark -startSection suite -forceAppearance dark -openNotch YES
           ls -la shots

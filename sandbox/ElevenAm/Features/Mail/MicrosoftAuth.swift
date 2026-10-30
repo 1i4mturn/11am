@@ -27,8 +27,9 @@ enum MicrosoftAuth {
     static let callbackScheme = "au.elevenam.sandbox"
     static let imapScope = "https://outlook.office.com/IMAP.AccessAsUser.All"
     static let graphSendScope = "https://graph.microsoft.com/Mail.Send"
-    /// Consent for reading (IMAP) and sending (Graph) is asked for once, together.
-    static let signInScopes = ["openid", "email", "profile", "offline_access", imapScope, graphSendScope]
+    static let calendarScope = "https://graph.microsoft.com/Calendars.ReadWrite"
+    /// Consent for reading mail (IMAP), sending (Graph) and Leo's calendar is asked for once, together.
+    static let signInScopes = ["openid", "email", "profile", "offline_access", imapScope, graphSendScope, calendarScope]
 
     struct PKCE: Sendable {
         let verifier: String

@@ -63,6 +63,7 @@ private struct SectionContent: View {
     var body: some View {
         switch section {
         case .today: TodayView()
+        case .calendar: CalendarView()
         case .mail: MailView()
         case .write: WriteView()
         case .files: FilesView()

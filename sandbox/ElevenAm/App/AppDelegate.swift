@@ -47,6 +47,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             let look = arguments.string(forKey: "videoLook").flatMap { name in LookLibrary.builtIns.first { $0.name == name } }
             model.video.loadSamples(grade: look?.settings)
         }
+        // -calendarMode month, -calendarEvent kickoff (selects a sample event), -calendarNew YES (opens the editor).
+        if let mode = arguments.string(forKey: "calendarMode").flatMap(CalendarMode.init(rawValue:)) {
+            model.calendar.mode = mode
+        }
+        if let event = arguments.string(forKey: "calendarEvent") {
+            model.calendar.selectedID = "sample:\(event)"
+        }
+        if arguments.bool(forKey: "calendarNew") {
+            model.calendar.newEvent(at: CalendarView.suggestedStart(for: model.calendar))
+        }
         if arguments.bool(forKey: "activate") {
             NSApp.activate()
         }

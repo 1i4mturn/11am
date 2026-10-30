@@ -2,13 +2,14 @@ import SwiftUI
 
 /// The places in the sandbox. Apps come first; the agent behind each one is the quiet worker.
 enum AppSection: String, CaseIterable, Identifiable {
-    case today, mail, write, files, research, money, business, design, photo, video, learn, build, overnight, suite, lab
+    case today, calendar, mail, write, files, research, money, business, design, photo, video, learn, build, overnight, suite, lab
 
     var id: String { rawValue }
 
     var title: String {
         switch self {
         case .today: return "Today"
+        case .calendar: return "Calendar"
         case .mail: return "Mail"
         case .write: return "Write"
         case .files: return "Files"
@@ -29,6 +30,7 @@ enum AppSection: String, CaseIterable, Identifiable {
     var monogram: String {
         switch self {
         case .today: return "le"
+        case .calendar: return "le"
         case .mail: return "mc"
         case .write: return "wm"
         case .files: return "bn"
@@ -49,6 +51,7 @@ enum AppSection: String, CaseIterable, Identifiable {
     var symbol: String {
         switch self {
         case .today: return "sun.horizon"
+        case .calendar: return "calendar"
         case .mail: return "tray"
         case .write: return "pencil.line"
         case .files: return "doc.text.magnifyingglass"
@@ -75,6 +78,7 @@ enum AppSection: String, CaseIterable, Identifiable {
     var subtitle: String {
         switch self {
         case .today: return "Your day, and the 11am check-in"
+        case .calendar: return "Every calendar, one week, planned for you"
         case .mail: return "What needs you, with replies drafted"
         case .write: return "Writes like you, so you only review"
         case .files: return "Find anything on this Mac"
@@ -114,6 +118,7 @@ final class AppModel: ObservableObject {
     let nightShift: NightShift
     let voice: VoiceProfile
     let mail: MailModel
+    let calendar: CalendarModel
     let write: WriteModel
     let research: ResearchModel
     let money: MoneyModel
@@ -139,7 +144,10 @@ final class AppModel: ObservableObject {
         self.nightShift = NightShift(machine: machine)
         self.voice = voice
         let write = WriteModel(brain: brain, voice: voice)
-        self.mail = MailModel(brain: brain, voice: voice)
+        let mail = MailModel(brain: brain, voice: voice)
+        self.mail = mail
+        let calendar = CalendarModel(brain: brain, mail: mail)
+        self.calendar = calendar
         self.write = write
         self.research = ResearchModel(brain: brain, write: write)
         self.money = MoneyModel(brain: brain)
@@ -152,6 +160,16 @@ final class AppModel: ObservableObject {
         self.learn = LearnModel(brain: brain)
         self.build = BuildModel(brain: brain, theme: theme, looks: looks)
         nightShift.attach(to: self)
+        // Leo's calendar feeds Today, the brief and the notch countdown, with every connected calendar.
+        let today = self.today
+        calendar.onToday = { [weak calendar] events in
+            today.useCalendar(events.map { list in
+                list.map { event in
+                    DayEvent(id: event.id, title: event.title, start: event.start, end: event.end, isAllDay: event.isAllDay,
+                             location: event.location, calendar: calendar?.calendar(for: event)?.title ?? "")
+                }
+            })
+        }
     }
 
     func start() {
@@ -159,6 +177,7 @@ final class AppModel: ObservableObject {
         files.load()
         write.load()
         today.refreshAccess()
+        calendar.refreshAccess()
         nightShift.start()
         log("le", "11am started on \(machine.chip) with \(machine.memoryGB) GB. Running in \(machine.tier.title) mode.")
     }

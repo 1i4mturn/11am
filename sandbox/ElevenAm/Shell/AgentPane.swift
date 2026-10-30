@@ -79,6 +79,7 @@ struct AgentPane: View {
     private var agent: (monogram: String, name: String, role: String) {
         switch model.section {
         case .today, .overnight: return ("le", "Leo", "Chief of staff · plans your day")
+        case .calendar: return ("le", "Leo", "Calendar · guards your time")
         case .mail: return ("mc", "Marc", "Mail and people · drafts in your voice")
         case .write: return ("wm", "William", "Writing and voice · you only review")
         case .files: return ("bn", "Bolton", "Memory and files · finds anything")

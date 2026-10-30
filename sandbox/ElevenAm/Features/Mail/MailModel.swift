@@ -49,6 +49,8 @@ final class MailModel: ObservableObject {
     @Published private(set) var drafts: [String: BrainRun] = [:]
     @Published private(set) var summaries: [String: BrainRun] = [:]
     @Published var composer: MailDraft?
+    /// Another app (Calendar) asking Mail to open "Add an account" on a provider.
+    @Published var addAccountRequest: MailProvider?
     @Published private(set) var pendingSend: PendingSend?
     @Published private(set) var learner = MailLearner()
     @Published private(set) var verdicts: [String: MailVerdict] = [:]
@@ -65,6 +67,9 @@ final class MailModel: ObservableObject {
     private let brain: Brain
     private let voice: VoiceProfile
     private var liveAccounts: [MailAccount] = []
+
+    /// Outlook and Microsoft 365 accounts, for Leo's calendar (it uses the same Microsoft sign-in).
+    var microsoftAccounts: [MailAccount] { liveAccounts.filter { $0.microsoft != nil } }
     private var traits: [String: MailTraits] = [:]
     private var openedAt: Date?
     private var quietSelection = false

@@ -21,7 +21,7 @@ struct TodayView: View {
                 BriefCard()
                     .entrance()
 
-                if today.access != .granted {
+                if !today.isLive {
                     Card {
                         HStack(alignment: .top, spacing: 12) {
                             Image(systemName: "calendar")
@@ -31,7 +31,7 @@ struct TodayView: View {
                                 Text("Showing a sample day")
                                     .font(.system(size: 13, weight: .semibold))
                                     .foregroundStyle(theme.ink(scheme))
-                                Text("Connect your calendars to see your real day. 11am reads every account you've added to macOS (iCloud, Google, Exchange) without any extra logins.")
+                                Text("Connect your calendars to see your real day. 11am reads every account you've added to macOS (iCloud, Google, Exchange) without any extra logins, and Outlook or Microsoft 365 through Calendar.")
                                     .font(.system(size: 12.5))
                                     .foregroundStyle(theme.inkSecondary(scheme))
                                     .fixedSize(horizontal: false, vertical: true)

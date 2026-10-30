@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """A tiny IMAP and SMTP server for 11am's mail protocol tests. Plain TCP on localhost, one fake account.
 
-IMAP on 127.0.0.1:1143, SMTP on 127.0.0.1:1025, a Microsoft token endpoint and Graph sendMail on 127.0.0.1:1080.
+IMAP on 127.0.0.1:1143, SMTP on 127.0.0.1:1025, a Microsoft token endpoint and Graph (sendMail and calendars)
+on 127.0.0.1:1080.
 Login: you@example.com / secret, or XOAUTH2 with the token "good-token".
 Messages sent over SMTP are written to ./smtp-received.eml; IMAP commands are logged to ./imap.log.
 """
@@ -260,6 +261,18 @@ class MicrosoftHandler(http.server.BaseHTTPRequestHandler):
                 self.reply(200, ok)
             else:
                 self.reply(400, {"error": "invalid_grant", "error_description": "AADSTS70000: The provided grant is invalid.\r\nTrace ID: x"})
+        elif self.path.startswith("/v1.0/me/calendars/") and self.path.endswith("/events"):
+            if not self.authorised():
+                return
+            record("POST", self.path, json.loads(body or b"{}"))
+            self.reply(201, {"id": "new-1"})
+        elif re.match(r"^/v1\.0/me/events/[^/]+/(accept|tentativelyAccept|decline)$", self.path):
+            if not self.authorised():
+                return
+            record("POST", self.path, json.loads(body or b"{}"))
+            self.send_response(202)
+            self.send_header("Content-Length", "0")
+            self.end_headers()
         elif self.path == "/v1.0/me/sendMail":
             if self.headers.get("Authorization") != "Bearer good-token":
                 self.reply(401, {"error": {"code": "InvalidAuthenticationToken", "message": "Access token is empty."}})
@@ -271,6 +284,80 @@ class MicrosoftHandler(http.server.BaseHTTPRequestHandler):
             self.end_headers()
         else:
             self.reply(404, {"error": "not found"})
+
+    def authorised(self):
+        if self.headers.get("Authorization") != "Bearer good-token":
+            self.reply(401, {"error": {"code": "InvalidAuthenticationToken", "message": "Access token is empty."}})
+            return False
+        return True
+
+    # Graph calendars: two calendars, a calendar view in two pages, and the changes 11am makes.
+    def do_GET(self):
+        if not self.authorised():
+            return
+        url = urllib.parse.urlparse(self.path)
+        query = {k: v[0] for k, v in urllib.parse.parse_qs(url.query).items()}
+        if url.path == "/v1.0/me/calendars":
+            self.reply(200, {"value": [
+                {"id": "AAMk-cal_1=", "name": "Calendar", "hexColor": "", "canEdit": True},
+                {"id": "board", "name": "Board", "hexColor": "#C24F6B", "canEdit": False},
+            ]})
+        elif url.path == "/v1.0/me/calendars/AAMk-cal_1=/calendarView":
+            if self.headers.get("Prefer") != 'outlook.timezone="UTC"' or "startDateTime" not in query or "endDateTime" not in query:
+                self.reply(400, {"error": {"code": "ErrorInvalidRequest", "message": "Times must be asked for in UTC."}})
+            elif query.get("page") == "2":
+                self.reply(200, {"value": [
+                    {"id": "evt-2", "subject": "Melbourne Cup", "isAllDay": True, "type": "singleInstance",
+                     "start": {"dateTime": "2026-11-02T13:00:00.0000000", "timeZone": "UTC"},
+                     "end": {"dateTime": "2026-11-03T13:00:00.0000000", "timeZone": "UTC"},
+                     "responseStatus": {"response": "organizer"}, "isOrganizer": True, "attendees": []},
+                    {"id": "evt-3", "subject": "", "isAllDay": True, "type": "singleInstance",
+                     "start": {"dateTime": "2026-11-04T00:00:00.0000000", "timeZone": "UTC"},
+                     "end": {"dateTime": "2026-11-05T00:00:00.0000000", "timeZone": "UTC"},
+                     "responseStatus": {"response": "none"}, "isOrganizer": True},
+                ]})
+            else:
+                self.reply(200, {"value": [
+                    {"id": "evt-1", "subject": "Acme pilot kickoff", "isAllDay": False, "type": "occurrence",
+                     "start": {"dateTime": "2026-11-03T23:00:00.0000000", "timeZone": "UTC"},
+                     "end": {"dateTime": "2026-11-04T00:00:00.0000000", "timeZone": "UTC"},
+                     "location": {"displayName": "Level 3"}, "bodyPreview": "Agenda attached",
+                     "onlineMeeting": {"joinUrl": "https://teams.microsoft.com/l/meetup-join/19%3ameeting_x"},
+                     "attendees": [{"emailAddress": {"name": "Tom Becker", "address": "Tom@Acme.co"}, "status": {"response": "accepted"}},
+                                   {"emailAddress": {"name": "You", "address": "you@example.com"}, "status": {"response": "notResponded"}}],
+                     "organizer": {"emailAddress": {"name": "Tom Becker", "address": "Tom@Acme.co"}},
+                     "responseStatus": {"response": "notResponded"}, "isOrganizer": False},
+                ], "@odata.nextLink": "http://127.0.0.1:1080/v1.0/me/calendars/AAMk-cal_1=/calendarView?page=2"
+                                      "&startDateTime=" + urllib.parse.quote(query["startDateTime"]) + "&endDateTime=" + urllib.parse.quote(query["endDateTime"])})
+        else:
+            self.reply(404, {"error": {"code": "ErrorItemNotFound", "message": "Not found: " + url.path}})
+
+    def do_PATCH(self):
+        length = int(self.headers.get("Content-Length", 0))
+        body = self.rfile.read(length)
+        if not self.authorised():
+            return
+        record("PATCH", self.path, json.loads(body or b"{}"))
+        self.reply(200, {"id": self.path.rsplit("/", 1)[-1]})
+
+    def do_DELETE(self):
+        if not self.authorised():
+            return
+        record("DELETE", self.path, {})
+        self.send_response(204)
+        self.send_header("Content-Length", "0")
+        self.end_headers()
+
+
+CALENDAR_LOG = []
+
+
+def record(method, path, body):
+    """Keeps each calendar change in ./graph-calendar.json, written before the reply so the tests can read it back."""
+    with LOCK:
+        CALENDAR_LOG.append({"method": method, "path": path, "body": body})
+        with open("graph-calendar.json", "w") as handle:
+            json.dump(CALENDAR_LOG, handle)
 
 
 class Server(socketserver.ThreadingTCPServer):

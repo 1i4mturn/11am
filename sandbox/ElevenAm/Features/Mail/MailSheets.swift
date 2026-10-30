@@ -257,6 +257,12 @@ struct AddAccountView: View {
         }
         .padding(24)
         .frame(width: 560)
+        .onAppear {
+            if let requested = mail.addAccountRequest {
+                provider = requested
+                mail.addAccountRequest = nil
+            }
+        }
         .animation(theme.spring, value: provider)
         .animation(theme.spring, value: error)
     }
@@ -310,7 +316,7 @@ struct AddAccountView: View {
                         }
                     }
                     step(5, "Copy the Application (client) ID into the box above and choose Sign in with Microsoft.") { EmptyView() }
-                    Text("If your organisation needs an admin to approve apps: in the registration, API permissions › Add a permission › APIs my organisation uses › Office 365 Exchange Online › IMAP.AccessAsUser.All, and Microsoft Graph › Mail.Send and offline_access, then Grant admin consent.")
+                    Text("If your organisation needs an admin to approve apps: in the registration, API permissions › Add a permission › APIs my organisation uses › Office 365 Exchange Online › IMAP.AccessAsUser.All, and Microsoft Graph › Mail.Send, Calendars.ReadWrite and offline_access, then Grant admin consent.")
                         .font(.system(size: 11))
                         .foregroundStyle(theme.inkTertiary(scheme))
                         .fixedSize(horizontal: false, vertical: true)

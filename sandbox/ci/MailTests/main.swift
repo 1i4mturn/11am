@@ -1,5 +1,7 @@
 // Checks Marc's mail code on a real Mac: the IMAP and SMTP clients against ci/fake_mail_server.py,
-// the parsers, and the learned triage on the sample history. Run from a folder where the fake server was started.
+// the parsers, and the learned triage on the sample history. Then Leo's calendar: quick add, free time, layout,
+// holidays and Outlook calendars through the fake Graph. Run from a folder where the fake server was started,
+// in Sydney time (TZ=Australia/Sydney), so all-day events cross a real UTC offset.
 import Foundation
 
 var failures = 0
@@ -213,6 +215,151 @@ do {
     }
 } catch {
     check(false, "Microsoft run: \(error.localizedDescription)")
+}
+
+// MARK: Leo's calendar
+
+do {
+    let cal = Calendar.current
+    print("Calendar tests in \(TimeZone.current.identifier)")
+    func on(_ year: Int, _ month: Int, _ day: Int, _ hour: Int = 0, _ minute: Int = 0) -> Date {
+        cal.date(from: DateComponents(year: year, month: month, day: day, hour: hour, minute: minute)) ?? .distantPast
+    }
+    func event(_ id: String, _ start: Date, _ minutes: Double, allDay: Bool = false, response: CalResponse = .none) -> CalEvent {
+        CalEvent(id: id, calendarID: "c", source: .sample, title: id, start: start, end: start.addingTimeInterval(minutes * 60),
+                 isAllDay: allDay, response: response)
+    }
+
+    // Quick add, through the system's own date detector.
+    if let lunch = QuickAdd.parse("Lunch with Tom Fri 1pm at Lune") {
+        check(lunch.title == "Lunch with Tom" && lunch.location == "Lune" && !lunch.isAllDay, "Quick add: title and place (\(lunch.title) @ \(lunch.location ?? "-"))")
+        check(cal.component(.weekday, from: lunch.start) == 6 && cal.component(.hour, from: lunch.start) == 13, "Quick add: Friday at 1 pm (\(lunch.start))")
+        check(lunch.end.timeIntervalSince(lunch.start) == 3_600, "Quick add: an hour unless told")
+    } else {
+        check(false, "Quick add: \"Lunch with Tom Fri 1pm at Lune\" parsed")
+    }
+    if let dentist = QuickAdd.parse("Dentist tomorrow 9:30 for 45 min") {
+        let tomorrow = cal.date(byAdding: .day, value: 1, to: cal.startOfDay(for: Date())) ?? Date()
+        check(dentist.title == "Dentist" && cal.isDate(dentist.start, inSameDayAs: tomorrow), "Quick add: tomorrow (\(dentist.title), \(dentist.start))")
+        check(cal.component(.minute, from: dentist.start) == 30 && dentist.end.timeIntervalSince(dentist.start) == 45 * 60, "Quick add: 9:30 for 45 minutes")
+    } else {
+        check(false, "Quick add: \"Dentist tomorrow 9:30 for 45 min\" parsed")
+    }
+    if let birthday = QuickAdd.parse("Mum's birthday 12 Dec") {
+        let parts = cal.dateComponents([.month, .day, .hour], from: birthday.start)
+        check(birthday.isAllDay && birthday.title == "Mum's birthday" && parts.month == 12 && parts.day == 12 && parts.hour == 0,
+              "Quick add: a date without a time is all day (\(birthday.title), \(birthday.start))")
+        check(birthday.start >= cal.startOfDay(for: Date()), "Quick add: a date is the next one, not last year's")
+    } else {
+        check(false, "Quick add: \"Mum's birthday 12 Dec\" parsed")
+    }
+    if let workshop = QuickAdd.parse("Strategy workshop next Tuesday 2pm for 2 hours @ Studio") {
+        check(workshop.end.timeIntervalSince(workshop.start) == 7_200 && workshop.location == "Studio"
+              && cal.component(.weekday, from: workshop.start) == 3, "Quick add: two hours, \"@\" for the place (\(workshop.title))")
+    } else {
+        check(false, "Quick add: \"Strategy workshop next Tuesday 2pm for 2 hours @ Studio\" parsed")
+    }
+    check(QuickAdd.parse("hello there") == nil, "Quick add: no date, no event")
+
+    // Free time, in working hours, around what's booked. Monday 2 November 2026.
+    let monday = on(2026, 11, 2)
+    let busy = [event("a", on(2026, 11, 2, 10), 60), event("b", on(2026, 11, 2, 13), 120),
+                event("declined", on(2026, 11, 2, 15, 30), 60, response: .declined), event("holiday", monday, 1_440, allDay: true)]
+    let slots = FreeTime.slots(busy: busy, from: monday, days: 1, minimum: 3_600, now: monday)
+    let expected = [(9, 10), (11, 13), (15, 17)].map { DateInterval(start: on(2026, 11, 2, $0.0), end: on(2026, 11, 2, $0.1)) }
+    check(slots == expected, "Free time: around meetings, ignoring declined and all-day (\(slots.map { "\(cal.component(.hour, from: $0.start))-\(cal.component(.hour, from: $0.end))" }))")
+    check(FreeTime.slots(busy: [], from: on(2026, 10, 31), days: 2, minimum: 1_800, now: on(2026, 10, 31)).isEmpty, "Free time: weekends are left alone")
+    let late = FreeTime.slots(busy: busy, from: monday, days: 1, minimum: 1_800, now: on(2026, 11, 2, 11, 7))
+    check(late.first?.start == on(2026, 11, 2, 11, 15), "Free time: starts at the next quarter hour, never in the past")
+    check(FreeTime.text(Array(expected.prefix(1))).hasPrefix("Times that work for me"), "Free time: ready to paste")
+
+    // Side by side when they overlap.
+    let a = event("A", on(2026, 11, 2, 9), 60), b = event("B", on(2026, 11, 2, 9, 30), 60)
+    let c = event("C", on(2026, 11, 2, 10), 60), d = event("D", on(2026, 11, 2, 13), 60)
+    let placed = Dictionary(uniqueKeysWithValues: EventLayout.place([d, c, b, a]).map { ($0.event.id, ($0.column, $0.columns)) })
+    check(placed["A"]! == (0, 2) && placed["B"]! == (1, 2) && placed["C"]! == (0, 2) && placed["D"]! == (0, 1), "Layout: overlapping events share the width")
+    let clashes = EventLayout.conflicts([a, b, c, d]).map { "\($0.0.id)\($0.1.id)" }
+    check(clashes == ["AB", "BC"], "Layout: clashes found (\(clashes))")
+
+    // Australian public holidays.
+    func holiday(_ name: String, _ year: Int) -> DateComponents? {
+        AustralianHolidays.holidays(year: year).first { $0.name == name }.map { cal.dateComponents([.month, .day], from: $0.date) }
+    }
+    check(holiday("Good Friday", 2026) == DateComponents(month: 4, day: 3) && holiday("Easter Monday", 2026) == DateComponents(month: 4, day: 6), "Holidays: Easter 2026")
+    check(holiday("Good Friday", 2027) == DateComponents(month: 3, day: 26), "Holidays: Easter 2027")
+    check(holiday("Boxing Day (observed)", 2026) == DateComponents(month: 12, day: 28), "Holidays: Boxing Day on a Saturday is observed Monday")
+    check(holiday("Christmas Day (observed)", 2027) == DateComponents(month: 12, day: 27) && holiday("Boxing Day (observed)", 2027) == DateComponents(month: 12, day: 28), "Holidays: a Saturday Christmas")
+    check(holiday("Australia Day (observed)", 2025) == DateComponents(month: 1, day: 27) && holiday("Australia Day (observed)", 2026) == nil
+          && holiday("Australia Day", 2026) == DateComponents(month: 1, day: 26) && holiday("Australia Day (observed)", 2030) == DateComponents(month: 1, day: 28),
+          "Holidays: Australia Day moves off a weekend")
+    let november = DateInterval(start: on(2026, 11, 1), end: on(2026, 12, 1))
+    check(AustralianHolidays.events(in: november).isEmpty && AustralianHolidays.events(in: DateInterval(start: on(2026, 12, 20), end: on(2027, 1, 3))).count == 4, "Holidays: only the ones in range")
+
+    // Outlook calendars through Graph, against the fake.
+    let calendars = try await MicrosoftCalendar.calendars(token: "good-token")
+    check(calendars.map(\.name) == ["Calendar", "Board"] && calendars[0].color.hasPrefix("#") && calendars[1].color == "#C24F6B"
+          && calendars[0].canEdit && !calendars[1].canEdit, "Outlook calendar: calendars, colours and which can be edited")
+    let week = try await MicrosoftCalendar.events(calendarID: "AAMk-cal_1=", from: on(2026, 11, 1), to: on(2026, 11, 8), token: "good-token",
+                                                  accountID: "acct", color: "#4F7FD6", writable: true)
+    check(week.count == 3, "Outlook calendar: both pages of the calendar view (\(week.count))")
+    if let kickoff = week.first(where: { $0.externalID == "evt-1" }) {
+        let start = ISO8601DateFormatter().date(from: "2026-11-03T23:00:00Z")
+        check(kickoff.start == start && kickoff.duration == 3_600 && !kickoff.isAllDay, "Outlook calendar: times read as UTC")
+        check(kickoff.id == "ms:acct:evt-1" && kickoff.calendarID == "ms:acct:AAMk-cal_1=" && kickoff.source == .microsoft(accountID: "acct"), "Outlook calendar: IDs carry the account")
+        check(kickoff.joinURL?.host == "teams.microsoft.com" && kickoff.location == "Level 3" && kickoff.notes == "Agenda attached", "Outlook calendar: Teams link, place and notes")
+        check(kickoff.organizer == "tom@acme.co" && kickoff.attendees.first?.email == "tom@acme.co" && kickoff.attendees.first?.response == .accepted
+              && kickoff.response == .none && kickoff.isRecurring && kickoff.awaitsAnswer, "Outlook calendar: people and an invitation waiting on you")
+    } else {
+        check(false, "Outlook calendar: the kickoff came through")
+    }
+    if let cup = week.first(where: { $0.externalID == "evt-2" }), let blank = week.first(where: { $0.externalID == "evt-3" }) {
+        check(cup.isAllDay && cup.start == on(2026, 11, 3) && cup.end == on(2026, 11, 4) && cup.response == .organizer,
+              "Outlook calendar: an all-day event made in Sydney lands on its day (\(cup.start))")
+        check(blank.start == on(2026, 11, 4) && blank.end == on(2026, 11, 5) && blank.title == "(No title)", "Outlook calendar: an all-day event at midnight, no title")
+    } else {
+        check(false, "Outlook calendar: the all-day events came through")
+    }
+
+    func changes() -> [[String: Any]] {
+        guard let data = FileManager.default.contents(atPath: "graph-calendar.json"),
+              let list = (try? JSONSerialization.jsonObject(with: data)) as? [[String: Any]] else { return [] }
+        return list
+    }
+    let fields = MicrosoftCalendar.EventFields(title: "Board deck prep", start: on(2026, 11, 5, 9), end: on(2026, 11, 5, 10),
+                                               isAllDay: false, location: "Studio", notes: "Bring the numbers")
+    let newID = try await MicrosoftCalendar.create(fields, calendarID: "AAMk-cal_1=", token: "good-token")
+    let created = changes().last ?? [:]
+    let body = created["body"] as? [String: Any] ?? [:]
+    let startField = body["start"] as? [String: Any] ?? [:]
+    check(newID == "new-1" && created["path"] as? String == "/v1.0/me/calendars/AAMk-cal_1=/events", "Outlook calendar: event created in the right calendar")
+    check(body["subject"] as? String == "Board deck prep" && startField["timeZone"] as? String == "UTC"
+          && startField["dateTime"] as? String == MicrosoftCalendar.utcText(on(2026, 11, 5, 9))
+          && (body["location"] as? [String: Any])?["displayName"] as? String == "Studio", "Outlook calendar: sent in UTC with the place (\(startField))")
+    var allDay = fields
+    allDay.isAllDay = true
+    allDay.start = on(2026, 11, 6)
+    allDay.end = on(2026, 11, 7)
+    try await MicrosoftCalendar.update(allDay, eventID: "evt-1", token: "good-token")
+    let patched = changes().last ?? [:]
+    let patchStart = (patched["body"] as? [String: Any])?["start"] as? [String: Any] ?? [:]
+    check(patched["method"] as? String == "PATCH" && patched["path"] as? String == "/v1.0/me/events/evt-1"
+          && patchStart["dateTime"] as? String == "2026-11-06T00:00:00" && patchStart["timeZone"] as? String == TimeZone.current.identifier,
+          "Outlook calendar: an all-day change is sent as local midnights (\(patchStart))")
+    try await MicrosoftCalendar.respond(.tentative, eventID: "evt-1", token: "good-token")
+    let answered = changes().last ?? [:]
+    check(answered["path"] as? String == "/v1.0/me/events/evt-1/tentativelyAccept" && (answered["body"] as? [String: Any])?["sendResponse"] as? Bool == true,
+          "Outlook calendar: \"maybe\" tells the organiser")
+    try await MicrosoftCalendar.delete(eventID: "evt-1", token: "good-token")
+    check(changes().last?["method"] as? String == "DELETE", "Outlook calendar: delete")
+    do {
+        _ = try await MicrosoftCalendar.calendars(token: "stale")
+        check(false, "Outlook calendar: a refused token is reported")
+    } catch {
+        check(error.localizedDescription.contains("Access token is empty"), "Outlook calendar: a refused token is reported")
+    }
+    check(MicrosoftAuth.signInScopes.contains(MicrosoftCalendar.scope), "Outlook calendar: asked for at sign-in, with mail")
+} catch {
+    check(false, "Calendar run: \(error.localizedDescription)")
 }
 
 print(failures == 0 ? "ALL PASSED" : "\(failures) FAILED")

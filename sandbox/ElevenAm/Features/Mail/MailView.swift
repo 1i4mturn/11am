@@ -100,7 +100,10 @@ struct MailView: View {
             LearningView()
                 .withSheetEnvironment(from: mail, theme: theme, brain: brain)
         }
-        .onAppear { installKeys() }
+        .onAppear {
+            installKeys()
+            if mail.addAccountRequest != nil { addingAccount = true }
+        }
         .onDisappear {
             removeKeys()
             mail.finishReading()

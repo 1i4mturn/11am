@@ -41,7 +41,7 @@ jobs:
             build 2>&1 | tee build.log | grep -E "error:|warning:|BUILD" || true
           grep -q "BUILD SUCCEEDED" build.log
 
-      - name: Mail protocol and learning tests
+      - name: Mail, learning and calendar tests
         working-directory: sandbox
         run: |
           mkdir -p mailtest
@@ -50,6 +50,7 @@ jobs:
           sleep 1
           swiftc -O -o mailtests \
             ../ElevenAm/Features/Mail/{MailTypes,MailSocket,IMAPClient,SMTPClient,MailParser,MailTriage,MailLearner,MailSync,MailSamples,MicrosoftAuth}.swift \
+            ../ElevenAm/Features/Calendar/{CalendarKit,MicrosoftCalendar}.swift \
             ../ci/MailTests/main.swift 2>&1 | grep -E "error|warning: unre" || true
           test -x mailtests
-          ./mailtests
+          TZ=Australia/Sydney ./mailtests

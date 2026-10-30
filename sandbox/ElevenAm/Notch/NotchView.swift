@@ -326,11 +326,11 @@ private struct NotchNowPage: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            if let next = today.nextEvent ?? (today.access == .granted ? nil : today.sampleEvents.first) {
+            if let next = today.nextEvent ?? (today.isLive ? nil : today.sampleEvents.first) {
                 NotchRow(
                     monogram: "le",
                     title: "\(next.start.formatted(date: .omitted, time: .shortened))  \(next.title)",
-                    detail: today.access == .granted ? (next.location ?? next.calendar) : "Sample event. Connect your calendar in Today."
+                    detail: today.isLive ? (next.location ?? next.calendar) : "Sample event. Connect your calendars in Calendar."
                 ) { EmptyView() }
             }
 

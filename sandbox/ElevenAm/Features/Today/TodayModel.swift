@@ -18,6 +18,8 @@ final class TodayModel: ObservableObject {
     enum CalendarAccess { case unknown, granted, denied }
 
     @Published private(set) var events: [DayEvent] = []
+    /// Today from Leo's calendar, with Outlook and Microsoft 365 as well as the calendars on this Mac.
+    @Published private(set) var calendarEvents: [DayEvent]?
     @Published private(set) var access: CalendarAccess = .unknown
     @Published private(set) var briefRun: BrainRun?
     @Published private(set) var briefDate: Date?
@@ -40,7 +42,14 @@ final class TodayModel: ObservableObject {
     }
 
     var nextEvent: DayEvent? {
-        events.first { !$0.isAllDay && $0.end > Date() }
+        (calendarEvents ?? events).first { !$0.isAllDay && $0.end > Date() }
+    }
+
+    /// Real events are showing, not the sample day.
+    var isLive: Bool { calendarEvents != nil || access == .granted }
+
+    func useCalendar(_ events: [DayEvent]?) {
+        calendarEvents = events?.filter { $0.end > Calendar.current.startOfDay(for: Date()) }
     }
 
     func refreshAccess() {
@@ -99,7 +108,7 @@ final class TodayModel: ObservableObject {
         ]
     }
 
-    var shownEvents: [DayEvent] { access == .granted ? events : sampleEvents }
+    var shownEvents: [DayEvent] { calendarEvents ?? (access == .granted ? events : sampleEvents) }
 
     /// Writes the brief. Returns a one-line summary for the overnight log.
     @discardableResult
@@ -116,7 +125,7 @@ final class TodayModel: ObservableObject {
 
         let prompt = """
         Today is \(day).
-        Calendar\(access == .granted ? "" : " (sample data)"):
+        Calendar\(isLive ? "" : " (sample data)"):
         \(eventLines.isEmpty ? "- Nothing scheduled" : eventLines.joined(separator: "\n"))
 
         Files changed in the last day:
