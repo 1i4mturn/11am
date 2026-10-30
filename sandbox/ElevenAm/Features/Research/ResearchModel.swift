@@ -192,8 +192,8 @@ final class ResearchModel: NSObject, ObservableObject {
 
     func sendReportToWrite() {
         guard let run = reportRun, run.status == .done else { return }
-        let list = sources.enumerated().map { "[\($0.offset + 1)] \($0.element.title) · \($0.element.url)" }.joined(separator: "\n")
-        write.addDocument(text: "Research: \(reportQuestion)\n\n\(run.text)\n\nSources\n\(list)\n")
+        let list = sources.enumerated().map { "\($0.offset + 1). \($0.element.title) · \($0.element.url)" }.joined(separator: "\n")
+        write.addDocument(text: "# \(reportQuestion)\n\n\(run.text)\n\n## Sources\n\(list)\n")
     }
 
     private static let startPage = """

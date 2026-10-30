@@ -358,7 +358,7 @@ enum DocImport {
     static let fileExtensions = ["md", "markdown", "txt", "text", "docx", "doc", "rtf", "rtfd", "html", "htm", "odt", "webarchive"]
 
     /// `saveImage` stores a picture and returns the Markdown source to use for it (nil leaves it out).
-    static func markdown(from url: URL, saveImage: (Data, String) -> String? = { _, _ in nil }) throws -> String {
+    static func markdown(from url: URL, saveImage: @escaping (Data, String) -> String? = { _, _ in nil }) throws -> String {
         let ext = url.pathExtension.lowercased()
         switch ext {
         case "md", "markdown", "txt", "text":
@@ -383,7 +383,7 @@ enum DocImport {
         }
     }
 
-    static func markdown(from text: NSAttributedString, saveImage: (Data, String) -> String? = { _, _ in nil }) -> String {
+    static func markdown(from text: NSAttributedString, saveImage: @escaping (Data, String) -> String? = { _, _ in nil }) -> String {
         let string = text.string as NSString
         let bodySize = commonFontSize(text)
         var output: [String] = []
@@ -512,7 +512,7 @@ enum DocImport {
     }
 
     /// One paragraph's runs as inline Markdown, with markers kept off the surrounding spaces.
-    private static func inlineMarkdown(_ text: NSAttributedString, range: NSRange, bodySize: CGFloat, saveImage: (Data, String) -> String?) -> String {
+    private static func inlineMarkdown(_ text: NSAttributedString, range: NSRange, bodySize: CGFloat, saveImage: @escaping (Data, String) -> String?) -> String {
         var segments: [(String, Style)] = []
         text.enumerateAttributes(in: range) { attributes, runRange, _ in
             if let attachment = attributes[.attachment] as? NSTextAttachment {
