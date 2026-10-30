@@ -128,9 +128,9 @@ enum MarkdownLines {
                 let symbol = (line as NSString).substring(with: match.range(at: 2))
                 item.ordered = symbol.first?.isNumber == true
                 item.number = Int(symbol.dropLast()) ?? 1
-                if match.range(at: 4).length > 0 {
-                    item.checkboxRange = shift(match.range(at: 4), by: range.location)
-                    item.task = (line as NSString).substring(with: match.range(at: 5)).lowercased() == "x"
+                if match.range(at: 3).length > 0 {
+                    item.checkboxRange = shift(match.range(at: 3), by: range.location)
+                    item.task = (line as NSString).substring(with: match.range(at: 4)).lowercased() == "x"
                 }
                 result.append(item)
             } else if let match = quote.firstMatch(in: line, range: local) {

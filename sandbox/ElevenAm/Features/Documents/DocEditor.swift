@@ -4,6 +4,8 @@ import SwiftUI
 extension NSAttributedString.Key {
     /// Marks lines that get a drawn background: "code", "quote", "callout" or "rule".
     static let docBlock = NSAttributedString.Key("au.elevenam.docBlock")
+    /// A picture's source, on the line that shows it underneath.
+    static let docImage = NSAttributedString.Key("au.elevenam.docImage")
 }
 
 /// The look of the editor, from the theme.
@@ -72,6 +74,8 @@ struct DocEditor: NSViewRepresentable {
     var focusMode = false
     var typewriter = false
     var insets = NSSize(width: 0, height: 14)
+    /// Where relative picture paths start.
+    var baseURL: URL?
     /// Pasted or dropped files: store them and return the Markdown source to link to (nil to refuse).
     var onAttach: ((Data, String) -> String?)?
     var onWikiLink: ((String) -> Void)?
@@ -114,6 +118,7 @@ struct DocEditor: NSViewRepresentable {
         textView.string = text
         textView.emptyHint = placeholder
         textView.onAttach = onAttach
+        textView.baseURL = baseURL
         textView.editorStyle = style
         textView.restyle()
 
@@ -135,6 +140,10 @@ struct DocEditor: NSViewRepresentable {
         textView.onAttach = onAttach
         textView.emptyHint = placeholder
         var needsStyle = false
+        if textView.baseURL != baseURL {
+            textView.baseURL = baseURL
+            needsStyle = true
+        }
         if textView.string != text {
             context.coordinator.isUpdating = true
             let keep = textView.selectedRange()
@@ -215,13 +224,46 @@ final class MarkdownTextView: NSTextView {
     var typewriter = false
     var emptyHint = ""
     var onAttach: ((Data, String) -> String?)?
+    var baseURL: URL?
+    private var pictures: [String: NSImage] = [:]
+    private var missing: Set<String> = []
+
+    /// A picture for a Markdown source, loaded once.
+    func picture(_ source: String) -> NSImage? {
+        if let cached = pictures[source] { return cached }
+        if missing.contains(source) { return nil }
+        let path = source.removingPercentEncoding ?? source
+        var url: URL?
+        if path.hasPrefix("/") {
+            url = URL(fileURLWithPath: path)
+        } else if let parsed = URL(string: source), parsed.isFileURL {
+            url = parsed
+        } else if let baseURL, URL(string: source)?.scheme == nil {
+            url = baseURL.appendingPathComponent(path)
+        }
+        guard let url, let image = NSImage(contentsOf: url), image.size.width > 0 else {
+            missing.insert(source)
+            return nil
+        }
+        pictures[source] = image
+        return image
+    }
+
+    /// How big a picture shows: the page's width at most, and never taller than 360 points.
+    func previewSize(_ source: String) -> CGSize? {
+        guard let image = picture(source) else { return nil }
+        let width = max((textContainer?.size.width ?? 500) - 4, 80)
+        let scale = min(1, width / image.size.width, 360 / image.size.height)
+        return CGSize(width: (image.size.width * scale).rounded(), height: (image.size.height * scale).rounded())
+    }
 
     // MARK: Styling
 
     func restyle() {
         guard let storage = textStorage else { return }
         let focus: NSRange? = focusMode ? (string as NSString).paragraphRange(for: selectedRange()) : nil
-        MarkdownStyler.style(storage, style: editorStyle, focus: focus)
+        missing.removeAll()
+        MarkdownStyler.style(storage, style: editorStyle, focus: focus) { [weak self] source in self?.previewSize(source) }
         typingAttributes = [.font: editorStyle.body, .foregroundColor: editorStyle.ink, .paragraphStyle: MarkdownStyler.bodyParagraph]
         insertionPointColor = editorStyle.ink
         needsDisplay = true
@@ -252,22 +294,32 @@ final class MarkdownTextView: NSTextView {
             area = area.offsetBy(dx: origin.x, dy: origin.y)
             switch kind {
             case "code":
-                editorStyle.shade.setFill()
+                self.editorStyle.shade.setFill()
                 NSBezierPath(roundedRect: area.insetBy(dx: -8, dy: 0), xRadius: 6, yRadius: 6).fill()
             case "callout":
-                editorStyle.shade.setFill()
+                self.editorStyle.shade.setFill()
                 NSBezierPath(roundedRect: area.insetBy(dx: -8, dy: 0), xRadius: 6, yRadius: 6).fill()
-                editorStyle.secondary.setFill()
+                self.editorStyle.secondary.setFill()
                 NSBezierPath(roundedRect: NSRect(x: area.minX - 8, y: area.minY, width: 3, height: area.height), xRadius: 1.5, yRadius: 1.5).fill()
             case "quote":
-                editorStyle.tertiary.setFill()
+                self.editorStyle.tertiary.setFill()
                 NSBezierPath(roundedRect: NSRect(x: area.minX, y: area.minY + 2, width: 2.5, height: area.height - 4), xRadius: 1.25, yRadius: 1.25).fill()
             case "rule":
-                editorStyle.tertiary.setFill()
+                self.editorStyle.tertiary.setFill()
                 NSRect(x: area.minX, y: area.midY.rounded(), width: area.width, height: 1).fill()
             default:
                 break
             }
+        }
+        storage.enumerateAttribute(.docImage, in: characters) { value, range, _ in
+            guard let source = value as? String, let image = self.picture(source), let size = self.previewSize(source) else { return }
+            let glyph = layout.glyphIndexForCharacter(at: range.location)
+            let used = layout.lineFragmentUsedRect(forGlyphAt: glyph, effectiveRange: nil)
+            let frame = NSRect(x: origin.x, y: used.maxY + origin.y + 6, width: size.width, height: size.height)
+            NSGraphicsContext.saveGraphicsState()
+            NSBezierPath(roundedRect: frame, xRadius: 6, yRadius: 6).addClip()
+            image.draw(in: frame, from: .zero, operation: .sourceOver, fraction: 1, respectFlipped: true, hints: nil)
+            NSGraphicsContext.restoreGraphicsState()
         }
     }
 
@@ -650,7 +702,7 @@ enum MarkdownStyler {
         return NSFont.systemFont(ofSize: size, weight: level <= 2 ? .bold : .semibold)
     }
 
-    static func style(_ storage: NSTextStorage, style: DocEditorStyle, focus: NSRange?) {
+    static func style(_ storage: NSTextStorage, style: DocEditorStyle, focus: NSRange?, pictureSize: (String) -> CGSize? = { _ in nil }) {
         let text = storage.string
         let ns = text as NSString
         let full = NSRange(location: 0, length: ns.length)
@@ -715,6 +767,15 @@ enum MarkdownStyler {
                 storage.addAttributes([.font: mono, .foregroundColor: style.tertiary], range: line.range)
             case .image:
                 inline(line.contentRange, ns: ns, storage: storage, font: style.body, style: style)
+                // The picture itself is drawn in the space under its line.
+                if let source = MarkdownInline.parse(ns.substring(with: line.contentRange)).first(where: { $0.kind == .image })?.url,
+                   let size = pictureSize(source) {
+                    let paragraph = NSMutableParagraphStyle()
+                    paragraph.lineSpacing = 4
+                    paragraph.paragraphSpacing = size.height + 14
+                    storage.addAttributes([.paragraphStyle: paragraph, .docImage: source], range: line.range)
+                    storage.addAttribute(.font, value: NSFont.systemFont(ofSize: max(style.body.pointSize - 4, 10)), range: line.range)
+                }
             }
         }
 
