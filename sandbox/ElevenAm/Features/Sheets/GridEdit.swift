@@ -253,8 +253,13 @@ enum GridEdit {
         result[CellAddress(row: 0, column: 0)] = GridCell(input: headerGroup.isEmpty ? "Group" : headerGroup, format: CellFormat(bold: true))
         result[CellAddress(row: 0, column: 1)] = GridCell(input: "\(summary.title) of \(headerValue.isEmpty ? "value" : headerValue)", format: CellFormat(bold: true))
         let quoted = "'" + source.name.replacingOccurrences(of: "'", with: "''") + "'!"
-        let groupRange = quoted + CellRange(CellAddress(row: range.start.row + 1, column: group), CellAddress(row: range.end.row, column: group)).a1
-        let valueRange = quoted + CellRange(CellAddress(row: range.start.row + 1, column: value), CellAddress(row: range.end.row, column: value)).a1
+        // Absolute, so sorting the summary (which moves its formulas) keeps pointing at the whole table.
+        func absolute(_ column: Int) -> String {
+            let letter = CellAddress.columnName(column)
+            return "$\(letter)$\(range.start.row + 2):$\(letter)$\(range.end.row + 1)"
+        }
+        let groupRange = quoted + absolute(group)
+        let valueRange = quoted + absolute(value)
         let format = engine.format(sheet: sheet, CellAddress(row: range.start.row + 1, column: value))
         for (offset, key) in keys.enumerated() {
             let row = offset + 1

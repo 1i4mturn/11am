@@ -340,7 +340,7 @@ enum GridInput {
 
     private static let parser: DateFormatter = {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "en_AU_POSIX")
+        formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.timeZone = TimeZone(identifier: "UTC")
         formatter.isLenient = false
         return formatter
@@ -474,7 +474,8 @@ enum GridDisplay {
         defer { lock.unlock() }
         let formatter = dateFormatters[pattern] ?? {
             let made = DateFormatter()
-            made.locale = Locale(identifier: "en_AU")
+            // Fixed English month names ("Nov", not "Nov."); the patterns themselves put the day first.
+            made.locale = Locale(identifier: "en_US_POSIX")
             made.timeZone = TimeZone(identifier: "UTC")
             made.dateFormat = pattern
             made.amSymbol = "am"
