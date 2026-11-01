@@ -78,3 +78,16 @@ jobs:
             ../ci/GridTests/main.swift 2>&1 | grep -E "error|warning: unre" || true
           test -x gridtests
           TZ=Australia/Sydney ./gridtests
+
+      - name: Ledger tests
+        working-directory: sandbox
+        run: |
+          mkdir -p ledgertest
+          cd ledgertest
+          swiftc -O -o ledgertests \
+            ../ElevenAm/Features/Money/{LedgerKit,LedgerSamples}.swift \
+            ../ElevenAm/Features/Sheets/{GridKit,GridFormula,GridEngine,GridEdit,GridFiles}.swift \
+            ../ElevenAm/Features/Documents/{DocumentKit,DocxWriter}.swift \
+            ../ci/LedgerTests/main.swift 2>&1 | grep -E "error|warning: unre" || true
+          test -x ledgertests
+          TZ=Australia/Sydney ./ledgertests
