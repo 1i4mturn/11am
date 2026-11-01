@@ -136,6 +136,7 @@ final class AppModel: ObservableObject {
     let write: WriteModel
     let research: ResearchModel
     let money: MoneyModel
+    let ledger: LedgerModel
     let sheets: SheetsModel
     let business: BusinessModel
     let design: DesignModel
@@ -168,6 +169,8 @@ final class AppModel: ObservableObject {
         self.write = write
         self.research = ResearchModel(brain: brain, write: write)
         self.money = MoneyModel(brain: brain)
+        let ledger = LedgerModel()
+        self.ledger = ledger
         self.sheets = SheetsModel(brain: brain)
         self.business = BusinessModel(brain: brain, voice: voice)
         self.design = DesignModel(brain: brain)
@@ -178,6 +181,7 @@ final class AppModel: ObservableObject {
         self.learn = LearnModel(brain: brain)
         self.build = BuildModel(brain: brain, theme: theme, looks: looks)
         nightShift.attach(to: self)
+        money.extraFacts = { [weak ledger] in ledger?.georgeFacts ?? "" }
         // Leo's calendar feeds Today, the brief and the notch countdown, with every connected calendar.
         let today = self.today
         calendar.onToday = { [weak calendar] events in

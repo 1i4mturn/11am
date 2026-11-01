@@ -64,6 +64,7 @@ extension View {
             .environmentObject(model.write)
             .environmentObject(model.research)
             .environmentObject(model.money)
+            .environmentObject(model.ledger)
             .environmentObject(model.sheets)
             .environmentObject(model.business)
             .environmentObject(model.design)

@@ -751,6 +751,22 @@ final class SheetsModel: ObservableObject {
         else if urls.count > 1 { notice = "Imported \(urls.count) workbooks." }
     }
 
+    /// Saves a workbook made elsewhere (George's reports) and opens it.
+    func add(_ workbook: Workbook) {
+        var copy = workbook
+        copy.id = UUID()
+        copy.modified = Date()
+        var name = copy.name
+        var number = 2
+        while entries.contains(where: { $0.name == name }) { name = "\(copy.name) \(number)"; number += 1 }
+        copy.name = name
+        flushSave()
+        write(copy)
+        sortEntries()
+        open(copy.id)
+        notice = "Opened \u{201C}\(name)\u{201D} from Money."
+    }
+
     enum Export: String, CaseIterable, Identifiable {
         case xlsx, csv, pdf
         var id: String { rawValue }

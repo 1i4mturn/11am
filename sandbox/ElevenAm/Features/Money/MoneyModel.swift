@@ -31,6 +31,8 @@ final class MoneyModel: ObservableObject {
 
     private let brain: Brain
     private var rules: [String: String]
+    /// What the books add when George is asked something (set by the app).
+    var extraFacts: (@MainActor () -> String)?
 
     init(brain: Brain) {
         self.brain = brain
@@ -215,6 +217,8 @@ final class MoneyModel: ObservableObject {
 
         Spend by category:
         \(categoryLines)
+
+        \(extraFacts?() ?? "")
         """
         let system = """
         You are George, the finance agent inside 11am. Answer using only the numbers given. Never invent a number. \

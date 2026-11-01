@@ -94,6 +94,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if let text = arguments.string(forKey: "sheetsSelect"), let range = CellRange(text) {
             model.sheets.select(range)
         }
+        // -moneyTab bank opens a Money tab; -moneyInvoice INV-0004 selects one; -moneyEditor YES starts a new invoice.
+        if let tab = arguments.string(forKey: "moneyTab").flatMap(MoneyTab.init(rawValue:)) {
+            model.ledger.tab = tab
+        }
+        if let number = arguments.string(forKey: "moneyInvoice"), let invoice = model.ledger.book.invoices.first(where: { $0.number == number }) {
+            model.ledger.selectedInvoice = invoice.id
+        }
+        if arguments.bool(forKey: "moneyEditor") {
+            model.ledger.newInvoice(.sale)
+            if var draft = model.ledger.editing, let contact = model.ledger.book.contacts.first {
+                draft.contact = contact.id
+                draft.lines[0].description = "Brand refresh, phase 1"
+                draft.lines[0].quantity = 1
+                draft.lines[0].unitPrice = 480_000
+                draft.lines.append(InvoiceLine(description: "Workshop facilitation", quantity: 6, unitPrice: 18_000, account: "200", gst: .gst))
+                model.ledger.editing = draft
+            }
+        }
         if arguments.bool(forKey: "activate") {
             NSApp.activate()
         }

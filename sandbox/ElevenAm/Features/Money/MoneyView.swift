@@ -6,40 +6,146 @@ import UniformTypeIdentifiers
 struct MoneyView: View {
     @EnvironmentObject private var theme: Theme
     @EnvironmentObject private var money: MoneyModel
+    @EnvironmentObject private var ledger: LedgerModel
     @Environment(\.colorScheme) private var scheme
     @State private var importing = false
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 18) {
-                SectionHeader(title: "money", subtitle: "George · never invents a number") {
+        VStack(alignment: .leading, spacing: 14) {
+            SectionHeader(title: "money", subtitle: subtitle) {
+                HStack(spacing: 8) {
                     Menu {
-                        Button("Sample books") { money.useSample() }
-                        Button("Import bank CSV…") { importing = true }
+                        Section("Books") {
+                            Button("Import a bank statement…") { ledger.importStatement() }
+                            Button("Your business and GST…") { ledger.showsSettings = true }
+                        }
+                        Section("Overview") {
+                            Button("Sample transactions") { money.useSample() }
+                            Button("Import bank CSV for the overview…") { importing = true }
+                        }
                     } label: {
-                        Label(money.source, systemImage: "building.columns")
+                        Label(ledger.book.settings.businessName, systemImage: "building.columns")
                     }
                     .menuStyle(.button)
                     .buttonStyle(.borderless)
                     .fixedSize()
                     .foregroundStyle(theme.inkSecondary(scheme))
-                }
-
-                if let notice = money.notice {
-                    Card {
-                        HStack {
-                            Text(notice).font(.system(size: 12.5)).foregroundStyle(theme.ink(scheme))
-                            Spacer()
-                            Button("Dismiss") { money.notice = nil }.buttonStyle(.vellumSecondary)
-                        }
+                    Button {
+                        ledger.newInvoice(.sale)
+                    } label: {
+                        Label("New invoice", systemImage: "doc.badge.plus")
                     }
+                    .buttonStyle(.vellumPrimary)
                 }
+            }
 
+            Picker("", selection: $ledger.tab) {
+                ForEach(MoneyTab.allCases) { tab in
+                    Text(tab == .bank && !ledger.book.unreconciled.isEmpty ? "Bank · \(ledger.book.unreconciled.count)" : tab.title).tag(tab)
+                }
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+            .frame(maxWidth: 640)
+
+            if let notice = ledger.notice ?? money.notice {
+                HStack(spacing: 10) {
+                    AgentLogo(code: "ge", size: 18, color: theme.inkSecondary(scheme))
+                    Text(notice).font(.system(size: 12.5)).foregroundStyle(theme.ink(scheme)).lineLimit(2)
+                    Spacer()
+                    Button {
+                        ledger.notice = nil
+                        money.notice = nil
+                    } label: {
+                        Image(systemName: "xmark").font(.system(size: 10, weight: .bold))
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(theme.inkTertiary(scheme))
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 8)
+                .vellum(level: 3, radius: max(theme.radius - 4, 8))
+                .transition(.rise(theme.rise))
+            }
+
+            Group {
+                switch ledger.tab {
+                case .overview: MoneyOverview()
+                case .bank: BankPanel()
+                case .invoices: InvoicesPanel(kind: .sale)
+                case .bills: InvoicesPanel(kind: .bill)
+                case .contacts: ContactsPanel()
+                case .reports: ReportsPanel()
+                case .gst: GSTPanel()
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        }
+        .padding(24)
+        .animation(theme.spring, value: ledger.tab)
+        .animation(theme.spring, value: ledger.notice)
+        .task(id: ledger.notice) {
+            guard ledger.notice != nil, (try? await Task.sleep(for: .seconds(10))) != nil else { return }
+            ledger.notice = nil
+        }
+        .sheet(item: $ledger.editing) { invoice in
+            InvoiceEditor(invoice: invoice)
+                .environmentObject(ledger)
+                .environmentObject(theme)
+        }
+        .sheet(isPresented: $ledger.showsSettings) {
+            LedgerSettingsView(settings: ledger.book.settings)
+                .environmentObject(ledger)
+                .environmentObject(theme)
+        }
+        .fileImporter(isPresented: $importing, allowedContentTypes: [.commaSeparatedText, .plainText, .data]) { result in
+            if case .success(let url) = result { withAnimation(theme.spring) { money.importCSV(url) } }
+        }
+    }
+
+    private var subtitle: String {
+        let open = ledger.book.unreconciled.count
+        return "George · never invents a number" + (open > 0 ? " · \(open) bank \(open == 1 ? "line" : "lines") to reconcile" : "")
+    }
+}
+
+/// Cash, burn and runway, with what the books say is owed.
+private struct MoneyOverview: View {
+    @EnvironmentObject private var theme: Theme
+    @EnvironmentObject private var money: MoneyModel
+    @EnvironmentObject private var ledger: LedgerModel
+
+    var body: some View {
+        let quarter = ledger.book.quarter(containing: ledger.today)
+        let gst = ledger.book.bas(from: quarter.start, to: quarter.end)
+        let overdue = ledger.book.overdue(.sale, on: ledger.today)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 18) {
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 12)], spacing: 12) {
                     CashTile().entrance(0)
                     StatTile(label: "Net burn / month", value: Money.short(money.netBurn), detail: "\(Money.short(money.grossBurn)) out, \(Money.short(money.monthlyRevenue)) in").entrance(1)
                     StatTile(label: "Revenue / month", value: Money.short(money.monthlyRevenue), detail: "Average of the last 3 months").entrance(2)
                     StatTile(label: "Runway", value: money.runwayMonths.map { String(format: "%.1f mo", $0) } ?? "∞", detail: money.runwayMonths == nil ? "Not burning cash" : "At the current net burn").entrance(3)
+                }
+
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 12)], spacing: 12) {
+                    Button { ledger.tab = .invoices } label: {
+                        StatTile(label: "Owed to you", value: LedgerMoney.text(ledger.book.owedToYou),
+                                 detail: overdue.isEmpty ? "Nothing overdue" : "\(LedgerMoney.text(overdue.reduce(0) { $0 + $1.owing })) overdue on \(overdue.count)")
+                    }
+                    .buttonStyle(.plain)
+                    Button { ledger.tab = .bills } label: {
+                        StatTile(label: "You owe", value: LedgerMoney.text(ledger.book.youOwe), detail: "On bills you've approved")
+                    }
+                    .buttonStyle(.plain)
+                    Button { ledger.tab = .gst } label: {
+                        StatTile(label: "GST this quarter", value: LedgerMoney.text(abs(gst.net)), detail: gst.net >= 0 ? "To pay so far" : "Refund so far")
+                    }
+                    .buttonStyle(.plain)
+                    Button { ledger.tab = .bank } label: {
+                        StatTile(label: "To reconcile", value: "\(ledger.book.unreconciled.count)", detail: "Bank lines George needs you for")
+                    }
+                    .buttonStyle(.plain)
                 }
 
                 ViewThatFits(in: .horizontal) {
@@ -57,12 +163,9 @@ struct MoneyView: View {
 
                 TransactionList()
             }
-            .padding(24)
+            .padding(.bottom, 24)
         }
         .scrollContentBackground(.hidden)
-        .fileImporter(isPresented: $importing, allowedContentTypes: [.commaSeparatedText, .plainText, .data]) { result in
-            if case .success(let url) = result { withAnimation(theme.spring) { money.importCSV(url) } }
-        }
     }
 }
 

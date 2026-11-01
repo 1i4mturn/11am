@@ -101,7 +101,7 @@ enum AccountType: String, Codable, CaseIterable, Identifiable, Sendable {
 }
 
 struct LedgerAccount: Codable, Identifiable, Hashable, Sendable {
-    enum Role: String, Codable, Sendable { receivables, payables, gst, equity }
+    enum Role: String, Codable, Sendable { case receivables, payables, gst, equity }
 
     var code: String
     var name: String
@@ -175,7 +175,7 @@ struct JournalLine: Codable, Hashable, Sendable {
 }
 
 struct JournalEntry: Codable, Identifiable, Hashable, Sendable {
-    enum Source: String, Codable, Sendable { bank, invoice, bill, payment, manual, transfer, opening }
+    enum Source: String, Codable, Sendable { case bank, invoice, bill, payment, manual, transfer, opening }
 
     var id = UUID()
     var date: Date
@@ -221,7 +221,7 @@ struct Payment: Codable, Identifiable, Hashable, Sendable {
 }
 
 struct Invoice: Codable, Identifiable, Hashable, Sendable {
-    enum Kind: String, Codable, Sendable { sale, bill }
+    enum Kind: String, Codable, Sendable { case sale, bill }
     enum Status: String, Codable, Sendable {
         case draft, approved, paid, void
 
