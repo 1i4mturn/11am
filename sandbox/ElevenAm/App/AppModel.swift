@@ -2,7 +2,7 @@ import SwiftUI
 
 /// The places in the sandbox. Apps come first; the agent behind each one is the quiet worker.
 enum AppSection: String, CaseIterable, Identifiable {
-    case today, calendar, mail, notes, write, files, pdf, research, money, business, design, photo, video, learn, build, overnight, suite, lab
+    case today, calendar, mail, notes, write, files, pdf, research, money, sheets, business, design, photo, video, learn, build, overnight, suite, lab
 
     var id: String { rawValue }
 
@@ -17,6 +17,7 @@ enum AppSection: String, CaseIterable, Identifiable {
         case .pdf: return "PDF"
         case .research: return "Research"
         case .money: return "Money"
+        case .sheets: return "Sheets"
         case .business: return "Business"
         case .design: return "Design"
         case .photo: return "Photo"
@@ -40,6 +41,7 @@ enum AppSection: String, CaseIterable, Identifiable {
         case .pdf: return "bn"
         case .research: return "jm"
         case .money: return "ge"
+        case .sheets: return "ge"
         case .business: return "cr"
         case .design: return "rt"
         case .photo: return "rt"
@@ -63,6 +65,7 @@ enum AppSection: String, CaseIterable, Identifiable {
         case .pdf: return "doc.richtext"
         case .research: return "safari"
         case .money: return "chart.line.uptrend.xyaxis"
+        case .sheets: return "tablecells"
         case .business: return "briefcase"
         case .design: return "paintbrush.pointed"
         case .photo: return "camera.aperture"
@@ -92,6 +95,7 @@ enum AppSection: String, CaseIterable, Identifiable {
         case .pdf: return "Read, sign, fill in and fix PDFs"
         case .research: return "Browse, ask, and get a sourced answer"
         case .money: return "Where it is, where it goes, what's next"
+        case .sheets: return "Spreadsheets with live formulas and Excel files"
         case .business: return "Pipeline, grounded in real conversations"
         case .design: return "On-brand graphics and image tools"
         case .photo: return "Colour, crop and clean-ups"
@@ -132,6 +136,7 @@ final class AppModel: ObservableObject {
     let write: WriteModel
     let research: ResearchModel
     let money: MoneyModel
+    let sheets: SheetsModel
     let business: BusinessModel
     let design: DesignModel
     let looks: LookLibrary
@@ -163,6 +168,7 @@ final class AppModel: ObservableObject {
         self.write = write
         self.research = ResearchModel(brain: brain, write: write)
         self.money = MoneyModel(brain: brain)
+        self.sheets = SheetsModel(brain: brain)
         self.business = BusinessModel(brain: brain, voice: voice)
         self.design = DesignModel(brain: brain)
         let looks = LookLibrary()
@@ -189,6 +195,7 @@ final class AppModel: ObservableObject {
         files.load()
         write.load()
         notes.load()
+        sheets.load()
         today.refreshAccess()
         calendar.refreshAccess()
         nightShift.start()

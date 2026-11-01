@@ -87,6 +87,7 @@ struct AgentPane: View {
         case .pdf: return ("bn", "Bolton", "Documents · reads, signs and fixes PDFs")
         case .research: return ("jm", "James", "Research · sourced, honest answers")
         case .money: return ("ge", "George", "Finance · never invents a number")
+        case .sheets: return ("ge", "George", "Numbers · writes formulas, reads your sheets")
         case .business: return ("cr", "Conner", "Business · what's worth building and selling")
         case .design: return ("rt", "Robert", "Design · a considered look for everything")
         case .photo: return ("rt", "Robert", "Photo · colour, crop and clean-ups")

@@ -26,6 +26,7 @@ struct SuiteView: View {
         SuiteApp(id: "pdf", name: "PDF", monogram: "bn", does: "Read, highlight, sign, fill in, reorder pages, compress, protect and truly redact", replaces: "Acrobat, Preview for PDFs", stage: .sandbox),
         SuiteApp(id: "research", name: "Research", monogram: "jm", does: "A WebKit browser with cited research", replaces: "Answer engines, read-later apps", stage: .sandbox),
         SuiteApp(id: "money", name: "Money", monogram: "ge", does: "Sheets, runway, receipts", replaces: "Budgeting apps, receipt scanners", stage: .sandbox),
+        SuiteApp(id: "sheets", name: "Sheets", monogram: "ge", does: "Workbooks with live formulas, charts, summaries and George writing the formulas", replaces: "Excel, Google Sheets, Numbers", stage: .sandbox),
         SuiteApp(id: "business", name: "Business", monogram: "cr", does: "Pipeline, strategy, decks", replaces: "Solo CRM plans, deck tools", stage: .sandbox),
         SuiteApp(id: "design", name: "Design", monogram: "rt", does: "Brand kit, quick graphics, image tools", replaces: "Design-tool subscriptions for everyday graphics", stage: .sandbox),
         SuiteApp(id: "photo", name: "Photo", monogram: "rt", does: "Grade, crop, straighten, clean up, cut out", replaces: "Photo-editor subscriptions for everyday edits", stage: .sandbox),

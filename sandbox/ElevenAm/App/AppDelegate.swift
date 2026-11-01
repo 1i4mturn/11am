@@ -84,9 +84,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if let title = arguments.string(forKey: "notesNote"), let note = model.notes.note(titled: title) {
             model.notes.selectedID = note.id
         }
+        // -sheetsBook "Japan trip" opens a workbook; -sheetsSheet 1 a sheet; -sheetsSelect A1:E7 a range.
+        if let name = arguments.string(forKey: "sheetsBook") {
+            model.sheets.open(named: name)
+        }
+        if arguments.object(forKey: "sheetsSheet") != nil {
+            model.sheets.showSheet(arguments.integer(forKey: "sheetsSheet"))
+        }
+        if let text = arguments.string(forKey: "sheetsSelect"), let range = CellRange(text) {
+            model.sheets.select(range)
+        }
         if arguments.bool(forKey: "activate") {
             NSApp.activate()
         }
+    }
+
+    func applicationWillTerminate(_ notification: Notification) {
+        model.sheets.flushSave()
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {

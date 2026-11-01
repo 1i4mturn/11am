@@ -23,7 +23,9 @@ check(interpret("$1,200.50").0 == .number(1200.5) && interpret("$1,200.50").1 ==
 check(interpret("-$40").0 == .number(-40) && interpret("(1,000)").0 == .number(-1000), "Typed: negative money")
 check(interpret("1,234").0 == .number(1234) && interpret("1,2").0 == .text("1,2"), "Typed: thousands, and not-quite-numbers stay text")
 check(interpret("1/11/2026").0 == .number(46327) && interpret("1/11/2026").1 == .shortDate, "Typed: 1/11/2026 is 1 November (day first)")
-check(interpret("2026-11-01").0 == .number(46327) && interpret("1 Nov 2026").1 == .date, "Typed: other date styles")
+let isoTyped = interpret("2026-11-01"), wordTyped = interpret("1 Nov 2026")
+check(isoTyped.0 == .number(46327) && wordTyped.0 == .number(46327) && wordTyped.1 == .date,
+      "Typed: other date styles (\(isoTyped.0), \(String(describing: isoTyped.1)); \(wordTyped.0), \(String(describing: wordTyped.1)))")
 check(interpret("9:30 am").0.number.map { abs($0 - 9.5 / 24) < 1e-9 } == true, "Typed: a time")
 check(interpret("'0123").0 == .text("0123") && interpret("TRUE").0 == .bool(true) && interpret("0412 345 678").0 == .text("0412 345 678"), "Typed: forced text, true, phone numbers")
 

@@ -71,6 +71,7 @@ private struct SectionContent: View {
         case .pdf: PDFAppView()
         case .research: ResearchView()
         case .money: MoneyView()
+        case .sheets: SheetsView()
         case .business: BusinessView()
         case .design: DesignView()
         case .photo: PhotoView()
