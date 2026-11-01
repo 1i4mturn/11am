@@ -66,3 +66,15 @@ jobs:
             ../ci/DocTests/main.swift 2>&1 | grep -E "error|warning: unre" || true
           test -x doctests
           ./doctests
+
+      - name: Grid tests
+        working-directory: sandbox
+        run: |
+          mkdir -p gridtest
+          cd gridtest
+          swiftc -O -o gridtests \
+            ../ElevenAm/Features/Sheets/{GridKit,GridFormula,GridEngine,GridEdit,GridFiles}.swift \
+            ../ElevenAm/Features/Documents/{DocumentKit,DocxWriter}.swift \
+            ../ci/GridTests/main.swift 2>&1 | grep -E "error|warning: unre" || true
+          test -x gridtests
+          TZ=Australia/Sydney ./gridtests
