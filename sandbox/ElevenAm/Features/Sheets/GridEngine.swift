@@ -535,7 +535,7 @@ enum GridFunctions {
             return .success(hits ?? [])
         }
         func sum(_ values: [CellValue], at indices: [Int]) -> Double {
-            indices.reduce(0) { total, index in
+            indices.reduce(0.0) { total, index in
                 guard index < values.count, case .number(let number) = values[index] else { return total }
                 return total + number
             }
@@ -565,7 +565,7 @@ enum GridFunctions {
                 let sample = name != "STDEVP"
                 guard values.count > (sample ? 1 : 0) else { return nil }
                 let mean = values.reduce(0, +) / Double(values.count)
-                let variance = values.reduce(0) { $0 + ($1 - mean) * ($1 - mean) } / Double(values.count - (sample ? 1 : 0))
+                let variance = values.reduce(0.0) { $0 + ($1 - mean) * ($1 - mean) } / Double(values.count - (sample ? 1 : 0))
                 return name == "VAR" ? variance : variance.squareRoot()
             }
         case "LARGE", "SMALL":
@@ -1140,20 +1140,24 @@ enum GridFunctions {
                 let due = type != 0 ? 1.0 : 0.0
                 switch name {
                 case "PMT":
-                    let present = third, future = fourth
+                    let present: Double = third, future: Double = fourth
                     if rate == 0 { return result(-(present + future) / periods) }
-                    let growth = pow(1 + rate, periods)
-                    return result(-(rate * (present * growth + future)) / ((1 + rate * due) * (growth - 1)))
+                    let growth: Double = pow(1 + rate, periods)
+                    let top: Double = rate * (present * growth + future)
+                    let bottom: Double = (1 + rate * due) * (growth - 1)
+                    return result(-top / bottom)
                 case "PV":
-                    let payment = third, future = fourth
+                    let payment: Double = third, future: Double = fourth
                     if rate == 0 { return result(-(payment * periods + future)) }
-                    let growth = pow(1 + rate, periods)
-                    return result(-(payment * (1 + rate * due) * (growth - 1) / rate + future) / growth)
+                    let growth: Double = pow(1 + rate, periods)
+                    let annuity: Double = payment * (1 + rate * due) * (growth - 1) / rate
+                    return result(-(annuity + future) / growth)
                 default:
-                    let payment = third, present = fourth
+                    let payment: Double = third, present: Double = fourth
                     if rate == 0 { return result(-(present + payment * periods)) }
-                    let growth = pow(1 + rate, periods)
-                    return result(-(present * growth + payment * (1 + rate * due) * (growth - 1) / rate))
+                    let growth: Double = pow(1 + rate, periods)
+                    let annuity: Double = payment * (1 + rate * due) * (growth - 1) / rate
+                    return result(-(present * growth + annuity))
                 }
             case (.failure(let error), _, _, _, _), (_, .failure(let error), _, _, _), (_, _, .failure(let error), _, _),
                  (_, _, _, .failure(let error), _), (_, _, _, _, .failure(let error)):
@@ -1163,7 +1167,9 @@ enum GridFunctions {
             guard count >= 2, case .success(let rate) = number(0) else { return fail(.value) }
             switch numbers(1..<count) {
             case .success(let flows):
-                return result(flows.enumerated().reduce(0) { $0 + $1.element / pow(1 + rate, Double($1.offset + 1)) })
+                var total = 0.0
+                for (offset, flow) in flows.enumerated() { total += flow / pow(1 + rate, Double(offset + 1)) }
+                return result(total)
             case .failure(let error):
                 return fail(error)
             }
@@ -1171,7 +1177,11 @@ enum GridFunctions {
             switch numbers(0..<1) {
             case .success(let flows):
                 guard flows.contains(where: { $0 < 0 }), flows.contains(where: { $0 > 0 }) else { return fail(.num) }
-                func npv(_ rate: Double) -> Double { flows.enumerated().reduce(0) { $0 + $1.element / pow(1 + rate, Double($1.offset)) } }
+                func npv(_ rate: Double) -> Double {
+                    var total = 0.0
+                    for (offset, flow) in flows.enumerated() { total += flow / pow(1 + rate, Double(offset)) }
+                    return total
+                }
                 var guess = (try? number(1, default: 0.1).get()) ?? 0.1
                 for _ in 0..<100 {
                     let value = npv(guess)

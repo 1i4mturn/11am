@@ -95,7 +95,7 @@ struct CellRange: Hashable, Codable, Sendable {
 
 // MARK: Values
 
-enum CellError: String, Codable, Sendable, CaseIterable {
+enum CellError: String, Codable, Sendable, CaseIterable, Error {
     case div0 = "#DIV/0!"
     case ref = "#REF!"
     case name = "#NAME?"
