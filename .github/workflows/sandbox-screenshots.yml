@@ -82,6 +82,18 @@ jobs:
           WAIT=12 capture pdf-pages-dark -startSection pdf -forceAppearance dark -pdfSample YES -pdfMode pages
           capture pdf-empty-light -startSection pdf -forceAppearance light
           capture learn-light -startSection learn -forceAppearance light
+          capture sheets-light -startSection sheets -forceAppearance light -sheetsSelect B2:E7
+          capture sheets-sales-dark -startSection sheets -forceAppearance dark -sheetsSheet 1 -sheetsSelect E2:E18
+          capture sheets-loan-light -startSection sheets -forceAppearance light -sheetsSheet 2 -sheetsSelect B7
+          capture sheets-trip-dark -startSection sheets -forceAppearance dark -sheetsBook "Japan trip"
+          capture money-light -startSection money -forceAppearance light
+          capture money-bank-light -startSection money -forceAppearance light -moneyTab bank
+          capture money-bank-dark -startSection money -forceAppearance dark -moneyTab bank
+          capture money-invoices-light -startSection money -forceAppearance light -moneyTab invoices -moneyInvoice INV-0004
+          capture money-editor-dark -startSection money -forceAppearance dark -moneyTab invoices -moneyEditor YES
+          capture money-bills-light -startSection money -forceAppearance light -moneyTab bills
+          capture money-reports-light -startSection money -forceAppearance light -moneyTab reports
+          capture money-gst-dark -startSection money -forceAppearance dark -moneyTab gst
           capture notch-dark -startSection suite -forceAppearance dark -openNotch YES
           ls -la shots
 
