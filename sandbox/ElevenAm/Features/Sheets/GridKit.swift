@@ -347,7 +347,9 @@ enum GridInput {
     }()
 
     static func dateOrTime(_ text: String) -> (Double, NumberFormat)? {
-        for (pattern, format) in dateFormats {
+        // ICU will happily read "Nov" for "M", so a date written with a month name only tries the patterns that have one.
+        let hasWord = text.contains { $0.isLetter }
+        for (pattern, format) in dateFormats where pattern.contains("MMM") == hasWord {
             parser.dateFormat = pattern
             if let date = parser.date(from: text) { return (ExcelDate.serial(utc: date), format) }
         }
