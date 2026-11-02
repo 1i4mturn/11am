@@ -255,6 +255,7 @@ private struct SheetsFormatBar: View {
 
     var body: some View {
         let format = sheets.activeFormat
+        ScrollView(.horizontal, showsIndicators: false) {
         HStack(spacing: 2) {
             ToolButton(symbol: "arrow.uturn.backward", help: "Undo (⌘Z)") { sheets.undo() }
                 .disabled(!sheets.canUndo)
@@ -264,8 +265,8 @@ private struct SheetsFormatBar: View {
             numberMenu
             TextToolButton(text: "$", help: "Currency") { sheets.setNumberFormat(.currency(2)) }
             TextToolButton(text: "%", help: "Percent") { sheets.setNumberFormat(.percent(0)) }
-            TextToolButton(text: ".0←", help: "Fewer decimal places") { sheets.adjustDecimals(-1) }
-            TextToolButton(text: ".00→", help: "More decimal places") { sheets.adjustDecimals(1) }
+            TextToolButton(text: "−.0", help: "Fewer decimal places") { sheets.adjustDecimals(-1) }
+            TextToolButton(text: "+.0", help: "More decimal places") { sheets.adjustDecimals(1) }
             divider
             ToolButton(symbol: "bold", help: "Bold (⌘B)", on: format.bold) { sheets.toggleBold() }
                 .keyboardShortcut("b", modifiers: .command)
@@ -284,8 +285,8 @@ private struct SheetsFormatBar: View {
             }
             insertMenu
             chartMenu
-            Spacer(minLength: 8)
             if let sheet = sheets.sheet, !sheet.charts.isEmpty {
+                divider
                 ToolButton(symbol: "sidebar.right", help: sheets.showsCharts ? "Hide charts" : "Show charts", on: sheets.showsCharts) {
                     sheets.showsCharts.toggle()
                 }
@@ -293,6 +294,8 @@ private struct SheetsFormatBar: View {
         }
         .padding(.horizontal, 6)
         .padding(.vertical, 3)
+        }
+        .fixedSize(horizontal: false, vertical: true)
         .background {
             RoundedRectangle(cornerRadius: 9, style: .continuous).fill(theme.well(scheme))
         }
@@ -429,6 +432,8 @@ struct TextToolButton: View {
         Button(action: action) {
             Text(text)
                 .font(.system(size: 11.5, weight: .semibold, design: .rounded))
+                .lineLimit(1)
+                .fixedSize()
                 .foregroundStyle(theme.inkSecondary(scheme))
                 .padding(.horizontal, 5)
                 .frame(minWidth: 24, minHeight: 24)

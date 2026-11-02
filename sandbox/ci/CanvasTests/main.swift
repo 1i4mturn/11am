@@ -194,7 +194,7 @@ for layout in SlideLayout.allCases {
     content.table = [["Plan", "Price"], ["Solo", "$12"], ["Team", "$40"]]
     let slide = Slide(layout: layout, content: content, theme: theme)
     let inBounds = slide.canvas.layers.allSatisfy { $0.frame.minX >= -1 && $0.frame.maxX <= 1921 && $0.frame.minY >= -1 && $0.frame.maxY <= 1081 }
-    check(!slide.canvas.layers.isEmpty && inBounds && slide.canvas.size == Deck.size, "Layout: \(layout.title) (\(slide.canvas.layers.count) layers, on the slide)")
+    check(!slide.canvas.layers.isEmpty && inBounds && slide.canvas.size == SlideDeck.size, "Layout: \(layout.title) (\(slide.canvas.layers.count) layers, on the slide)")
 }
 let chartSlide = Slide(layout: .chart, content: SlideContent(title: "Growth", chart: [ChartPoint(label: "Jan", value: 10), ChartPoint(label: "Feb", value: 20)]), theme: theme)
 let bars = chartSlide.canvas.layers.filter { $0.role == "bar" }
@@ -240,7 +240,7 @@ check(slides.map(\.layout) == [.title, .bullets, .bigNumber, .quote, .chart, .ta
 check(slides[1].notes == "Start with the bill." && slides[2].content.number == "$1.2m" && slides[2].content.title == "ARR" && slides[3].content.attribution == "Priya, Acme"
       && slides[4].content.chart.count == 3 && slides[5].content.table.count == 3, "…with notes, numbers, quotes, charts and tables")
 
-var deck = Deck(name: "Pitch", theme: theme, slides: slides)
+var deck = SlideDeck(name: "Pitch", theme: theme, slides: slides)
 deck.slides[1].customised = true
 deck.slides[1].canvas.layers[0].frame.x = 300
 deck.apply(.ink)

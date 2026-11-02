@@ -124,7 +124,7 @@ struct DeckTheme: Codable, Hashable, Identifiable, Sendable {
     }
 }
 
-struct Deck: Codable, Identifiable, Hashable, Sendable {
+struct SlideDeck: Codable, Identifiable, Hashable, Sendable {
     var id = UUID()
     var name: String
     var theme: DeckTheme
@@ -175,7 +175,7 @@ enum DeckLayoutEngine {
 
     /// The layers for a slide, from its layout, content and theme.
     static func canvas(_ layout: SlideLayout, _ content: SlideContent, _ theme: DeckTheme) -> CanvasDocument {
-        let size = Deck.size
+        let size = SlideDeck.size
         let w = size.width, h = size.height, m = margin
         var layers: [CanvasLayer] = []
         var background = theme.background
@@ -512,7 +512,7 @@ enum PPTXWriter {
     /// 1 canvas point is 6,350 EMU, so 1920 × 1080 is PowerPoint's 13.333 × 7.5 inch widescreen.
     static let emu = 6_350.0
 
-    static func data(_ deck: Deck, imageData: (String) -> Data?) -> Data {
+    static func data(_ deck: SlideDeck, imageData: (String) -> Data?) -> Data {
         var zip = ZipWriter()
         let slides = deck.visibleSlides
         var mediaCount = 0
@@ -586,7 +586,7 @@ enum PPTXWriter {
         <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
         <Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties"><Application>11am</Application><Slides>\(slideFiles.count)</Slides></Properties>
         """)
-        let width = Int(Deck.size.width * emu), height = Int(Deck.size.height * emu)
+        let width = Int(SlideDeck.size.width * emu), height = Int(SlideDeck.size.height * emu)
         let slideIDs = slideFiles.indices.map { "<p:sldId id=\"\(256 + $0)\" r:id=\"rId\($0 + 2)\"/>" }.joined()
         zip.add("ppt/presentation.xml", """
         <?xml version="1.0" encoding="UTF-8" standalone="yes"?>

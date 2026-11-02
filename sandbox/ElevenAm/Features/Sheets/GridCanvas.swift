@@ -252,6 +252,8 @@ final class GridView: NSView, NSTextFieldDelegate {
     }
 
     private func reveal(_ address: CellAddress) {
+        // Before the first layout the view has no size, and scrolling then would jump to the cell.
+        guard visibleRect.width > 80, visibleRect.height > 80 else { return }
         var rect = NSRect(x: x(address.column) - headerWidth, y: headerHeight + CGFloat(address.row) * rowHeight,
                           width: x(address.column + 1) - x(address.column) + headerWidth, height: rowHeight)
         if address.row >= frozen {
@@ -343,6 +345,11 @@ final class GridView: NSView, NSTextFieldDelegate {
                             : NSFont.systemFont(ofSize: 12, weight: format.bold ? .semibold : .regular)
         if format.italic { font = NSFontManager.shared.convert(font, toHaveTrait: .italicFontMask) }
         var color = GridColor.ns(format.color) ?? style.ink
+        // On a filled cell, pick ink that reads on the fill (a light fill in dark mode gets dark text).
+        if format.color == nil, let fill = GridColor.ns(format.fill), let rgb = fill.usingColorSpace(.sRGB) {
+            let luminance = 0.2126 * rgb.redComponent + 0.7152 * rgb.greenComponent + 0.0722 * rgb.blueComponent
+            color = luminance > 0.55 ? NSColor(white: 0.1, alpha: 1) : NSColor(white: 0.96, alpha: 1)
+        }
         if case .error = value { color = style.secondary }
         let alignment: NSTextAlignment
         switch format.alignment {

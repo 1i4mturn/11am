@@ -107,7 +107,7 @@ struct BankPanel: View {
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .fixedSize(horizontal: false, vertical: true)
             }
-            .frame(width: 200)
+            .frame(width: 180)
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 10) {
@@ -237,61 +237,25 @@ private struct ReconcileRow: View {
                         .buttonStyle(.vellumPrimary)
                 }
             }
-            HStack(spacing: 8) {
-                Menu {
-                    ForEach(groups, id: \.self) { type in
-                        Section(type.title) {
-                            ForEach(ledger.book.accounts.filter { $0.type == type && !$0.isBank && $0.role == nil }) { item in
-                                Button(item.label) {
-                                    account = item.code
-                                    gst = ledger.book.settings.gstRegistered ? item.gst : .excluded
-                                }
-                            }
-                        }
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 8) {
+                    accountMenu
+                    gstPicker
+                    codeButton
+                    Spacer(minLength: 0)
+                    matchMenu
+                    transferMenu
+                }
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(spacing: 8) {
+                        accountMenu
+                        gstPicker
+                        codeButton
                     }
-                } label: {
-                    Text(ledger.book.account(account)?.label ?? "Choose an account")
-                        .font(.system(size: 12))
-                }
-                .menuStyle(.button)
-                .fixedSize()
-                Picker("", selection: $gst) {
-                    ForEach(GSTCode.allCases) { code in Text(code.title).tag(code) }
-                }
-                .labelsHidden()
-                .fixedSize()
-                if !account.isEmpty {
-                    Text(gstPreview)
-                        .font(.system(size: 11).monospacedDigit())
-                        .foregroundStyle(theme.inkTertiary(scheme))
-                }
-                Button("Code") { withAnimation(theme.spring) { ledger.code(line, account: account, gst: gst) } }
-                    .buttonStyle(.vellumSecondary)
-                    .disabled(account.isEmpty)
-                Spacer(minLength: 0)
-                let candidates = ledger.candidates(for: line)
-                if !candidates.isEmpty {
-                    Menu("Match") {
-                        ForEach(candidates.prefix(12)) { invoice in
-                            Button("\(invoice.number) · \(ledger.book.contact(invoice.contact)?.name ?? "") · \(LedgerMoney.text(invoice.owing))") {
-                                withAnimation(theme.spring) { ledger.match(line, invoice: invoice.id) }
-                            }
-                            .disabled(invoice.owing < abs(line.amount))
-                        }
+                    HStack(spacing: 8) {
+                        matchMenu
+                        transferMenu
                     }
-                    .menuStyle(.button)
-                    .fixedSize()
-                    .help(line.amount > 0 ? "A payment for one of your invoices" : "Paying one of your bills")
-                }
-                let others = ledger.book.bankAccounts.filter { $0.code != line.account }
-                if !others.isEmpty {
-                    Menu("Transfer") {
-                        ForEach(others) { other in
-                            Button("\(line.amount < 0 ? "To" : "From") \(other.name)") { withAnimation(theme.spring) { ledger.transfer(line, to: other.code) } }
-                        }
-                    }
-                    .menuStyle(.button)
-                    .fixedSize()
                 }
             }
         }
@@ -300,6 +264,74 @@ private struct ReconcileRow: View {
     }
 
     private var groups: [AccountType] { line.amount > 0 ? [.income, .liability, .equity, .asset] : [.expense, .asset, .liability, .equity] }
+
+    private var accountMenu: some View {
+        Menu {
+            ForEach(groups, id: \.self) { type in
+                Section(type.title) {
+                    ForEach(ledger.book.accounts.filter { $0.type == type && !$0.isBank && $0.role == nil }) { item in
+                        Button(item.label) {
+                            account = item.code
+                            gst = ledger.book.settings.gstRegistered ? item.gst : .excluded
+                        }
+                    }
+                }
+            }
+        } label: {
+            Text(ledger.book.account(account)?.label ?? "Choose an account")
+                .font(.system(size: 12))
+                .lineLimit(1)
+        }
+        .menuStyle(.button)
+        .frame(maxWidth: 230)
+    }
+
+    private var gstPicker: some View {
+        Picker("", selection: $gst) {
+            ForEach(GSTCode.allCases) { code in Text(code.title).tag(code) }
+        }
+        .labelsHidden()
+        .frame(width: 130)
+    }
+
+    private var codeButton: some View {
+        Button(account.isEmpty ? "Code" : "Code · \(gstPreview)") { withAnimation(theme.spring) { ledger.code(line, account: account, gst: gst) } }
+            .buttonStyle(.vellumSecondary)
+            .disabled(account.isEmpty)
+            .fixedSize()
+    }
+
+    @ViewBuilder
+    private var matchMenu: some View {
+        let candidates = ledger.candidates(for: line)
+        if !candidates.isEmpty {
+            Menu("Match") {
+                ForEach(candidates.prefix(12)) { invoice in
+                    Button("\(invoice.number) · \(ledger.book.contact(invoice.contact)?.name ?? "") · \(LedgerMoney.text(invoice.owing))") {
+                        withAnimation(theme.spring) { ledger.match(line, invoice: invoice.id) }
+                    }
+                    .disabled(invoice.owing < abs(line.amount))
+                }
+            }
+            .menuStyle(.button)
+            .fixedSize()
+            .help(line.amount > 0 ? "A payment for one of your invoices" : "Paying one of your bills")
+        }
+    }
+
+    @ViewBuilder
+    private var transferMenu: some View {
+        let others = ledger.book.bankAccounts.filter { $0.code != line.account }
+        if !others.isEmpty {
+            Menu("Transfer") {
+                ForEach(others) { other in
+                    Button("\(line.amount < 0 ? "To" : "From") \(other.name)") { withAnimation(theme.spring) { ledger.transfer(line, to: other.code) } }
+                }
+            }
+            .menuStyle(.button)
+            .fixedSize()
+        }
+    }
 
     private var gstPreview: String {
         let tax = GST.included(in: abs(line.amount), ledger.book.settings.gstRegistered ? gst : .excluded)
@@ -357,18 +389,19 @@ struct InvoicesPanel: View {
                     }
                     .pickerStyle(.segmented)
                     .labelsHidden()
-                    .frame(maxWidth: 380)
-                    Spacer()
-                    Text("\(kind == .sale ? "Owed to you" : "You owe") \(LedgerMoney.text(owing))\(overdue > 0 ? " · \(LedgerMoney.text(overdue)) overdue" : "")")
-                        .font(.system(size: 12))
-                        .foregroundStyle(theme.inkSecondary(scheme))
+                    .frame(maxWidth: 360)
+                    Spacer(minLength: 8)
                     Button {
                         ledger.newInvoice(kind)
                     } label: {
                         Label(kind == .sale ? "New invoice" : "New bill", systemImage: "plus")
                     }
                     .buttonStyle(.vellumPrimary)
+                    .fixedSize()
                 }
+                Text("\(kind == .sale ? "Owed to you" : "You owe") \(LedgerMoney.text(owing))\(overdue > 0 ? " · \(LedgerMoney.text(overdue)) overdue" : "")")
+                    .font(.system(size: 12))
+                    .foregroundStyle(theme.inkSecondary(scheme))
                 LedgerCard {
                     if shown.isEmpty {
                         Text(kind == .sale ? "No invoices here." : "No bills here.")
@@ -384,9 +417,10 @@ struct InvoicesPanel: View {
                     }
                 }
             }
+            .frame(minWidth: 360, maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             if let id = ledger.selectedInvoice, let invoice = ledger.book.invoice(id), invoice.kind == kind {
                 InvoiceDetail(invoice: invoice)
-                    .frame(width: 340)
+                    .frame(width: 320)
                     .transition(.rise(theme.rise))
             }
         }
@@ -410,22 +444,25 @@ struct InvoicesPanel: View {
             ledger.selectedInvoice = selected ? nil : invoice.id
         } label: {
             HStack(spacing: 12) {
-                Text(invoice.number)
-                    .font(.system(size: 12.5, weight: .medium).monospacedDigit())
-                    .foregroundStyle(theme.ink(scheme))
-                    .frame(width: 84, alignment: .leading)
-                Text(ledger.book.contact(invoice.contact)?.name ?? "")
-                    .font(.system(size: 12.5))
-                    .foregroundStyle(theme.ink(scheme))
-                    .lineLimit(1)
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack(spacing: 8) {
+                        Text(invoice.number)
+                            .font(.system(size: 12.5, weight: .medium).monospacedDigit())
+                            .foregroundStyle(theme.ink(scheme))
+                            .fixedSize()
+                        Text(ledger.book.contact(invoice.contact)?.name ?? "")
+                            .font(.system(size: 12.5))
+                            .foregroundStyle(theme.ink(scheme))
+                            .lineLimit(1)
+                    }
+                    Text(late > 0 ? "\(late) \(late == 1 ? "day" : "days") late · \(invoice.status.title.lowercased())" : "\(invoice.status.title) · due \(invoice.due.shortDay)")
+                        .font(.system(size: 11, weight: late > 0 ? .semibold : .regular))
+                        .foregroundStyle(late > 0 ? theme.ink(scheme) : theme.inkTertiary(scheme))
+                        .lineLimit(1)
+                }
+                .layoutPriority(1)
                 Spacer(minLength: 8)
-                Text(late > 0 ? "\(late) \(late == 1 ? "day" : "days") late" : "Due \(invoice.due.shortDay)")
-                    .font(.system(size: 11.5, weight: late > 0 ? .semibold : .regular))
-                    .foregroundStyle(late > 0 ? theme.ink(scheme) : theme.inkTertiary(scheme))
-                    .frame(width: 90, alignment: .trailing)
-                Chip(text: invoice.status.title, filled: invoice.status == .paid)
-                    .frame(width: 128, alignment: .trailing)
-                LedgerAmount(cents: invoice.total, bold: invoice.owing > 0)
+                LedgerAmount(cents: invoice.total, bold: invoice.owing > 0, width: 96)
             }
             .padding(.vertical, 8)
             .padding(.horizontal, 6)
@@ -855,19 +892,23 @@ struct ReportsPanel: View {
     var body: some View {
         let dates = ledger.range(ledger.period)
         VStack(alignment: .leading, spacing: 12) {
+            Picker("", selection: $report) {
+                ForEach(Report.allCases) { item in Text(item.title).tag(item) }
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+            .frame(maxWidth: 620)
             HStack(spacing: 10) {
-                Picker("", selection: $report) {
-                    ForEach(Report.allCases) { item in Text(item.title).tag(item) }
-                }
-                .pickerStyle(.segmented)
-                .labelsHidden()
-                .frame(maxWidth: 620)
                 Picker("", selection: $ledger.period) {
                     ForEach(LedgerPeriod.allCases) { item in Text(item.title).tag(item) }
                 }
                 .labelsHidden()
                 .fixedSize()
-                Spacer()
+                Text(caption(dates))
+                    .font(.system(size: 11.5))
+                    .foregroundStyle(theme.inkTertiary(scheme))
+                    .lineLimit(1)
+                Spacer(minLength: 8)
                 Button("Open in Sheets") {
                     model.sheets.add(ledger.accountantPack())
                     model.go(to: .sheets)
@@ -878,9 +919,6 @@ struct ReportsPanel: View {
                     .buttonStyle(.vellumPrimary)
                     .help("Profit and loss, balance sheet, trial balance, general ledger, GST and aged lists as one Excel file")
             }
-            Text(caption(dates))
-                .font(.system(size: 11.5))
-                .foregroundStyle(theme.inkTertiary(scheme))
             ScrollView {
                 LedgerCard {
                     switch report {
