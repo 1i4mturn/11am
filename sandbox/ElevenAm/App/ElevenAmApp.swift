@@ -69,6 +69,7 @@ extension View {
             .environmentObject(model.business)
             .environmentObject(model.design)
             .environmentObject(model.studio)
+            .environmentObject(model.decks)
             .environmentObject(model.looks)
             .environmentObject(model.photo)
             .environmentObject(model.video)

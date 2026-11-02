@@ -73,6 +73,7 @@ private struct SectionContent: View {
         case .money: MoneyView()
         case .sheets: SheetsView()
         case .business: BusinessView()
+        case .decks: DecksView()
         case .design: DesignView()
         case .photo: PhotoView()
         case .video: VideoView()

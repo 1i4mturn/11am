@@ -124,6 +124,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             let layers = model.studio.controller.document.layers
             if layers.indices.contains(index) { model.studio.controller.select(layers[index].id) }
         }
+        // -decksSlide 3 shows a slide; -decksPresent YES starts presenting.
+        if arguments.object(forKey: "decksSlide") != nil {
+            model.decks.showSlide(arguments.integer(forKey: "decksSlide"))
+        }
+        if arguments.bool(forKey: "decksPresent") {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in self?.model.decks.present() }
+        }
         if arguments.bool(forKey: "activate") {
             NSApp.activate()
         }
@@ -132,6 +139,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationWillTerminate(_ notification: Notification) {
         model.sheets.flushSave()
         model.studio.flushSave()
+        model.decks.flushSave()
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {

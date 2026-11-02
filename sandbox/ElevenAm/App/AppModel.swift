@@ -2,7 +2,7 @@ import SwiftUI
 
 /// The places in the sandbox. Apps come first; the agent behind each one is the quiet worker.
 enum AppSection: String, CaseIterable, Identifiable {
-    case today, calendar, mail, notes, write, files, pdf, research, money, sheets, business, design, photo, video, learn, build, overnight, suite, lab
+    case today, calendar, mail, notes, write, files, pdf, research, money, sheets, business, decks, design, photo, video, learn, build, overnight, suite, lab
 
     var id: String { rawValue }
 
@@ -19,6 +19,7 @@ enum AppSection: String, CaseIterable, Identifiable {
         case .money: return "Money"
         case .sheets: return "Sheets"
         case .business: return "Business"
+        case .decks: return "Decks"
         case .design: return "Design"
         case .photo: return "Photo"
         case .video: return "Video"
@@ -43,6 +44,7 @@ enum AppSection: String, CaseIterable, Identifiable {
         case .money: return "ge"
         case .sheets: return "ge"
         case .business: return "cr"
+        case .decks: return "cr"
         case .design: return "rt"
         case .photo: return "rt"
         case .video: return "co"
@@ -67,6 +69,7 @@ enum AppSection: String, CaseIterable, Identifiable {
         case .money: return "chart.line.uptrend.xyaxis"
         case .sheets: return "tablecells"
         case .business: return "briefcase"
+        case .decks: return "play.rectangle"
         case .design: return "paintbrush.pointed"
         case .photo: return "camera.aperture"
         case .video: return "film"
@@ -97,6 +100,7 @@ enum AppSection: String, CaseIterable, Identifiable {
         case .money: return "Where it is, where it goes, what's next"
         case .sheets: return "Spreadsheets with live formulas and Excel files"
         case .business: return "Pipeline, grounded in real conversations"
+        case .decks: return "Slides from an outline, presented or sent as PowerPoint"
         case .design: return "On-brand graphics and image tools"
         case .photo: return "Colour, crop and clean-ups"
         case .video: return "Cut, colour and clean up the sound"
@@ -141,6 +145,7 @@ final class AppModel: ObservableObject {
     let business: BusinessModel
     let design: DesignModel
     let studio: DesignStudio
+    let decks: DecksModel
     let looks: LookLibrary
     let photo: PhotoModel
     let video: VideoModel
@@ -176,6 +181,7 @@ final class AppModel: ObservableObject {
         self.business = BusinessModel(brain: brain, voice: voice)
         self.design = DesignModel(brain: brain)
         self.studio = DesignStudio(brain: brain)
+        self.decks = DecksModel(brain: brain)
         let looks = LookLibrary()
         self.looks = looks
         self.photo = PhotoModel(looks: looks)
@@ -203,6 +209,7 @@ final class AppModel: ObservableObject {
         notes.load()
         sheets.load()
         studio.load()
+        decks.load()
         today.refreshAccess()
         calendar.refreshAccess()
         nightShift.start()

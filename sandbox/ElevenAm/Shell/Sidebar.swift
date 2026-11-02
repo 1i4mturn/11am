@@ -3,7 +3,7 @@ import SwiftUI
 struct Sidebar: View {
     static let groups: [(title: String, sections: [AppSection])] = [
         ("Every day", [.today, .calendar, .mail, .notes, .write, .files, .overnight]),
-        ("Work", [.pdf, .research, .money, .sheets, .business]),
+        ("Work", [.pdf, .research, .money, .sheets, .business, .decks]),
         ("Make", [.design, .photo, .video, .learn, .build]),
         ("Sandbox", [.suite, .lab]),
     ]

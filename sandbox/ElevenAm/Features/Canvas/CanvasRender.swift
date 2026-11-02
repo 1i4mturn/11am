@@ -237,7 +237,9 @@ enum CanvasRenderer {
         let graphics = NSGraphicsContext(cgContext: context, flipped: true)
         NSGraphicsContext.saveGraphicsState()
         NSGraphicsContext.current = graphics
-        attributed(text, style).draw(with: rect, options: [.usesLineFragmentOrigin, .usesFontLeading])
+        // Text that runs past the bottom of its box still shows, as it does in design apps.
+        let open = CGRect(x: rect.minX, y: rect.minY, width: rect.width, height: max(rect.height, 100_000))
+        attributed(text, style).draw(with: open, options: [.usesLineFragmentOrigin, .usesFontLeading])
         NSGraphicsContext.restoreGraphicsState()
     }
 
