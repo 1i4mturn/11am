@@ -91,3 +91,15 @@ jobs:
             ../ci/LedgerTests/main.swift 2>&1 | grep -E "error|warning: unre" || true
           test -x ledgertests
           TZ=Australia/Sydney ./ledgertests
+
+      - name: Canvas and deck tests
+        working-directory: sandbox
+        run: |
+          mkdir -p canvastest
+          cd canvastest
+          swiftc -O -o canvastests \
+            ../ElevenAm/Features/Canvas/{CanvasKit,CanvasRender,DeckKit}.swift \
+            ../ElevenAm/Features/Documents/{DocumentKit,DocxWriter}.swift \
+            ../ci/CanvasTests/main.swift 2>&1 | grep -E "error|warning: unre" || true
+          test -x canvastests
+          ./canvastests
