@@ -429,8 +429,9 @@ enum DeckOutline {
                             && (content.title.lowercased().contains("plan") || content.title.lowercased().contains("roadmap") || content.title.lowercased().contains("timeline")) {
                     layout = .timeline
                 } else if content.bullets.count > 7 {
-                    content.secondary = Array(content.bullets[(content.bullets.count + 1) / 2...])
-                    content.bullets = Array(content.bullets[..<((content.bullets.count + 1) / 2)])
+                    let half = (content.bullets.count + 1) / 2
+                    content.secondary = Array(content.bullets[half...])
+                    content.bullets = Array(content.bullets[..<half])
                     layout = .twoColumns
                 }
             }
