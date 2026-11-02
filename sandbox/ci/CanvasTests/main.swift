@@ -157,7 +157,8 @@ let pdfData = CanvasRenderer.pdf([textDocument, document, post], images: images)
 let pdf = PDFDocument(data: pdfData)
 check(pdf?.pageCount == 3 && pdf?.page(at: 0)?.bounds(for: .mediaBox).size == CGSize(width: 800, height: 400)
       && pdf?.page(at: 2)?.bounds(for: .mediaBox).size == CGSize(width: 1080, height: 1080), "PDF: one page per design, each its own size")
-check(pdf?.string?.contains("Hello") == true && pdf?.string?.contains("pilot") == true, "PDF: text stays text")
+let pdfText = (pdf?.string ?? "nil").replacingOccurrences(of: "\n", with: " ⏎ ")
+check(pdf?.string?.contains("Hello") == true && pdf?.string?.contains("pilot") == true, "PDF: text stays text (\(pdfText.prefix(160)))")
 
 let svg = CanvasRenderer.svg(post, imageData: { _ in nil })
 let svgXML = try? XMLDocument(xmlString: svg)
@@ -280,7 +281,7 @@ let listing: String = {
 }()
 check(listing.contains("ppt/slides/slide7.xml") && !listing.contains("ppt/slides/slide8.xml"), "PowerPoint: one slide per visible slide")
 var wellFormed = true
-for name in ["[Content_Types].xml", "_rels/.rels", "ppt/presentation.xml", "ppt/_rels/presentation.xml.rels", "ppt/slideMasters/slideMaster1.xml",
+for name in ["?Content_Types?.xml", "_rels/.rels", "ppt/presentation.xml", "ppt/_rels/presentation.xml.rels", "ppt/slideMasters/slideMaster1.xml",
              "ppt/slideLayouts/slideLayout1.xml", "ppt/theme/theme1.xml", "ppt/slides/slide1.xml", "ppt/slides/slide4.xml", "ppt/slides/_rels/slide1.xml.rels",
              "docProps/core.xml", "docProps/app.xml"] {
     guard let data = part(name), (try? XMLDocument(data: data)) != nil else {

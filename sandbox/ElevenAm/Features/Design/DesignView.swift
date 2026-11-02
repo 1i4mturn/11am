@@ -6,13 +6,14 @@ import UniformTypeIdentifiers
 struct DesignView: View {
     @EnvironmentObject private var theme: Theme
     @Environment(\.colorScheme) private var scheme
-    @State private var tab: DesignTab = .graphic
+    @EnvironmentObject private var studio: DesignStudio
 
     enum DesignTab: String, CaseIterable, Identifiable {
-        case graphic, images, brand
+        case designs, graphic, images, brand
         var id: String { rawValue }
         var title: String {
             switch self {
+            case .designs: return "Designs"
             case .graphic: return "Quick graphic"
             case .images: return "Image tools"
             case .brand: return "Brand kit"
@@ -23,7 +24,7 @@ struct DesignView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             SectionHeader(title: "design", subtitle: "Robert · a considered look for everything") {
-                Picker("", selection: $tab) {
+                Picker("", selection: $studio.tab) {
                     ForEach(DesignTab.allCases) { tab in Text(tab.title).tag(tab) }
                 }
                 .pickerStyle(.segmented)
@@ -31,14 +32,15 @@ struct DesignView: View {
                 .fixedSize()
             }
             ZStack {
-                switch tab {
+                switch studio.tab {
+                case .designs: DesignsPanel().transition(.rise(theme.rise))
                 case .graphic: QuickGraphic().transition(.rise(theme.rise))
                 case .images: ImageToolsPanel().transition(.rise(theme.rise))
                 case .brand: BrandKit().transition(.rise(theme.rise))
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-            .animation(theme.spring, value: tab)
+            .animation(theme.spring, value: studio.tab)
         }
         .padding(24)
     }

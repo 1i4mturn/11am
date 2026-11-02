@@ -112,6 +112,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 model.ledger.editing = draft
             }
         }
+        // -designName Founder opens a design; -designTab graphic picks a Design tab; -designSelect 2 selects a layer.
+        if let name = arguments.string(forKey: "designName") {
+            model.studio.open(named: name)
+        }
+        if let tab = arguments.string(forKey: "designTab").flatMap(DesignView.DesignTab.init(rawValue:)) {
+            model.studio.tab = tab
+        }
+        if arguments.object(forKey: "designSelect") != nil {
+            let index = arguments.integer(forKey: "designSelect")
+            let layers = model.studio.controller.document.layers
+            if layers.indices.contains(index) { model.studio.controller.select(layers[index].id) }
+        }
         if arguments.bool(forKey: "activate") {
             NSApp.activate()
         }
@@ -119,6 +131,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationWillTerminate(_ notification: Notification) {
         model.sheets.flushSave()
+        model.studio.flushSave()
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {

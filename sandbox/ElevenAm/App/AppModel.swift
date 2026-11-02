@@ -140,6 +140,7 @@ final class AppModel: ObservableObject {
     let sheets: SheetsModel
     let business: BusinessModel
     let design: DesignModel
+    let studio: DesignStudio
     let looks: LookLibrary
     let photo: PhotoModel
     let video: VideoModel
@@ -174,6 +175,7 @@ final class AppModel: ObservableObject {
         self.sheets = SheetsModel(brain: brain)
         self.business = BusinessModel(brain: brain, voice: voice)
         self.design = DesignModel(brain: brain)
+        self.studio = DesignStudio(brain: brain)
         let looks = LookLibrary()
         self.looks = looks
         self.photo = PhotoModel(looks: looks)
@@ -200,6 +202,7 @@ final class AppModel: ObservableObject {
         write.load()
         notes.load()
         sheets.load()
+        studio.load()
         today.refreshAccess()
         calendar.refreshAccess()
         nightShift.start()
