@@ -131,6 +131,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if arguments.bool(forKey: "decksPresent") {
             DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in self?.model.decks.present() }
         }
+        // -audioProject Founders opens a project; -audioClip YES selects the first clip; -audioTab 2 picks a panel.
+        if let name = arguments.string(forKey: "audioProject") {
+            model.audio.open(named: name)
+        }
+        if arguments.bool(forKey: "audioClip") {
+            model.audio.selectFirstClip = true
+            model.audio.selectFirstClipIfAsked()
+        }
+        if arguments.object(forKey: "audioTab") != nil {
+            model.audio.panelTab = arguments.integer(forKey: "audioTab")
+        }
         if arguments.bool(forKey: "activate") {
             NSApp.activate()
         }
@@ -140,6 +151,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         model.sheets.flushSave()
         model.studio.flushSave()
         model.decks.flushSave()
+        model.audio.flushSave()
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {

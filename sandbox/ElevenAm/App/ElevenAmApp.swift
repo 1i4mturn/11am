@@ -73,6 +73,7 @@ extension View {
             .environmentObject(model.looks)
             .environmentObject(model.photo)
             .environmentObject(model.video)
+            .environmentObject(model.audio)
             .environmentObject(model.learn)
             .environmentObject(model.build)
     }

@@ -36,6 +36,21 @@ enum Transcriber {
         return group(try await recognise(audio))
     }
 
+    /// Every word with its own timing, for cutting fillers and silences by the word.
+    static func words(_ url: URL) async throws -> [SoundWord] {
+        let authorised: Bool = await withCheckedContinuation { continuation in
+            SFSpeechRecognizer.requestAuthorization { continuation.resume(returning: $0 == .authorized) }
+        }
+        guard authorised else { throw VideoError.speechOff }
+        let audio = try await audioFile(for: url)
+        return try await recognise(audio).map { SoundWord(text: $0.text, start: $0.start, end: $0.start + $0.duration) }
+    }
+
+    /// Words grouped into lines, as the transcript panel shows them.
+    static func lines(from words: [SoundWord]) -> [TranscriptLine] {
+        group(words.map { Segment(start: $0.start, duration: $0.end - $0.start, text: $0.text) })
+    }
+
     private struct Segment {
         let start: Double
         let duration: Double

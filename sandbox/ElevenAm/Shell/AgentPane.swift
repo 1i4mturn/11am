@@ -93,6 +93,7 @@ struct AgentPane: View {
         case .design: return ("rt", "Robert", "Design · a considered look for everything")
         case .photo: return ("rt", "Robert", "Photo · colour, crop and clean-ups")
         case .video: return ("co", "Cole", "Video · cut, colour and clean sound")
+        case .audio: return ("co", "Cole", "Sound · records, cuts and cleans up")
         case .learn: return ("hr", "Harris", "Learning · sharper, without homework")
         case .build: return ("jo", "Johnny", "Build · makes the software fit you")
         case .suite: return ("le", "Leo", "Routes your asks to the right app")

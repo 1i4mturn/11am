@@ -2,7 +2,7 @@ import SwiftUI
 
 /// The places in the sandbox. Apps come first; the agent behind each one is the quiet worker.
 enum AppSection: String, CaseIterable, Identifiable {
-    case today, calendar, mail, notes, write, files, pdf, research, money, sheets, business, decks, design, photo, video, learn, build, overnight, suite, lab
+    case today, calendar, mail, notes, write, files, pdf, research, money, sheets, business, decks, design, photo, video, audio, learn, build, overnight, suite, lab
 
     var id: String { rawValue }
 
@@ -23,6 +23,7 @@ enum AppSection: String, CaseIterable, Identifiable {
         case .design: return "Design"
         case .photo: return "Photo"
         case .video: return "Video"
+        case .audio: return "Audio"
         case .learn: return "Learn"
         case .build: return "Build"
         case .overnight: return "Overnight"
@@ -48,6 +49,7 @@ enum AppSection: String, CaseIterable, Identifiable {
         case .design: return "rt"
         case .photo: return "rt"
         case .video: return "co"
+        case .audio: return "co"
         case .learn: return "hr"
         case .build: return "jo"
         case .overnight: return "le"
@@ -73,6 +75,7 @@ enum AppSection: String, CaseIterable, Identifiable {
         case .design: return "paintbrush.pointed"
         case .photo: return "camera.aperture"
         case .video: return "film"
+        case .audio: return "waveform"
         case .learn: return "graduationcap"
         case .build: return "hammer"
         case .overnight: return "moon.stars"
@@ -104,6 +107,7 @@ enum AppSection: String, CaseIterable, Identifiable {
         case .design: return "On-brand graphics and image tools"
         case .photo: return "Colour, crop and clean-ups"
         case .video: return "Cut, colour and clean up the sound"
+        case .audio: return "Record, cut and clean up sound, podcasts and voice notes"
         case .learn: return "Ten minutes a day, not homework"
         case .build: return "Make the software fit you"
         case .overnight: return "Heavy work, done while you sleep"
@@ -149,6 +153,7 @@ final class AppModel: ObservableObject {
     let looks: LookLibrary
     let photo: PhotoModel
     let video: VideoModel
+    let audio: AudioModel
     let learn: LearnModel
     let build: BuildModel
 
@@ -186,6 +191,7 @@ final class AppModel: ObservableObject {
         self.looks = looks
         self.photo = PhotoModel(looks: looks)
         self.video = VideoModel(brain: brain, looks: looks)
+        self.audio = AudioModel(brain: brain)
         self.learn = LearnModel(brain: brain)
         self.build = BuildModel(brain: brain, theme: theme, looks: looks)
         nightShift.attach(to: self)
@@ -210,6 +216,7 @@ final class AppModel: ObservableObject {
         sheets.load()
         studio.load()
         decks.load()
+        audio.load()
         today.refreshAccess()
         calendar.refreshAccess()
         nightShift.start()

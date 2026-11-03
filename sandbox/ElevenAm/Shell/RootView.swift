@@ -77,6 +77,7 @@ private struct SectionContent: View {
         case .design: DesignView()
         case .photo: PhotoView()
         case .video: VideoView()
+        case .audio: AudioView()
         case .learn: LearnView()
         case .build: BuildView()
         case .overnight: OvernightView()
