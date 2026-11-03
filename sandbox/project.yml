@@ -31,6 +31,7 @@ targets:
         NSRemindersFullAccessUsageDescription: Leo shows reminders that are due on your calendar, so you can tick them off there.
         NSRemindersUsageDescription: Leo shows reminders that are due on your calendar.
         NSAppleEventsUsageDescription: Bolton reads your Apple Notes once, when you choose to import them into 11am. Your Apple Notes aren't changed.
+        NSMicrophoneUsageDescription: Cole records your voice into Audio and Video when you press Record. Recordings stay on this Mac.
         NSSpeechRecognitionUsageDescription: Video transcribes your recordings on this Mac so you can edit them by editing the words.
         NSAppTransportSecurity:
           NSAllowsLocalNetworking: true

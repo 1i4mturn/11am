@@ -103,3 +103,14 @@ jobs:
             ../ci/CanvasTests/main.swift 2>&1 | grep -E "error|warning: unre" || true
           test -x canvastests
           ./canvastests
+
+      - name: Audio tests
+        working-directory: sandbox
+        run: |
+          mkdir -p audiotest
+          cd audiotest
+          swiftc -O -o audiotests \
+            ../ElevenAm/Features/Audio/AudioKit.swift \
+            ../ci/AudioTests/main.swift 2>&1 | grep -E "error|warning: unre" || true
+          test -x audiotests
+          ./audiotests
