@@ -61,6 +61,11 @@ jobs:
           WAIT=20 capture video-light -startSection video -forceAppearance light -videoSample YES
           WAIT=20 capture video-graded-dark -startSection video -forceAppearance dark -videoSample YES -videoLook "Teal & orange" -videoTab colour
           capture video-empty-light -startSection video -forceAppearance light
+          WAIT=25 capture video-titles-light -startSection video -forceAppearance light -videoSample YES -videoExtras YES -videoTab titles
+          WAIT=25 capture video-music-dark -startSection video -forceAppearance dark -videoSample YES -videoExtras YES -videoTab sound
+          WAIT=40 capture audio-light -startSection audio -forceAppearance light -audioClip YES
+          WAIT=14 capture audio-silences-dark -startSection audio -forceAppearance dark -audioTab 2
+          WAIT=14 capture audio-chapters-light -startSection audio -forceAppearance light -audioTab 3
           capture build-light -startSection build -forceAppearance light
           capture design-light -startSection design -forceAppearance light
           capture suite-light -startSection suite -forceAppearance light

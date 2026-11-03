@@ -31,7 +31,7 @@ struct SuiteView: View {
         SuiteApp(id: "decks", name: "Decks", monogram: "cr", does: "Slides from an outline or a document, themes, presenter view, PDF and PowerPoint", replaces: "Google Slides, Keynote, Canva presentations", stage: .sandbox),
         SuiteApp(id: "design", name: "Design", monogram: "rt", does: "A canvas for every size, templates, brand kit, magic resize, image tools", replaces: "Canva and design-tool subscriptions", stage: .sandbox),
         SuiteApp(id: "photo", name: "Photo", monogram: "rt", does: "Grade, crop, straighten, clean up, cut out", replaces: "Photo-editor subscriptions for everyday edits", stage: .sandbox),
-        SuiteApp(id: "video", name: "Video", monogram: "co", does: "Timeline, trims, colour, voice clean-up, transcript cuts", replaces: "Video-editor and transcript-editor subscriptions", stage: .sandbox),
+        SuiteApp(id: "video", name: "Video", monogram: "co", does: "Timeline, trims, colour, voice clean-up, pauses and transcript cuts, music that ducks, titles and captions", replaces: "Video-editor and transcript-editor subscriptions", stage: .sandbox),
         SuiteApp(id: "audio", name: "Audio", monogram: "co", does: "Record the mic or the Mac, multitrack edits, studio sound, silences and ums removed, loudness, chapters", replaces: "Audacity, podcast-editing subscriptions", stage: .sandbox),
         SuiteApp(id: "learn", name: "Learn", monogram: "hr", does: "Paths, flashcards, languages", replaces: "Flashcard and language-app subscriptions", stage: .sandbox),
         SuiteApp(id: "build", name: "Build", monogram: "jo", does: "Terminal, automations, tune any app", replaces: "Automation subscriptions", stage: .sandbox),

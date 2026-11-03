@@ -194,9 +194,9 @@ check(saved == project, "Projects save as JSON")
 
 // Music ducking: speech spans close together merge; the bed eases down before speech and back up after.
 check(MusicEnvelope.merge([5...6, 0.5...1, 1.6...2.5]) == [0.5...2.5, 5...6], "Speech close together counts as one span")
-let faded = MusicEnvelope.points(speech: [], total: 10, volume: 0.5, duckLevel: 0.2, fades: true)
-check(faded.map(\.time) == [0, 1.5, 8, 10] && near(faded[0].volume, 0, 1e-9) && near(faded[1].volume, 0.5, 1e-9)
-      && near(faded[2].volume, 0.5, 1e-9) && near(faded[3].volume, 0, 1e-9), "Music fades in and out with the movie")
+let bedFade = MusicEnvelope.points(speech: [], total: 10, volume: 0.5, duckLevel: 0.2, fades: true)
+check(bedFade.map(\.time) == [0, 1.5, 8, 10] && near(bedFade[0].volume, 0, 1e-9) && near(bedFade[1].volume, 0.5, 1e-9)
+      && near(bedFade[2].volume, 0.5, 1e-9) && near(bedFade[3].volume, 0, 1e-9), "Music fades in and out with the movie")
 let ducking = MusicEnvelope.points(speech: [4...6], total: 10, volume: 1, duckLevel: 0.2, fades: false)
 func volume(_ points: [MusicEnvelope.Point], at time: Double) -> Double? { points.first { abs($0.time - time) < 1e-6 }?.volume }
 check(volume(ducking, at: 3.75) == 1 && near(volume(ducking, at: 4) ?? 0, 0.2, 1e-9) && near(volume(ducking, at: 6) ?? 0, 0.2, 1e-9)
