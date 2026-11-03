@@ -70,7 +70,7 @@ struct DecksView: View {
             if decks.deck != nil {
                 HStack(alignment: .top, spacing: 14) {
                     SlideSorter()
-                        .frame(width: 196)
+                        .frame(width: 156)
                     VStack(spacing: 8) {
                         CanvasToolbar(controller: decks.controller, brand: studio.brand, addPicture: addPicture)
                         CanvasEditorView(controller: decks.controller, backdrop: .clear, accent: NSColor(theme.ink(scheme)))
@@ -80,7 +80,7 @@ struct DecksView: View {
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     SlidePanel(controller: decks.controller)
-                        .frame(width: 256)
+                        .frame(width: 236)
                         .vellum(level: 3, radius: max(theme.radius - 4, 8))
                 }
             } else {
@@ -201,7 +201,7 @@ private struct SlideSorter: View {
                     .font(.system(size: 10.5, weight: .medium).monospacedDigit())
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .frame(width: 18, alignment: .trailing)
-                CanvasThumbnail(document: canvas, images: images, height: 90)
+                CanvasThumbnail(document: canvas, images: images, height: 72)
                     .clipShape(RoundedRectangle(cornerRadius: 4))
                     .overlay {
                         RoundedRectangle(cornerRadius: 4)

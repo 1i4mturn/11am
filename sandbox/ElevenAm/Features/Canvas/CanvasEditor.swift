@@ -368,7 +368,7 @@ final class CanvasNSView: NSView, NSTextViewDelegate {
 
     private var scale: CGFloat {
         guard let size = document?.size, size.width > 0, size.height > 0 else { return 1 }
-        let pad: CGFloat = 28
+        let pad: CGFloat = 16
         return max(0.01, min((bounds.width - pad * 2) / CGFloat(size.width), (bounds.height - pad * 2) / CGFloat(size.height)))
     }
 

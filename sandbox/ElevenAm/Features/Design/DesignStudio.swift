@@ -16,6 +16,8 @@ struct DesignEntry: Identifiable, Codable, Hashable {
 final class DesignStudio: ObservableObject {
     @Published private(set) var entries: [DesignEntry] = []
     @Published private(set) var currentID: UUID?
+    /// Every design, for the thumbnails down the side.
+    @Published private(set) var previews: [UUID: CanvasDocument] = [:]
     @Published var brand: CanvasBrand { didSet { JSONStore.save(brand, to: "canvas-brand") } }
     @Published var notice: String?
     @Published var makeRun: BrainRun?
@@ -45,6 +47,7 @@ final class DesignStudio: ObservableObject {
         for file in files where file.pathExtension == "json" {
             guard let data = try? Data(contentsOf: file), let document = try? Self.decoder.decode(CanvasDocument.self, from: data) else { continue }
             found.append(DesignEntry(id: document.id, name: document.name, size: document.size, modified: document.modified))
+            previews[document.id] = document
         }
         entries = found.sorted { $0.modified > $1.modified }
         if entries.isEmpty && !UserDefaults.standard.bool(forKey: "designs.seeded") {
@@ -86,6 +89,7 @@ final class DesignStudio: ObservableObject {
 
     private func write(_ document: CanvasDocument) {
         if let data = try? Self.encoder.encode(document) { try? data.write(to: url(document.id), options: .atomic) }
+        previews[document.id] = document
         let entry = DesignEntry(id: document.id, name: document.name, size: document.size, modified: document.modified)
         if let index = entries.firstIndex(where: { $0.id == document.id }) { entries[index] = entry } else { entries.insert(entry, at: 0) }
     }

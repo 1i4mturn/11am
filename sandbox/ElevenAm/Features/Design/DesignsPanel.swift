@@ -10,7 +10,7 @@ struct DesignsPanel: View {
     var body: some View {
         HStack(alignment: .top, spacing: 14) {
             DesignList()
-                .frame(width: 190)
+                .frame(width: 168)
             VStack(spacing: 8) {
                 HStack(spacing: 8) {
                     CanvasToolbar(controller: studio.controller, brand: studio.brand, addPicture: studio.addPicture)
@@ -35,7 +35,7 @@ struct DesignsPanel: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             CanvasInspector(controller: studio.controller, brand: studio.brand, removeBackground: studio.removeBackground)
-                .frame(width: 236)
+                .frame(width: 224)
                 .vellum(level: 3, radius: max(theme.radius - 4, 8))
         }
         .task(id: studio.notice) {
@@ -154,7 +154,7 @@ private struct DesignList: View {
 
     private func row(_ entry: DesignEntry) -> some View {
         let selected = studio.currentID == entry.id
-        let document = selected ? studio.controller.document : nil
+        let document = selected ? studio.controller.document : studio.previews[entry.id]
         let assets = studio.assets
         return Button {
             studio.open(entry.id)
@@ -163,7 +163,7 @@ private struct DesignList: View {
                 ZStack {
                     RoundedRectangle(cornerRadius: 4).fill(theme.raised(scheme))
                     if let document {
-                        CanvasThumbnail(document: document, images: { assets.image($0) }, height: 34)
+                        CanvasThumbnail(document: document, images: { assets.image($0) }, height: min(34, 44 / CGFloat(max(document.size.aspect, 0.1))))
                             .clipShape(RoundedRectangle(cornerRadius: 3))
                     } else {
                         Image(systemName: "rectangle.on.rectangle").font(.system(size: 11)).foregroundStyle(theme.inkTertiary(scheme))

@@ -54,9 +54,14 @@ struct SheetsView: View {
                     .transition(.rise(theme.rise))
             }
 
+            GeometryReader { proxy in
+            let chartsShown = sheets.showsCharts && !(sheets.sheet?.charts.isEmpty ?? true)
             HStack(alignment: .top, spacing: 14) {
-                WorkbookList()
-                    .frame(width: 170)
+                // On a smaller screen the charts get the workbook list's room (workbooks are in the ⋯ menu too).
+                if proxy.size.width >= 1120 || !chartsShown {
+                    WorkbookList()
+                        .frame(width: 170)
+                }
                 if sheets.book != nil {
                     VStack(spacing: 8) {
                         SheetsFormatBar()
@@ -70,9 +75,9 @@ struct SheetsView: View {
                         SheetTabs()
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    if sheets.showsCharts, let sheet = sheets.sheet, !sheet.charts.isEmpty {
+                    if chartsShown {
                         ChartsPanel()
-                            .frame(width: 290)
+                            .frame(width: proxy.size.width >= 1120 ? 290 : 250)
                             .transition(.rise(theme.rise))
                     }
                 } else {
@@ -84,6 +89,7 @@ struct SheetsView: View {
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
+            }
             }
         }
         .padding(24)
@@ -104,6 +110,11 @@ struct SheetsView: View {
 
     private var moreMenu: some View {
         Menu {
+            Section("Workbooks") {
+                ForEach(sheets.entries) { entry in
+                    Button(entry.name) { sheets.open(entry.id) }
+                }
+            }
             Section("Import") {
                 Button("Excel or CSV files…") { sheets.importFiles() }
             }
