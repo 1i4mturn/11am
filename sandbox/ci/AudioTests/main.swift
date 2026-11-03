@@ -192,5 +192,18 @@ check(SoundChapters.text(project) == "00:00 Intro\n00:02 The news" && SoundChapt
 let saved = try? JSONDecoder().decode(SoundProject.self, from: JSONEncoder().encode(project))
 check(saved == project, "Projects save as JSON")
 
+// Music ducking: speech spans close together merge; the bed eases down before speech and back up after.
+check(MusicEnvelope.merge([5...6, 0.5...1, 1.6...2.5]) == [0.5...2.5, 5...6], "Speech close together counts as one span")
+let faded = MusicEnvelope.points(speech: [], total: 10, volume: 0.5, duckLevel: 0.2, fades: true)
+check(faded.map(\.time) == [0, 1.5, 8, 10] && near(faded[0].volume, 0, 1e-9) && near(faded[1].volume, 0.5, 1e-9)
+      && near(faded[2].volume, 0.5, 1e-9) && near(faded[3].volume, 0, 1e-9), "Music fades in and out with the movie")
+let ducking = MusicEnvelope.points(speech: [4...6], total: 10, volume: 1, duckLevel: 0.2, fades: false)
+func volume(_ points: [MusicEnvelope.Point], at time: Double) -> Double? { points.first { abs($0.time - time) < 1e-6 }?.volume }
+check(volume(ducking, at: 3.75) == 1 && near(volume(ducking, at: 4) ?? 0, 0.2, 1e-9) && near(volume(ducking, at: 6) ?? 0, 0.2, 1e-9)
+      && volume(ducking, at: 6.4) == 1 && volume(ducking, at: 10) == 1, "Music ducks to its level under speech")
+check(zip(ducking, ducking.dropFirst()).allSatisfy { $0.time < $1.time }, "Ducking points only go forward, so the ramps never overlap")
+let edges = MusicEnvelope.points(speech: [0...2, 9.8...12], total: 10, volume: 1, duckLevel: 0.3, fades: false)
+check(edges.first?.time == 0 && edges.last?.time == 10 && near(edges.first?.volume ?? 0, 0.3, 1e-9), "Speech at the very ends stays inside the movie")
+
 print(failures == 0 ? "ALL PASSED" : "\(failures) FAILED")
 exit(failures == 0 ? 0 : 1)

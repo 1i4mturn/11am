@@ -869,3 +869,65 @@ enum SoundChapters {
         return total >= 3600 ? String(format: "%d:%02d:%02d", total / 3600, total % 3600 / 60, total % 60) : String(format: "%02d:%02d", total / 60, total % 60)
     }
 }
+
+// MARK: Ducking
+
+/// How loud the music bed is over time: faded in and out with the movie, turned down under speech.
+enum MusicEnvelope {
+    static let duckDown = 0.25
+    static let duckUp = 0.4
+    static let fadeIn = 1.5
+    static let fadeOut = 2.0
+
+    /// Speech spans closer than this are treated as one, so the music doesn't bob up between sentences.
+    static let bridge = 1.0
+
+    struct Point: Equatable {
+        let time: Double
+        let volume: Double
+    }
+
+    static func merge(_ ranges: [ClosedRange<Double>], bridging gap: Double = bridge) -> [ClosedRange<Double>] {
+        var merged: [ClosedRange<Double>] = []
+        for range in ranges.sorted(by: { $0.lowerBound < $1.lowerBound }) {
+            if let last = merged.last, range.lowerBound - last.upperBound < gap {
+                merged[merged.count - 1] = last.lowerBound...max(last.upperBound, range.upperBound)
+            } else {
+                merged.append(range)
+            }
+        }
+        return merged
+    }
+
+    /// Volume points to join with straight ramps. Speech is in timeline seconds.
+    static func points(speech: [ClosedRange<Double>], total: Double, volume: Double, duckLevel: Double, fades: Bool) -> [Point] {
+        guard total > 0 else { return [] }
+        let spans = merge(speech).filter { $0.upperBound > 0 && $0.lowerBound < total }
+        // How far down the music is at a time, from 0 (full) to 1 (ducked).
+        func duck(_ t: Double) -> Double {
+            var amount = 0.0
+            for span in spans {
+                if t >= span.lowerBound && t <= span.upperBound { return 1 }
+                if t < span.lowerBound && t > span.lowerBound - duckDown { amount = max(amount, 1 - (span.lowerBound - t) / duckDown) }
+                if t > span.upperBound && t < span.upperBound + duckUp { amount = max(amount, 1 - (t - span.upperBound) / duckUp) }
+            }
+            return amount
+        }
+        func fade(_ t: Double) -> Double {
+            guard fades else { return 1 }
+            return max(0, min(1, t / fadeIn, (total - t) / fadeOut))
+        }
+        var times: Set<Double> = [0, total]
+        if fades { times.formUnion([min(fadeIn, total), max(total - fadeOut, 0)]) }
+        for span in spans {
+            times.formUnion([span.lowerBound - duckDown, span.lowerBound, span.upperBound, span.upperBound + duckUp])
+        }
+        var points: [Point] = []
+        for t in times.map({ min(max($0, 0), total) }).sorted() {
+            if let last = points.last, t - last.time < 0.01 { continue }
+            let level = volume * fade(t) * (1 - duck(t) * (1 - duckLevel))
+            points.append(Point(time: t, volume: level))
+        }
+        return points
+    }
+}

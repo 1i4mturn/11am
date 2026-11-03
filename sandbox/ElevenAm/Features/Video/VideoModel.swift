@@ -27,14 +27,20 @@ struct VideoClip: Identifiable, Equatable {
     var lines: [TranscriptLine] = []
     var cleanAudio: URL?
     var useCleanAudio = false
+    /// Pauses taken out, in source time.
+    var silenceCuts: [ClosedRange<Double>] = []
 
-    /// The source spans that play: the trimmed clip minus struck lines.
+    /// The file the clip's sound comes from.
+    var audioURL: URL { useCleanAudio ? (cleanAudio ?? url) : url }
+
+    /// The source spans that play: the trimmed clip minus struck lines and cut pauses.
     var keptRanges: [ClosedRange<Double>] {
         var ranges: [ClosedRange<Double>] = [inPoint...max(outPoint, inPoint)]
-        for line in lines where line.cut {
+        let removed: [ClosedRange<Double>] = lines.filter(\.cut).map { $0.start...max($0.end, $0.start) } + silenceCuts
+        for cut in removed {
             ranges = ranges.flatMap { range -> [ClosedRange<Double>] in
-                let start = max(line.start, range.lowerBound)
-                let end = min(line.end, range.upperBound)
+                let start = max(cut.lowerBound, range.lowerBound)
+                let end = min(cut.upperBound, range.upperBound)
                 guard start < end else { return [range] }
                 var parts: [ClosedRange<Double>] = []
                 if start - range.lowerBound > 0.04 { parts.append(range.lowerBound...start) }
@@ -51,6 +57,16 @@ struct VideoClip: Identifiable, Equatable {
     }
 
     var cutCount: Int { lines.filter(\.cut).count }
+
+    /// Pauses cut inside the trimmed part.
+    var silenceCount: Int { silenceCuts.filter { $0.upperBound > inPoint && $0.lowerBound < outPoint }.count }
+
+    /// How much shorter the cut pauses make the clip.
+    var silenceSaved: Double {
+        var uncut = self
+        uncut.silenceCuts = []
+        return uncut.editedDuration - editedDuration
+    }
 
     /// Timeline seconds from the clip's start to a source time, snapping forward out of cuts.
     func localTime(forSource source: Double) -> Double {
@@ -121,6 +137,9 @@ struct TimelineSettings: Equatable {
     var aspect: VideoAspect
     var transition: VideoTransition
     var fades: Bool
+    var music: VideoMusic?
+    var titles: [VideoTitle] = []
+    var burnCaptions = false
 }
 
 enum VideoExportPreset: String, CaseIterable, Identifiable {
@@ -185,6 +204,11 @@ final class VideoModel: ObservableObject {
     @Published var aspect: VideoAspect = .original { didSet { if aspect != oldValue { edited() } } }
     @Published var transition: VideoTransition = .dipBlack { didSet { if transition != oldValue { edited() } } }
     @Published var fades = true { didSet { if fades != oldValue { edited() } } }
+    @Published var music: VideoMusic? { didSet { if music != oldValue { edited() } } }
+    @Published var titles: [VideoTitle] = [] { didSet { if titles != oldValue { overlaysChanged() } } }
+    @Published var burnCaptions = false { didSet { if burnCaptions != oldValue { overlaysChanged() } } }
+    /// Where the music turns down for speech, in timeline seconds.
+    @Published private(set) var ducked: [ClosedRange<Double>] = []
     @Published private(set) var thumbnails: [UUID: [CGImage]] = [:]
     @Published private(set) var status = "Add clips to start, or try the samples. Everything runs on this Mac."
     @Published private(set) var isWorking = false
@@ -210,6 +234,11 @@ final class VideoModel: ObservableObject {
     private var pendingSeek: Double?
     /// A frame of the selected clip, for Auto in the colour panel.
     private(set) var gradeFrame: CIImage?
+    /// Where people talk in each sound file, for ducking the music.
+    private var speechCache: [URL: [ClosedRange<Double>]] = [:]
+    private var speechPending: Set<URL> = []
+    /// Set before loading the samples to add titles and a music bed once they're in.
+    var sampleExtras = false
 
     init(brain: Brain, looks: LookLibrary) {
         self.brain = brain
@@ -226,7 +255,9 @@ final class VideoModel: ObservableObject {
         }
     }
 
-    var settings: TimelineSettings { TimelineSettings(aspect: aspect, transition: transition, fades: fades) }
+    var settings: TimelineSettings {
+        TimelineSettings(aspect: aspect, transition: transition, fades: fades, music: music, titles: titles, burnCaptions: burnCaptions)
+    }
 
     var selectedIndex: Int? { clips.firstIndex { $0.id == selection } }
 
@@ -272,6 +303,10 @@ final class VideoModel: ObservableObject {
             added.forEach(makeThumbnails(for:))
             status = failed > 0 ? "\(added.count) added; \(failed) couldn't be read." : "Drag a clip's edges to trim. Split at the playhead with ⌘B."
             edited()
+            if sampleExtras {
+                sampleExtras = false
+                addSampleExtras()
+            }
         }
     }
 
@@ -504,9 +539,11 @@ final class VideoModel: ObservableObject {
         let renderers = Dictionary(clips.map { ($0.id, looks.renderer(for: $0.grade)) }, uniquingKeysWith: { first, _ in first })
         let wasPlaying = player.rate != 0
         let time = clock.time
+        findSpeech()
         do {
-            let built = try await VideoComposer.build(clips, settings: settings, renderers: renderers)
+            let built = try await VideoComposer.build(clips, settings: settings, renderers: renderers, speech: speechByClip, overlays: makeOverlays())
             guard !Task.isCancelled else { return }
+            ducked = music?.ducking == true ? built.voiced : []
             let item = AVPlayerItem(asset: built.composition)
             item.videoComposition = built.videoComposition
             item.audioMix = built.audioMix
@@ -569,6 +606,9 @@ final class VideoModel: ObservableObject {
         aspect = state.settings.aspect
         transition = state.settings.transition
         fades = state.settings.fades
+        music = state.settings.music
+        titles = state.settings.titles
+        burnCaptions = state.settings.burnCaptions
         restoring = false
         if let selection, !clips.contains(where: { $0.id == selection }) { self.selection = clips.first?.id }
         updateUndoState()
@@ -642,19 +682,28 @@ final class VideoModel: ObservableObject {
     }
 
     /// Captions for the edited movie: struck and trimmed lines are dropped, the rest moved to where they now play.
-    func exportCaptions() {
-        var output = ""
-        var number = 0
+    func timelineCaptions() -> [(start: Double, end: Double, text: String)] {
+        var captions: [(start: Double, end: Double, text: String)] = []
         for (clip, start) in zip(clips, starts) {
             for line in clip.lines where !line.cut {
                 let from = start + clip.localTime(forSource: max(line.start, clip.inPoint))
                 let to = start + clip.localTime(forSource: min(line.end, clip.outPoint))
                 guard to - from > 0.2 else { continue }
-                number += 1
-                output += "\(number)\n\(VideoModel.srtTime(from)) --> \(VideoModel.srtTime(to))\n\(line.text)\n\n"
+                captions.append((from, to, line.text))
             }
         }
-        guard number > 0 else {
+        return captions
+    }
+
+    var hasTranscript: Bool { clips.contains { !$0.lines.isEmpty } }
+
+    func exportCaptions() {
+        var output = ""
+        let captions = timelineCaptions()
+        for (index, caption) in captions.enumerated() {
+            output += "\(index + 1)\n\(VideoModel.srtTime(caption.start)) --> \(VideoModel.srtTime(caption.end))\n\(caption.text)\n\n"
+        }
+        guard !captions.isEmpty else {
             status = "Transcribe a clip first; captions come from the words."
             return
         }
@@ -685,9 +734,164 @@ final class VideoModel: ObservableObject {
         insightRun = brain.run(BrainRequest(system: system, prompt: String(transcript.joined(separator: "\n").prefix(8_000)), weight: .quick))
     }
 
+    // MARK: Pauses
+
+    /// Cuts the pauses in the selected clip, or in every clip with sound.
+    func cutSilences(everyClip: Bool) {
+        let targets = (everyClip ? clips : selectedClip.map { [$0] } ?? []).filter(\.hasAudio)
+        guard !targets.isEmpty else {
+            status = "There's no sound to find pauses in."
+            return
+        }
+        let before = totalDuration
+        isWorking = true
+        status = "Listening for pauses on this Mac…"
+        Task {
+            defer { isWorking = false }
+            var count = 0
+            for clip in targets {
+                let cuts = await VideoSound.silenceCuts(in: clip.audioURL)
+                update(clip.id) { $0.silenceCuts = cuts }
+                count += clips.first(where: { $0.id == clip.id })?.silenceCount ?? 0
+            }
+            let saved = before - totalDuration
+            status = count == 0
+                ? "No pauses long enough to cut."
+                : "Cut \(count) \(count == 1 ? "pause" : "pauses") · \(VideoModel.clock(saved)) shorter. Each keeps a breath of air."
+        }
+    }
+
+    func keepSilences() {
+        updateSelected { $0.silenceCuts = [] }
+        status = "Pauses put back."
+    }
+
+    // MARK: Music
+
+    func addMusic(_ url: URL) {
+        Task {
+            guard (try? await AVURLAsset(url: url).loadTracks(withMediaType: .audio).first) != nil else {
+                status = "That file has no sound to use as music."
+                return
+            }
+            var bed = VideoMusic(url: url, name: url.deletingPathExtension().lastPathComponent)
+            if let music { bed.volume = music.volume; bed.ducking = music.ducking; bed.duckLevel = music.duckLevel }
+            music = bed
+            status = bed.ducking ? "Music under the whole movie, turned down while people talk." : "Music under the whole movie."
+        }
+    }
+
+    /// A soft chord bed made on this Mac, for trying the music features without a file.
+    func addSampleMusic() {
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent("11am-samples", isDirectory: true)
+        try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        let url = folder.appendingPathComponent("Sample music bed.caf")
+        if !FileManager.default.fileExists(atPath: url.path) {
+            do {
+                try SoundIO.write(AudioSamples.musicBed(seconds: 32), to: url, format: .caf)
+            } catch {
+                status = error.localizedDescription
+                return
+            }
+        }
+        addMusic(url)
+    }
+
+    func updateMusic(_ change: (inout VideoMusic) -> Void) {
+        guard var bed = music else { return }
+        change(&bed)
+        music = bed
+    }
+
+    func removeMusic() {
+        music = nil
+        status = "Music taken out."
+    }
+
+    private var speechByClip: [UUID: [ClosedRange<Double>]] {
+        Dictionary(clips.compactMap { clip in speechCache[clip.audioURL].map { (clip.id, $0) } }, uniquingKeysWith: { first, _ in first })
+    }
+
+    /// Listens for where people talk in any sound not heard yet, then rebuilds so the music ducks under them.
+    private func findSpeech() {
+        guard music?.ducking == true else { return }
+        let missing = Set(clips.filter(\.hasAudio).map(\.audioURL)).subtracting(speechCache.keys).subtracting(speechPending)
+        guard !missing.isEmpty else { return }
+        speechPending.formUnion(missing)
+        Task {
+            for url in missing {
+                speechCache[url] = await VideoSound.speech(in: url)
+                speechPending.remove(url)
+            }
+            rebuild()
+        }
+    }
+
+    // MARK: Titles and captions
+
+    private var brand: CanvasBrand { JSONStore.load(CanvasBrand.self, from: "canvas-brand") ?? CanvasBrand() }
+
+    private var frameSize: CGSize { aspect.renderSize(original: clips.first?.size ?? CGSize(width: 1920, height: 1080)) }
+
+    private func makeOverlays() -> [VideoOverlay] {
+        guard !titles.isEmpty || burnCaptions else { return [] }
+        return VideoOverlays.build(titles: titles, captions: burnCaptions ? timelineCaptions() : [], size: frameSize, brand: brand)
+    }
+
+    /// Titles and captions are swapped into the running movie; nothing else needs rebuilding.
+    private func overlaysChanged() {
+        guard !restoring else { return }
+        plan?.setOverlays(makeOverlays())
+        refreshFrame()
+        scheduleHistory()
+    }
+
+    func addTitle(_ kind: VideoTitle.Kind) {
+        let brand = self.brand
+        let total = totalDuration
+        var title: VideoTitle
+        switch kind {
+        case .lowerThird:
+            title = VideoTitle(kind: kind, text: "Your name", detail: "Role · \(brand.name)", start: clock.time, duration: 4)
+        case .titleCard:
+            title = VideoTitle(kind: kind, text: clips.first?.name ?? "Title", detail: "", start: clock.time, duration: 3)
+        case .endCard:
+            title = VideoTitle(kind: kind, text: brand.name, detail: brand.footer, start: max(0, total - 4), duration: 4)
+        }
+        title.duration = min(title.duration, max(total, 0.5))
+        title.start = max(0, min(title.start, total - title.duration))
+        titles.append(title)
+        titles.sort { $0.start < $1.start }
+        seek(to: title.start + min(1, title.duration / 2))
+        status = "\(kind.title) added. Its colours and fonts come from your brand kit in Design."
+    }
+
+    func updateTitle(_ id: UUID, _ change: (inout VideoTitle) -> Void) {
+        guard let index = titles.firstIndex(where: { $0.id == id }) else { return }
+        var title = titles[index]
+        change(&title)
+        title.duration = max(0.5, title.duration)
+        title.start = max(0, min(title.start, max(totalDuration - 0.5, 0)))
+        titles[index] = title
+    }
+
+    func deleteTitle(_ id: UUID) {
+        titles.removeAll { $0.id == id }
+    }
+
+    /// For screenshots and trying things out: a lower third, an end card and the sample music bed.
+    func addSampleExtras() {
+        let total = totalDuration
+        titles = [
+            VideoTitle(kind: .lowerThird, text: "Sam Rivera", detail: "Founder · Rivera & Co", start: 0.6, duration: min(4, total)),
+            VideoTitle(kind: .endCard, text: brand.name, detail: brand.footer, start: max(0, total - 3), duration: min(3, total)),
+        ]
+        addSampleMusic()
+    }
+
     // MARK: Export
 
-    func export(_ preset: VideoExportPreset) {
+    func export(_ preset: VideoExportPreset, loudness target: VideoLoudness = .asIs) {
         guard !clips.isEmpty else { return }
         let panel = NSSavePanel()
         panel.allowedContentTypes = [preset.contentType]
@@ -697,6 +901,8 @@ final class VideoModel: ObservableObject {
         let renderers = Dictionary(clips.map { ($0.id, looks.renderer(for: $0.grade)) }, uniquingKeysWith: { first, _ in first })
         let clips = self.clips
         let settings = self.settings
+        let speech = speechByClip
+        let overlays = makeOverlays()
         isWorking = true
         exportProgress = 0
         status = "Exporting \(destination.lastPathComponent)…"
@@ -705,13 +911,29 @@ final class VideoModel: ObservableObject {
                 isWorking = false
                 exportProgress = nil
             }
+            var levelledFile: URL?
+            defer { if let levelledFile { try? FileManager.default.removeItem(at: levelledFile) } }
             do {
-                let built = try await VideoComposer.build(clips, settings: settings, renderers: renderers)
+                let built = try await VideoComposer.build(clips, settings: settings, renderers: renderers, speech: speech, overlays: overlays)
+                var audioMix: AVAudioMix? = built.audioMix
+                var note = ""
+                if target != .asIs {
+                    status = "Measuring the sound…"
+                    if let levelled = try await VideoSound.levelled(built.composition, mix: built.audioMix, target: target.rawValue) {
+                        levelledFile = levelled.url
+                        try await replaceSound(in: built.composition, with: levelled.url)
+                        audioMix = nil
+                        note = String(format: " Sound brought from %.1f to %.0f LUFS.", levelled.before, target.rawValue)
+                    } else if built.composition.duration.seconds > VideoSound.maximumLevelled {
+                        note = " Loudness matching works on movies up to 20 minutes, so the sound went out as it is."
+                    }
+                    status = "Exporting \(destination.lastPathComponent)…"
+                }
                 try? FileManager.default.removeItem(at: destination)
                 guard let session = AVAssetExportSession(asset: built.composition, presetName: preset.presetName) else { throw VideoError.export }
                 session.outputURL = destination
                 session.outputFileType = preset.fileType
-                session.audioMix = built.audioMix
+                session.audioMix = audioMix
                 if preset != .audio { session.videoComposition = built.videoComposition }
                 let progress = Task { @MainActor in
                     while !Task.isCancelled {
@@ -722,11 +944,21 @@ final class VideoModel: ObservableObject {
                 await session.export()
                 progress.cancel()
                 guard session.status == .completed else { throw session.error ?? VideoError.export }
-                status = "Saved \(destination.lastPathComponent)."
+                status = "Saved \(destination.lastPathComponent).\(note)"
             } catch {
                 status = error.localizedDescription
             }
         }
+    }
+
+    /// Puts a finished mix under the picture in place of the separate sound tracks.
+    private func replaceSound(in composition: AVMutableComposition, with url: URL) async throws {
+        guard let source = try await AVURLAsset(url: url).loadTracks(withMediaType: .audio).first else { throw VideoError.noAudio }
+        let span = try await source.load(.timeRange)
+        for track in composition.tracks where track.mediaType == .audio { composition.removeTrack(track) }
+        guard let track = composition.addMutableTrack(withMediaType: .audio, preferredTrackID: kCMPersistentTrackID_Invalid) else { throw VideoError.export }
+        let length = CMTimeMinimum(span.duration, composition.duration)
+        try track.insertTimeRange(CMTimeRange(start: span.start, duration: length), of: source, at: .zero)
     }
 
     private static func srtTime(_ seconds: Double) -> String {

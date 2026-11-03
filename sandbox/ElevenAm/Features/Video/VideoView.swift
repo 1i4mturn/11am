@@ -25,7 +25,11 @@ struct VideoView: View {
                         .help("Redo")
                     Menu {
                         ForEach(VideoExportPreset.allCases) { preset in
-                            Button(preset.title) { video.export(preset) }
+                            Menu(preset.title) {
+                                ForEach(VideoLoudness.allCases) { target in
+                                    Button(target.title) { video.export(preset, loudness: target) }
+                                }
+                            }
                         }
                         Divider()
                         Button("Captions (.srt)") { video.exportCaptions() }
@@ -192,7 +196,7 @@ private struct TransportBar: View {
 // MARK: Inspector
 
 private enum InspectorTab: String, CaseIterable, Identifiable {
-    case clip, colour, sound, words
+    case clip, colour, sound, words, titles
 
     var id: String { rawValue }
     var title: String { rawValue.capitalized }
@@ -211,7 +215,15 @@ private struct VideoInspector: View {
             }
             .pickerStyle(.segmented)
             .labelsHidden()
-            if let clip = video.selectedClip {
+            if tab == .titles {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 12) {
+                        TitlesPanel()
+                    }
+                    .padding(.trailing, 2)
+                }
+                .scrollContentBackground(.hidden)
+            } else if let clip = video.selectedClip {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 12) {
                         switch tab {
@@ -219,6 +231,7 @@ private struct VideoInspector: View {
                         case .colour: ColourPanel()
                         case .sound: SoundPanel(clip: clip)
                         case .words: WordsPanel(clip: clip)
+                        case .titles: EmptyView()
                         }
                     }
                     .padding(.trailing, 2)
@@ -388,6 +401,203 @@ private struct SoundPanel: View {
             .font(.system(size: 11))
             .foregroundStyle(theme.inkTertiary(scheme))
             .fixedSize(horizontal: false, vertical: true)
+
+        Group {
+            SectionLabel(text: "Pauses")
+            FlowLayout(spacing: 6) {
+                Button {
+                    video.cutSilences(everyClip: false)
+                } label: {
+                    Label(clip.silenceCuts.isEmpty ? "Cut the pauses" : "Find them again", systemImage: "scissors")
+                }
+                .buttonStyle(.vellumSecondary)
+                .disabled(!clip.hasAudio || video.isWorking)
+                if video.clips.count > 1 {
+                    Button("Every clip") { video.cutSilences(everyClip: true) }
+                        .buttonStyle(.vellumSecondary)
+                        .disabled(video.isWorking)
+                }
+                if !clip.silenceCuts.isEmpty {
+                    Button("Put them back") { video.keepSilences() }
+                        .buttonStyle(.vellumSecondary)
+                }
+            }
+            if clip.silenceCount > 0 {
+                Text("\(clip.silenceCount) \(clip.silenceCount == 1 ? "pause" : "pauses") cut · \(VideoModel.clock(clip.silenceSaved)) shorter")
+                    .font(.system(size: 11).monospacedDigit())
+                    .foregroundStyle(theme.inkSecondary(scheme))
+                    .contentTransition(.numericText())
+            }
+            Text("Gaps of more than 0.7 s below −40 dB are taken out, leaving 0.3 s of air so speech doesn't run together.")
+                .font(.system(size: 11))
+                .foregroundStyle(theme.inkTertiary(scheme))
+                .fixedSize(horizontal: false, vertical: true)
+        }
+
+        MusicSection()
+    }
+}
+
+/// The music bed under the whole movie.
+private struct MusicSection: View {
+    @EnvironmentObject private var theme: Theme
+    @EnvironmentObject private var video: VideoModel
+    @Environment(\.colorScheme) private var scheme
+    @State private var importing = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            SectionLabel(text: "Music · whole movie")
+            if let music = video.music {
+                HStack(spacing: 8) {
+                    Image(systemName: "music.note")
+                        .foregroundStyle(theme.inkSecondary(scheme))
+                    Text(music.name)
+                        .font(.system(size: 12.5, weight: .medium))
+                        .foregroundStyle(theme.ink(scheme))
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                    Spacer(minLength: 4)
+                    Button { importing = true } label: { Image(systemName: "arrow.triangle.2.circlepath") }
+                        .buttonStyle(.plain)
+                        .foregroundStyle(theme.inkSecondary(scheme))
+                        .help("Use another file")
+                    Button { video.removeMusic() } label: { Image(systemName: "xmark") }
+                        .buttonStyle(.plain)
+                        .foregroundStyle(theme.inkSecondary(scheme))
+                        .help("Take the music out")
+                }
+                HStack {
+                    Image(systemName: "speaker.fill").foregroundStyle(theme.inkTertiary(scheme))
+                    Slider(value: Binding(get: { music.volume }, set: { value in video.updateMusic { $0.volume = value } }), in: 0...1)
+                        .controlSize(.small)
+                    Text("\(Int(music.volume * 100))%")
+                        .font(.system(size: 11).monospacedDigit())
+                        .foregroundStyle(theme.inkSecondary(scheme))
+                        .frame(width: 34, alignment: .trailing)
+                }
+                .font(.system(size: 11))
+                Toggle("Turn it down while people talk", isOn: Binding(get: { music.ducking }, set: { value in video.updateMusic { $0.ducking = value } }))
+                    .toggleStyle(.switch)
+                    .controlSize(.small)
+                if music.ducking {
+                    HStack {
+                        Text("Under speech")
+                            .font(.system(size: 11))
+                            .foregroundStyle(theme.inkSecondary(scheme))
+                        Slider(value: Binding(get: { music.duckLevel }, set: { value in video.updateMusic { $0.duckLevel = value } }), in: 0.05...0.6)
+                            .controlSize(.small)
+                        Text("\(Int(music.duckLevel * 100))%")
+                            .font(.system(size: 11).monospacedDigit())
+                            .foregroundStyle(theme.inkSecondary(scheme))
+                            .frame(width: 34, alignment: .trailing)
+                    }
+                    Text(video.ducked.isEmpty
+                        ? "No speech heard yet, so the music stays up. It finds the talking in clips with sound."
+                        : "Ducks \(video.ducked.count) \(video.ducked.count == 1 ? "time" : "times"), easing down a quarter-second before each line.")
+                        .font(.system(size: 11))
+                        .foregroundStyle(theme.inkTertiary(scheme))
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            } else {
+                FlowLayout(spacing: 6) {
+                    Button { importing = true } label: { Label("Add music…", systemImage: "music.note") }
+                        .buttonStyle(.vellumSecondary)
+                    Button("Sample bed") { video.addSampleMusic() }
+                        .buttonStyle(.vellumSecondary)
+                }
+                Text("Loops under the whole movie, fades in and out with it, and turns down whenever someone talks.")
+                    .font(.system(size: 11))
+                    .foregroundStyle(theme.inkTertiary(scheme))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .fileImporter(isPresented: $importing, allowedContentTypes: [.audio]) { result in
+            if case .success(let url) = result { video.addMusic(url) }
+        }
+    }
+}
+
+/// Lower thirds, title and end cards, and burned-in captions.
+private struct TitlesPanel: View {
+    @EnvironmentObject private var theme: Theme
+    @EnvironmentObject private var video: VideoModel
+    @Environment(\.colorScheme) private var scheme
+
+    var body: some View {
+        SectionLabel(text: "Add at the playhead")
+        FlowLayout(spacing: 6) {
+            ForEach(VideoTitle.Kind.allCases) { kind in
+                Button(kind.title) { video.addTitle(kind) }
+                    .buttonStyle(.vellumSecondary)
+                    .disabled(video.clips.isEmpty)
+            }
+        }
+        Text("Drawn in your brand kit's colours and fonts (Design › Brand). End cards go at the end.")
+            .font(.system(size: 11))
+            .foregroundStyle(theme.inkTertiary(scheme))
+            .fixedSize(horizontal: false, vertical: true)
+        ForEach(video.titles) { title in
+            TitleEditor(title: title)
+        }
+
+        SectionLabel(text: "Captions")
+        Toggle("Burn captions into the picture", isOn: $video.burnCaptions)
+            .toggleStyle(.switch)
+            .controlSize(.small)
+            .disabled(!video.hasTranscript && !video.burnCaptions)
+        Text(video.hasTranscript
+            ? "From the transcript, timed to the edit; struck lines are left out. Captions (.srt) in Export saves them as a file."
+            : "Transcribe a clip in Words first; captions come from the words.")
+            .font(.system(size: 11))
+            .foregroundStyle(theme.inkTertiary(scheme))
+            .fixedSize(horizontal: false, vertical: true)
+    }
+}
+
+private struct TitleEditor: View {
+    @EnvironmentObject private var theme: Theme
+    @EnvironmentObject private var video: VideoModel
+    @Environment(\.colorScheme) private var scheme
+    var title: VideoTitle
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 6) {
+                Text(title.kind.title)
+                    .font(.system(size: 12.5, weight: .semibold))
+                    .foregroundStyle(theme.ink(scheme))
+                Text("\(VideoModel.clock(title.start))–\(VideoModel.clock(title.end))")
+                    .font(.system(size: 11).monospacedDigit())
+                    .foregroundStyle(theme.inkTertiary(scheme))
+                Spacer(minLength: 4)
+                Button { video.seek(to: title.start + min(1, title.duration / 2)) } label: { Image(systemName: "eye") }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(theme.inkSecondary(scheme))
+                    .help("Show it")
+                Button { video.deleteTitle(title.id) } label: { Image(systemName: "trash") }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(theme.inkSecondary(scheme))
+                    .help("Delete")
+            }
+            TextField("Text", text: Binding(get: { title.text }, set: { value in video.updateTitle(title.id) { $0.text = value } }))
+                .textFieldStyle(.roundedBorder)
+            TextField(title.kind == .lowerThird ? "Role, company" : "Second line", text: Binding(get: { title.detail }, set: { value in video.updateTitle(title.id) { $0.detail = value } }))
+                .textFieldStyle(.roundedBorder)
+            TimeSlider(title: "Starts at", value: title.start, range: 0...max(video.totalDuration - 0.5, 0.5)) { value in
+                video.updateTitle(title.id) { $0.start = value }
+            }
+            Stepper(value: Binding(get: { title.duration }, set: { value in video.updateTitle(title.id) { $0.duration = value } }), in: 1...30, step: 0.5) {
+                Text(String(format: "On screen for %.1f s", title.duration))
+                    .font(.system(size: 12))
+                    .foregroundStyle(theme.ink(scheme))
+            }
+            .controlSize(.small)
+        }
+        .padding(10)
+        .background {
+            RoundedRectangle(cornerRadius: 8, style: .continuous).fill(theme.well(scheme))
+        }
     }
 }
 

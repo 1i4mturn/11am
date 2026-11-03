@@ -58,6 +58,14 @@ struct VideoTimeline: View {
                                     ClipBlock(clip: clip, scale: scale, selected: clip.id == video.selection, joined: index > 0 && video.transition != .cut)
                                 }
                             }
+                            if !video.titles.isEmpty {
+                                TitlesLane(scale: scale)
+                                    .frame(width: width, height: 16, alignment: .topLeading)
+                            }
+                            if let music = video.music {
+                                MusicLane(music: music, total: total, scale: scale)
+                                    .frame(width: width, height: 18)
+                            }
                         }
                         PlayheadLine(clock: video.clock, scale: scale)
                     }
@@ -66,7 +74,7 @@ struct VideoTimeline: View {
                 }
                 .scrollContentBackground(.hidden)
             }
-            .frame(height: 92)
+            .frame(height: 92 + (video.titles.isEmpty ? 0 : 22) + (video.music == nil ? 0 : 24))
         }
         .padding(12)
         .vellum(level: 3, radius: max(theme.radius - 2, 8))
@@ -134,7 +142,7 @@ private struct ClipBlock: View {
                 if abs(clip.speed - 1) > 0.001 { Text(String(format: "%g×", clip.speed)) }
                 if clip.muted { Image(systemName: "speaker.slash.fill") }
                 if clip.useCleanAudio && clip.cleanAudio != nil { Image(systemName: "waveform") }
-                if clip.cutCount > 0 { Image(systemName: "scissors") }
+                if clip.cutCount > 0 || clip.silenceCount > 0 { Image(systemName: "scissors") }
                 if clip.grade != GradeSettings() { Image(systemName: "camera.filters") }
             }
             .font(.system(size: 10.5, weight: .semibold))
@@ -234,6 +242,72 @@ private struct ClipBlock: View {
                 if inside { NSCursor.resizeLeftRight.push() } else { NSCursor.pop() }
             }
             .help(leading ? "Drag to trim the start" : "Drag to trim the end")
+    }
+}
+
+/// Titles as bars under the clips; click one to see it.
+private struct TitlesLane: View {
+    @EnvironmentObject private var theme: Theme
+    @EnvironmentObject private var video: VideoModel
+    @Environment(\.colorScheme) private var scheme
+    var scale: CGFloat
+
+    var body: some View {
+        ZStack(alignment: .topLeading) {
+            ForEach(video.titles) { title in
+                HStack(spacing: 3) {
+                    Image(systemName: title.kind == .lowerThird ? "rectangle.bottomhalf.inset.filled" : "textformat")
+                    Text(title.text)
+                        .lineLimit(1)
+                }
+                .font(.system(size: 9.5, weight: .semibold))
+                .foregroundStyle(theme.paper(scheme))
+                .padding(.horizontal, 6)
+                .frame(width: max(CGFloat(title.duration) * scale - 2, 12), height: 16, alignment: .leading)
+                .background(Capsule().fill(theme.ink(scheme).opacity(0.78)))
+                .clipShape(Capsule())
+                .offset(x: CGFloat(title.start) * scale + 1)
+                .onTapGesture { video.seek(to: title.start + min(1, title.duration / 2)) }
+                .help("\(title.kind.title): \(title.text)")
+            }
+        }
+    }
+}
+
+/// The music bed's volume over the movie: fades at the ends, dips where people talk.
+private struct MusicLane: View {
+    @EnvironmentObject private var theme: Theme
+    @EnvironmentObject private var video: VideoModel
+    @Environment(\.colorScheme) private var scheme
+    var music: VideoMusic
+    var total: Double
+    var scale: CGFloat
+
+    var body: some View {
+        let ink = theme.ink(scheme)
+        let points = MusicEnvelope.points(speech: music.ducking ? video.ducked : [], total: total, volume: 1,
+                                          duckLevel: music.duckLevel, fades: video.fades)
+        Canvas { context, size in
+            let frame = CGRect(origin: .zero, size: size)
+            context.fill(Path(roundedRect: frame, cornerRadius: 4), with: .color(ink.opacity(0.06)))
+            var shape = Path()
+            shape.move(to: CGPoint(x: 0, y: size.height))
+            for point in points {
+                shape.addLine(to: CGPoint(x: CGFloat(point.time) * scale, y: size.height * (1 - CGFloat(point.volume) * 0.86)))
+            }
+            shape.addLine(to: CGPoint(x: CGFloat(total) * scale, y: size.height))
+            shape.closeSubpath()
+            context.clip(to: Path(roundedRect: frame, cornerRadius: 4))
+            context.fill(shape, with: .color(ink.opacity(0.16)))
+        }
+        .overlay(alignment: .leading) {
+            Label(music.name, systemImage: "music.note")
+                .font(.system(size: 9.5, weight: .semibold))
+                .foregroundStyle(ink.opacity(0.7))
+                .lineLimit(1)
+                .padding(.leading, 6)
+        }
+        .help(music.ducking ? "Music · dips where people talk" : "Music")
     }
 }
 

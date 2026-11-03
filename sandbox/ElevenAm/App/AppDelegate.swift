@@ -48,8 +48,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if let name = arguments.string(forKey: "photoLook"), let look = LookLibrary.builtIns.first(where: { $0.name == name }) {
             model.photo.settings = look.settings
         }
+        // -videoExtras YES adds a lower third, an end card and the sample music bed to the samples.
         if arguments.bool(forKey: "videoSample") {
             let look = arguments.string(forKey: "videoLook").flatMap { name in LookLibrary.builtIns.first { $0.name == name } }
+            model.video.sampleExtras = arguments.bool(forKey: "videoExtras")
             model.video.loadSamples(grade: look?.settings)
         }
         // -calendarMode month, -calendarEvent kickoff (selects a sample event), -calendarNew YES (opens the editor).

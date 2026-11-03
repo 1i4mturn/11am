@@ -13,9 +13,13 @@ enum VideoComposer {
         let videoComposition: AVMutableVideoComposition
         let audioMix: AVMutableAudioMix
         let plan: CompositionPlan
+        /// Where people talk, in timeline seconds (what the music ducks under).
+        let voiced: [ClosedRange<Double>]
     }
 
-    static func build(_ clips: [VideoClip], settings: TimelineSettings, renderers: [UUID: GradeRenderer]) async throws -> Built {
+    /// `speech` is where people talk in each clip's source, in source seconds; `overlays` are titles and captions on the timeline.
+    static func build(_ clips: [VideoClip], settings: TimelineSettings, renderers: [UUID: GradeRenderer],
+                      speech: [UUID: [ClosedRange<Double>]] = [:], overlays: [VideoOverlay] = []) async throws -> Built {
         let composition = AVMutableComposition()
         guard let videoTrack = composition.addMutableTrack(withMediaType: .video, preferredTrackID: kCMPersistentTrackID_Invalid),
               let audioTrack = composition.addMutableTrack(withMediaType: .audio, preferredTrackID: kCMPersistentTrackID_Invalid) else {
@@ -23,6 +27,7 @@ enum VideoComposer {
         }
         var segments: [CompositionPlan.Segment] = []
         var blocks: [(start: Double, end: Double, volume: Float)] = []
+        var voiced: [ClosedRange<Double>] = []
         var cursor = CMTime.zero
 
         for clip in clips {
@@ -36,8 +41,14 @@ enum VideoComposer {
             }
             let audioSpan = try await sourceAudio?.load(.timeRange)
             let blockStart = cursor
+            let spoken = clip.muted || clip.volume < 0.02 ? [] : (speech[clip.id] ?? [])
             var pieces: [(start: Double, end: Double)] = []
             for range in clip.keptRanges {
+                let pieceStart = cursor.seconds
+                for span in spoken {
+                    let from = max(span.lowerBound, range.lowerBound), to = min(span.upperBound, range.upperBound)
+                    if from < to { voiced.append((pieceStart + (from - range.lowerBound) / clip.speed)...(pieceStart + (to - range.lowerBound) / clip.speed)) }
+                }
                 let source = CMTimeRange(start: time(range.lowerBound), end: time(range.upperBound))
                 try videoTrack.insertTimeRange(source, of: sourceVideo, at: cursor)
                 if let sourceAudio, let audioSpan {
@@ -76,7 +87,8 @@ enum VideoComposer {
             transition: settings.transition,
             fades: settings.fades,
             fill: settings.aspect != .original,
-            renderers: renderers
+            renderers: renderers,
+            overlays: overlays
         )
         let videoComposition = AVMutableVideoComposition(asset: composition) { request in
             request.finish(with: plan.frame(request.sourceImage, at: request.compositionTime.seconds), context: nil)
@@ -101,9 +113,35 @@ enum VideoComposer {
                 parameters.setVolumeRamp(fromStartVolume: block.volume, toEndVolume: 0, timeRange: CMTimeRange(start: time(block.end - rampOut), duration: time(rampOut)))
             }
         }
+        var inputs = [parameters]
+        if let music = settings.music, let musicParameters = try await addMusic(music, to: composition, length: cursor, speech: voiced, fades: settings.fades) {
+            inputs.append(musicParameters)
+        }
         let audioMix = AVMutableAudioMix()
-        audioMix.inputParameters = [parameters]
-        return Built(composition: composition, videoComposition: videoComposition, audioMix: audioMix, plan: plan)
+        audioMix.inputParameters = inputs
+        return Built(composition: composition, videoComposition: videoComposition, audioMix: audioMix, plan: plan, voiced: MusicEnvelope.merge(voiced, bridging: 0.05))
+    }
+
+    /// Lays the music bed under the whole movie, looping it if it's shorter, with its volume ramps.
+    private static func addMusic(_ music: VideoMusic, to composition: AVMutableComposition, length: CMTime,
+                                 speech: [ClosedRange<Double>], fades: Bool) async throws -> AVMutableAudioMixInputParameters? {
+        guard let source = try? await AVURLAsset(url: music.url).loadTracks(withMediaType: .audio).first,
+              let span = try? await source.load(.timeRange), span.duration.seconds > 0.5,
+              let track = composition.addMutableTrack(withMediaType: .audio, preferredTrackID: kCMPersistentTrackID_Invalid) else { return nil }
+        var at = CMTime.zero
+        while at < length {
+            let piece = CMTimeMinimum(span.duration, length - at)
+            try track.insertTimeRange(CMTimeRange(start: span.start, duration: piece), of: source, at: at)
+            at = at + piece
+        }
+        let parameters = AVMutableAudioMixInputParameters(track: track)
+        let points = MusicEnvelope.points(speech: music.ducking ? speech : [], total: length.seconds, volume: music.volume, duckLevel: music.duckLevel, fades: fades)
+        if points.count < 2 { parameters.setVolume(Float(music.volume), at: .zero) }
+        for (from, to) in zip(points, points.dropFirst()) where to.time > from.time {
+            parameters.setVolumeRamp(fromStartVolume: Float(from.volume), toEndVolume: Float(to.volume),
+                                     timeRange: CMTimeRange(start: time(from.time), end: time(to.time)))
+        }
+        return parameters
     }
 
     /// Leaves silence up to a time, for clips with no sound or sound that starts late.
@@ -145,9 +183,11 @@ final class CompositionPlan: @unchecked Sendable {
     let fades: Bool
     let fill: Bool
     private var renderers: [UUID: GradeRenderer]
+    private var overlays: [VideoOverlay]
     private let lock = NSLock()
 
-    init(segments: [Segment], renderSize: CGSize, total: Double, transition: VideoTransition, fades: Bool, fill: Bool, renderers: [UUID: GradeRenderer]) {
+    init(segments: [Segment], renderSize: CGSize, total: Double, transition: VideoTransition, fades: Bool, fill: Bool,
+         renderers: [UUID: GradeRenderer], overlays: [VideoOverlay] = []) {
         self.segments = segments
         self.renderSize = renderSize
         self.total = total
@@ -155,6 +195,20 @@ final class CompositionPlan: @unchecked Sendable {
         self.fades = fades
         self.fill = fill
         self.renderers = renderers
+        self.overlays = overlays
+    }
+
+    /// Swaps the titles and captions while the movie plays.
+    func setOverlays(_ overlays: [VideoOverlay]) {
+        lock.lock()
+        self.overlays = overlays
+        lock.unlock()
+    }
+
+    private func activeOverlays(at time: Double) -> [VideoOverlay] {
+        lock.lock()
+        defer { lock.unlock() }
+        return overlays.filter { time >= $0.start && time <= $0.end }
     }
 
     /// Swaps one clip's grade while the movie plays, without rebuilding anything.
@@ -189,6 +243,12 @@ final class CompositionPlan: @unchecked Sendable {
             if segment.blockStart > 0.001 { amount = min(amount, (time - segment.blockStart) / half) }
             if segment.blockEnd < total - 0.001 { amount = min(amount, (segment.blockEnd - time) / half) }
             if amount < 1 { image = CompositionPlan.dissolve(image, white: transition == .dipWhite, amount: max(amount, 0)) }
+        }
+        for overlay in activeOverlays(at: time) {
+            let alpha = overlay.alpha(at: time)
+            guard alpha > 0.001 else { continue }
+            let layer = alpha >= 0.999 ? overlay.image : overlay.image.applyingFilter("CIColorMatrix", parameters: ["inputAVector": CIVector(x: 0, y: 0, z: 0, w: alpha)])
+            image = layer.composited(over: image)
         }
         if fades {
             let amount = min(time / VideoComposer.fadeLength, (total - time) / VideoComposer.fadeLength)
