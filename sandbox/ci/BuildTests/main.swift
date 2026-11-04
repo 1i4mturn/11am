@@ -266,7 +266,7 @@ check((blocking { await ScriptCompiler.check("tell application \"Finder\" to get
 let broken = blocking { await ScriptCompiler.check("tell application \"Finder\" to", language: .appleScript) } ?? nil
 check(broken != nil && !(broken ?? "").isEmpty, "A broken script is caught without running (\((broken ?? "").prefix(60)))")
 check((blocking { await ScriptCompiler.check("function (", language: .javaScript) } ?? nil) != nil, "…in JavaScript too")
-check((blocking { await ScriptCompiler.check("if then fi", language: .shell) } ?? nil) != nil
+check((blocking { await ScriptCompiler.check("if true; then\n  echo \"unfinished\n", language: .shell) } ?? nil) != nil
       && (blocking { await ScriptCompiler.check("echo ok", language: .shell) } ?? "x") == nil, "Shell scripts are parsed, not run, to check them")
 let built = FileManager.default.temporaryDirectory.appendingPathComponent("11am-test-\(UUID().uuidString)", isDirectory: true)
 try? FileManager.default.createDirectory(at: built, withIntermediateDirectories: true)
