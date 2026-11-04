@@ -73,7 +73,8 @@ final class HealthReader: @unchecked Sendable {
         if let stands = try? await standQuery.result(for: store) {
             for sample in stands where sample.value == HKCategoryValueAppleStandHour.stood.rawValue {
                 let key = EnergyDay.key(sample.startDate, calendar: calendar)
-                days[key]?.standHours = (days[key]?.standHours ?? 0) + 1
+                let stood = days[key]?.standHours ?? 0
+                days[key]?.standHours = stood + 1
             }
         }
 
