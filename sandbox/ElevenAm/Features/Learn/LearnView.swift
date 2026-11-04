@@ -1,14 +1,45 @@
 import SwiftUI
 
-/// Harris's app: a few minutes of review, cards from your own notes, and a path toward a goal.
+/// Harris's app: a language course, and flashcards and paths for everything else.
 struct LearnView: View {
     @EnvironmentObject private var theme: Theme
     @EnvironmentObject private var learn: LearnModel
+    @EnvironmentObject private var languages: LanguageModel
     @Environment(\.colorScheme) private var scheme
+    @AppStorage("learn.tab") private var tab = "languages"
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            SectionHeader(title: "learn", subtitle: "Harris · \(learn.dueCount) due · \(learn.learnedCount) learned · \(learn.deck?.cards.count ?? 0) cards") {
+            SectionHeader(title: "learn", subtitle: subtitle) {
+                HStack(spacing: 10) {
+                    Picker("", selection: $tab) {
+                        Text("Languages").tag("languages")
+                        Text("Cards and paths").tag("cards")
+                    }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
+                    .fixedSize()
+                    if tab == "cards" { deckMenu }
+                }
+            }
+            if tab == "languages" {
+                LanguagePane()
+                    .frame(maxHeight: .infinity, alignment: .top)
+            } else {
+                cards
+            }
+        }
+        .padding(24)
+    }
+
+    private var subtitle: String {
+        if tab == "languages", let language = languages.language {
+            return "Harris · \(language.name) · \(languages.dueReviews.count) to review · \(languages.wordsKnown) words known"
+        }
+        return "Harris · \(learn.dueCount) due · \(learn.learnedCount) learned · \(learn.deck?.cards.count ?? 0) cards"
+    }
+
+    private var deckMenu: some View {
                 Menu {
                     ForEach(learn.decks) { deck in
                         Button(deck.name) { withAnimation(theme.spring) { learn.select(deck.id) } }
@@ -22,8 +53,9 @@ struct LearnView: View {
                 .buttonStyle(.borderless)
                 .fixedSize()
                 .foregroundStyle(theme.inkSecondary(scheme))
-            }
+    }
 
+    private var cards: some View {
             ViewThatFits(in: .horizontal) {
                 HStack(alignment: .top, spacing: 16) {
                     ReviewArea().frame(minWidth: 380)
@@ -37,8 +69,6 @@ struct LearnView: View {
                 }
             }
             .frame(maxHeight: .infinity, alignment: .top)
-        }
-        .padding(24)
     }
 }
 

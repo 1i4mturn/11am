@@ -93,6 +93,9 @@ jobs:
           WAIT=12 capture pdf-pages-dark -startSection pdf -forceAppearance dark -pdfSample YES -pdfMode pages
           capture pdf-empty-light -startSection pdf -forceAppearance light
           capture learn-light -startSection learn -forceAppearance light
+          capture learn-spanish-light -startSection learn -forceAppearance light -learnTab languages -languageSample YES
+          capture learn-lesson-dark -startSection learn -forceAppearance dark -learnTab languages -languageLesson YES
+          capture learn-cards-light -startSection learn -forceAppearance light -learnTab cards
           capture sheets-light -startSection sheets -forceAppearance light -sheetsSelect B2:E7
           capture sheets-sales-dark -startSection sheets -forceAppearance dark -sheetsSheet 1 -sheetsSelect E2:E18
           capture sheets-loan-light -startSection sheets -forceAppearance light -sheetsSheet 2 -sheetsSelect B7

@@ -160,6 +160,7 @@ final class AppModel: ObservableObject {
     let scripts: ScriptsModel
     let automations: AutomationsModel
     let phone: PhoneLinkModel
+    let languages: LanguageModel
 
     init() {
         let machine = MachineProfile()
@@ -204,6 +205,7 @@ final class AppModel: ObservableObject {
         self.automations = AutomationsModel(brain: brain, scripts: scripts, notes: self.notes, mail: mail, calendar: calendar)
         let phone = PhoneLinkModel(brain: brain, notes: self.notes, today: self.today)
         self.phone = phone
+        self.languages = LanguageModel(brain: brain)
         self.today.energyFacts = { [weak phone] in phone?.energyFacts }
         self.today.onBriefWritten = { [weak phone] in phone?.briefChanged() }
         nightShift.attach(to: self)

@@ -144,6 +144,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if arguments.object(forKey: "audioTab") != nil {
             model.audio.panelTab = arguments.integer(forKey: "audioTab")
         }
+        // -learnTab languages opens the language course; -languageSample YES is Spanish part-way through; -languageLesson YES opens a lesson.
+        if let tab = arguments.string(forKey: "learnTab") {
+            UserDefaults.standard.set(tab, forKey: "learn.tab")
+        }
+        if arguments.bool(forKey: "languageSample") || arguments.bool(forKey: "languageLesson") {
+            model.languages.loadSample(lesson: arguments.bool(forKey: "languageLesson"))
+        }
         // -phoneEnergy YES shows sample Energy on Today; -phonePairing YES opens the iPhone pairing sheet with a code.
         if arguments.bool(forKey: "phoneEnergy") {
             model.phone.useSampleEnergy()
@@ -174,6 +181,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         model.scripts.flushSave()
         model.automations.flushSave()
         model.terminal.save()
+        model.languages.flushSave()
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {

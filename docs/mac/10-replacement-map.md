@@ -822,7 +822,7 @@ Ordered by what saves the most money and gets used every day, and by which engin
 | 7 | **iPhone app** | Energy (Health), capture, scanning | Health habits apps |
 | 8 | Harris's language course | Languages | Duolingo |
 
-The sandbox has steps 1 to 6 built: accounts, Mail and Calendar (0.5), documents, Notes and PDF (0.6), Sheets and the Money ledger (0.7), Design and Decks (0.8), Video and Audio (0.9), and Johnny's Terminal, Scripts and Automations (0.10).
+The sandbox has all eight steps built: accounts, Mail and Calendar (0.5), documents, Notes and PDF (0.6), Sheets and the Money ledger (0.7), Design and Decks (0.8), Video and Audio (0.9), Johnny's Terminal, Scripts and Automations (0.10), the iPhone app (0.11) and Harris's language course (0.12).
 
 ## 6. Sources
 

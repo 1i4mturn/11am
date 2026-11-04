@@ -80,5 +80,6 @@ extension View {
             .environmentObject(model.scripts)
             .environmentObject(model.automations)
             .environmentObject(model.phone)
+            .environmentObject(model.languages)
     }
 }

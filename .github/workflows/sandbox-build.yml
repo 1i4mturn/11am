@@ -137,6 +137,17 @@ jobs:
           test -x phonetests
           ./phonetests
 
+      - name: Language course tests
+        working-directory: sandbox
+        run: |
+          mkdir -p languagetest
+          cd languagetest
+          swiftc -O -o languagetests \
+            ../ElevenAm/Features/Learn/{LanguageKit,LanguageCourses}.swift \
+            ../ci/LanguageTests/main.swift 2>&1 | grep -E "error|warning: unre" || true
+          test -x languagetests
+          ./languagetests
+
       - name: Build the iPhone app
         working-directory: sandbox
         run: |
