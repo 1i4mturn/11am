@@ -224,7 +224,7 @@ if let bash = session("/bin/bash", typing: ["echo hello-bash", "false"]) {
 
 /// Runs something async from these synchronous tests.
 final class Box<T> { var value: T? }
-func blocking<T>(_ seconds: Double = 60, _ work: @escaping () async -> T) -> T? {
+func blocking<T>(_ work: @escaping () async -> T, seconds: Double = 60) -> T? {
     let box = Box<T>()
     Task { box.value = await work() }
     waitFor(seconds) { box.value != nil }
