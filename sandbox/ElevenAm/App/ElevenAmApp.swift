@@ -76,5 +76,8 @@ extension View {
             .environmentObject(model.audio)
             .environmentObject(model.learn)
             .environmentObject(model.build)
+            .environmentObject(model.terminal)
+            .environmentObject(model.scripts)
+            .environmentObject(model.automations)
     }
 }

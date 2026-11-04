@@ -34,7 +34,7 @@ struct SuiteView: View {
         SuiteApp(id: "video", name: "Video", monogram: "co", does: "Timeline, trims, colour, voice clean-up, pauses and transcript cuts, music that ducks, titles and captions", replaces: "Video-editor and transcript-editor subscriptions", stage: .sandbox),
         SuiteApp(id: "audio", name: "Audio", monogram: "co", does: "Record the mic or the Mac, multitrack edits, studio sound, silences and ums removed, loudness, chapters", replaces: "Audacity, podcast-editing subscriptions", stage: .sandbox),
         SuiteApp(id: "learn", name: "Learn", monogram: "hr", does: "Paths, flashcards, languages", replaces: "Flashcard and language-app subscriptions", stage: .sandbox),
-        SuiteApp(id: "build", name: "Build", monogram: "jo", does: "Terminal, automations, tune any app", replaces: "Automation subscriptions", stage: .sandbox),
+        SuiteApp(id: "build", name: "Build", monogram: "jo", does: "A real terminal with tabs and splits, scripts in four languages, automations with triggers and steps, tune any app", replaces: "Terminal, Script Editor, Notion automations, automation subscriptions", stage: .sandbox),
     ]
 
     var body: some View {

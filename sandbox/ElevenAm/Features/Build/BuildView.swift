@@ -1,26 +1,47 @@
 import SwiftUI
 
-/// Johnny's app: describe a change to 11am and see it before it applies; a terminal that never runs anything on its own.
+enum BuildTab: String, CaseIterable, Identifiable {
+    case terminal, scripts, automations, tune
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .terminal: return "Terminal"
+        case .scripts: return "Scripts"
+        case .automations: return "Automations"
+        case .tune: return "Tune 11am"
+        }
+    }
+}
+
+/// Johnny's app: a real terminal, scripts, automations, and tuning 11am itself. Nothing runs without you starting it.
 struct BuildView: View {
     @EnvironmentObject private var theme: Theme
+    @EnvironmentObject private var build: BuildModel
     @Environment(\.colorScheme) private var scheme
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            SectionHeader(title: "build", subtitle: "Johnny · makes the software fit you")
-            ViewThatFits(in: .horizontal) {
-                HStack(alignment: .top, spacing: 14) {
-                    TunePanel().frame(minWidth: 320)
-                    TerminalPanel().frame(minWidth: 360)
+        VStack(alignment: .leading, spacing: 14) {
+            SectionHeader(title: "build", subtitle: "Johnny · terminal, scripts and automations") {
+                Picker("", selection: $build.tab) {
+                    ForEach(BuildTab.allCases) { tab in Text(tab.title).tag(tab) }
                 }
-                ScrollView {
-                    VStack(spacing: 14) {
-                        TunePanel()
-                        TerminalPanel().frame(height: 420)
-                    }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .fixedSize()
+            }
+            Group {
+                switch build.tab {
+                case .terminal: TerminalPane()
+                case .scripts: ScriptsPane()
+                case .automations: AutomationsPane()
+                case .tune:
+                    TunePanel()
+                        .frame(maxWidth: 720, alignment: .topLeading)
                 }
             }
-            .frame(maxHeight: .infinity, alignment: .top)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
         .padding(24)
     }
@@ -212,116 +233,3 @@ private struct LookRunView: View {
 }
 
 // MARK: Terminal
-
-private struct TerminalPanel: View {
-    @EnvironmentObject private var theme: Theme
-    @EnvironmentObject private var build: BuildModel
-    @EnvironmentObject private var brain: Brain
-    @Environment(\.colorScheme) private var scheme
-    @State private var ask = ""
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                SectionLabel(text: "Terminal")
-                Spacer()
-                if build.isRunning {
-                    ProgressView().controlSize(.small)
-                    Button("Stop") { build.stop() }.buttonStyle(.vellumSecondary)
-                }
-                Button("Clear") { build.clearOutput() }
-                    .buttonStyle(.plain)
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundStyle(theme.inkTertiary(scheme))
-            }
-
-            AskField(placeholder: "Ask Johnny for a command: \"largest files in Downloads\"", text: $ask) {
-                build.suggestCommand(for: ask)
-            }
-            .disabled(brain.isBusy)
-            if let run = build.commandRun {
-                SuggestionView(run: run)
-            }
-
-            // Output: the one place in 11am that's always dark, like a real terminal.
-            ScrollViewReader { proxy in
-                ScrollView {
-                    Text(build.output.isEmpty ? "Commands run in zsh in your home folder. Nothing runs until you press Run." : build.output)
-                        .font(.system(size: 12, design: .monospaced))
-                        .foregroundStyle(Color.white.opacity(build.output.isEmpty ? 0.45 : 0.9))
-                        .textSelection(.enabled)
-                        .frame(maxWidth: .infinity, alignment: .topLeading)
-                        .padding(12)
-                    Color.clear.frame(height: 1).id("end")
-                }
-                .onChange(of: build.output) { _, _ in proxy.scrollTo("end", anchor: .bottom) }
-            }
-            .frame(maxHeight: .infinity)
-            .background(RoundedRectangle(cornerRadius: max(theme.radius - 4, 8), style: .continuous).fill(Color(white: 0.08)))
-            .clipShape(RoundedRectangle(cornerRadius: max(theme.radius - 4, 8), style: .continuous))
-
-            if build.needsConfirmation {
-                HStack(spacing: 8) {
-                    Image(systemName: "exclamationmark.triangle")
-                    Text("This command can change or delete things. Run it anyway?")
-                        .font(.system(size: 12))
-                    Spacer()
-                    Button("Run anyway") { build.run(confirmed: true) }.buttonStyle(.vellumPrimary)
-                    Button("Cancel") { build.cancelConfirmation() }.buttonStyle(.vellumSecondary)
-                }
-                .foregroundStyle(theme.ink(scheme))
-                .transition(.rise(theme.rise))
-            }
-
-            HStack(spacing: 8) {
-                Text("$")
-                    .font(.system(size: 13, weight: .semibold, design: .monospaced))
-                    .foregroundStyle(theme.inkTertiary(scheme))
-                TextField("ls -la ~/Downloads", text: $build.command)
-                    .textFieldStyle(.plain)
-                    .font(.system(size: 13, design: .monospaced))
-                    .onSubmit { build.run() }
-                Button("Run") { build.run() }
-                    .buttonStyle(.vellumPrimary)
-                    .disabled(build.command.trimmingCharacters(in: .whitespaces).isEmpty || build.isRunning)
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(theme.well(scheme)))
-            .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5))
-        }
-        .padding(16)
-        .frame(maxHeight: .infinity)
-        .vellum(level: 3, radius: max(theme.radius - 2, 8))
-        .animation(theme.spring, value: build.needsConfirmation)
-    }
-}
-
-private struct SuggestionView: View {
-    @EnvironmentObject private var theme: Theme
-    @EnvironmentObject private var build: BuildModel
-    @Environment(\.colorScheme) private var scheme
-    @ObservedObject var run: BrainRun
-
-    var body: some View {
-        let suggestion = BuildModel.parseSuggestion(run.text)
-        VStack(alignment: .leading, spacing: 6) {
-            if run.status == .done && !suggestion.command.isEmpty {
-                Text(suggestion.command)
-                    .font(.system(size: 12.5, design: .monospaced))
-                    .foregroundStyle(theme.ink(scheme))
-                    .textSelection(.enabled)
-                if !suggestion.why.isEmpty {
-                    Text(suggestion.why).font(.system(size: 11.5)).foregroundStyle(theme.inkSecondary(scheme))
-                }
-                Button("Use this command") { build.useSuggestion(suggestion.command) }
-                    .buttonStyle(.vellumSecondary)
-            } else {
-                RunView(run: run)
-            }
-        }
-        .padding(10)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(RoundedRectangle(cornerRadius: 8).fill(theme.well(scheme)))
-    }
-}

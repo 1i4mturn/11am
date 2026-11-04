@@ -188,20 +188,14 @@ final class BuildModel: ObservableObject {
     @Published private(set) var madeLook: Look?
     @Published var lookNotice: String?
 
-    // Terminal
-    @Published var command = ""
-    @Published private(set) var output = ""
-    @Published private(set) var isRunning = false
-    @Published private(set) var lastExit: Int32?
-    @Published private(set) var needsConfirmation = false
-    @Published private(set) var commandRun: BrainRun?
+    @Published var tab: BuildTab = BuildTab(rawValue: UserDefaults.standard.string(forKey: "build.tab") ?? "") ?? .terminal {
+        didSet { UserDefaults.standard.set(tab.rawValue, forKey: "build.tab") }
+    }
 
     private let brain: Brain
     private let theme: Theme
     private let looks: LookLibrary
     private var lookName = ""
-    private var process: Process?
-    private var pipe: Pipe?
 
     init(brain: Brain, theme: Theme, looks: LookLibrary) {
         self.brain = brain
@@ -337,95 +331,6 @@ final class BuildModel: ObservableObject {
 
     // MARK: Terminal
 
-    private static let riskyPatterns = [
-        "rm -", "rm ", "sudo", "mkfs", "dd if=", "diskutil", ":(){", "chmod -r", "chown -r", "> /dev/",
-        "| sh", "| bash", "| zsh", "curl ", "killall", "shutdown", "reboot", "launchctl", "defaults delete", "mv /",
-    ]
-
-    var commandLooksRisky: Bool {
-        let text = command.lowercased()
-        return BuildModel.riskyPatterns.contains { text.contains($0) }
-    }
-
-    /// Runs the command in zsh, in your home folder. Risky commands ask once more first.
-    func run(confirmed: Bool = false) {
-        let text = command.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !text.isEmpty, !isRunning else { return }
-        if commandLooksRisky && !confirmed {
-            needsConfirmation = true
-            return
-        }
-        needsConfirmation = false
-        output += "$ \(text)\n"
-        lastExit = nil
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/bin/zsh")
-        process.arguments = ["-lc", text]
-        process.currentDirectoryURL = FileManager.default.homeDirectoryForCurrentUser
-        let pipe = Pipe()
-        process.standardOutput = pipe
-        process.standardError = pipe
-        pipe.fileHandleForReading.readabilityHandler = { [weak self] handle in
-            let data = handle.availableData
-            guard !data.isEmpty else { return }
-            let chunk = String(decoding: data, as: UTF8.self)
-            Task { @MainActor in self?.append(chunk) }
-        }
-        process.terminationHandler = { [weak self] finished in
-            let status = finished.terminationStatus
-            Task { @MainActor in self?.finish(status) }
-        }
-        do {
-            try process.run()
-            self.process = process
-            self.pipe = pipe
-            isRunning = true
-        } catch {
-            output += "Couldn't start: \(error.localizedDescription)\n"
-        }
-    }
-
-    func cancelConfirmation() {
-        needsConfirmation = false
-    }
-
-    func stop() {
-        process?.terminate()
-    }
-
-    func clearOutput() {
-        output = ""
-        lastExit = nil
-    }
-
-    private func append(_ chunk: String) {
-        output += chunk
-        // Keep the scrollback small; this is a sandbox, not a log archive.
-        if output.count > 60_000 { output = String(output.suffix(50_000)) }
-    }
-
-    private func finish(_ status: Int32) {
-        pipe?.fileHandleForReading.readabilityHandler = nil
-        pipe = nil
-        process = nil
-        isRunning = false
-        lastExit = status
-        output += status == 0 ? "\n" : "(exit \(status))\n\n"
-    }
-
-    /// Johnny writes the command; you decide whether it runs.
-    func suggestCommand(for request: String) {
-        let request = request.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !request.isEmpty else { return }
-        let system = """
-        You are Johnny, the builder inside 11am, on macOS with zsh. Reply in exactly two lines:
-        COMMAND: a single shell command that does what's asked
-        WHY: one short sentence explaining it
-        Never use sudo. Prefer read-only commands. If it can't be done safely in one command, say so on the WHY line and leave COMMAND empty.
-        """
-        commandRun = brain.run(BrainRequest(system: system, prompt: request, weight: .quick))
-    }
-
     static func parseSuggestion(_ text: String) -> (command: String, why: String) {
         var command = ""
         var why = ""
@@ -440,8 +345,4 @@ final class BuildModel: ObservableObject {
         return (command, why)
     }
 
-    func useSuggestion(_ suggestion: String) {
-        command = suggestion
-        commandRun = nil
-    }
 }

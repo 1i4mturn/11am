@@ -67,6 +67,10 @@ jobs:
           WAIT=14 capture audio-silences-dark -startSection audio -forceAppearance dark -audioTab 2
           WAIT=14 capture audio-chapters-light -startSection audio -forceAppearance light -audioTab 3
           capture build-light -startSection build -forceAppearance light
+          WAIT=14 capture build-terminal-dark -startSection build -forceAppearance dark -buildTab terminal -terminalRun "printf '\\033[1;32mgreen\\033[0m \\033[38;5;208morange\\033[0m \\033[7minverse\\033[0m\\n'; ls /usr/share | head -12; false"
+          capture build-scripts-light -startSection build -forceAppearance light -buildTab scripts
+          capture build-automations-light -startSection build -forceAppearance light -buildTab automations
+          capture build-tune-dark -startSection build -forceAppearance dark -buildTab tune
           capture design-light -startSection design -forceAppearance light
           capture suite-light -startSection suite -forceAppearance light
           capture mail-light -startSection mail -forceAppearance light

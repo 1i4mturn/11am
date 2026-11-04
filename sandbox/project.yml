@@ -7,7 +7,7 @@ options:
 settings:
   base:
     SWIFT_VERSION: "5.0"
-    MARKETING_VERSION: "0.9.0"
+    MARKETING_VERSION: "0.10.0"
     CURRENT_PROJECT_VERSION: "1"
 targets:
   ElevenAm:
@@ -30,7 +30,7 @@ targets:
         NSCalendarsUsageDescription: Leo shows and edits your calendars in 11am, and uses today's events for your brief.
         NSRemindersFullAccessUsageDescription: Leo shows reminders that are due on your calendar, so you can tick them off there.
         NSRemindersUsageDescription: Leo shows reminders that are due on your calendar.
-        NSAppleEventsUsageDescription: Bolton reads your Apple Notes once, when you choose to import them into 11am. Your Apple Notes aren't changed.
+        NSAppleEventsUsageDescription: Bolton reads your Apple Notes once when you import them, and the scripts and automations you run in Build control only the apps you've allowed.
         NSMicrophoneUsageDescription: Cole records your voice into Audio and Video when you press Record. Recordings stay on this Mac.
         NSSpeechRecognitionUsageDescription: Video transcribes your recordings on this Mac so you can edit them by editing the words.
         NSAppTransportSecurity:

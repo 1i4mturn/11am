@@ -114,3 +114,14 @@ jobs:
             ../ci/AudioTests/main.swift 2>&1 | grep -E "error|warning: unre" || true
           test -x audiotests
           ./audiotests
+
+      - name: Build tests (terminal, scripts, automations)
+        working-directory: sandbox
+        run: |
+          mkdir -p buildtest
+          cd buildtest
+          swiftc -O -o buildtests \
+            ../ElevenAm/Features/Build/{TerminalKit,ScriptsKit,AutomationKit}.swift \
+            ../ci/BuildTests/main.swift 2>&1 | grep -E "error|warning: unre" || true
+          test -x buildtests
+          ./buildtests

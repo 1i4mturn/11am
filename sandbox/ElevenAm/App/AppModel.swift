@@ -156,6 +156,9 @@ final class AppModel: ObservableObject {
     let audio: AudioModel
     let learn: LearnModel
     let build: BuildModel
+    let terminal: TerminalWorkspace
+    let scripts: ScriptsModel
+    let automations: AutomationsModel
 
     init() {
         let machine = MachineProfile()
@@ -194,6 +197,10 @@ final class AppModel: ObservableObject {
         self.audio = AudioModel(brain: brain)
         self.learn = LearnModel(brain: brain)
         self.build = BuildModel(brain: brain, theme: theme, looks: looks)
+        self.terminal = TerminalWorkspace(brain: brain)
+        let scripts = ScriptsModel(brain: brain)
+        self.scripts = scripts
+        self.automations = AutomationsModel(brain: brain, scripts: scripts, notes: self.notes, mail: mail, calendar: calendar)
         nightShift.attach(to: self)
         money.extraFacts = { [weak ledger] in ledger?.georgeFacts ?? "" }
         // Leo's calendar feeds Today, the brief and the notch countdown, with every connected calendar.
@@ -217,6 +224,7 @@ final class AppModel: ObservableObject {
         studio.load()
         decks.load()
         audio.load()
+        automations.start()
         today.refreshAccess()
         calendar.refreshAccess()
         nightShift.start()

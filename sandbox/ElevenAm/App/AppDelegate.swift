@@ -144,6 +144,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if arguments.object(forKey: "audioTab") != nil {
             model.audio.panelTab = arguments.integer(forKey: "audioTab")
         }
+        // -buildTab scripts opens a Build tab; -terminalRun "ls" types a command into the first terminal (for screenshots).
+        if let tab = arguments.string(forKey: "buildTab").flatMap(BuildTab.init(rawValue:)) {
+            model.build.tab = tab
+        }
+        if let command = arguments.string(forKey: "terminalRun") {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 5) { [weak self] in
+                self?.model.terminal.type(command + "\r")
+            }
+        }
         if arguments.bool(forKey: "activate") {
             NSApp.activate()
         }
@@ -154,6 +163,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         model.studio.flushSave()
         model.decks.flushSave()
         model.audio.flushSave()
+        model.scripts.flushSave()
+        model.automations.flushSave()
+        model.terminal.save()
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {

@@ -107,6 +107,7 @@ struct FilesView: View {
 
 private struct ResultRow: View {
     @EnvironmentObject private var theme: Theme
+    @EnvironmentObject private var app: AppModel
     @Environment(\.colorScheme) private var scheme
     var hit: SearchHit
 
@@ -144,6 +145,11 @@ private struct ResultRow: View {
         .contextMenu {
             Button("Reveal in Finder") { NSWorkspace.shared.activateFileViewerSelecting([hit.file.url]) }
             Button("Open") { NSWorkspace.shared.open(hit.file.url) }
+            Button("Open a terminal here") {
+                app.terminal.open(folder: hit.file.url)
+                app.build.tab = .terminal
+                app.go(to: .build)
+            }
         }
         .overlay(alignment: .bottom) {
             Rectangle().fill(theme.edge(scheme)).frame(height: 0.5)
