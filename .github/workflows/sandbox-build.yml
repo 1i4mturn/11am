@@ -125,3 +125,14 @@ jobs:
             ../ci/BuildTests/main.swift 2>&1 | grep -E "error|warning: unre" || true
           test -x buildtests
           ./buildtests
+
+      - name: iPhone link and Energy tests
+        working-directory: sandbox
+        run: |
+          mkdir -p phonetest
+          cd phonetest
+          swiftc -O -o phonetests \
+            ../Shared/{EnergyKit,LinkKit}.swift \
+            ../ci/PhoneTests/main.swift 2>&1 | grep -E "error|warning: unre" || true
+          test -x phonetests
+          ./phonetests
