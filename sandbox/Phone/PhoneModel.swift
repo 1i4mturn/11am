@@ -1,6 +1,7 @@
 import Foundation
 import Security
 import SwiftUI
+import UIKit
 
 /// Something captured, waiting to go to the Mac or already there.
 struct OutboxItem: Codable, Identifiable, Hashable {

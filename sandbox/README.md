@@ -24,7 +24,7 @@ The app is signed "to run locally" (no Apple Developer account needed). Because 
 | **Vellum shell** | A window you can see through: the desktop reads through the sidebar, sheets are frosted white paper, real brand monograms and wordmark | Move the window over a busy wallpaper or other windows. Switch dark mode |
 | **The notch** | Black island that grows out of the camera notch. Idle ears, hover to peek, click to open: **Now**, **Ask**, **Overnight** | Move the pointer to the notch. Press **⌥Space** anywhere to ask |
 | **Brain** | Routes each request to the cheapest brain that can do it: Apple's on-device model → a local model server (optional) → Claude with your key (optional) | Settings › Brain. Try "On this Mac only", then "Balanced" with a key |
-| **Today** (Leo) | Today from every calendar (or a sample day), the brief, an optional 11am check-in notification | "Write my brief" |
+| **Today** (Leo) | Today from every calendar (or a sample day), the brief, an optional 11am check-in notification. With the iPhone app paired, an **Energy** card (last night against your usual, resting heart rate, heart-rate variability, steps, two weeks of sleep) and Leo shapes the brief around it | "Write my brief". **Pair your iPhone** at the top right |
 | **Calendar** (Leo) | Every calendar on this Mac (iCloud, Google, Exchange) and your Outlook or Microsoft 365 calendar in one place: day, 3 days, week, month and agenda. Type events in plain words. Drag on empty time to book it, drag a block to move it (across days too), drag its bottom edge to change the length. Each event shows its join button, who's coming, your yes/maybe/no, clashes, and a **Prep me** note from Leo with your recent mail with them. **Find a time** copies your free slots into an email or holds two hours for focus. Australian public holidays and reminders that are due sit above the hours | Type "Lunch with Tom Fri 1pm at Lune" in the box at the top. Drag the kickoff onto Wednesday. Open **Find a time**, then **Copy for an email**. **Connect** for your real calendars; for 365, **Microsoft 365** signs in through Mail |
 | **Mail** (Marc) | Every account in one inbox, sorted into **Needs you · Worth reading · FYI · Noise** by what you actually do: what you open and how soon, how long you read, what you answer, flag, snooze, archive unread or never open. On day one Marc learns from the read, replied and flagged marks your provider already keeps, and who you write to. Each email says why it's there (**Why?** shows the evidence). Archive, delete, flag, snooze, unsubscribe, block, and reply or write from the right account with a few seconds to undo. **j k e u s r a f** and **⌫** work like a mail app | Start with the sample: move an email to another lane and watch Marc learn. Then **Accounts › Add an account…**: an app password for iCloud, Gmail, Fastmail, Yahoo or any IMAP, or **Sign in with Microsoft** for Outlook and Microsoft 365. Open **How Marc sorts** (the brain button) |
 | **Write** (William) | Formatted documents that stay plain Markdown files on your Mac: headings, bold and italic, highlight, lists and checklists, tables, quotes and callouts, code, links and pictures, shown as a page while you type. Templates (letter, proposal, one-pager, meeting notes, report, résumé, press release), an outline, find and replace, focus and typewriter modes, and a version every 15 minutes. **Import** Word, Google Docs (as .docx), RTF, HTML and OpenDocument; **Export** a PDF with your page setup, a Word file with real headings and lists, a web page, Markdown or plain text. William rewrites a selection as a suggestion you accept or reject | Open **Welcome to Write** and try the shortcuts. Select a paragraph of the investor update and choose **In my voice**. **Export › Word** and open it in Word or Pages |
@@ -49,6 +49,39 @@ The app is signed "to run locally" (no Apple Developer account needed). Because 
 Shortcuts: **⌘1–⌘9** switch between the first nine apps · **⌘Z / ⇧⌘Z** undo and redo in Photo, Video, Audio, Sheets, Design and Decks · **⌘B** splits, **⌘↩** plays and pauses, **⌘⌫** removes a clip in Video · in Audio, **space** plays, **⌘B** splits, **⌫** deletes and closes the gap, **⌘D** duplicates, **M** drops a marker · **⇧⌘N** writes a new email (a new event in Calendar, a new note in Notes) · **⌥⇧N** jots a note from anywhere · in Write and Notes, **⌘B ⌘I ⌘U ⌘K ⌘E**, **⌥⌘1–3** headings, **⇧⌘7 ⇧⌘8 ⇧⌘L** lists, **⌘F** find and replace · in Calendar, **T** today, **← →** move, **D 3 W M A** change the view, **↩** edits, **⌫** deletes · in Sheets, arrows move (**⌘** jumps to the edge of the data, **⇧** selects), type to replace, **↩** or **F2** to edit, **⌘D** fills down, **⌘B ⌘I** bold and italic · on a canvas, arrows nudge (**⇧** for 10), **⌘D** duplicates, **⌘G / ⇧⌘G** group and ungroup, **⌘] ⌘[** layer order, **⌘L** locks, **↩** edits text, hold **⌘** while dragging to skip snapping · **⌥⌘↩** presents a deck · **⌘\\** shows or hides the agent pane (it also steps aside on narrow windows) · **⌥Space** asks from anywhere · **⇧⌘R** runs tonight's work now · **⌘,** opens settings.
 
 Screenshots from the CI Mac (a small virtual display without a notch, so the notch shows as a pill, with a busy test desktop behind the app) are on the `ci/sandbox-shots` branch. Push a commit with `[shots]` in its message to refresh them.
+
+## Your iPhone (11am for iPhone)
+
+The iPhone app is where you stay in touch while away from the Mac. It has four tabs:
+
+- **Today**: Leo's brief and your day from the Mac, the Energy line, and **Ask your Mac**, which your Mac answers with its own brain.
+- **Energy**: Apple Health, read only. Last night's sleep against your own usual, when you fell asleep and woke, steps, active energy, exercise, stand hours, resting heart rate and heart-rate variability, and workouts. Each is charted, with what it means for the day ("Short night. Put the hardest work after 10."). It compares you with you, and gives no medical advice.
+- **Capture**: scan a document (edges found, flattened, text recognised, saved as a PDF), take a photo, record a voice note (transcribed on the iPhone), write a note, or save a link. Each goes to Notes on the Mac (in Captures, or Receipts with #receipt), with the files in `~/Documents/11am Captures`. If the Mac isn't around, captures wait on the phone and go when it is.
+- **Mac**: pairing and the connection.
+
+**How they talk.** The Mac makes a pairing code (Today › **Pair your iPhone**, or 11am › Settings › iPhone). It's a QR code holding a key made on the Mac. The iPhone scans it once. After that they find each other on your Wi-Fi (Bonjour) and every message is sealed with that key (ChaChaPoly). There's no server, no account and no iCloud in between. Health data never leaves the two devices, and Leo uses it only in your brief.
+
+**Putting it on your iPhone.** It isn't on the App Store, so Xcode installs it from this project:
+
+1. Run `./setup.sh` on the Mac as above. In Xcode, choose the **ElevenAmPhone** scheme at the top.
+2. Plug in your iPhone, unlock it and tap **Trust**. On the iPhone, turn on **Settings › Privacy & Security › Developer Mode** (it restarts).
+3. In Xcode, open **Settings › Accounts** and add your Apple ID. Then, in the **ElevenAmPhone** target › **Signing & Capabilities**, pick it as the **Team**. If Xcode says the bundle identifier isn't available, change it to something of your own, such as `au.yourname.11am`.
+4. Choose your iPhone as the destination and press **⌘R**. The first time, the iPhone asks you to trust the developer under **Settings › General › VPN & Device Management**.
+5. On the Mac, choose **Today › Pair your iPhone › Make a pairing code**. On the iPhone, open **Mac › Scan the code**, and allow Local Network when asked (on both). Then allow Apple Health in **Energy**.
+
+**With a free Apple ID**, Xcode-installed apps stop opening after 7 days. Press ⌘R again to renew. A paid Apple Developer Program membership makes it a year.
+
+**HealthKit and free accounts.** I couldn't confirm whether Apple lets a free account (a "Personal Team") use HealthKit. If Xcode reports that your team doesn't support HealthKit, there are two options. You can join the Apple Developer Program, or you can remove the **HealthKit** capability in Signing & Capabilities: everything else works, and Energy offers sample data instead.
+
+**Tested on every build** (`ci/PhoneTests`):
+- What last night means: a short night, a good one, an ordinary one, a late bedtime, and the body working harder than usual.
+- Pairing codes.
+- Sealed messages: a wrong key or a changed message is refused.
+- Framing.
+- A real connection on the CI Mac: a 3 MB photo arrives intact, and a device without the key is cut off.
+- Bonjour discovery: the test reports whether the CI machine could do it.
+
+The iPhone app is built for the simulator on every push, and screenshots come from the simulator with sample data. The camera, scanning, Health and the connection between two real devices can only be tried on your iPhone.
 
 ## Mail: how Marc learns
 

@@ -35,6 +35,7 @@ struct SuiteView: View {
         SuiteApp(id: "audio", name: "Audio", monogram: "co", does: "Record the mic or the Mac, multitrack edits, studio sound, silences and ums removed, loudness, chapters", replaces: "Audacity, podcast-editing subscriptions", stage: .sandbox),
         SuiteApp(id: "learn", name: "Learn", monogram: "hr", does: "Paths, flashcards, languages", replaces: "Flashcard and language-app subscriptions", stage: .sandbox),
         SuiteApp(id: "build", name: "Build", monogram: "jo", does: "A real terminal with tabs and splits, scripts in four languages, automations with triggers and steps, tune any app", replaces: "Terminal, Script Editor, Notion automations, automation subscriptions", stage: .sandbox),
+        SuiteApp(id: "iphone", name: "iPhone", monogram: "le", does: "Energy from Apple Health, scan and capture to your Mac, your brief and Ask on the go", replaces: "Health and habit apps, scanner apps", stage: .sandbox),
     ]
 
     var body: some View {
@@ -74,7 +75,12 @@ struct SuiteView: View {
                         .entrance(index)
                         .contentShape(Rectangle())
                         .onTapGesture {
-                            if let section = AppSection(rawValue: app.id) { model.go(to: section) }
+                            if let section = AppSection(rawValue: app.id) {
+                                model.go(to: section)
+                            } else if app.id == "iphone" {
+                                model.go(to: .today)
+                                model.phone.showsPairing = true
+                            }
                         }
                         .help("Open \(app.name)")
                     }
