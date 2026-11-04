@@ -33,7 +33,8 @@ struct LearnView: View {
     }
 
     private var subtitle: String {
-        if tab == "languages", let language = languages.language {
+        if tab == "languages" {
+            guard let language = languages.language else { return "Harris · pick a language to start" }
             return "Harris · \(language.name) · \(languages.dueReviews.count) to review · \(languages.wordsKnown) words known"
         }
         return "Harris · \(learn.dueCount) due · \(learn.learnedCount) learned · \(learn.deck?.cards.count ?? 0) cards"

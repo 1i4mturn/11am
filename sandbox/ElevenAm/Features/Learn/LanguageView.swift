@@ -333,7 +333,7 @@ private struct LessonPlayer: View {
                 .font(.system(size: 12.5))
                 .foregroundStyle(theme.ink(scheme))
                 .padding(12)
-                .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(Color.yellow.opacity(0.14)))
+                .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(theme.well(scheme)))
             }
             if let exercise = session.current {
                 ExerciseCard(exercise: exercise)
