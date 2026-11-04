@@ -379,8 +379,8 @@ check(runAutomation([.shell("echo nothing to see"), .condition(AutomationConditi
 check(runAutomation([.shell("echo partway; exit 3"), .notify(title: "never", body: "")])?.status == .failed && notified.count == 1, "A failing step stops the run")
 approvals = false
 check(runAutomation([.approval("May I?"), .notify(title: "never", body: "")])?.status == .stopped, "Saying no stops it")
-let read = runAutomation([.readText("{{trigger}}"), .script(UUID())], trigger: readable.path)
-check(read?.status == .succeeded && read?.output == "script saw Dear Sam, the invoice is attached.", "Reads a document, then hands it to a script")
+let documentRun = runAutomation([.readText("{{trigger}}"), .script(UUID())], trigger: readable.path)
+check(documentRun?.status == .succeeded && documentRun?.output == "script saw Dear Sam, the invoice is attached.", "Reads a document, then hands it to a script")
 check(runAutomation([.readText("/nowhere/at/all.pdf")])?.status == .failed, "A missing document fails clearly")
 let everything = Automation(name: "All", trigger: .folder(path: "/tmp", pattern: "*.pdf"), steps: [
     .shell("a"), .script(UUID()), .agent("b"), .notify(title: "c", body: "d"), .condition(AutomationCondition(test: .lacks, text: "e")),
