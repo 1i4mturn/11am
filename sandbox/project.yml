@@ -3,11 +3,12 @@ options:
   bundleIdPrefix: au.elevenam
   deploymentTarget:
     macOS: "14.0"
+    iOS: "17.0"
   createIntermediateGroups: true
 settings:
   base:
     SWIFT_VERSION: "5.0"
-    MARKETING_VERSION: "0.10.0"
+    MARKETING_VERSION: "0.11.0"
     CURRENT_PROJECT_VERSION: "1"
 targets:
   ElevenAm:
@@ -15,6 +16,7 @@ targets:
     platform: macOS
     sources:
       - path: ElevenAm
+      - path: Shared
     info:
       path: Support/Info.plist
       properties:
@@ -33,6 +35,9 @@ targets:
         NSAppleEventsUsageDescription: Bolton reads your Apple Notes once when you import them, and the scripts and automations you run in Build control only the apps you've allowed.
         NSMicrophoneUsageDescription: Cole records your voice into Audio and Video when you press Record. Recordings stay on this Mac.
         NSSpeechRecognitionUsageDescription: Video transcribes your recordings on this Mac so you can edit them by editing the words.
+        NSLocalNetworkUsageDescription: Your iPhone finds 11am on this Mac over your own network to send what you capture and your Energy summary.
+        NSBonjourServices:
+          - _11am._tcp
         NSAppTransportSecurity:
           NSAllowsLocalNetworking: true
           NSAllowsArbitraryLoadsInWebContent: true
@@ -49,3 +54,53 @@ targets:
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
     scheme:
       testTargets: []
+  ElevenAmPhone:
+    type: application
+    platform: iOS
+    sources:
+      - path: Phone
+      - path: Shared
+    info:
+      path: Support/Phone-Info.plist
+      properties:
+        CFBundleName: 11am
+        CFBundleDisplayName: 11am
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        UILaunchScreen: {}
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        UIApplicationSupportsIndirectInputEvents: true
+        CFBundleURLTypes:
+          - CFBundleURLName: au.elevenam.pair
+            CFBundleURLSchemes:
+              - elevenam
+        NSHealthShareUsageDescription: Leo reads your sleep, steps, activity, heart rate and workouts to plan your day around how you slept. It only reads, and only a short daily summary goes to your own Mac.
+        NSHealthUpdateUsageDescription: 11am doesn't write to Apple Health.
+        NSCameraUsageDescription: Scan documents and take photos to send to 11am on your Mac, and scan the pairing code your Mac shows.
+        NSMicrophoneUsageDescription: Record voice notes that go to Notes on your Mac.
+        NSSpeechRecognitionUsageDescription: Voice notes are transcribed on this iPhone so the words arrive in Notes with the recording.
+        NSPhotoLibraryUsageDescription: Choose a photo to send to 11am on your Mac.
+        NSLocalNetworkUsageDescription: 11am finds your Mac on your own Wi-Fi to send what you capture and your Energy summary, and to show your brief.
+        NSBonjourServices:
+          - _11am._tcp
+    entitlements:
+      path: Support/Phone.entitlements
+      properties:
+        com.apple.developer.healthkit: true
+        com.apple.developer.healthkit.access: []
+    settings:
+      base:
+        PRODUCT_NAME: ElevenAmPhone
+        PRODUCT_BUNDLE_IDENTIFIER: au.elevenam.sandbox.phone
+        GENERATE_INFOPLIST_FILE: NO
+        TARGETED_DEVICE_FAMILY: "1"
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: ""
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        SUPPORTS_MACCATALYST: NO
+    scheme:
+      testTargets: []
+

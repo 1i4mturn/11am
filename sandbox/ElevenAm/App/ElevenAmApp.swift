@@ -79,5 +79,6 @@ extension View {
             .environmentObject(model.terminal)
             .environmentObject(model.scripts)
             .environmentObject(model.automations)
+            .environmentObject(model.phone)
     }
 }

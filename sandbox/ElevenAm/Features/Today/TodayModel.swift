@@ -34,6 +34,10 @@ final class TodayModel: ObservableObject {
     private let store = EKEventStore()
     private let brain: Brain
     private let files: FileIndex
+    /// Last night and yesterday from Apple Health, via the iPhone app.
+    var energyFacts: (() -> String?)?
+    /// Called after Leo writes a brief, so the iPhone gets it too.
+    var onBriefWritten: (() -> Void)?
 
     init(brain: Brain, files: FileIndex) {
         self.brain = brain
@@ -130,7 +134,7 @@ final class TodayModel: ObservableObject {
 
         Files changed in the last day:
         \(fileLines.isEmpty ? "- None" : fileLines.joined(separator: "\n"))
-
+        \(energyFacts?().map { "\nEnergy (from Apple Health on the iPhone): \($0)\n" } ?? "")
         Write the brief.
         """
 
@@ -138,7 +142,9 @@ final class TodayModel: ObservableObject {
             system: """
             You are Leo, the chief of staff inside 11am, a Mac app for founders. Write a short daily brief: \
             three to five lines, plain sentences, no headings, no bullet symbols, no emoji. Lead with what matters most. \
-            Mention protected focus time if there is a long gap. Never invent meetings, people or numbers.
+            Mention protected focus time if there is a long gap. Never invent meetings, people or numbers. \
+            If there's an Energy line, say it in one short sentence and shape the day around it (after a short night, hardest work later and a lighter afternoon). \
+            Never give medical advice.
             """,
             prompt: prompt,
             weight: .deep,
@@ -150,6 +156,7 @@ final class TodayModel: ObservableObject {
         briefDate = Date()
         briefWasPreparedOvernight = overnight
         await run.finished()
+        onBriefWritten?()
 
         switch run.status {
         case .done: return "Ready (\(run.providerLabel))."

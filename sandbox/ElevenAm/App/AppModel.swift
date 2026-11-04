@@ -159,6 +159,7 @@ final class AppModel: ObservableObject {
     let terminal: TerminalWorkspace
     let scripts: ScriptsModel
     let automations: AutomationsModel
+    let phone: PhoneLinkModel
 
     init() {
         let machine = MachineProfile()
@@ -201,6 +202,10 @@ final class AppModel: ObservableObject {
         let scripts = ScriptsModel(brain: brain)
         self.scripts = scripts
         self.automations = AutomationsModel(brain: brain, scripts: scripts, notes: self.notes, mail: mail, calendar: calendar)
+        let phone = PhoneLinkModel(brain: brain, notes: self.notes, today: self.today)
+        self.phone = phone
+        self.today.energyFacts = { [weak phone] in phone?.energyFacts }
+        self.today.onBriefWritten = { [weak phone] in phone?.briefChanged() }
         nightShift.attach(to: self)
         money.extraFacts = { [weak ledger] in ledger?.georgeFacts ?? "" }
         // Leo's calendar feeds Today, the brief and the notch countdown, with every connected calendar.
@@ -225,6 +230,7 @@ final class AppModel: ObservableObject {
         decks.load()
         audio.load()
         automations.start()
+        phone.start()
         today.refreshAccess()
         calendar.refreshAccess()
         nightShift.start()

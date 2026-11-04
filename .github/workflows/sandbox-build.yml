@@ -14,7 +14,7 @@ concurrency:
 jobs:
   build:
     runs-on: macos-26
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
 
@@ -136,3 +136,17 @@ jobs:
             ../ci/PhoneTests/main.swift 2>&1 | grep -E "error|warning: unre" || true
           test -x phonetests
           ./phonetests
+
+      - name: Build the iPhone app
+        working-directory: sandbox
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project ElevenAm.xcodeproj \
+            -scheme ElevenAmPhone \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO \
+            build 2>&1 | tee phone-build.log | grep -E "error:|warning:|BUILD" || true
+          grep -q "BUILD SUCCEEDED" phone-build.log

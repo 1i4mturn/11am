@@ -144,6 +144,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if arguments.object(forKey: "audioTab") != nil {
             model.audio.panelTab = arguments.integer(forKey: "audioTab")
         }
+        // -phoneEnergy YES shows sample Energy on Today; -phonePairing YES opens the iPhone pairing sheet with a code.
+        if arguments.bool(forKey: "phoneEnergy") {
+            model.phone.useSampleEnergy()
+        }
+        if arguments.bool(forKey: "phonePairing") {
+            if model.phone.pairing == nil { model.phone.makePairing() }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in self?.model.phone.showsPairing = true }
+        }
         // -buildTab scripts opens a Build tab; -terminalRun "ls" types a command into the first terminal (for screenshots).
         if let tab = arguments.string(forKey: "buildTab").flatMap(BuildTab.init(rawValue:)) {
             model.build.tab = tab

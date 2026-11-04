@@ -147,7 +147,7 @@ enum EnergyInsight {
     }
 
     /// Reads last night (`today`) and yesterday's movement against your usual.
-    static func reading(today: DayEnergy?, yesterday: DayEnergy?, baseline: EnergyBaseline) -> Reading? {
+    static func reading(today: DayEnergy?, yesterday: DayEnergy?, baseline: EnergyBaseline, calendar: Calendar = .current) -> Reading? {
         var tone = Tone.usual
         var headline = ""
         var detail = ""
@@ -171,7 +171,7 @@ enum EnergyInsight {
                 detail = "\(EnergyFormat.duration(sleep)) asleep" + (usual.map { ", close to your usual \(EnergyFormat.duration($0))." } ?? ".")
             }
             if let bed = today?.bedtime, let usualBed = baseline.bedtime, baseline.nights >= 3 {
-                let late = EnergyDay.minutesAfterNoon(bed) - usualBed
+                let late = EnergyDay.minutesAfterNoon(bed, calendar: calendar) - usualBed
                 if late > 75 { detail += " Later to bed than usual." }
             }
         }
@@ -196,7 +196,7 @@ enum EnergyInsight {
     }
 
     /// Facts for Leo's brief. Plain numbers against your usual; Leo decides what to say.
-    static func briefFacts(today: DayEnergy?, yesterday: DayEnergy?, baseline: EnergyBaseline) -> String? {
+    static func briefFacts(today: DayEnergy?, yesterday: DayEnergy?, baseline: EnergyBaseline, calendar: Calendar = .current) -> String? {
         var facts: [String] = []
         if let sleep = today?.sleepMinutes {
             facts.append("Slept \(EnergyFormat.duration(sleep))" + (baseline.sleepMinutes.map { " (usual \(EnergyFormat.duration($0)))" } ?? ""))
@@ -212,7 +212,7 @@ enum EnergyInsight {
         }
         guard !facts.isEmpty else { return nil }
         var text = facts.joined(separator: ", ") + "."
-        if let reading = reading(today: today, yesterday: yesterday, baseline: baseline) {
+        if let reading = reading(today: today, yesterday: yesterday, baseline: baseline, calendar: calendar) {
             text += " \(reading.headline)." + (reading.suggestions.first.map { " Suggestion: \($0)" } ?? "")
         }
         return text

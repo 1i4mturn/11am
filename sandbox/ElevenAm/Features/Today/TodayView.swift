@@ -6,20 +6,35 @@ struct TodayView: View {
     @EnvironmentObject private var theme: Theme
     @EnvironmentObject private var today: TodayModel
     @EnvironmentObject private var brain: Brain
+    @EnvironmentObject private var phone: PhoneLinkModel
     @Environment(\.colorScheme) private var scheme
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 22) {
                 SectionHeader(title: "today", subtitle: Date().formatted(date: .complete, time: .omitted)) {
-                    Toggle("11am check-in", isOn: $today.checkInEnabled)
-                        .toggleStyle(.switch)
-                        .controlSize(.small)
-                        .help("A gentle notification at 11:00 every day")
+                    HStack(spacing: 12) {
+                        Button {
+                            phone.showsPairing = true
+                        } label: {
+                            Label(phone.isConnected ? "iPhone connected" : (phone.pairing == nil ? "Pair your iPhone" : "iPhone"), systemImage: "iphone")
+                        }
+                        .buttonStyle(.vellumSecondary)
+                        .help("Energy from Apple Health, captures and your brief on the 11am iPhone app")
+                        Toggle("11am check-in", isOn: $today.checkInEnabled)
+                            .toggleStyle(.switch)
+                            .controlSize(.small)
+                            .help("A gentle notification at 11:00 every day")
+                    }
                 }
 
                 BriefCard()
                     .entrance()
+
+                if !phone.energy.isEmpty {
+                    EnergyCard()
+                        .entrance(1)
+                }
 
                 if !today.isLive {
                     Card {
@@ -69,6 +84,7 @@ struct TodayView: View {
         }
         .scrollContentBackground(.hidden)
         .onAppear { today.loadEvents() }
+        .sheet(isPresented: $phone.showsPairing) { PhonePairingSheet() }
     }
 }
 

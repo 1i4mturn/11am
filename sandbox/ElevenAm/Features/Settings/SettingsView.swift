@@ -8,6 +8,8 @@ struct SettingsView: View {
                 .tabItem { Label("Brain", systemImage: "cpu") }
             MacSettings()
                 .tabItem { Label("This Mac", systemImage: "laptopcomputer") }
+            PhonePairingSheet(showsDone: false)
+                .tabItem { Label("iPhone", systemImage: "iphone") }
         }
         .frame(width: 560, height: 560)
     }

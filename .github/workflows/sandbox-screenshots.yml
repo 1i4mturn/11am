@@ -13,7 +13,7 @@ jobs:
   screenshots:
     if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[shots]')
     runs-on: macos-26
-    timeout-minutes: 30
+    timeout-minutes: 50
     permissions:
       contents: write
     steps:
@@ -55,6 +55,8 @@ jobs:
             sleep 2
           }
           capture today-light -startSection today -forceAppearance light
+          capture today-energy-light -startSection today -forceAppearance light -phoneEnergy YES
+          WAIT=12 capture today-iphone-dark -startSection today -forceAppearance dark -phonePairing YES -phoneEnergy YES
           capture photo-light -startSection photo -forceAppearance light
           capture photo-crop-dark -startSection photo -forceAppearance dark -photoTool crop
           capture photo-film-light -startSection photo -forceAppearance light -photoLook Film
@@ -111,6 +113,42 @@ jobs:
           WAIT=12 capture decks-present -startSection decks -forceAppearance light -decksSlide 1 -decksPresent YES
           capture notch-dark -startSection suite -forceAppearance dark -openNotch YES
           ls -la shots
+
+      - name: iPhone screenshots (simulator)
+        working-directory: sandbox
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          xcodebuild -project ElevenAm.xcodeproj -scheme ElevenAmPhone -configuration Debug -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' -derivedDataPath build/phone CODE_SIGNING_ALLOWED=NO build \
+            | grep -E "error:|BUILD" || true
+          APP=$(find build/phone/Build/Products -name "ElevenAmPhone.app" -maxdepth 2 | head -1)
+          echo "App: $APP"
+          DEVICE=$(xcrun simctl list devices available -j | python3 -c '
+          import json, sys
+          devices = json.load(sys.stdin)["devices"]
+          phones = [d for runtime, items in sorted(devices.items()) if "iOS" in runtime for d in items if d["name"].startswith("iPhone")]
+          preferred = [d for d in phones if d["name"].endswith(" Pro")] or phones
+          print(preferred[-1]["udid"])')
+          echo "Device: $DEVICE"
+          xcrun simctl boot "$DEVICE" || true
+          xcrun simctl bootstatus "$DEVICE" -b
+          xcrun simctl status_bar "$DEVICE" override --time "9:41" --batteryState charged --batteryLevel 100 --wifiBars 3 || true
+          xcrun simctl install "$DEVICE" "$APP"
+          shot() {
+            name="$1"; shift
+            xcrun simctl terminate "$DEVICE" au.elevenam.sandbox.phone 2>/dev/null || true
+            xcrun simctl launch "$DEVICE" au.elevenam.sandbox.phone "$@"
+            sleep "${WAIT:-7}"
+            xcrun simctl io "$DEVICE" screenshot "shots/$name.png"
+          }
+          WAIT=10 shot phone-today-light -phoneSample YES -phoneTab today -phoneAppearance light
+          shot phone-energy-light -phoneSample YES -phoneTab energy -phoneAppearance light
+          shot phone-energy-dark -phoneSample YES -phoneTab energy -phoneAppearance dark
+          shot phone-capture-light -phoneSample YES -phoneTab capture -phoneAppearance light
+          shot phone-mac-light -phoneTab mac -phoneAppearance light
+          shot phone-energy-empty-dark -phoneTab energy -phoneAppearance dark
+          ls -la shots | grep phone
 
       - name: Publish to the ci/sandbox-shots branch
         working-directory: sandbox/shots

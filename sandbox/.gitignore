@@ -5,3 +5,5 @@ build/
 DerivedData/
 *.xcuserstate
 xcuserdata/
+Support/Phone-Info.plist
+Support/Phone.entitlements
