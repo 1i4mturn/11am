@@ -771,7 +771,8 @@ struct ScriptEditor: NSViewRepresentable {
         view.isContinuousSpellCheckingEnabled = false
         view.smartInsertDeleteEnabled = false
         view.textContainerInset = NSSize(width: 8, height: 10)
-        view.backgroundColor = NSColor.textBackgroundColor.withAlphaComponent(0.6)
+        // Plain paper in light mode, near-black in dark, like any text editor.
+        view.backgroundColor = .textBackgroundColor
         view.drawsBackground = true
         view.string = text
         view.delegate = context.coordinator

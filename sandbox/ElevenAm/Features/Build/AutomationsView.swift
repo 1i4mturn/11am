@@ -329,24 +329,41 @@ struct AutomationsPane: View {
     @Environment(\.colorScheme) private var scheme
 
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
-            AutomationList()
-                .frame(width: 230)
-            if let automation = automations.selected {
-                ScrollView {
-                    AutomationEditor(automation: automation)
+        GeometryReader { proxy in
+            // Three columns when there's room; on a smaller window the runs go under the steps.
+            let wide = proxy.size.width >= 1_020
+            HStack(alignment: .top, spacing: 12) {
+                AutomationList()
+                    .frame(width: wide ? 230 : 200)
+                if let automation = automations.selected {
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 12) {
+                            AutomationEditor(automation: automation)
+                            if !wide {
+                                RunHistory(automation: automation, scrolls: false)
+                            }
+                        }
                         .padding(.trailing, 4)
+                    }
+                    .scrollContentBackground(.hidden)
+                    .frame(maxWidth: .infinity)
+                    if wide {
+                        RunHistory(automation: automation, scrolls: true)
+                            .frame(width: 290)
+                    }
+                } else {
+                    empty
                 }
-                .scrollContentBackground(.hidden)
-                .frame(maxWidth: .infinity)
-                RunHistory(automation: automation)
-                    .frame(width: 290)
-            } else {
+            }
+        }
+    }
+
+    private var empty: some View {
+        Group {
                 Text("Make an automation with + or start from one of Johnny's.")
                     .font(.system(size: 12.5))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-            }
         }
     }
 }
@@ -706,6 +723,8 @@ private struct RunHistory: View {
     @EnvironmentObject private var automations: AutomationsModel
     @Environment(\.colorScheme) private var scheme
     var automation: Automation
+    /// In its own column it scrolls; under the steps it grows with them.
+    var scrolls: Bool
     @State private var expanded: UUID?
 
     var body: some View {
@@ -718,9 +737,20 @@ private struct RunHistory: View {
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .fixedSize(horizontal: false, vertical: true)
             }
-            ScrollView {
+            if scrolls {
+                ScrollView { list(runs) }
+            } else {
+                list(runs)
+            }
+        }
+        .padding(12)
+        .frame(maxHeight: scrolls ? CGFloat.infinity : nil, alignment: .top)
+        .vellum(level: 3, radius: max(theme.radius - 4, 8))
+    }
+
+    private func list(_ runs: [AutomationRun]) -> some View {
                 LazyVStack(alignment: .leading, spacing: 6) {
-                    ForEach(runs) { run in
+                    ForEach(runs.prefix(scrolls ? 200 : 8)) { run in
                         VStack(alignment: .leading, spacing: 4) {
                             HStack(spacing: 6) {
                                 Image(systemName: symbol(run.status))
@@ -767,11 +797,6 @@ private struct RunHistory: View {
                         .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(theme.well(scheme)))
                     }
                 }
-            }
-        }
-        .padding(12)
-        .frame(maxHeight: .infinity, alignment: .top)
-        .vellum(level: 3, radius: max(theme.radius - 4, 8))
     }
 
     private func symbol(_ status: AutomationRun.Status) -> String {

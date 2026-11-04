@@ -77,6 +77,12 @@ final class AudioModel: ObservableObject {
             found.append(SoundProjectEntry(id: project.id, name: project.name, duration: project.duration, modified: project.modified))
         }
         entries = found.sorted { $0.modified > $1.modified }
+        // Earlier versions could save the sample empty; make it again.
+        if let empty = entries.first(where: { $0.name == Self.sampleName && $0.duration == 0 }) {
+            try? FileManager.default.removeItem(at: folder(empty.id))
+            entries.removeAll { $0.id == empty.id }
+            UserDefaults.standard.set(false, forKey: "audio.seeded")
+        }
         if entries.isEmpty && !UserDefaults.standard.bool(forKey: "audio.seeded") {
             Task { await makeSample() }
         } else if project == nil, let first = entries.first {
@@ -689,9 +695,11 @@ final class AudioModel: ObservableObject {
     // MARK: Sample
 
     /// A short episode: two voices from the Mac's speech synthesiser (with an "um" and a long pause), and a music bed.
+    static let sampleName = "Founders' hour · episode 12"
+
     private func makeSample() async {
         // Saved only once it's whole, so quitting halfway doesn't leave an empty sample behind.
-        var project = SoundProject(name: "Founders' hour · episode 12", tracks: [SoundTrack(name: "Voice"), SoundTrack(name: "Music", volume: -14)])
+        var project = SoundProject(name: Self.sampleName, tracks: [SoundTrack(name: "Voice"), SoundTrack(name: "Music", volume: -14)])
         self.project = project
         let lines = [
             "Welcome back to Founders' hour. Today, um, we're talking about the software bill.",
@@ -722,6 +730,8 @@ final class AudioModel: ObservableObject {
             project.markers = [SoundMarker(time: 0, name: "Intro"), SoundMarker(time: voice.duration * 0.45, name: "The software bill")]
         }
         project.modified = Date()
+        // Opening saves what's in memory first, so memory must hold the finished project too.
+        self.project = project
         write(project)
         UserDefaults.standard.set(true, forKey: "audio.seeded")
         NSLog("11am audio sample: saved after %.1f s", Date().timeIntervalSince(began))

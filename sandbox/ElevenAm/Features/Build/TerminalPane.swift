@@ -258,10 +258,6 @@ final class TerminalWorkspace: ObservableObject {
 
     func dismissExplanation() { explanation = nil }
 
-    var lastFailed: Bool {
-        guard let command = activeSession?.emulator.commands().last else { return false }
-        return (command.exitStatus ?? 0) != 0
-    }
 }
 
 // MARK: Views
@@ -302,20 +298,33 @@ struct TerminalPane: View {
                     terminal.suggestCommand(for: ask)
                 }
                 .disabled(brain.isBusy)
-                Button("Explain") { terminal.explainLast(fix: false) }
-                    .buttonStyle(.vellumSecondary)
-                    .disabled(terminal.activeSession?.emulator.commands().isEmpty ?? true || brain.isBusy)
-                    .help("Johnny explains what the last command did and what its output means")
-                if terminal.lastFailed {
-                    Button("Fix it") { terminal.explainLast(fix: true) }
-                        .buttonStyle(.vellumPrimary)
-                        .disabled(brain.isBusy)
-                        .help("Johnny says why the last command failed and suggests a fix")
+                if let session = terminal.activeSession {
+                    LastCommandButtons(session: session)
                 }
             }
         }
         .animation(theme.spring, value: terminal.searching)
         .onAppear { terminal.restoreIfNeeded() }
+    }
+}
+
+/// Explain and Fix it, following the shell's last command.
+private struct LastCommandButtons: View {
+    @EnvironmentObject private var terminal: TerminalWorkspace
+    @EnvironmentObject private var brain: Brain
+    @ObservedObject var session: TerminalSession
+
+    var body: some View {
+        Button("Explain") { terminal.explainLast(fix: false) }
+            .buttonStyle(.vellumSecondary)
+            .disabled(session.lastCommand == nil || brain.isBusy)
+            .help("Johnny explains what the last command did and what its output means")
+        if let status = session.lastCommand?.exitStatus, status != 0 {
+            Button("Fix it") { terminal.explainLast(fix: true) }
+                .buttonStyle(.vellumPrimary)
+                .disabled(brain.isBusy)
+                .help("Johnny says why the last command failed and suggests a fix")
+        }
     }
 }
 
