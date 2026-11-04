@@ -208,6 +208,8 @@ final class LinkChannel: @unchecked Sendable {
     private(set) var state = State.connecting
     var onMessage: ((LinkMessage) -> Void)?
     var onState: ((State) -> Void)?
+    /// A started channel keeps itself alive until it closes, so a dropped reference can't lose messages.
+    private var keepAlive: LinkChannel?
 
     init(connection: NWConnection, key: SymmetricKey) {
         self.connection = connection
@@ -217,6 +219,7 @@ final class LinkChannel: @unchecked Sendable {
     var endpointDescription: String { "\(connection.endpoint)" }
 
     func start() {
+        keepAlive = self
         connection.stateUpdateHandler = { [weak self] state in
             guard let self else { return }
             switch state {
@@ -243,6 +246,7 @@ final class LinkChannel: @unchecked Sendable {
             if case .closed = self.state { return }
             self.state = state
             self.onState?(state)
+            if case .closed = state { self.keepAlive = nil }
         }
     }
 
