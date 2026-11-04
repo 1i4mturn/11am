@@ -699,13 +699,23 @@ final class AudioModel: ObservableObject {
             "So here's the question. What if they all lived on your Mac?",
         ]
         var voice = SoundBuffer(sampleRate: 48_000, channelCount: 1, frames: 0)
+        let began = Date()
+        // All the speech gets one budget; a Mac without voices (or a slow one) gets the hummed stand-in instead.
+        let deadline = began.addingTimeInterval(12)
+        NSLog("11am audio sample: speaking")
         for (index, line) in lines.enumerated() {
-            guard let spoken = await AudioSamples.speak(line, voice: index == 1 ? 1 : 0) else { break }
+            let left = deadline.timeIntervalSinceNow
+            guard left > 1, let spoken = await AudioSamples.speak(line, voice: index == 1 ? 1 : 0, timeout: left) else {
+                voice = SoundBuffer(sampleRate: 48_000, channelCount: 1, frames: 0)
+                break
+            }
             voice.append(spoken)
             voice.append(.silence(seconds: index == 0 ? 1.8 : 0.5, channels: 1))
         }
         if voice.duration < 1 { voice = AudioSamples.fallbackVoice() }
+        NSLog("11am audio sample: voice %.1f s after %.1f s", voice.duration, Date().timeIntervalSince(began))
         let music = AudioSamples.musicBed(seconds: voice.duration + 2)
+        NSLog("11am audio sample: music after %.1f s", Date().timeIntervalSince(began))
         if let voiceAsset = store(voice, name: "voice"), let musicAsset = store(music, name: "music") {
             project.tracks[0].clips = [SoundClip(name: "Interview", asset: voiceAsset, start: 1, outPoint: voice.duration)]
             project.tracks[1].clips = [SoundClip(name: "Bed", asset: musicAsset, start: 0, outPoint: music.duration, fadeIn: 1.5, fadeOut: 2.5)]
@@ -714,6 +724,7 @@ final class AudioModel: ObservableObject {
         project.modified = Date()
         write(project)
         UserDefaults.standard.set(true, forKey: "audio.seeded")
+        NSLog("11am audio sample: saved after %.1f s", Date().timeIntervalSince(began))
         open(project.id)
     }
 }
@@ -721,7 +732,7 @@ final class AudioModel: ObservableObject {
 enum AudioSamples {
     /// Speech from the Mac's own voices, written straight to a buffer (no speakers needed).
     @MainActor
-    static func speak(_ text: String, voice index: Int) async -> SoundBuffer? {
+    static func speak(_ text: String, voice index: Int, timeout: TimeInterval = 20) async -> SoundBuffer? {
         let synthesizer = AVSpeechSynthesizer()
         let utterance = AVSpeechUtterance(string: text)
         let voices = AVSpeechSynthesisVoice.speechVoices().filter { $0.language.hasPrefix("en") }
@@ -744,15 +755,16 @@ enum AudioSamples {
                 collected.append(sound)
             }
             // If the synthesiser never answers (no voices installed), give up soon; if it's slow, after a while.
-            DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + min(5, timeout)) {
                 guard !finished, !heard else { return }
                 finished = true
                 continuation.resume(returning: nil)
             }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 20) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + timeout) {
                 guard !finished else { return }
                 finished = true
-                continuation.resume(returning: collected.frames > 0 ? collected : nil)
+                // Cut off partway through a line isn't worth keeping.
+                continuation.resume(returning: nil)
             }
         }
         // The synthesiser has to live until it has finished speaking.
