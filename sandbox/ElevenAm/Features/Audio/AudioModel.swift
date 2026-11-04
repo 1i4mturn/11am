@@ -78,7 +78,6 @@ final class AudioModel: ObservableObject {
         }
         entries = found.sorted { $0.modified > $1.modified }
         if entries.isEmpty && !UserDefaults.standard.bool(forKey: "audio.seeded") {
-            UserDefaults.standard.set(true, forKey: "audio.seeded")
             Task { await makeSample() }
         } else if project == nil, let first = entries.first {
             open(first.id)
@@ -691,8 +690,8 @@ final class AudioModel: ObservableObject {
 
     /// A short episode: two voices from the Mac's speech synthesiser (with an "um" and a long pause), and a music bed.
     private func makeSample() async {
+        // Saved only once it's whole, so quitting halfway doesn't leave an empty sample behind.
         var project = SoundProject(name: "Founders' hour · episode 12", tracks: [SoundTrack(name: "Voice"), SoundTrack(name: "Music", volume: -14)])
-        write(project)
         self.project = project
         let lines = [
             "Welcome back to Founders' hour. Today, um, we're talking about the software bill.",
@@ -701,7 +700,8 @@ final class AudioModel: ObservableObject {
         ]
         var voice = SoundBuffer(sampleRate: 48_000, channelCount: 1, frames: 0)
         for (index, line) in lines.enumerated() {
-            if let spoken = await AudioSamples.speak(line, voice: index == 1 ? 1 : 0) { voice.append(spoken) }
+            guard let spoken = await AudioSamples.speak(line, voice: index == 1 ? 1 : 0) else { break }
+            voice.append(spoken)
             voice.append(.silence(seconds: index == 0 ? 1.8 : 0.5, channels: 1))
         }
         if voice.duration < 1 { voice = AudioSamples.fallbackVoice() }
@@ -713,6 +713,7 @@ final class AudioModel: ObservableObject {
         }
         project.modified = Date()
         write(project)
+        UserDefaults.standard.set(true, forKey: "audio.seeded")
         open(project.id)
     }
 }
@@ -729,8 +730,10 @@ enum AudioSamples {
         let result: SoundBuffer? = await withCheckedContinuation { continuation in
             var collected = SoundBuffer(sampleRate: 48_000, channelCount: 1, frames: 0)
             var finished = false
+            var heard = false
             synthesizer.write(utterance) { buffer in
                 guard !finished else { return }
+                heard = true
                 guard let pcm = buffer as? AVAudioPCMBuffer, pcm.frameLength > 0 else {
                     finished = true
                     continuation.resume(returning: collected.frames > 0 ? collected : nil)
@@ -740,7 +743,12 @@ enum AudioSamples {
                 if sound.sampleRate != 48_000 { sound = sound.resampled(to: 48_000) }
                 collected.append(sound)
             }
-            // If the synthesiser never answers (no voices installed), give up after a while.
+            // If the synthesiser never answers (no voices installed), give up soon; if it's slow, after a while.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+                guard !finished, !heard else { return }
+                finished = true
+                continuation.resume(returning: nil)
+            }
             DispatchQueue.main.asyncAfter(deadline: .now() + 20) {
                 guard !finished else { return }
                 finished = true

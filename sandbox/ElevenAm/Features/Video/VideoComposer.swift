@@ -29,15 +29,21 @@ enum VideoComposer {
         var blocks: [(start: Double, end: Double, volume: Float)] = []
         var voiced: [ClosedRange<Double>] = []
         var cursor = CMTime.zero
+        // A track doesn't keep its asset alive, so the assets are held until everything is inserted.
+        var assets: [AVAsset] = []
 
         for clip in clips {
             let asset = AVURLAsset(url: clip.url)
+            assets.append(asset)
             guard let sourceVideo = try await asset.loadTracks(withMediaType: .video).first else { continue }
             var sourceAudio: AVAssetTrack?
             if clip.hasAudio { sourceAudio = try await asset.loadTracks(withMediaType: .audio).first }
-            if clip.useCleanAudio, let clean = clip.cleanAudio,
-               let cleaned = try? await AVURLAsset(url: clean).loadTracks(withMediaType: .audio).first {
-                sourceAudio = cleaned
+            if clip.useCleanAudio, let clean = clip.cleanAudio {
+                let cleanAsset = AVURLAsset(url: clean)
+                if let cleaned = try? await cleanAsset.loadTracks(withMediaType: .audio).first {
+                    assets.append(cleanAsset)
+                    sourceAudio = cleaned
+                }
             }
             let audioSpan = try await sourceAudio?.load(.timeRange)
             let blockStart = cursor
@@ -79,6 +85,7 @@ enum VideoComposer {
             blocks.append((blockStart.seconds, cursor.seconds, clip.muted ? 0 : Float(clip.volume)))
         }
         guard !segments.isEmpty else { throw VideoError.noVideo }
+        withExtendedLifetime(assets) {}
 
         let plan = CompositionPlan(
             segments: segments,
@@ -125,14 +132,17 @@ enum VideoComposer {
     /// Lays the music bed under the whole movie, looping it if it's shorter, with its volume ramps.
     private static func addMusic(_ music: VideoMusic, to composition: AVMutableComposition, length: CMTime,
                                  speech: [ClosedRange<Double>], fades: Bool) async throws -> AVMutableAudioMixInputParameters? {
-        guard let source = try? await AVURLAsset(url: music.url).loadTracks(withMediaType: .audio).first,
+        let asset = AVURLAsset(url: music.url)
+        guard let source = try? await asset.loadTracks(withMediaType: .audio).first,
               let span = try? await source.load(.timeRange), span.duration.seconds > 0.5,
               let track = composition.addMutableTrack(withMediaType: .audio, preferredTrackID: kCMPersistentTrackID_Invalid) else { return nil }
-        var at = CMTime.zero
-        while at < length {
-            let piece = CMTimeMinimum(span.duration, length - at)
-            try track.insertTimeRange(CMTimeRange(start: span.start, duration: piece), of: source, at: at)
-            at = at + piece
+        try withExtendedLifetime(asset) {
+            var at = CMTime.zero
+            while at < length {
+                let piece = CMTimeMinimum(span.duration, length - at)
+                try track.insertTimeRange(CMTimeRange(start: span.start, duration: piece), of: source, at: at)
+                at = at + piece
+            }
         }
         let parameters = AVMutableAudioMixInputParameters(track: track)
         let points = MusicEnvelope.points(speech: music.ducking ? speech : [], total: length.seconds, volume: music.volume, duckLevel: music.duckLevel, fades: fades)

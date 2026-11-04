@@ -953,12 +953,15 @@ final class VideoModel: ObservableObject {
 
     /// Puts a finished mix under the picture in place of the separate sound tracks.
     private func replaceSound(in composition: AVMutableComposition, with url: URL) async throws {
-        guard let source = try await AVURLAsset(url: url).loadTracks(withMediaType: .audio).first else { throw VideoError.noAudio }
+        let asset = AVURLAsset(url: url)
+        guard let source = try await asset.loadTracks(withMediaType: .audio).first else { throw VideoError.noAudio }
         let span = try await source.load(.timeRange)
         for track in composition.tracks where track.mediaType == .audio { composition.removeTrack(track) }
         guard let track = composition.addMutableTrack(withMediaType: .audio, preferredTrackID: kCMPersistentTrackID_Invalid) else { throw VideoError.export }
         let length = CMTimeMinimum(span.duration, composition.duration)
-        try track.insertTimeRange(CMTimeRange(start: span.start, duration: length), of: source, at: .zero)
+        try withExtendedLifetime(asset) {
+            try track.insertTimeRange(CMTimeRange(start: span.start, duration: length), of: source, at: .zero)
+        }
     }
 
     private static func srtTime(_ seconds: Double) -> String {
