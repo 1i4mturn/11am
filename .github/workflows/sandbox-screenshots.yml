@@ -56,7 +56,6 @@ jobs:
           }
           capture today-light -startSection today -forceAppearance light
           capture today-energy-light -startSection today -forceAppearance light -phoneEnergy YES
-          WAIT=12 capture today-iphone-dark -startSection today -forceAppearance dark -phonePairing YES -phoneEnergy YES
           capture photo-light -startSection photo -forceAppearance light
           capture photo-crop-dark -startSection photo -forceAppearance dark -photoTool crop
           capture photo-film-light -startSection photo -forceAppearance light -photoLook Film
@@ -115,6 +114,8 @@ jobs:
           capture decks-chart-dark -startSection decks -forceAppearance dark -decksSlide 5
           WAIT=12 capture decks-present -startSection decks -forceAppearance light -decksSlide 1 -decksPresent YES
           capture notch-dark -startSection suite -forceAppearance dark -openNotch YES
+          # Last, because pairing makes every later launch listen for the iPhone (and macOS asks about the local network).
+          WAIT=12 capture today-iphone-dark -startSection today -forceAppearance dark -phonePairing YES -phoneEnergy YES
           ls -la shots
 
       - name: iPhone screenshots (simulator)
