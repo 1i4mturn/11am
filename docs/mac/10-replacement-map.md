@@ -821,8 +821,11 @@ Ordered by what saves the most money and gets used every day, and by which engin
 | 6 | Johnny's Terminal, Scripts, Automations | Build | Terminal, Script Editor, Notion automations |
 | 7 | **iPhone app** | Energy (Health), capture, scanning | Health habits apps |
 | 8 | Harris's language course | Languages | Duolingo |
+| 9 | Leo's Tasks | Tasks, promises from mail, Reminders sync | Notion projects and tasks, Todoist, Things |
+| 10 | Bolton's Wiki (next) | Nested pages, linked database views, Notion import | Notion pages |
+| 11 | Conner's Business, finished (next) | Shared contacts, deals filled from mail and meetings, proposals | Notion CRM boards |
 
-The sandbox has all eight steps built: accounts, Mail and Calendar (0.5), documents, Notes and PDF (0.6), Sheets and the Money ledger (0.7), Design and Decks (0.8), Video and Audio (0.9), Johnny's Terminal, Scripts and Automations (0.10), the iPhone app (0.11) and Harris's language course (0.12).
+The sandbox has the first nine steps built: accounts, Mail and Calendar (0.5), documents, Notes and PDF (0.6), Sheets and the Money ledger (0.7), Design and Decks (0.8), Video and Audio (0.9), Johnny's Terminal, Scripts and Automations (0.10), the iPhone app (0.11), Harris's language course (0.12) and Leo's Tasks (0.13). Steps 10 and 11 finish replacing Notion.
 
 ## 6. Sources
 

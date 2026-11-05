@@ -17,7 +17,7 @@ struct TaskInspector: View {
             VStack(alignment: .leading, spacing: 16) {
                 HStack(spacing: 10) {
                     TaskCheck(task: task, size: 20) { withAnimation(theme.spring) { tasks.toggle(task.id) } }
-                    Text(task.isDone ? "Done " + TaskDates.label(task.completed ?? Date(), hasTime: false, now: tasks.now, calendar: cal).lowercased() : task.status.title)
+                    Text(task.isDone ? "Done " + TaskDates.inline(TaskDates.label(task.completed ?? Date(), hasTime: false, now: tasks.now, calendar: cal)) : task.status.title)
                         .font(.system(size: 12))
                         .foregroundStyle(theme.inkTertiary(scheme))
                     Spacer()
@@ -350,7 +350,7 @@ struct TaskInspector: View {
     }
 
     private var footnote: String {
-        var parts = ["Added " + TaskDates.label(task.created, hasTime: false, now: tasks.now, calendar: cal).lowercased()]
+        var parts = ["Added " + TaskDates.inline(TaskDates.label(task.created, hasTime: false, now: tasks.now, calendar: cal))]
         if task.reminderID != nil { parts.append("in Reminders") }
         if task.origin?.kind == .reminders { parts.append("came from Reminders") }
         return parts.joined(separator: " · ")

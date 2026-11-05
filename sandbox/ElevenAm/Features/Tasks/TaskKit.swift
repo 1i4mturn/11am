@@ -260,6 +260,14 @@ enum TaskDates {
         return text
     }
 
+    /// For the middle of a sentence: "today" and "tomorrow" in lower case, day names and dates as they are.
+    static func inline(_ label: String) -> String {
+        for word in ["Today", "Tomorrow", "Yesterday"] where label.hasPrefix(word) {
+            return word.lowercased() + label.dropFirst(word.count)
+        }
+        return label
+    }
+
     /// "3 pm", "3:30 pm".
     static func time(_ date: Date, calendar: Calendar) -> String {
         let hour = calendar.component(.hour, from: date)

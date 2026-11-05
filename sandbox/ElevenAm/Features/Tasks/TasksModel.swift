@@ -280,7 +280,7 @@ final class TasksModel: ObservableObject {
     func snooze(_ id: UUID, _ option: SnoozeOption) {
         guard let date = option.date(now: Date(), calendar: calendar) else { return }
         book.snooze(id, until: date, now: Date())
-        notice = "Snoozed until \(TaskDates.label(date, hasTime: true, now: Date(), calendar: calendar).lowercased())."
+        notice = "Snoozed until \(TaskDates.inline(TaskDates.label(date, hasTime: true, now: Date(), calendar: calendar)))."
         if selectedID == id { selectedID = nil }
         changed()
     }

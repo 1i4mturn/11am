@@ -22,24 +22,32 @@ struct TasksView: View {
                     TasksMenu()
                 }
             }
-            HStack(alignment: .top, spacing: 14) {
-                TaskSidebar()
-                    .frame(width: 190)
-                Group {
-                    switch tasks.layout {
-                    case .list: TaskListPane()
-                    case .board: TaskBoard()
-                    case .week: TaskWeek()
+            GeometryReader { geometry in
+                // On a narrow window the lists step aside for the week and for the task you're looking at.
+                let width = geometry.size.width
+                let showsLists = tasks.selected == nil ? (tasks.layout != .week || width > 1_000) : width > 880
+                HStack(alignment: .top, spacing: 14) {
+                    if showsLists {
+                        TaskSidebar()
+                            .frame(width: 180)
+                            .transition(.move(edge: .leading).combined(with: .opacity))
+                    }
+                    Group {
+                        switch tasks.layout {
+                        case .list: TaskListPane()
+                        case .board: TaskBoard()
+                        case .week: TaskWeek()
+                        }
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                    if let task = tasks.selected {
+                        TaskInspector(task: task)
+                            .frame(width: 290)
+                            .transition(.move(edge: .trailing).combined(with: .opacity))
                     }
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                if let task = tasks.selected {
-                    TaskInspector(task: task)
-                        .frame(width: 300)
-                        .transition(.move(edge: .trailing).combined(with: .opacity))
-                }
+                .frame(width: width, height: geometry.size.height, alignment: .top)
             }
-            .frame(maxHeight: .infinity, alignment: .top)
         }
         .padding(24)
         .animation(theme.spring, value: tasks.selectedID)
@@ -344,7 +352,7 @@ private struct TaskListPane: View {
             if days.isEmpty { empty("Nothing coming up. Dates you give tasks show here.") }
             ForEach(days, id: \.day) { group in
                 DayHeading(day: group.day)
-                ForEach(group.tasks) { task in TaskRow(task: task) }
+                ForEach(group.tasks) { task in TaskRow(task: task, showDay: false) }
             }
         case .today:
             let overdue = shown.filter(tasks.isOverdue)
@@ -434,13 +442,15 @@ private struct ListTitle: View {
                     .font(.system(size: 22, weight: .bold))
             }
             if tasks.list == .today {
-                Text(Date().formatted(.dateTime.weekday(.wide).day().month(.wide)))
+                Text(Date().formatted(.dateTime.weekday(.wide).day().month(.abbreviated)))
                     .font(.system(size: 13))
                     .foregroundStyle(theme.inkTertiary(scheme))
+                    .lineLimit(1)
+                    .fixedSize()
             }
             if let id = projectID, let project = tasks.project(id) {
                 let progress = tasks.book.progress(of: id)
-                Text("\(progress.done) of \(progress.total) done" + (project.deadline.map { " · due " + TaskDates.label($0, hasTime: false, now: tasks.now, calendar: tasks.calendar).lowercased() } ?? ""))
+                Text("\(progress.done) of \(progress.total) done" + (project.deadline.map { " · due " + TaskDates.inline(TaskDates.label($0, hasTime: false, now: tasks.now, calendar: tasks.calendar)) } ?? ""))
                     .font(.system(size: 13))
                     .foregroundStyle(theme.inkTertiary(scheme))
                 Spacer()
@@ -517,7 +527,7 @@ private struct QuickAddField: View {
                 Image(systemName: "plus")
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundStyle(theme.inkTertiary(scheme))
-                TextField("Add a task, like \"Call Tom tomorrow 3pm #work\"", text: $text)
+                TextField("Add a task: \"Call Tom tomorrow 3pm\"", text: $text)
                     .textFieldStyle(.plain)
                     .font(.system(size: 13.5))
                     .focused($focused)
@@ -589,6 +599,7 @@ private struct TaskRow: View {
     @Environment(\.colorScheme) private var scheme
     var task: TaskItem
     var showProject = true
+    var showDay = true
     @State private var hovering = false
 
     var body: some View {
@@ -604,7 +615,7 @@ private struct TaskRow: View {
                     .strikethrough(task.isDone)
                     .foregroundStyle(task.isDone ? theme.inkTertiary(scheme) : theme.ink(scheme))
                     .lineLimit(2)
-                TaskMeta(task: task, showProject: showProject)
+                TaskMeta(task: task, showProject: showProject, showDay: showDay)
             }
             Spacer(minLength: 6)
             if hovering && !task.isDone {
@@ -639,18 +650,23 @@ private struct TaskMeta: View {
     @Environment(\.colorScheme) private var scheme
     var task: TaskItem
     var showProject = true
+    var showDay = true
 
     var body: some View {
         let overdue = tasks.isOverdue(task)
         let project = showProject ? tasks.project(task.projectID) : nil
         if hasAnything(project: project) {
-            HStack(spacing: 9) {
-                if let due = tasks.dueText(task) {
+            FlowLayout(spacing: 9) {
+                if !showDay {
+                    if task.dueHasTime, let due = task.due {
+                        Label(TaskDates.time(due, calendar: tasks.calendar), systemImage: "clock")
+                    }
+                } else if let due = tasks.dueText(task) {
                     Label(due, systemImage: overdue ? "exclamationmark.circle" : "calendar")
                         .fontWeight(overdue ? .semibold : .regular)
                         .foregroundStyle(overdue ? theme.ink(scheme) : theme.inkTertiary(scheme))
                 } else if let start = task.start, start > tasks.now {
-                    Label("From " + TaskDates.label(start, hasTime: false, now: tasks.now, calendar: tasks.calendar).lowercased(), systemImage: "moon.zzz")
+                    Label("From " + TaskDates.inline(TaskDates.label(start, hasTime: false, now: tasks.now, calendar: tasks.calendar)), systemImage: "moon.zzz")
                 }
                 if task.recurrence != nil {
                     Image(systemName: "repeat")
@@ -758,13 +774,17 @@ private struct TaskBoard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             ListTitle()
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(alignment: .top, spacing: 12) {
-                    ForEach(TaskStatus.allCases, id: \.self) { status in
-                        column(status)
+            GeometryReader { geometry in
+                let width = max(200, (geometry.size.width - 36) / 4)
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(alignment: .top, spacing: 12) {
+                        ForEach(TaskStatus.allCases, id: \.self) { status in
+                            column(status, width: width)
+                        }
                     }
+                    .frame(height: geometry.size.height - 8, alignment: .top)
+                    .padding(.bottom, 8)
                 }
-                .padding(.bottom, 8)
             }
         }
     }
@@ -785,7 +805,7 @@ private struct TaskBoard: View {
         return open + done.sorted { ($0.completed ?? .distantPast) > ($1.completed ?? .distantPast) }
     }
 
-    private func column(_ status: TaskStatus) -> some View {
+    private func column(_ status: TaskStatus, width: CGFloat) -> some View {
         let items = scope.filter { status == .done ? $0.isDone : (!$0.isDone && $0.status == status) }
         return VStack(alignment: .leading, spacing: 8) {
             HStack {
@@ -812,7 +832,7 @@ private struct TaskBoard: View {
             }
         }
         .padding(10)
-        .frame(width: 236)
+        .frame(width: width)
         .frame(maxHeight: .infinity, alignment: .top)
         .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(theme.well(scheme).opacity(0.6)))
         .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5))
@@ -878,15 +898,31 @@ private struct TaskWeek: View {
     var body: some View {
         let cal = tasks.calendar
         let today = cal.startOfDay(for: tasks.now)
-        let days = (0..<7).map { TaskDates.adding($0, days: today, cal) }
         VStack(alignment: .leading, spacing: 12) {
-            ListTitle()
-            HStack(alignment: .top, spacing: 8) {
-                ForEach(days, id: \.self) { day in
-                    dayColumn(day, isToday: day == today)
+            if isScoped {
+                ListTitle()
+            } else {
+                HStack(alignment: .firstTextBaseline, spacing: 10) {
+                    Image(systemName: "calendar").font(.system(size: 17, weight: .medium))
+                    Text("The week ahead").font(.system(size: 22, weight: .bold))
+                    Text("Your calendar alongside. Drag a task onto a day.")
+                        .font(.system(size: 13))
+                        .foregroundStyle(theme.inkTertiary(scheme))
+                        .lineLimit(1)
                 }
+                .foregroundStyle(theme.ink(scheme))
             }
-            .frame(maxHeight: .infinity, alignment: .top)
+            GeometryReader { geometry in
+                // At least 120 points a day: seven on a wide window, fewer on a narrow one.
+                let count = max(3, min(7, Int((geometry.size.width + 8) / 128)))
+                let days = (0..<count).map { TaskDates.adding($0, days: today, cal) }
+                HStack(alignment: .top, spacing: 8) {
+                    ForEach(days, id: \.self) { day in
+                        dayColumn(day, isToday: day == today)
+                    }
+                }
+                .frame(width: geometry.size.width, height: geometry.size.height, alignment: .top)
+            }
             let loose = unscheduled
             if !loose.isEmpty {
                 VStack(alignment: .leading, spacing: 6) {
@@ -909,6 +945,13 @@ private struct TaskWeek: View {
                     }
                 }
             }
+        }
+    }
+
+    private var isScoped: Bool {
+        switch tasks.list {
+        case .project, .tag: return true
+        default: return false
         }
     }
 
@@ -947,9 +990,9 @@ private struct TaskWeek: View {
             }
             .foregroundStyle(theme.ink(scheme))
             ForEach(Array(events), id: \.id) { event in
-                Text(event.start.formatted(date: .omitted, time: .shortened) + " " + event.title)
+                Text(TaskDates.time(event.start, calendar: cal) + " " + event.title)
                     .font(.system(size: 10.5))
-                    .lineLimit(1)
+                    .lineLimit(2)
                     .foregroundStyle(theme.inkTertiary(scheme))
             }
             if !events.isEmpty {
