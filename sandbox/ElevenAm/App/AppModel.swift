@@ -213,6 +213,9 @@ final class AppModel: ObservableObject {
         self.languages = LanguageModel(brain: brain)
         let tasks = TasksModel(brain: brain)
         self.tasks = tasks
+        // Checkboxes on a page become tasks; Notion databases become workbooks.
+        self.notes.tasks = tasks
+        self.notes.sheets = self.sheets
         self.today.energyFacts = { [weak phone] in phone?.energyFacts }
         self.today.onBriefWritten = { [weak phone] in phone?.briefChanged() }
         // Leo's tasks feed Today and the brief; Marc turns promises in the mail you send into tasks.

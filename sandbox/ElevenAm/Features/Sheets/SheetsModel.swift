@@ -1001,3 +1001,40 @@ struct GridSeries {
         return GridSeries(points: points, names: names, labels: labels)
     }
 }
+
+/// A few rows of a workbook, for a live block in a page.
+struct SheetPreview: Equatable {
+    var workbook: String
+    var sheet: String
+    var rows: [[String]]
+    var more: Bool
+}
+
+extension SheetsModel {
+    /// "Budget" or "Budget!Sales": the first rows and columns as they display, without opening the workbook here.
+    func preview(_ reference: String, rows: Int = 8, columns: Int = 6) -> SheetPreview? {
+        let parts = reference.split(separator: "!", maxSplits: 1).map { String($0).trimmingCharacters(in: .whitespaces) }
+        guard let name = parts.first, !name.isEmpty,
+              let entry = entries.first(where: { $0.name.localizedCaseInsensitiveCompare(name) == .orderedSame })
+                ?? entries.first(where: { $0.name.localizedCaseInsensitiveContains(name) }) else { return nil }
+        let workbook: Workbook
+        if let open = book, open.id == entry.id {
+            workbook = open
+        } else {
+            guard let data = try? Data(contentsOf: url(for: entry.id)), let loaded = try? Self.decoder.decode(Workbook.self, from: data) else { return nil }
+            workbook = loaded
+        }
+        let index = parts.count > 1 ? (workbook.sheetIndex(named: parts[1]) ?? 0) : 0
+        guard workbook.sheets.indices.contains(index) else { return nil }
+        let sheet = workbook.sheets[index]
+        guard let used = sheet.usedRange else { return SheetPreview(workbook: workbook.name, sheet: sheet.name, rows: [], more: false) }
+        let engine = GridEngine(workbook)
+        let lastRow = min(used.end.row, rows - 1)
+        let lastColumn = min(used.end.column, columns - 1)
+        var grid: [[String]] = []
+        for row in 0...lastRow {
+            grid.append((0...lastColumn).map { column in engine.display(sheet: index, CellAddress(row: row, column: column)) })
+        }
+        return SheetPreview(workbook: workbook.name, sheet: sheet.name, rows: grid, more: used.end.row >= rows || used.end.column >= columns)
+    }
+}

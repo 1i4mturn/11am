@@ -57,7 +57,7 @@ struct NotesView: View {
 
             HStack(alignment: .top, spacing: 14) {
                 NotesSidebar()
-                    .frame(width: 150)
+                    .frame(width: 176)
                 NoteList(deleting: $deleting)
                     .frame(width: 230)
                 ZStack {
@@ -205,6 +205,7 @@ private struct NotesSidebar: View {
             VStack(alignment: .leading, spacing: 2) {
                 row(.all, title: "All notes", symbol: "note.text", count: notes.notes.count)
                 row(.pinned, title: "Pinned", symbol: "pin", count: notes.notes.filter(\.pinned).count)
+                PagesSidebarSection()
 
                 HStack {
                     SectionLabel(text: "Folders")
@@ -450,7 +451,10 @@ private struct NoteDetail: View {
 
     var body: some View {
         let backlinks = notes.backlinks(to: note)
+        HStack(spacing: 0) {
         VStack(spacing: 0) {
+            PageHeaderBar(note: note)
+            Rectangle().fill(theme.edge(scheme)).frame(height: 0.5)
             HStack(spacing: 4) {
                 FormatBar(editor: editor)
                 Spacer(minLength: 6)
@@ -487,6 +491,8 @@ private struct NoteDetail: View {
             .padding(.horizontal, 22)
             .frame(maxHeight: .infinity)
 
+            PageBlocksStrip(note: note)
+
             if let run = notes.noteRun {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
@@ -507,6 +513,7 @@ private struct NoteDetail: View {
                 .transition(.rise(theme.rise))
             }
 
+            SubpagesRow(note: note)
             Rectangle().fill(theme.edge(scheme)).frame(height: 0.5)
             HStack(spacing: 8) {
                 if backlinks.isEmpty {
@@ -532,8 +539,15 @@ private struct NoteDetail: View {
             .padding(.horizontal, 14)
             .padding(.vertical, 8)
         }
+            if notes.showsComments {
+                Rectangle().fill(theme.edge(scheme)).frame(width: 0.5)
+                PageCommentsPanel(note: note)
+                    .transition(.move(edge: .trailing).combined(with: .opacity))
+            }
+        }
         .vellum(level: 3, radius: max(theme.radius - 2, 8))
         .animation(theme.spring, value: notes.noteRun?.id)
+        .animation(theme.spring, value: notes.showsComments)
     }
 }
 

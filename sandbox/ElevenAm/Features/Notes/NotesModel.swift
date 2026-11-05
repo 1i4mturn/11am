@@ -52,10 +52,22 @@ final class NotesModel: ObservableObject {
     @Published private(set) var noteRun: BrainRun?
     /// Set by the quick-note shortcut, so the editor takes the keyboard when Notes appears.
     @Published var wantsFocus = false
+    /// Pages: where each note sits in the tree, its icon, and favourites. Kept beside the files, which stay plain Markdown.
+    @Published var pages: [UUID: PageMeta] = [:]
+    @Published var expanded: Set<UUID> = []
+    @Published var comments: [UUID: [PageComment]] = [:]
+    /// Pages where an agent is writing a reply to a comment.
+    @Published var answering: Set<UUID> = []
+    @Published var showsComments = false
+    /// Checkboxes become tasks in Leo's Tasks; Notion databases become workbooks in Sheets.
+    weak var tasks: TasksModel?
+    weak var sheets: SheetsModel?
+    /// The last version kept of each page, so a new one is only kept after a while.
+    var lastVersion: [UUID: (date: Date, text: String)] = [:]
 
     static let dailyFolder = "Daily"
 
-    private let brain: Brain
+    let brain: Brain
     private let today: TodayModel
     private var saveTasks: [UUID: Task<Void, Never>] = [:]
     private var index: [String: NoteMeta] = [:]
@@ -105,6 +117,7 @@ final class NotesModel: ObservableObject {
         }
         notes = found
         folders = folderNames.sorted { $0.localizedStandardCompare($1) == .orderedAscending }
+        loadPages()
         if notes.isEmpty && !UserDefaults.standard.bool(forKey: "notes.seeded") {
             UserDefaults.standard.set(true, forKey: "notes.seeded")
             for sample in NotesSamples.notes() { add(sample) }
@@ -202,7 +215,7 @@ final class NotesModel: ObservableObject {
         return note
     }
 
-    private func add(_ note: Note) {
+    func add(_ note: Note) {
         notes.insert(note, at: 0)
         if !note.folder.isEmpty && !folders.contains(note.folder) {
             folders.append(note.folder)
@@ -223,6 +236,7 @@ final class NotesModel: ObservableObject {
             try? await Task.sleep(nanoseconds: 500_000_000)
             guard !Task.isCancelled else { return }
             self.write(note)
+            self.keepVersion(of: note)
         }
     }
 
@@ -233,6 +247,7 @@ final class NotesModel: ObservableObject {
         notes.removeAll { $0.id == id }
         index[id.uuidString] = nil
         saveIndex()
+        pageDeleted(id)
         if selectedID == id { selectedID = visible.first?.id }
     }
 
@@ -325,12 +340,12 @@ final class NotesModel: ObservableObject {
 
     // MARK: Files
 
-    private func url(for note: Note) -> URL {
+    func url(for note: Note) -> URL {
         let folder = note.folder.isEmpty ? root : root.appendingPathComponent(note.folder, isDirectory: true)
         return folder.appendingPathComponent("\(note.id.uuidString).md")
     }
 
-    private func write(_ note: Note) {
+    func write(_ note: Note) {
         let destination = url(for: note)
         try? FileManager.default.createDirectory(at: destination.deletingLastPathComponent(), withIntermediateDirectories: true)
         try? note.text.write(to: destination, atomically: true, encoding: .utf8)
@@ -363,7 +378,9 @@ final class NotesModel: ObservableObject {
         var imported = 0
         for url in panel.urls {
             let isFolder = (try? url.resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory == true
-            if isFolder {
+            if isFolder, looksLikeNotionExport(url) {
+                imported += importNotion(url)
+            } else if isFolder {
                 let folder = Self.folderName(Self.cleanNotionName(url.lastPathComponent))
                 let enumerator = FileManager.default.enumerator(at: url, includingPropertiesForKeys: nil, options: [.skipsHiddenFiles])
                 while let file = enumerator?.nextObject() as? URL {

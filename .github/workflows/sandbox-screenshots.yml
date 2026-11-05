@@ -101,6 +101,8 @@ jobs:
           capture tasks-week-dark -startSection tasks -forceAppearance dark -tasksSample YES -tasksLayout week
           capture tasks-upcoming-light -startSection tasks -forceAppearance light -tasksSample YES -tasksLayout list -tasksList upcoming -tasksSelect "Send Tom"
           capture today-tasks-light -startSection today -forceAppearance light -tasksSample YES
+          capture notes-pages-light -startSection notes -forceAppearance light -pagesSample YES -tasksSample YES
+          capture notes-comments-dark -startSection notes -forceAppearance dark -pagesSample YES -tasksSample YES -notesComments YES
           capture sheets-light -startSection sheets -forceAppearance light -sheetsSelect B2:E7
           capture sheets-sales-dark -startSection sheets -forceAppearance dark -sheetsSheet 1 -sheetsSelect E2:E18
           capture sheets-loan-light -startSection sheets -forceAppearance light -sheetsSheet 2 -sheetsSelect B7

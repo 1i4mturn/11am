@@ -194,6 +194,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if let words = arguments.string(forKey: "tasksSelect") {
             model.tasks.selectedID = model.tasks.book.tasks.first { $0.title.hasPrefix(words) }?.id
         }
+        // -pagesSample YES adds a small company wiki to Notes and opens a page in it; -notesComments YES shows its comments.
+        if arguments.bool(forKey: "pagesSample") {
+            model.notes.loadPageSample()
+        }
+        if arguments.bool(forKey: "notesComments") {
+            model.notes.showsComments = true
+        }
         if arguments.bool(forKey: "activate") {
             NSApp.activate()
         }
