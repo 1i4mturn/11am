@@ -1,3 +1,4 @@
+import Combine
 import SwiftUI
 
 /// The places in the sandbox. Apps come first; the agent behind each one is the quiet worker.
@@ -166,6 +167,7 @@ final class AppModel: ObservableObject {
     let phone: PhoneLinkModel
     let languages: LanguageModel
     let tasks: TasksModel
+    private var watchers: Set<AnyCancellable> = []
 
     init() {
         let machine = MachineProfile()
@@ -227,6 +229,19 @@ final class AppModel: ObservableObject {
         business.calendar = calendar
         business.write = write
         business.tasks = tasks
+        // Leo's meeting prep knows the open deals; a task dropped on the calendar gets a block of time.
+        calendar.dealFacts = { [weak business] attendees in business?.dealFacts(attendees: attendees) ?? "" }
+        calendar.taskLookup = { [weak tasks] id in
+            tasks?.book.task(id).map { task in (title: task.title, minutes: task.checklist.count > 3 ? 90 : 60) }
+        }
+        calendar.onBlocked = { [weak tasks] id, start in
+            tasks?.update(id) { task in
+                if task.due == nil || !task.dueHasTime {
+                    task.due = start
+                    task.dueHasTime = true
+                }
+            }
+        }
         mail.onSent = { [weak tasks, weak business] to, subject, body in
             tasks?.noteSent(to: to, subject: subject, body: body)
             business?.noteSent(to: to, subject: subject, body: body)
@@ -259,6 +274,10 @@ final class AppModel: ObservableObject {
         tasks.onLog = { [weak self] monogram, text in self?.log(monogram, text) }
         tasks.onOpenOrigin = { [weak self] origin in self?.open(origin) }
         business.onOpen = { [weak self] section in self?.go(to: section) }
+        // When someone you were waiting on replies, their follow-up comes off the list.
+        mail.$messages
+            .sink { [weak tasks] messages in tasks?.checkReplies(messages.map { (from: $0.fromAddress, date: $0.date) }) }
+            .store(in: &watchers)
         phone.start()
         today.refreshAccess()
         calendar.refreshAccess()

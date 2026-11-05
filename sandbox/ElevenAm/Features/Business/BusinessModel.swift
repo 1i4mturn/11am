@@ -503,3 +503,66 @@ extension BusinessModel {
         save()
     }
 }
+
+// MARK: For the other agents
+
+extension BusinessModel {
+    func person(forAddress address: String) -> CRMPerson? {
+        let wanted = CRMMatch.address(address)
+        return people.first { $0.email == wanted }
+    }
+
+    /// The company an address belongs to: the person's company, or one with that domain.
+    func organisation(forAddress address: String) -> CRMOrganisation? {
+        if let company = person(forAddress: address)?.organisationID.flatMap({ id in findOrganisation(id) }) { return company }
+        guard let domain = CRMMatch.domain(of: address) else { return nil }
+        return organisations.first { $0.domain == domain }
+    }
+
+    /// Open deals with this person or their company.
+    func openDeals(forAddress address: String) -> [Deal] {
+        let wanted = CRMMatch.address(address)
+        let personID = person(forAddress: wanted)?.id
+        let companyID = organisation(forAddress: wanted)?.id
+        return deals.filter { deal in
+            deal.stage.isOpen && (
+                (personID != nil && deal.personID == personID) ||
+                (companyID != nil && deal.organisationID == companyID) ||
+                CRMMatch.address(deal.contact) == wanted)
+        }
+    }
+
+    /// Adds someone from an email to Business, with their company from their address.
+    @discardableResult
+    func addPerson(name: String, email: String) -> CRMPerson {
+        if let existing = person(forAddress: email) { return existing }
+        var organisationID = organisation(forAddress: email)?.id
+        if organisationID == nil, let domain = CRMMatch.domain(of: email) {
+            let company = CRMOrganisation(name: CRMMatch.organisationName(fromDomain: domain), domain: domain)
+            organisations.append(company)
+            organisationID = company.id
+        }
+        let added = CRMPerson(name: name.isEmpty ? CRMMatch.displayName(email) : name, email: email, organisationID: organisationID)
+        people.append(added)
+        linkDeals()
+        saveContacts()
+        notice = "\(added.name) is in Business now."
+        return added
+    }
+
+    /// For Leo's meeting prep: open deals with the people coming.
+    func dealFacts(attendees: [String]) -> String {
+        var seen = Set<UUID>()
+        var lines: [String] = []
+        for address in attendees {
+            for deal in openDeals(forAddress: address) where !seen.contains(deal.id) {
+                seen.insert(deal.id)
+                let company = findOrganisation(deal.organisationID)?.name ?? deal.company
+                lines.append("- \(deal.name) with \(company): \(deal.stage.title), \(Money.format(deal.value))"
+                             + (deal.nextStep.isEmpty ? "" : ". Next step: \(deal.nextStep)")
+                             + (isQuiet(deal) ? ". Going quiet." : ""))
+            }
+        }
+        return lines.joined(separator: "\n")
+    }
+}

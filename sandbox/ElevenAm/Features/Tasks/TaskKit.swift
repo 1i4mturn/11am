@@ -1304,3 +1304,40 @@ enum ReminderSync {
         return task
     }
 }
+
+// MARK: - Waiting for a reply
+
+/// "Nudge me if Priya hasn't replied by Thursday": a task that ticks itself off when she writes back.
+enum ReplyWatch {
+    /// Stored as the task's origin reference: "reply:priya@northwind.vc|2026-11-05T09:00:00Z".
+    static func reference(address: String, since: Date) -> String {
+        let formatter = ISO8601DateFormatter()
+        return "reply:\(address.lowercased())|\(formatter.string(from: since))"
+    }
+
+    static func parse(_ reference: String) -> (address: String, since: Date)? {
+        guard reference.hasPrefix("reply:") else { return nil }
+        let body = reference.dropFirst("reply:".count)
+        let parts = body.split(separator: "|", maxSplits: 1).map(String.init)
+        guard parts.count == 2, let since = ISO8601DateFormatter().date(from: parts[1]), parts[0].contains("@") else { return nil }
+        return (parts[0], since)
+    }
+
+    /// Open tasks waiting on someone who has since written: (task, the reply's date).
+    static func answered(_ tasks: [TaskItem], messages: [(from: String, date: Date)]) -> [(id: UUID, date: Date)] {
+        var latest: [String: Date] = [:]
+        for message in messages {
+            var address = message.from.lowercased()
+            if let open = address.firstIndex(of: "<"), let close = address.lastIndex(of: ">"), open < close {
+                address = String(address[address.index(after: open)..<close])
+            }
+            address = address.trimmingCharacters(in: .whitespaces)
+            latest[address] = max(latest[address] ?? .distantPast, message.date)
+        }
+        return tasks.compactMap { task in
+            guard !task.isDone, let reference = task.origin?.reference, let watch = parse(reference),
+                  let reply = latest[watch.address], reply > watch.since else { return nil }
+            return (task.id, reply)
+        }
+    }
+}

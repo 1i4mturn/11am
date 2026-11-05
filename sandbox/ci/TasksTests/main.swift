@@ -248,6 +248,21 @@ check(TaskPriority.allCases.allSatisfy { ReminderSnapshot.priority(fromEventKit:
 check(ReminderSync.plan(tasks: [same], projects: [], reminders: [snap("r1", "Same")], missing: [], defaultListID: "x", now: now).isEmpty,
       "Nothing to do when nothing changed")
 
+// MARK: Waiting for a reply
+
+let watchRef = ReplyWatch.reference(address: "Priya@Northwind.vc", since: day(2026, 11, 5, 9))
+check(ReplyWatch.parse(watchRef)?.address == "priya@northwind.vc" && ReplyWatch.parse(watchRef)?.since == day(2026, 11, 5, 9), "A reply watch round-trips")
+check(ReplyWatch.parse("msg-123") == nil && ReplyWatch.parse("reply:nobody|not a date") == nil, "Other references aren't watches")
+var waiting = TaskItem(title: "Follow up with Priya")
+waiting.origin = TaskOrigin(kind: .mail, monogram: "mc", label: "Waiting for Priya's reply", reference: watchRef)
+var stillWaiting = TaskItem(title: "Follow up with Tom")
+stillWaiting.origin = TaskOrigin(kind: .mail, monogram: "mc", label: "Waiting for Tom's reply", reference: ReplyWatch.reference(address: "tom@acme.co", since: day(2026, 11, 5, 9)))
+let answeredNow = ReplyWatch.answered([waiting, stillWaiting], messages: [
+    (from: "Priya Shah <PRIYA@northwind.vc>", date: day(2026, 11, 5, 14)),
+    (from: "tom@acme.co", date: day(2026, 11, 4, 9)),
+])
+check(answeredNow.map { $0.id } == [waiting.id] && answeredNow.first?.date == day(2026, 11, 5, 14), "A reply after the nudge was set ticks it off; an older one doesn't")
+
 // MARK: Labels
 
 check(TaskDates.label(day(2026, 11, 6, 15), hasTime: true, now: now, calendar: cal) == "Tomorrow, 3 pm", "Tomorrow, 3 pm")

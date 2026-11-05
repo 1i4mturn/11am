@@ -579,6 +579,7 @@ private struct MessageReader: View {
                                     .font(.system(size: 12))
                                     .foregroundStyle(theme.inkTertiary(scheme))
                                     .lineLimit(1)
+                                PersonCardButton(address: message.fromAddress, name: message.fromName)
                                 Spacer()
                                 if let account = mail.account(for: message), mail.accounts.count > 1 {
                                     AccountBadge(initial: account.initial, size: 15)
@@ -654,6 +655,18 @@ private struct ReaderActions: View {
             icon(message.flagged ? "flag.fill" : "flag", message.flagged ? "Unflag (s)" : "Flag (s)") { mail.toggleFlag(message) }
             icon("checklist", "Make a task") { tasks.add(from: message) }
             Menu {
+                Button("In 2 days") { nudge(days: 2) }
+                Button("By Friday") { nudge(weekday: 6) }
+                Button("Next week") { nudge(weekday: 2) }
+            } label: {
+                Image(systemName: "bell.badge")
+            }
+            .menuStyle(.button)
+            .buttonStyle(.borderless)
+            .menuIndicator(.hidden)
+            .fixedSize()
+            .help("Nudge me if they haven't replied (it ticks itself off when they do)")
+            Menu {
                 Button("Later today") { mail.snooze(message, until: MailDates.laterToday()) }
                 Button("Tomorrow morning") { mail.snooze(message, until: MailDates.tomorrowMorning()) }
                 Button("Next week") { mail.snooze(message, until: MailDates.nextWeek()) }
@@ -690,6 +703,17 @@ private struct ReaderActions: View {
                  ? "Marc sends the standard one-click request. Nothing else is shared."
                  : "Marc uses the sender's own unsubscribe email or page.")
         }
+    }
+
+    /// A follow-up task for 9 am on the day, that ticks itself off when they reply.
+    private func nudge(days: Int? = nil, weekday: Int? = nil) {
+        let calendar = Calendar.current
+        let now = Date()
+        var day = calendar.startOfDay(for: now)
+        if let days { day = TaskDates.adding(days, days: day, calendar) }
+        if let weekday { day = TaskDates.next(weekday: weekday, from: now, includeToday: false, calendar) }
+        tasks.remindIfNoReply(from: message.fromAddress, name: message.fromName, subject: message.subject,
+                              by: TaskDates.at(9, 0, on: day, calendar))
     }
 
     private func icon(_ symbol: String, _ help: String, action: @escaping () -> Void) -> some View {

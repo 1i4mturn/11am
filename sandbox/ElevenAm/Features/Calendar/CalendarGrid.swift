@@ -190,6 +190,12 @@ private struct DayColumn: View {
                     NowLine(day: day, width: width)
                 }
             }
+            // A task dropped here gets a block of time, starting where it landed.
+            .dropDestination(for: String.self) { items, location in
+                guard let id = items.first.flatMap(UUID.init(uuidString:)) else { return false }
+                calendar.blockTime(for: id, at: time(at: location.y, snap: 15, rounding: .down))
+                return true
+            }
         }
         .frame(maxWidth: .infinity)
         .overlay(alignment: .leading) {

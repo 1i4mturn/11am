@@ -106,6 +106,7 @@ jobs:
           capture business-light -startSection business -forceAppearance light -businessTab pipeline -businessDeal "Acme"
           capture business-people-dark -startSection business -forceAppearance dark -businessTab people -businessPerson "Tom"
           capture business-forecast-light -startSection business -forceAppearance light -businessTab forecast
+          capture calendar-tasks-light -startSection calendar -forceAppearance light -tasksSample YES
           capture sheets-light -startSection sheets -forceAppearance light -sheetsSelect B2:E7
           capture sheets-sales-dark -startSection sheets -forceAppearance dark -sheetsSheet 1 -sheetsSelect E2:E18
           capture sheets-loan-light -startSection sheets -forceAppearance light -sheetsSheet 2 -sheetsSelect B7

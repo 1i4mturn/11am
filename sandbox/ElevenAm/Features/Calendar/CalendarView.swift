@@ -61,6 +61,10 @@ struct CalendarView: View {
 
             CalendarToolbar()
 
+            if calendar.mode == .day || calendar.mode == .threeDay || calendar.mode == .week {
+                TaskTray()
+            }
+
             if calendar.isSample {
                 ConnectBanner()
                     .transition(.rise(theme.rise))

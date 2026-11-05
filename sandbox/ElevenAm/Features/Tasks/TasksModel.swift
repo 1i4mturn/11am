@@ -251,6 +251,31 @@ final class TasksModel: ObservableObject {
         }
     }
 
+    // MARK: Waiting for replies
+
+    /// "Nudge me if Priya hasn't replied by Thursday": a dated task that ticks itself off when she writes back.
+    func remindIfNoReply(from address: String, name: String, subject: String, by date: Date) {
+        let first = name.split(separator: " ").first.map(String.init) ?? name
+        var task = TaskItem(title: "Follow up with \(first)" + (subject.isEmpty ? "" : ": \(subject)"))
+        task.due = date
+        task.origin = TaskOrigin(kind: .mail, monogram: "mc", label: "Waiting for \(first)'s reply · \(subject)",
+                                 reference: ReplyWatch.reference(address: address, since: Date()))
+        book.add(task)
+        changed()
+        notice = "Marc will nudge you \(TaskDates.inline(TaskDates.label(date, hasTime: false, now: Date(), calendar: calendar))) if \(first) hasn't replied, and tick it off if they do."
+    }
+
+    /// New mail arrived: anyone you were waiting on who has replied comes off the list.
+    func checkReplies(_ messages: [(from: String, date: Date)]) {
+        let answered = ReplyWatch.answered(book.tasks, messages: messages)
+        guard !answered.isEmpty else { return }
+        for item in answered {
+            book.complete(item.id, now: item.date, calendar: calendar)
+        }
+        changed()
+        notice = answered.count == 1 ? "They replied, so Leo ticked off the follow-up." : "\(answered.count) people replied, so Leo ticked off their follow-ups."
+    }
+
     // MARK: Changing
 
     func update(_ id: UUID, _ change: (inout TaskItem) -> Void) {
