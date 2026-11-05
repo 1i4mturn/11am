@@ -170,6 +170,17 @@ jobs:
           test -x pagestests
           ./pagestests
 
+      - name: Business tests
+        working-directory: sandbox
+        run: |
+          mkdir -p businesstest
+          cd businesstest
+          swiftc -O -o businesstests \
+            ../ElevenAm/Features/Business/CRMKit.swift \
+            ../ci/BusinessTests/main.swift 2>&1 | grep -E "error|warning: unre" || true
+          test -x businesstests
+          ./businesstests
+
       - name: Build the iPhone app
         working-directory: sandbox
         run: |

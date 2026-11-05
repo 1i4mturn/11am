@@ -221,7 +221,16 @@ final class AppModel: ObservableObject {
         // Leo's tasks feed Today and the brief; Marc turns promises in the mail you send into tasks.
         self.today.taskFacts = { [weak tasks] in tasks?.briefFacts ?? "" }
         tasks.onChange = { [weak today = self.today] in today?.tasksChanged() }
-        mail.onSent = { [weak tasks] to, subject, body in tasks?.noteSent(to: to, subject: subject, body: body) }
+        // Conner keeps what you send with the deal it belongs to.
+        let business = self.business
+        business.mail = mail
+        business.calendar = calendar
+        business.write = write
+        business.tasks = tasks
+        mail.onSent = { [weak tasks, weak business] to, subject, body in
+            tasks?.noteSent(to: to, subject: subject, body: body)
+            business?.noteSent(to: to, subject: subject, body: body)
+        }
         nightShift.attach(to: self)
         money.extraFacts = { [weak ledger] in ledger?.georgeFacts ?? "" }
         // Leo's calendar feeds Today, the brief and the notch countdown, with every connected calendar.
@@ -249,6 +258,7 @@ final class AppModel: ObservableObject {
         automations.start()
         tasks.onLog = { [weak self] monogram, text in self?.log(monogram, text) }
         tasks.onOpenOrigin = { [weak self] origin in self?.open(origin) }
+        business.onOpen = { [weak self] section in self?.go(to: section) }
         phone.start()
         today.refreshAccess()
         calendar.refreshAccess()

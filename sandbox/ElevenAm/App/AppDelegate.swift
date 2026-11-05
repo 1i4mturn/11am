@@ -194,6 +194,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if let words = arguments.string(forKey: "tasksSelect") {
             model.tasks.selectedID = model.tasks.book.tasks.first { $0.title.hasPrefix(words) }?.id
         }
+        // -businessTab people (or deals, companies, forecast); -businessDeal "Acme" opens the first deal starting with that.
+        if let tab = arguments.string(forKey: "businessTab").flatMap(BusinessTab.init(rawValue:)) {
+            model.business.tab = tab
+        }
+        if let words = arguments.string(forKey: "businessDeal") {
+            model.business.selectedID = model.business.deals.first { $0.name.hasPrefix(words) }?.id
+        }
+        if let words = arguments.string(forKey: "businessPerson") {
+            model.business.selectedPersonID = model.business.people.first { $0.name.hasPrefix(words) }?.id
+        }
         // -pagesSample YES adds a small company wiki to Notes and opens a page in it; -notesComments YES shows its comments.
         if arguments.bool(forKey: "pagesSample") {
             model.notes.loadPageSample()

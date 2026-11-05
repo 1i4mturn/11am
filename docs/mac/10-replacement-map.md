@@ -823,9 +823,9 @@ Ordered by what saves the most money and gets used every day, and by which engin
 | 8 | Harris's language course | Languages | Duolingo |
 | 9 | Leo's Tasks | Tasks, promises from mail, Reminders sync | Notion projects and tasks, Todoist, Things |
 | 10 | Bolton's pages | Sub-pages, live blocks, versions, comments the agents answer, Notion import with nesting | Notion pages |
-| 11 | Conner's Business, finished (next) | Shared contacts, deals filled from mail and meetings, proposals | Notion CRM boards |
+| 11 | Conner's Business, finished | People and companies from mail, what's happened from mail and meetings, forecast, proposals | Notion CRM boards |
 
-The sandbox has the first ten steps built: accounts, Mail and Calendar (0.5), documents, Notes and PDF (0.6), Sheets and the Money ledger (0.7), Design and Decks (0.8), Video and Audio (0.9), Johnny's Terminal, Scripts and Automations (0.10), the iPhone app (0.11), Harris's language course (0.12), Leo's Tasks (0.13) and Bolton's pages (0.14). Step 11 finishes replacing Notion.
+The sandbox has all eleven steps built: accounts, Mail and Calendar (0.5), documents, Notes and PDF (0.6), Sheets and the Money ledger (0.7), Design and Decks (0.8), Video and Audio (0.9), Johnny's Terminal, Scripts and Automations (0.10), the iPhone app (0.11), Harris's language course (0.12), Leo's Tasks (0.13), Bolton's pages (0.14) and Conner's Business (0.15). Notion is fully replaced.
 
 ## 6. Sources
 
