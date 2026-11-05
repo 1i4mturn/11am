@@ -159,6 +159,17 @@ jobs:
           test -x taskstests
           ./taskstests
 
+      - name: Pages tests
+        working-directory: sandbox
+        run: |
+          mkdir -p pagestest
+          cd pagestest
+          swiftc -O -o pagestests \
+            ../ElevenAm/Features/Notes/PageKit.swift \
+            ../ci/PagesTests/main.swift 2>&1 | grep -E "error|warning: unre" || true
+          test -x pagestests
+          ./pagestests
+
       - name: Build the iPhone app
         working-directory: sandbox
         run: |
