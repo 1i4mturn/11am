@@ -265,6 +265,28 @@ final class TasksModel: ObservableObject {
         notice = "Marc will nudge you \(TaskDates.inline(TaskDates.label(date, hasTime: false, now: Date(), calendar: calendar))) if \(first) hasn't replied, and tick it off if they do."
     }
 
+    // MARK: Bills from George
+
+    /// A bill to pay, dated for its due day, that ticks itself off when George sees it paid.
+    func trackBill(_ id: UUID, title: String, due: Date, label: String) {
+        let reference = "bill:\(id.uuidString)"
+        guard !book.tasks.contains(where: { $0.origin?.reference == reference }) else { return }
+        var task = TaskItem(title: title)
+        task.due = calendar.startOfDay(for: due)
+        task.origin = TaskOrigin(kind: .agent, monogram: "ge", label: label, reference: reference)
+        book.add(task)
+        changed()
+        onLog?("ge", "Added \(title) to Tasks, due \(due.formatted(.dateTime.day().month(.abbreviated))).")
+    }
+
+    func billSettled(_ id: UUID) {
+        let reference = "bill:\(id.uuidString)"
+        let open = book.tasks.filter { !$0.isDone && $0.origin?.reference == reference }
+        guard !open.isEmpty else { return }
+        for task in open { book.complete(task.id, now: Date(), calendar: calendar) }
+        changed()
+    }
+
     /// New mail arrived: anyone you were waiting on who has replied comes off the list.
     func checkReplies(_ messages: [(from: String, date: Date)]) {
         let answered = ReplyWatch.answered(book.tasks, messages: messages)

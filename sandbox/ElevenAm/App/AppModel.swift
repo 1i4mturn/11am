@@ -249,10 +249,14 @@ final class AppModel: ObservableObject {
                 }
             }
         }
-        mail.onSent = { [weak tasks, weak business] to, subject, body in
+        mail.onSent = { [weak tasks, weak business, weak ledger] to, subject, body in
             tasks?.noteSent(to: to, subject: subject, body: body)
             business?.noteSent(to: to, subject: subject, body: body)
+            ledger?.noteSent(subject: subject)
         }
+        // George's bills to pay go on Leo's list; Marc sends the reminders for late invoices.
+        ledger.mail = mail
+        ledger.tasks = tasks
         nightShift.attach(to: self)
         money.extraFacts = { [weak ledger] in ledger?.georgeFacts ?? "" }
         // Leo's calendar feeds Today, the brief and the notch countdown, with every connected calendar.
@@ -281,6 +285,7 @@ final class AppModel: ObservableObject {
         tasks.onLog = { [weak self] monogram, text in self?.log(monogram, text) }
         tasks.onOpenOrigin = { [weak self] origin in self?.open(origin) }
         business.onOpen = { [weak self] section in self?.go(to: section) }
+        ledger.onOpen = { [weak self] section in self?.go(to: section) }
         // When someone you were waiting on replies, their follow-up comes off the list.
         mail.$messages
             .sink { [weak tasks] messages in tasks?.checkReplies(messages.map { (from: $0.fromAddress, date: $0.date) }) }
@@ -307,6 +312,12 @@ final class AppModel: ObservableObject {
         case .meeting:
             go(to: .calendar)
             if let id = origin.reference { calendar.selectedID = id }
+        case .agent where origin.reference?.hasPrefix("bill:") == true:
+            go(to: .money)
+            if let id = origin.reference.flatMap({ UUID(uuidString: String($0.dropFirst(5))) }) {
+                ledger.tab = .bills
+                ledger.selectedInvoice = id
+            }
         default:
             break
         }

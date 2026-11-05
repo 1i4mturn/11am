@@ -5,7 +5,7 @@ import UniformTypeIdentifiers
 
 /// The places inside Money.
 enum MoneyTab: String, CaseIterable, Identifiable {
-    case overview, bank, invoices, bills, contacts, reports, gst
+    case overview, bank, invoices, quotes, bills, contacts, reports, gst
 
     var id: String { rawValue }
 
@@ -14,6 +14,7 @@ enum MoneyTab: String, CaseIterable, Identifiable {
         case .overview: return "Overview"
         case .bank: return "Bank"
         case .invoices: return "Invoices"
+        case .quotes: return "Quotes"
         case .bills: return "Bills"
         case .contacts: return "Contacts"
         case .reports: return "Reports"
@@ -53,12 +54,37 @@ final class LedgerModel: ObservableObject {
     @Published var bankAccount = "090"
     @Published var period: LedgerPeriod = .thisYear
     @Published var showsSettings = false
+    @Published var report: ReportsPanel.Report = .profit
+    /// Which invoices the Invoices tab shows, including the repeating ones.
+    @Published var salesFilter: InvoicesPanel.Filter = .all
+    @Published var editingQuote: Quote?
+    @Published var selectedQuote: UUID?
+    @Published var editingSchedule: RepeatingInvoice?
+    @Published var selectedSchedule: UUID?
+    /// The reminder Marc drafted that you're reading.
+    @Published var reviewing: ReminderReview?
+    /// Reminders on their way through Mail.
+    @Published var sending: Set<UUID> = []
+
+    /// Marc sends reminders from your own mail; Leo keeps bills to pay in Tasks.
+    weak var mail: MailModel?
+    weak var tasks: TasksModel?
+    /// Opens another part of the app (Mail, for a reminder you want to change there).
+    var onOpen: ((AppSection) -> Void)?
+    private var repeatTimer: Task<Void, Never>?
 
     init() {
         if let saved = JSONStore.load(LedgerBook.self, from: "ledger") {
             book = saved
         } else {
             book = LedgerSamples.book()
+        }
+        makeDueRepeats()
+        repeatTimer = Task { @MainActor [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(1_800))
+                self?.makeDueRepeats()
+            }
         }
     }
 
@@ -69,10 +95,29 @@ final class LedgerModel: ObservableObject {
         var copy = book
         do {
             try edit(&copy)
+            copy.actor = "You"
+            let before = book
             book = copy
             save()
+            billsChanged(from: before)
         } catch {
             notice = error.localizedDescription
+        }
+    }
+
+    /// Approved bills become dated tasks in Leo's list ("Pay Kim Design $2,200"), ticked off when they're paid.
+    private func billsChanged(from before: LedgerBook) {
+        guard let tasks else { return }
+        let was = Dictionary(before.invoices.map { ($0.id, $0.status) }, uniquingKeysWith: { first, _ in first })
+        for bill in book.invoices where bill.kind == .bill {
+            let previous = was[bill.id]
+            if bill.status == .approved, previous != .approved, bill.owing > 0 {
+                let name = book.contact(bill.contact)?.name ?? "the bill"
+                tasks.trackBill(bill.id, title: "Pay \(name) \(LedgerMoney.text(bill.owing))", due: bill.due,
+                                label: "Bill \(bill.number.isEmpty ? "" : bill.number + " ")· \(name)")
+            } else if bill.status == .paid || bill.status == .void, previous == .approved {
+                tasks.billSettled(bill.id)
+            }
         }
     }
 
@@ -98,7 +143,22 @@ final class LedgerModel: ObservableObject {
     }
 
     func updateSettings(_ settings: LedgerSettings) {
-        change { $0.settings = settings }
+        change { book in
+            let lock = settings.lockDate
+            let lockChanged = book.settings.lockDate.map { book.calendar.startOfDay(for: $0) } != lock.map { book.calendar.startOfDay(for: $0) }
+            var updated = settings
+            updated.lockDate = book.settings.lockDate
+            if updated != book.settings {
+                book.settings = updated
+                book.log("Changed the business settings", settings.businessName)
+            }
+            if lockChanged { book.setLockDate(lock) }
+        }
+    }
+
+    func setLockDate(_ date: Date?) {
+        change { $0.setLockDate(date) }
+        if let date { notice = "Locked up to \(date.formatted(.dateTime.day().month(.wide).year())). Nothing on or before it can change." }
     }
 
     // MARK: Dates
@@ -267,6 +327,18 @@ final class LedgerModel: ObservableObject {
 
     func approve(_ id: UUID) { change { try $0.approve(id) } }
 
+    /// The invoice again every month (or quarter, or year), starting a period after this one.
+    func repeatInvoice(_ id: UUID, every: Int, unit: RepeatingInvoice.Unit) {
+        var made: UUID?
+        change { made = $0.repeatInvoice(id, every: every, unit: unit) }
+        guard let made, let schedule = book.schedule(made) else { return }
+        salesFilter = .repeating
+        selectedSchedule = made
+        if let next = schedule.next(calendar: book.calendar) {
+            notice = "\(schedule.summary). George makes the next one on \(next.formatted(.dateTime.day().month(.wide)))."
+        }
+    }
+
     /// Marc found a receipt or invoice in your mail: a draft bill to check and approve, with GST worked out.
     func draftBill(from vendor: String, total: Cents, description: String, date: Date, reference: String) {
         let contact = book.contacts.first { $0.name.caseInsensitiveCompare(vendor) == .orderedSame }?.id ?? addContact(named: vendor)
@@ -413,6 +485,287 @@ final class LedgerModel: ObservableObject {
         You owe on bills: \(LedgerMoney.text(book.youOwe)).
         GST this quarter so far: on sales \(LedgerMoney.text(gst.gstOnSales)), on purchases \(LedgerMoney.text(gst.gstOnPurchases)), net \(LedgerMoney.text(gst.net)).
         Bank lines still to reconcile: \(book.unreconciled.count).
+        \(moneyInFacts)
         """
+    }
+}
+
+/// Marc's reminder, open for a last look before it goes.
+struct ReminderReview: Identifiable, Equatable {
+    var reminder: OverdueReminder
+    var to: String
+    var subject: String
+    var body: String
+    var id: UUID { reminder.id }
+}
+
+// MARK: Quotes, repeating invoices and reminders
+
+extension LedgerModel {
+    // MARK: Quotes
+
+    var quotes: [Quote] { book.quotes.sorted { $0.issued > $1.issued } }
+
+    func newQuote(for contact: UUID? = nil) {
+        let issued = today
+        let expires = Calendar.current.date(byAdding: .day, value: book.settings.quoteDays, to: issued) ?? issued
+        editingQuote = Quote(number: "", contact: contact ?? book.contacts.first?.id ?? UUID(), issued: issued, expires: expires,
+                             lines: [InvoiceLine(description: "", unitPrice: 0, account: "200", gst: book.settings.gstRegistered ? .gst : .excluded)])
+    }
+
+    func editQuote(_ id: UUID) {
+        guard let quote = book.quote(id), quote.invoices.isEmpty else { return }
+        editingQuote = quote
+    }
+
+    func saveQuote(_ draft: Quote) {
+        var quote = draft
+        quote.lines = quote.lines.filter { !$0.description.isEmpty || $0.unitPrice != 0 }
+        guard !quote.lines.isEmpty else {
+            notice = "Add at least one line."
+            return
+        }
+        guard book.contact(quote.contact) != nil else {
+            notice = "Pick who it's for."
+            return
+        }
+        var saved: UUID?
+        change { saved = $0.saveQuote(quote) }
+        selectedQuote = saved
+        editingQuote = nil
+    }
+
+    func markQuote(_ id: UUID, _ status: Quote.Status) {
+        change { $0.setQuote(id, status: status) }
+        if status == .accepted, let quote = book.quote(id) {
+            notice = "\(book.contact(quote.contact)?.name ?? "They") said yes to \(quote.number). Invoice it all, or a deposit first."
+        }
+    }
+
+    /// Gives an expired quote another stretch of time.
+    func extendQuote(_ id: UUID) {
+        guard var quote = book.quote(id) else { return }
+        quote.expires = Calendar.current.date(byAdding: .day, value: book.settings.quoteDays, to: today) ?? today
+        if quote.status == .declined { quote.status = .sent }
+        change { _ = $0.saveQuote(quote) }
+    }
+
+    func deleteQuote(_ id: UUID) {
+        change { $0.deleteQuote(id) }
+        if selectedQuote == id { selectedQuote = nil }
+    }
+
+    /// The whole quote, or a share of it, as a draft invoice to check and send.
+    func invoiceQuote(_ id: UUID, part: Double? = nil) {
+        var made: UUID?
+        let issued = today
+        change { made = try $0.invoice(fromQuote: id, part: part, issued: issued) }
+        guard let made, let invoice = book.invoice(made) else { return }
+        selectedInvoice = made
+        tab = .invoices
+        salesFilter = .all
+        notice = "\(invoice.number) is a draft for \(LedgerMoney.text(invoice.total)). Check it, approve it and send it."
+    }
+
+    func quotePDF(_ quote: Quote) -> Data {
+        let markdown = QuoteDocument.markdown(quote, contact: book.contact(quote.contact), settings: book.settings)
+        var setup = PageSetup()
+        setup.showsTitle = false
+        setup.margin = 56
+        return DocPDF.data(markdown, title: quote.number, setup: setup, baseURL: nil)
+    }
+
+    func saveQuotePDF(_ quote: Quote) {
+        let panel = NSSavePanel()
+        panel.nameFieldStringValue = "\(quote.number) \(book.contact(quote.contact)?.name ?? "").pdf"
+        panel.allowedContentTypes = [.pdf]
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        do {
+            try quotePDF(quote).write(to: url, options: .atomic)
+            notice = "Saved \(url.lastPathComponent)."
+        } catch {
+            notice = "Couldn't save: \(error.localizedDescription)"
+        }
+    }
+
+    /// Opens a new email with the quote attached, and marks it sent.
+    func emailQuote(_ quote: Quote) {
+        let contact = book.contact(quote.contact)
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent("11am-invoices", isDirectory: true)
+        try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        let file = folder.appendingPathComponent("\(quote.number).pdf")
+        do {
+            try quotePDF(quote).write(to: file, options: .atomic)
+        } catch {
+            notice = "Couldn't make the PDF: \(error.localizedDescription)"
+            return
+        }
+        let greeting = ReminderText.greeting(name: contact?.name ?? "", email: contact?.email ?? "")
+        let body = """
+        \(greeting)
+
+        Please find quote \(quote.number)\(quote.title.isEmpty ? "" : " for \(quote.title.lowercased())") attached: \(LedgerMoney.text(quote.total)), valid until \(quote.expires.formatted(.dateTime.day().month(.wide))).
+
+        Reply to say yes and we'll get started.
+
+        Thanks,
+        \(book.settings.businessName)
+        """
+        guard let service = NSSharingService(named: .composeEmail) else {
+            notice = "No mail app is set up on this Mac."
+            return
+        }
+        if let email = contact?.email, !email.isEmpty { service.recipients = [email] }
+        service.subject = "Quote \(quote.number)\(quote.title.isEmpty ? "" : ": \(quote.title)") from \(book.settings.businessName)"
+        guard service.canPerform(withItems: [body, file]) else {
+            notice = "Your mail app can't take attachments this way. Save the PDF and attach it."
+            return
+        }
+        service.perform(withItems: [body, file])
+        change { $0.setQuote(quote.id, status: .sent) }
+    }
+
+    // MARK: Repeating invoices
+
+    var schedules: [RepeatingInvoice] {
+        let calendar = book.calendar
+        return book.repeating.sorted { ($0.next(calendar: calendar) ?? .distantFuture) < ($1.next(calendar: calendar) ?? .distantFuture) }
+    }
+
+    /// George makes whatever repeating invoices have come due.
+    func makeDueRepeats() {
+        guard book.repeating.contains(where: { !$0.paused }) else { return }
+        var made: [UUID] = []
+        let until = today
+        change { made = $0.makeRepeatingInvoices(upTo: until) }
+        guard !made.isEmpty else { return }
+        let numbers = made.compactMap { book.invoice($0)?.number }
+        notice = numbers.count == 1 ? "George made repeating invoice \(numbers[0]). It's in Invoices, ready to email."
+            : "George made \(numbers.count) repeating invoices: \(numbers.joined(separator: ", "))."
+    }
+
+    func newSchedule(for contact: UUID? = nil) {
+        let start = Calendar.current.date(byAdding: .day, value: 1, to: today) ?? today
+        editingSchedule = RepeatingInvoice(contact: contact ?? book.contacts.first?.id ?? UUID(),
+                                           lines: [InvoiceLine(description: "Monthly retainer, [month]", unitPrice: 0, account: "200",
+                                                               gst: book.settings.gstRegistered ? .gst : .excluded)],
+                                           start: start, dueDays: book.settings.paymentDays)
+    }
+
+    func saveSchedule(_ draft: RepeatingInvoice) {
+        var schedule = draft
+        schedule.lines = schedule.lines.filter { !$0.description.isEmpty || $0.unitPrice != 0 }
+        guard !schedule.lines.isEmpty, book.contact(schedule.contact) != nil else {
+            notice = "Pick who it's for and add at least one line."
+            return
+        }
+        change { _ = $0.saveSchedule(schedule) }
+        selectedSchedule = schedule.id
+        editingSchedule = nil
+        makeDueRepeats()
+    }
+
+    func togglePause(_ id: UUID) {
+        guard var schedule = book.schedule(id) else { return }
+        schedule.paused.toggle()
+        change { _ = $0.saveSchedule(schedule) }
+        if !schedule.paused { makeDueRepeats() }
+    }
+
+    func deleteSchedule(_ id: UUID) {
+        change { $0.deleteSchedule(id) }
+        if selectedSchedule == id { selectedSchedule = nil }
+    }
+
+    /// Quotes, repeating invoices, reminders and the lock date, for George's answers and the brief.
+    var moneyInFacts: String {
+        let open = book.openQuotes(on: today)
+        let upcoming = book.upcomingRepeats(from: today, days: 31).map { item in
+            "\(book.contact(item.schedule.contact)?.name ?? "") \(LedgerMoney.text(item.schedule.total)) on \(item.date.formatted(.dateTime.day().month(.abbreviated)))"
+        }
+        let due = remindersDue
+        var lines = ["Quotes waiting on an answer: \(open.count) worth \(LedgerMoney.text(open.reduce(0) { $0 + $1.total }))."]
+        let accepted = book.quotes.filter { $0.status == .accepted }
+        if !accepted.isEmpty {
+            lines.append("Accepted quotes still to invoice in full: " + accepted.map { "\($0.number) (\(Int(($0.invoicedPart * 100).rounded()))% invoiced)" }.joined(separator: ", ") + ".")
+        }
+        if !upcoming.isEmpty { lines.append("Repeating invoices in the next month: \(upcoming.joined(separator: "; ")).") }
+        if !due.isEmpty {
+            lines.append("Marc has drafted \(due.count) overdue \(due.count == 1 ? "reminder" : "reminders") for you to approve: "
+                         + due.map { "\($0.number) to \($0.contact), \($0.daysLate) days late" }.joined(separator: "; ") + ".")
+        }
+        if let lock = book.settings.lockDate {
+            lines.append("The books are locked up to \(lock.formatted(.dateTime.day().month(.wide).year())).")
+        }
+        return lines.joined(separator: "\n")
+    }
+
+    // MARK: Overdue reminders
+
+    var remindersDue: [OverdueReminder] { book.remindersDue(on: today) }
+
+    /// Opens Marc's draft for a last look.
+    func review(_ reminder: OverdueReminder) {
+        let draft = book.reminderDraft(reminder)
+        reviewing = ReminderReview(reminder: reminder, to: draft.to, subject: draft.subject, body: draft.body)
+    }
+
+    /// Where it would go from: your first account that can send, or your mail app.
+    var reminderSender: String? { mail?.sendingAccounts.first?.address }
+
+    /// Marc sends it from your own account (with Mail's few seconds to undo); without one, your mail app opens with the invoice attached.
+    func send(_ review: ReminderReview) {
+        reviewing = nil
+        let id = review.reminder.invoice
+        if let mail, let account = mail.sendingAccounts.first {
+            sending.insert(id)
+            mail.send(MailDraft(accountID: account.id, to: review.to, subject: review.subject, body: review.body))
+            notice = "Marc is sending the reminder for \(review.reminder.number). Undo it in Mail for a few seconds."
+            Task { @MainActor [weak self] in
+                try? await Task.sleep(for: .seconds(30))
+                self?.sending.remove(id)
+            }
+            return
+        }
+        guard let invoice = book.invoice(id) else { return }
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent("11am-invoices", isDirectory: true)
+        try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        let file = folder.appendingPathComponent("\(invoice.number).pdf")
+        try? pdf(for: invoice).write(to: file, options: .atomic)
+        guard let service = NSSharingService(named: .composeEmail) else {
+            notice = "Add a mail account in Mail, or set up a mail app, and Marc can send it."
+            return
+        }
+        if !review.to.isEmpty { service.recipients = [review.to] }
+        service.subject = review.subject
+        service.perform(withItems: [review.body, file])
+        change { $0.noteReminder(id, stage: review.reminder.stage, by: "You") }
+    }
+
+    /// Changes it in Mail's own composer instead.
+    func openInMail(_ review: ReminderReview) {
+        reviewing = nil
+        guard let mail else { return }
+        mail.composer = MailDraft(accountID: mail.sendingAccounts.first?.id ?? "", to: review.to, subject: review.subject, body: review.body)
+        onOpen?(.mail)
+    }
+
+    func skip(_ reminder: OverdueReminder) {
+        change { $0.noteReminder(reminder.invoice, stage: reminder.stage, skipped: true) }
+        notice = "Skipped. Marc drafts the next one if \(reminder.number) is still unpaid."
+    }
+
+    /// Mail went out: if it was about a late invoice that was due a reminder, that's the reminder sent.
+    func noteSent(subject: String) {
+        guard let id = book.invoiceMentioned(inSubject: subject) else { return }
+        sending.remove(id)
+        guard let due = remindersDue.first(where: { $0.invoice == id }) else { return }
+        change { $0.noteReminder(id, stage: due.stage) }
+    }
+
+    /// A late invoice whose payment is sitting in the bank: reconcile it.
+    func reconcileWaiting(_ invoice: Invoice, line: BankLine) {
+        match(line, invoice: invoice.id)
+        notice = "Reconciled. \(invoice.number) is paid, so there's no one to chase."
     }
 }

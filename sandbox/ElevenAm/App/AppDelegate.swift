@@ -108,6 +108,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if let number = arguments.string(forKey: "moneyInvoice"), let invoice = model.ledger.book.invoices.first(where: { $0.number == number }) {
             model.ledger.selectedInvoice = invoice.id
         }
+        // -moneyQuote QU-0001 selects a quote; -moneyFilter repeating and -moneyReport audit pick a view; -moneyReminder YES opens Marc's first draft.
+        if let number = arguments.string(forKey: "moneyQuote"), let quote = model.ledger.book.quotes.first(where: { $0.number == number }) {
+            model.ledger.selectedQuote = quote.id
+        }
+        if let filter = arguments.string(forKey: "moneyFilter").flatMap(InvoicesPanel.Filter.init(rawValue:)) {
+            model.ledger.salesFilter = filter
+            if filter == .repeating { model.ledger.selectedSchedule = model.ledger.schedules.first?.id }
+        }
+        if let report = arguments.string(forKey: "moneyReport").flatMap(ReportsPanel.Report.init(rawValue:)) {
+            model.ledger.report = report
+        }
+        if arguments.bool(forKey: "moneyReminder"), let first = model.ledger.remindersDue.first {
+            model.ledger.review(first)
+        }
         if arguments.bool(forKey: "moneyEditor") {
             model.ledger.newInvoice(.sale)
             if var draft = model.ledger.editing, let contact = model.ledger.book.contacts.first {

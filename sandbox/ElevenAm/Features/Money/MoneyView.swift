@@ -46,7 +46,7 @@ struct MoneyView: View {
             }
             .pickerStyle(.segmented)
             .labelsHidden()
-            .frame(maxWidth: 640)
+            .frame(maxWidth: 720)
 
             if let notice = ledger.notice ?? money.notice {
                 HStack(spacing: 10) {
@@ -73,6 +73,7 @@ struct MoneyView: View {
                 case .overview: MoneyOverview()
                 case .bank: BankPanel()
                 case .invoices: InvoicesPanel(kind: .sale)
+                case .quotes: QuotesPanel()
                 case .bills: InvoicesPanel(kind: .bill)
                 case .contacts: ContactsPanel()
                 case .reports: ReportsPanel()
@@ -90,6 +91,21 @@ struct MoneyView: View {
         }
         .sheet(item: $ledger.editing) { invoice in
             InvoiceEditor(invoice: invoice)
+                .environmentObject(ledger)
+                .environmentObject(theme)
+        }
+        .sheet(item: $ledger.editingQuote) { quote in
+            QuoteEditor(quote: quote)
+                .environmentObject(ledger)
+                .environmentObject(theme)
+        }
+        .sheet(item: $ledger.editingSchedule) { schedule in
+            ScheduleEditor(schedule: schedule)
+                .environmentObject(ledger)
+                .environmentObject(theme)
+        }
+        .sheet(item: $ledger.reviewing) { review in
+            ReminderSheet(review: review)
                 .environmentObject(ledger)
                 .environmentObject(theme)
         }

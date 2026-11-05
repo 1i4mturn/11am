@@ -21,7 +21,7 @@ struct LedgerAmount: View {
 }
 
 /// A sheet-like card for the ledger panels.
-private struct LedgerCard<Content: View>: View {
+struct LedgerCard<Content: View>: View {
     @EnvironmentObject private var theme: Theme
     @ViewBuilder var content: () -> Content
 
@@ -33,7 +33,7 @@ private struct LedgerCard<Content: View>: View {
     }
 }
 
-private struct ReportRow: View {
+struct ReportRow: View {
     @EnvironmentObject private var theme: Theme
     @Environment(\.colorScheme) private var scheme
     var label: String
@@ -60,13 +60,13 @@ private struct ReportRow: View {
     }
 }
 
-private extension Date {
+extension Date {
     var shortDay: String { formatted(.dateTime.day().month(.abbreviated)) }
     var fullDay: String { formatted(.dateTime.day().month(.wide).year()) }
 }
 
 /// A dollars-and-cents field over a cents value.
-private struct MoneyField: View {
+struct MoneyField: View {
     var title: String
     @Binding var cents: Cents
 
@@ -360,10 +360,10 @@ struct InvoicesPanel: View {
     @EnvironmentObject private var ledger: LedgerModel
     @Environment(\.colorScheme) private var scheme
     var kind: Invoice.Kind
-    @State private var filter: Filter = .all
+    @State private var billFilter: Filter = .all
 
     enum Filter: String, CaseIterable, Identifiable {
-        case all, draft, owing, overdue, paid
+        case all, draft, owing, overdue, paid, repeating
         var id: String { rawValue }
         var title: String {
             switch self {
@@ -372,9 +372,13 @@ struct InvoicesPanel: View {
             case .owing: return "Owing"
             case .overdue: return "Overdue"
             case .paid: return "Paid"
+            case .repeating: return "Repeating"
             }
         }
     }
+
+    private var filter: Filter { kind == .sale ? ledger.salesFilter : billFilter }
+    private var filterBinding: Binding<Filter> { kind == .sale ? $ledger.salesFilter : $billFilter }
 
     var body: some View {
         let all = ledger.invoices(kind)
@@ -384,47 +388,60 @@ struct InvoicesPanel: View {
         HStack(alignment: .top, spacing: 14) {
             VStack(alignment: .leading, spacing: 10) {
                 HStack(spacing: 10) {
-                    Picker("", selection: $filter) {
-                        ForEach(Filter.allCases) { item in Text(item.title).tag(item) }
+                    Picker("", selection: filterBinding) {
+                        ForEach(Filter.allCases.filter { kind == .sale || $0 != .repeating }) { item in Text(item.title).tag(item) }
                     }
                     .pickerStyle(.segmented)
                     .labelsHidden()
-                    .frame(maxWidth: 360)
+                    .frame(maxWidth: kind == .sale ? 460 : 360)
                     Spacer(minLength: 8)
                     Button {
-                        ledger.newInvoice(kind)
+                        if filter == .repeating { ledger.newSchedule() } else { ledger.newInvoice(kind) }
                     } label: {
-                        Label(kind == .sale ? "New invoice" : "New bill", systemImage: "plus")
+                        Label(kind == .sale ? (filter == .repeating ? "New repeating" : "New invoice") : "New bill", systemImage: "plus")
                     }
                     .buttonStyle(.vellumPrimary)
                     .fixedSize()
                 }
-                Text("\(kind == .sale ? "Owed to you" : "You owe") \(LedgerMoney.text(owing))\(overdue > 0 ? " · \(LedgerMoney.text(overdue)) overdue" : "")")
-                    .font(.system(size: 12))
-                    .foregroundStyle(theme.inkSecondary(scheme))
-                LedgerCard {
-                    if shown.isEmpty {
-                        Text(kind == .sale ? "No invoices here." : "No bills here.")
-                            .font(.system(size: 12.5))
-                            .foregroundStyle(theme.inkTertiary(scheme))
-                            .frame(maxWidth: .infinity, minHeight: 80)
-                    } else {
-                        ScrollView {
-                            LazyVStack(spacing: 0) {
-                                ForEach(shown) { invoice in row(invoice) }
+                if filter == .repeating {
+                    RepeatingList()
+                } else {
+                    Text("\(kind == .sale ? "Owed to you" : "You owe") \(LedgerMoney.text(owing))\(overdue > 0 ? " · \(LedgerMoney.text(overdue)) overdue" : "")")
+                        .font(.system(size: 12))
+                        .foregroundStyle(theme.inkSecondary(scheme))
+                    if kind == .sale { MarcRemindersCard() }
+                    LedgerCard {
+                        if shown.isEmpty {
+                            Text(kind == .sale ? "No invoices here." : "No bills here.")
+                                .font(.system(size: 12.5))
+                                .foregroundStyle(theme.inkTertiary(scheme))
+                                .frame(maxWidth: .infinity, minHeight: 80)
+                        } else {
+                            ScrollView {
+                                LazyVStack(spacing: 0) {
+                                    ForEach(shown) { invoice in row(invoice) }
+                                }
                             }
                         }
                     }
                 }
             }
             .frame(minWidth: 360, maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            if let id = ledger.selectedInvoice, let invoice = ledger.book.invoice(id), invoice.kind == kind {
+            if filter == .repeating {
+                if let id = ledger.selectedSchedule, let schedule = ledger.book.schedule(id) {
+                    RepeatingDetail(schedule: schedule)
+                        .frame(width: 320)
+                        .transition(.rise(theme.rise))
+                }
+            } else if let id = ledger.selectedInvoice, let invoice = ledger.book.invoice(id), invoice.kind == kind {
                 InvoiceDetail(invoice: invoice)
                     .frame(width: 320)
                     .transition(.rise(theme.rise))
             }
         }
         .animation(theme.spring, value: ledger.selectedInvoice)
+        .animation(theme.spring, value: ledger.selectedSchedule)
+        .animation(theme.spring, value: filter)
     }
 
     private func matches(_ invoice: Invoice) -> Bool {
@@ -434,6 +451,7 @@ struct InvoicesPanel: View {
         case .owing: return invoice.owing > 0
         case .overdue: return invoice.owing > 0 && invoice.daysOverdue(on: ledger.today) > 0
         case .paid: return invoice.status == .paid
+        case .repeating: return false
         }
     }
 
@@ -575,6 +593,27 @@ private struct InvoiceDetail: View {
                     Spacer()
                     Button("Void") { voiding = true }.buttonStyle(.vellumSecondary)
                 }
+                if sale {
+                    let reminders = ledger.book.remindersSent(for: invoice.id)
+                    if !reminders.isEmpty {
+                        Text("Marc has sent \(reminders.count) \(reminders.count == 1 ? "reminder" : "reminders"), last on \(reminders.last?.date.shortDay ?? "").")
+                            .font(.system(size: 10.5))
+                            .foregroundStyle(theme.inkTertiary(scheme))
+                    }
+                    Menu {
+                        Button("Every month") { ledger.repeatInvoice(invoice.id, every: 1, unit: .month) }
+                        Button("Every 3 months") { ledger.repeatInvoice(invoice.id, every: 3, unit: .month) }
+                        Button("Every year") { ledger.repeatInvoice(invoice.id, every: 1, unit: .year) }
+                        Button("Every week") { ledger.repeatInvoice(invoice.id, every: 1, unit: .week) }
+                    } label: {
+                        Label("Repeat this invoice", systemImage: "repeat")
+                    }
+                    .menuStyle(.button)
+                    .buttonStyle(.borderless)
+                    .fixedSize()
+                    .font(.system(size: 12))
+                    .foregroundStyle(theme.inkSecondary(scheme))
+                }
                 if invoice.owing > 0 {
                     Text("Or import the bank statement and George matches the payment for you.")
                         .font(.system(size: 10.5))
@@ -622,7 +661,6 @@ struct InvoiceEditor: View {
 
     var body: some View {
         let sale = invoice.kind == .sale
-        let accounts = ledger.book.accounts.filter { sale ? $0.type == .income : ($0.type == .expense || ($0.type == .asset && $0.gst == .capital)) }
         VStack(alignment: .leading, spacing: 14) {
             Text(invoice.number.isEmpty ? (sale ? "New invoice" : "New bill") : "Edit \(invoice.number)")
                 .font(theme.display(24))
@@ -644,63 +682,7 @@ struct InvoiceEditor: View {
                 TextField(sale ? "Reference (their PO)" : "Their invoice number", text: $invoice.reference)
                     .frame(width: 200)
             }
-            VStack(spacing: 6) {
-                HStack {
-                    Text("Description").frame(maxWidth: .infinity, alignment: .leading)
-                    Text("Qty").frame(width: 56, alignment: .trailing)
-                    Text("Price ex GST").frame(width: 100, alignment: .trailing)
-                    Text("Account").frame(width: 190, alignment: .leading)
-                    Text("GST").frame(width: 120, alignment: .leading)
-                    Text("Amount").frame(width: 90, alignment: .trailing)
-                    Spacer().frame(width: 20)
-                }
-                .font(.system(size: 10.5, weight: .semibold))
-                .foregroundStyle(theme.inkTertiary(scheme))
-                ForEach($invoice.lines) { $line in
-                    HStack {
-                        TextField("What it's for", text: $line.description)
-                            .frame(maxWidth: .infinity)
-                        TextField("1", value: $line.quantity, format: .number)
-                            .multilineTextAlignment(.trailing)
-                            .frame(width: 56)
-                        MoneyField(title: "0.00", cents: $line.unitPrice)
-                            .frame(width: 100)
-                        Picker("", selection: $line.account) {
-                            ForEach(accounts) { account in Text(account.label).tag(account.code) }
-                        }
-                        .labelsHidden()
-                        .frame(width: 190)
-                        .onChange(of: line.account) { _, code in
-                            if let account = ledger.book.account(code), ledger.book.settings.gstRegistered { line.gst = account.gst == .excluded ? .gst : account.gst }
-                        }
-                        Picker("", selection: $line.gst) {
-                            ForEach(GSTCode.allCases) { code in Text(code.title).tag(code) }
-                        }
-                        .labelsHidden()
-                        .frame(width: 120)
-                        LedgerAmount(cents: line.net, width: 90)
-                        Button {
-                            invoice.lines.removeAll { $0.id == line.id }
-                        } label: {
-                            Image(systemName: "minus.circle")
-                        }
-                        .buttonStyle(.plain)
-                        .foregroundStyle(theme.inkTertiary(scheme))
-                        .frame(width: 20)
-                        .disabled(invoice.lines.count <= 1)
-                    }
-                }
-                HStack {
-                    Button {
-                        let last = invoice.lines.last
-                        invoice.lines.append(InvoiceLine(description: "", unitPrice: 0, account: last?.account ?? (sale ? "200" : "429"), gst: last?.gst ?? .gst))
-                    } label: {
-                        Label("Add a line", systemImage: "plus")
-                    }
-                    .buttonStyle(.vellumSecondary)
-                    Spacer()
-                }
-            }
+            LineItemsEditor(lines: $invoice.lines, sale: sale)
             HStack(alignment: .top) {
                 TextField("Notes on the invoice (optional)", text: $invoice.notes, axis: .vertical)
                     .lineLimit(2...4)
@@ -735,6 +717,76 @@ struct InvoiceEditor: View {
         guard !name.isEmpty else { return }
         invoice.contact = ledger.addContact(named: name)
         newContact = ""
+    }
+}
+
+/// The lines of an invoice, bill, quote or repeating invoice: what, how many, the price, the account and the GST.
+struct LineItemsEditor: View {
+    @EnvironmentObject private var theme: Theme
+    @EnvironmentObject private var ledger: LedgerModel
+    @Environment(\.colorScheme) private var scheme
+    @Binding var lines: [InvoiceLine]
+    var sale = true
+
+    var body: some View {
+        let accounts = ledger.book.accounts.filter { sale ? $0.type == .income : ($0.type == .expense || ($0.type == .asset && $0.gst == .capital)) }
+        VStack(spacing: 6) {
+            HStack {
+                Text("Description").frame(maxWidth: .infinity, alignment: .leading)
+                Text("Qty").frame(width: 56, alignment: .trailing)
+                Text("Price ex GST").frame(width: 100, alignment: .trailing)
+                Text("Account").frame(width: 190, alignment: .leading)
+                Text("GST").frame(width: 120, alignment: .leading)
+                Text("Amount").frame(width: 90, alignment: .trailing)
+                Spacer().frame(width: 20)
+            }
+            .font(.system(size: 10.5, weight: .semibold))
+            .foregroundStyle(theme.inkTertiary(scheme))
+            ForEach($lines) { $line in
+                HStack {
+                    TextField("What it's for", text: $line.description)
+                        .frame(maxWidth: .infinity)
+                    TextField("1", value: $line.quantity, format: .number)
+                        .multilineTextAlignment(.trailing)
+                        .frame(width: 56)
+                    MoneyField(title: "0.00", cents: $line.unitPrice)
+                        .frame(width: 100)
+                    Picker("", selection: $line.account) {
+                        ForEach(accounts) { account in Text(account.label).tag(account.code) }
+                    }
+                    .labelsHidden()
+                    .frame(width: 190)
+                    .onChange(of: line.account) { _, code in
+                        if let account = ledger.book.account(code), ledger.book.settings.gstRegistered { line.gst = account.gst == .excluded ? .gst : account.gst }
+                    }
+                    Picker("", selection: $line.gst) {
+                        ForEach(GSTCode.allCases) { code in Text(code.title).tag(code) }
+                    }
+                    .labelsHidden()
+                    .frame(width: 120)
+                    LedgerAmount(cents: line.net, width: 90)
+                    Button {
+                        lines.removeAll { $0.id == line.id }
+                    } label: {
+                        Image(systemName: "minus.circle")
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(theme.inkTertiary(scheme))
+                    .frame(width: 20)
+                    .disabled(lines.count <= 1)
+                }
+            }
+            HStack {
+                Button {
+                    let last = lines.last
+                    lines.append(InvoiceLine(description: "", unitPrice: 0, account: last?.account ?? (sale ? "200" : "429"), gst: last?.gst ?? .gst))
+                } label: {
+                    Label("Add a line", systemImage: "plus")
+                }
+                .buttonStyle(.vellumSecondary)
+                Spacer()
+            }
+        }
     }
 }
 
@@ -872,10 +924,10 @@ struct ReportsPanel: View {
     @EnvironmentObject private var theme: Theme
     @EnvironmentObject private var ledger: LedgerModel
     @Environment(\.colorScheme) private var scheme
-    @State private var report: Report = .profit
+    private var report: Report { ledger.report }
 
     enum Report: String, CaseIterable, Identifiable {
-        case profit, balance, cash, trial, receivables, payables
+        case profit, balance, cash, trial, receivables, payables, audit
         var id: String { rawValue }
         var title: String {
             switch self {
@@ -885,6 +937,7 @@ struct ReportsPanel: View {
             case .trial: return "Trial balance"
             case .receivables: return "Owed to you"
             case .payables: return "You owe"
+            case .audit: return "Audit trail"
             }
         }
     }
@@ -892,45 +945,50 @@ struct ReportsPanel: View {
     var body: some View {
         let dates = ledger.range(ledger.period)
         VStack(alignment: .leading, spacing: 12) {
-            Picker("", selection: $report) {
+            Picker("", selection: $ledger.report) {
                 ForEach(Report.allCases) { item in Text(item.title).tag(item) }
             }
             .pickerStyle(.segmented)
             .labelsHidden()
-            .frame(maxWidth: 620)
-            HStack(spacing: 10) {
-                Picker("", selection: $ledger.period) {
-                    ForEach(LedgerPeriod.allCases) { item in Text(item.title).tag(item) }
-                }
-                .labelsHidden()
-                .fixedSize()
-                Text(caption(dates))
-                    .font(.system(size: 11.5))
-                    .foregroundStyle(theme.inkTertiary(scheme))
-                    .lineLimit(1)
-                Spacer(minLength: 8)
-                Button("Open in Sheets") {
-                    model.sheets.add(ledger.accountantPack())
-                    model.go(to: .sheets)
-                }
-                .buttonStyle(.vellumSecondary)
-                .help("Every report as a workbook in Sheets, with live totals")
-                Button("Accountant's pack…") { ledger.exportPack() }
-                    .buttonStyle(.vellumPrimary)
-                    .help("Profit and loss, balance sheet, trial balance, general ledger, GST and aged lists as one Excel file")
-            }
-            ScrollView {
-                LedgerCard {
-                    switch report {
-                    case .profit: profit(dates)
-                    case .balance: balance(dates.end)
-                    case .cash: cash(dates)
-                    case .trial: trial(dates.end)
-                    case .receivables: aged(.sale, dates.end)
-                    case .payables: aged(.bill, dates.end)
+            .frame(maxWidth: 720)
+            if report == .audit {
+                AuditTrailView()
+            } else {
+                HStack(spacing: 10) {
+                    Picker("", selection: $ledger.period) {
+                        ForEach(LedgerPeriod.allCases) { item in Text(item.title).tag(item) }
                     }
+                    .labelsHidden()
+                    .fixedSize()
+                    Text(caption(dates))
+                        .font(.system(size: 11.5))
+                        .foregroundStyle(theme.inkTertiary(scheme))
+                        .lineLimit(1)
+                    Spacer(minLength: 8)
+                    Button("Open in Sheets") {
+                        model.sheets.add(ledger.accountantPack())
+                        model.go(to: .sheets)
+                    }
+                    .buttonStyle(.vellumSecondary)
+                    .help("Every report as a workbook in Sheets, with live totals")
+                    Button("Accountant's pack…") { ledger.exportPack() }
+                        .buttonStyle(.vellumPrimary)
+                        .help("Profit and loss, balance sheet, trial balance, general ledger, GST and aged lists as one Excel file")
                 }
-                .frame(maxWidth: 760, alignment: .leading)
+                ScrollView {
+                    LedgerCard {
+                        switch report {
+                        case .profit: profit(dates)
+                        case .balance: balance(dates.end)
+                        case .cash: cash(dates)
+                        case .trial: trial(dates.end)
+                        case .receivables: aged(.sale, dates.end)
+                        case .payables: aged(.bill, dates.end)
+                        case .audit: EmptyView()
+                        }
+                    }
+                    .frame(maxWidth: 760, alignment: .leading)
+                }
             }
         }
     }
@@ -1109,6 +1167,25 @@ struct GSTPanel: View {
                         .font(.system(size: 12))
                         .foregroundStyle(theme.inkSecondary(scheme))
                 }
+                if back > 0 || quarter.end < ledger.today {
+                    if ledger.book.isLocked(quarter.end) {
+                        Label("Locked. Nothing in this quarter can change.", systemImage: "lock.fill")
+                            .font(.system(size: 12))
+                            .foregroundStyle(theme.inkSecondary(scheme))
+                    } else {
+                        HStack(spacing: 10) {
+                            Button {
+                                ledger.setLockDate(quarter.end)
+                            } label: {
+                                Label("Lodged? Lock the books up to \(quarter.end.fullDay)", systemImage: "lock")
+                            }
+                            .buttonStyle(.vellumSecondary)
+                            Text("So nothing in a lodged quarter changes by accident. You can unlock it in Settings.")
+                                .font(.system(size: 11))
+                                .foregroundStyle(theme.inkTertiary(scheme))
+                        }
+                    }
+                }
                 Text("George works these out from your books on the \(ledger.book.settings.cashBasis ? "cash" : "accrual") basis. Check them with your tax agent before you lodge. This isn't tax advice.")
                     .font(.system(size: 11))
                     .foregroundStyle(theme.inkTertiary(scheme))
@@ -1174,6 +1251,7 @@ struct LedgerSettingsView: View {
     @EnvironmentObject private var ledger: LedgerModel
     @Environment(\.colorScheme) private var scheme
     @State var settings: LedgerSettings
+    @State private var reminderText = ""
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -1193,12 +1271,45 @@ struct LedgerSettingsView: View {
                     TextField("", value: $settings.paymentDays, format: .number).frame(width: 50)
                     Text("days").foregroundStyle(theme.inkTertiary(scheme))
                 } }
+                GridRow { label("Quotes"); HStack {
+                    TextField("Prefix", text: $settings.quotePrefix).frame(width: 80)
+                    Text("next").foregroundStyle(theme.inkTertiary(scheme))
+                    TextField("", value: $settings.nextQuote, format: .number).frame(width: 60)
+                    Text("good for").foregroundStyle(theme.inkTertiary(scheme))
+                    TextField("", value: $settings.quoteDays, format: .number).frame(width: 50)
+                    Text("days").foregroundStyle(theme.inkTertiary(scheme))
+                } }
                 GridRow { label("GST"); VStack(alignment: .leading) {
                     Toggle("Registered for GST", isOn: $settings.gstRegistered)
                     Toggle("Report GST on the cash basis", isOn: $settings.cashBasis).disabled(!settings.gstRegistered)
                 } }
+                GridRow { label("Reminders"); HStack {
+                    TextField("3, 14, 30", text: $reminderText).frame(width: 110)
+                    Text("days late. Marc drafts a friendly one, a firmer one, then a final one, for you to approve.")
+                        .font(.system(size: 11))
+                        .foregroundStyle(theme.inkTertiary(scheme))
+                        .fixedSize(horizontal: false, vertical: true)
+                } }
+                GridRow { label("Lock date"); VStack(alignment: .leading, spacing: 6) {
+                    HStack {
+                        Toggle("Lock the books", isOn: Binding(get: { settings.lockDate != nil }, set: { on in
+                            let quarter = ledger.book.quarter(containing: ledger.today)
+                            settings.lockDate = on ? (Calendar.current.date(byAdding: .day, value: -1, to: quarter.start) ?? ledger.today) : nil
+                        }))
+                        if settings.lockDate != nil {
+                            DatePicker("up to", selection: Binding(get: { settings.lockDate ?? ledger.today }, set: { settings.lockDate = $0 }),
+                                       displayedComponents: .date)
+                                .fixedSize()
+                        }
+                    }
+                    Text("Nothing on or before the lock date can be added, changed or removed. Lock a quarter once its BAS is lodged.")
+                        .font(.system(size: 11))
+                        .foregroundStyle(theme.inkTertiary(scheme))
+                        .fixedSize(horizontal: false, vertical: true)
+                } }
             }
             .textFieldStyle(.roundedBorder)
+            .onAppear { reminderText = settings.reminderDays.map(String.init).joined(separator: ", ") }
             HStack {
                 Button("Back to the sample books") {
                     ledger.useSample()
@@ -1215,6 +1326,8 @@ struct LedgerSettingsView: View {
                     .buttonStyle(.vellumSecondary)
                     .keyboardShortcut(.cancelAction)
                 Button("Save") {
+                    let days = reminderText.split(whereSeparator: { !$0.isNumber }).compactMap { Int($0) }.filter { $0 >= 0 && $0 < 400 }
+                    settings.reminderDays = Array(Set(days)).sorted()
                     ledger.updateSettings(settings)
                     ledger.showsSettings = false
                 }
@@ -1223,7 +1336,7 @@ struct LedgerSettingsView: View {
             }
         }
         .padding(22)
-        .frame(width: 560)
+        .frame(width: 600)
     }
 
     private func label(_ text: String) -> some View {

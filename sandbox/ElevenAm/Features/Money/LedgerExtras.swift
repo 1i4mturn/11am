@@ -315,7 +315,7 @@ extension LedgerBook {
     func upcomingRepeats(from date: Date, days: Int) -> [(schedule: RepeatingInvoice, date: Date)] {
         let limit = calendar.date(byAdding: .day, value: days, to: date) ?? date
         return repeating.filter { !$0.paused }.compactMap { schedule in
-            schedule.next(calendar: calendar).flatMap { $0 <= limit ? (schedule, $0) : nil }
+            schedule.next(calendar: calendar).flatMap { $0 <= limit ? (schedule: schedule, date: $0) : nil }
         }
         .sorted { $0.date < $1.date }
     }
@@ -385,7 +385,7 @@ extension LedgerBook {
     /// Late invoices whose payment seems to have arrived: reconcile, don't chase.
     func latePaymentsWaiting(on date: Date) -> [(invoice: Invoice, line: BankLine)] {
         invoices.filter { $0.kind == .sale && $0.owing > 0 && $0.daysOverdue(on: date, calendar: calendar) > 0 }
-            .compactMap { invoice in paymentWaiting(for: invoice).map { (invoice, $0) } }
+            .compactMap { invoice in paymentWaiting(for: invoice).map { (invoice: invoice, line: $0) } }
     }
 
     /// The email Marc drafts, for you to read, change and send.

@@ -121,6 +121,11 @@ jobs:
           capture money-bills-light -startSection money -forceAppearance light -moneyTab bills
           capture money-reports-light -startSection money -forceAppearance light -moneyTab reports
           capture money-gst-dark -startSection money -forceAppearance dark -moneyTab gst
+          capture money-quotes-light -startSection money -forceAppearance light -moneyTab quotes -moneyQuote QU-0001
+          capture money-quotes-dark -startSection money -forceAppearance dark -moneyTab quotes -moneyQuote QU-0002
+          capture money-repeating-light -startSection money -forceAppearance light -moneyTab invoices -moneyFilter repeating
+          capture money-reminder-dark -startSection money -forceAppearance dark -moneyTab invoices -moneyReminder YES
+          capture money-audit-light -startSection money -forceAppearance light -moneyTab reports -moneyReport audit
           capture design-light -startSection design -forceAppearance light
           capture design-select-dark -startSection design -forceAppearance dark -designSelect 3
           capture design-event-light -startSection design -forceAppearance light -designName Founder -designSelect 3
