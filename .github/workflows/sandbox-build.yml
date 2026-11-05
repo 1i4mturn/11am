@@ -148,6 +148,17 @@ jobs:
           test -x languagetests
           ./languagetests
 
+      - name: Tasks tests
+        working-directory: sandbox
+        run: |
+          mkdir -p taskstest
+          cd taskstest
+          swiftc -O -o taskstests \
+            ../ElevenAm/Features/Tasks/TaskKit.swift \
+            ../ci/TasksTests/main.swift 2>&1 | grep -E "error|warning: unre" || true
+          test -x taskstests
+          ./taskstests
+
       - name: Build the iPhone app
         working-directory: sandbox
         run: |
