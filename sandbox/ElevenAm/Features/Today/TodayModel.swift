@@ -38,6 +38,13 @@ final class TodayModel: ObservableObject {
     var energyFacts: (() -> String?)?
     /// Called after Leo writes a brief, so the iPhone gets it too.
     var onBriefWritten: (() -> Void)?
+    /// Today's tasks, for the brief.
+    var taskFacts: (() -> String)?
+
+    /// Tasks changed: Today shows them, so it redraws.
+    func tasksChanged() {
+        objectWillChange.send()
+    }
 
     init(brain: Brain, files: FileIndex) {
         self.brain = brain
@@ -126,6 +133,7 @@ final class TodayModel: ObservableObject {
             event.isAllDay ? "- All day: \(event.title)" : "- \(formatter.string(from: event.start)) \(event.title)\(event.location.map { " (\($0))" } ?? "")"
         }
         let fileLines = files.recentlyChanged(within: 24).prefix(8).map { "- \($0.name)" }
+        let taskLine = taskFacts?() ?? ""
 
         let prompt = """
         Today is \(day).
@@ -135,6 +143,7 @@ final class TodayModel: ObservableObject {
         Files changed in the last day:
         \(fileLines.isEmpty ? "- None" : fileLines.joined(separator: "\n"))
         \(energyFacts?().map { "\nEnergy (from Apple Health on the iPhone): \($0)\n" } ?? "")
+        \(taskLine.isEmpty ? "" : "\n" + taskLine + "\n")
         Write the brief.
         """
 
@@ -143,6 +152,7 @@ final class TodayModel: ObservableObject {
             You are Leo, the chief of staff inside 11am, a Mac app for founders. Write a short daily brief: \
             three to five lines, plain sentences, no headings, no bullet symbols, no emoji. Lead with what matters most. \
             Mention protected focus time if there is a long gap. Never invent meetings, people or numbers. \
+            If there's a Tasks line, name the one or two that matter most and where they fit around the meetings. \
             If there's an Energy line, say it in one short sentence and shape the day around it (after a short night, hardest work later and a lighter afternoon). \
             Never give medical advice.
             """,

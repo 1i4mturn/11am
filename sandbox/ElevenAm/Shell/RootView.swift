@@ -64,6 +64,7 @@ private struct SectionContent: View {
         switch section {
         case .today: TodayView()
         case .calendar: CalendarView()
+        case .tasks: TasksView()
         case .mail: MailView()
         case .notes: NotesView()
         case .write: WriteView()

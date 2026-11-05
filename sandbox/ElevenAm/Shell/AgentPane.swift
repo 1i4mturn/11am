@@ -80,6 +80,7 @@ struct AgentPane: View {
         switch model.section {
         case .today, .overnight: return ("le", "Leo", "Chief of staff · plans your day")
         case .calendar: return ("le", "Leo", "Calendar · guards your time")
+        case .tasks: return ("le", "Leo", "Tasks · keeps your promises")
         case .mail: return ("mc", "Marc", "Mail and people · drafts in your voice")
         case .notes: return ("bn", "Bolton", "Notes and memory · finds what you noted")
         case .write: return ("wm", "William", "Writing and voice · you only review")

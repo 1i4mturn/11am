@@ -2,7 +2,7 @@ import SwiftUI
 
 /// The places in the sandbox. Apps come first; the agent behind each one is the quiet worker.
 enum AppSection: String, CaseIterable, Identifiable {
-    case today, calendar, mail, notes, write, files, pdf, research, money, sheets, business, decks, design, photo, video, audio, learn, build, overnight, suite, lab
+    case today, calendar, tasks, mail, notes, write, files, pdf, research, money, sheets, business, decks, design, photo, video, audio, learn, build, overnight, suite, lab
 
     var id: String { rawValue }
 
@@ -10,6 +10,7 @@ enum AppSection: String, CaseIterable, Identifiable {
         switch self {
         case .today: return "Today"
         case .calendar: return "Calendar"
+        case .tasks: return "Tasks"
         case .mail: return "Mail"
         case .notes: return "Notes"
         case .write: return "Write"
@@ -36,6 +37,7 @@ enum AppSection: String, CaseIterable, Identifiable {
         switch self {
         case .today: return "le"
         case .calendar: return "le"
+        case .tasks: return "le"
         case .mail: return "mc"
         case .notes: return "bn"
         case .write: return "wm"
@@ -62,6 +64,7 @@ enum AppSection: String, CaseIterable, Identifiable {
         switch self {
         case .today: return "sun.horizon"
         case .calendar: return "calendar"
+        case .tasks: return "checklist"
         case .mail: return "tray"
         case .notes: return "note.text"
         case .write: return "pencil.line"
@@ -94,6 +97,7 @@ enum AppSection: String, CaseIterable, Identifiable {
         switch self {
         case .today: return "Your day, and the 11am check-in"
         case .calendar: return "Every calendar, one week, planned for you"
+        case .tasks: return "What to do and when, promises kept"
         case .mail: return "What needs you, with replies drafted"
         case .notes: return "Everything you jot down, linked and findable"
         case .write: return "Writes like you, so you only review"
@@ -161,6 +165,7 @@ final class AppModel: ObservableObject {
     let automations: AutomationsModel
     let phone: PhoneLinkModel
     let languages: LanguageModel
+    let tasks: TasksModel
 
     init() {
         let machine = MachineProfile()
@@ -206,8 +211,14 @@ final class AppModel: ObservableObject {
         let phone = PhoneLinkModel(brain: brain, notes: self.notes, today: self.today)
         self.phone = phone
         self.languages = LanguageModel(brain: brain)
+        let tasks = TasksModel(brain: brain)
+        self.tasks = tasks
         self.today.energyFacts = { [weak phone] in phone?.energyFacts }
         self.today.onBriefWritten = { [weak phone] in phone?.briefChanged() }
+        // Leo's tasks feed Today and the brief; Marc turns promises in the mail you send into tasks.
+        self.today.taskFacts = { [weak tasks] in tasks?.briefFacts ?? "" }
+        tasks.onChange = { [weak today = self.today] in today?.tasksChanged() }
+        mail.onSent = { [weak tasks] to, subject, body in tasks?.noteSent(to: to, subject: subject, body: body) }
         nightShift.attach(to: self)
         money.extraFacts = { [weak ledger] in ledger?.georgeFacts ?? "" }
         // Leo's calendar feeds Today, the brief and the notch countdown, with every connected calendar.
@@ -231,7 +242,10 @@ final class AppModel: ObservableObject {
         studio.load()
         decks.load()
         audio.load()
+        tasks.load()
         automations.start()
+        tasks.onLog = { [weak self] monogram, text in self?.log(monogram, text) }
+        tasks.onOpenOrigin = { [weak self] origin in self?.open(origin) }
         phone.start()
         today.refreshAccess()
         calendar.refreshAccess()
@@ -243,6 +257,20 @@ final class AppModel: ObservableObject {
     func go(to section: AppSection) {
         guard section != self.section else { return }
         withAnimation(theme.spring) { self.section = section }
+    }
+
+    /// Goes to where a task came from.
+    func open(_ origin: TaskOrigin) {
+        switch origin.kind {
+        case .mail:
+            go(to: .mail)
+            if let id = origin.reference, mail.messages.contains(where: { $0.id == id }) { mail.selectedID = id }
+        case .meeting:
+            go(to: .calendar)
+            if let id = origin.reference { calendar.selectedID = id }
+        default:
+            break
+        }
     }
 
     func log(_ monogram: String, _ text: String) {

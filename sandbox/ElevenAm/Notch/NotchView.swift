@@ -385,6 +385,8 @@ private struct NotchAskPage: View {
     @EnvironmentObject private var state: NotchState
     @EnvironmentObject private var brain: Brain
     @EnvironmentObject private var files: FileIndex
+    @EnvironmentObject private var tasks: TasksModel
+    @State private var added: String?
     @FocusState private var focused: Bool
     @State private var answerHeight: CGFloat = 24
 
@@ -410,8 +412,12 @@ private struct NotchAskPage: View {
                         .readHeight { answerHeight = $0 }
                 }
                 .frame(height: min(max(answerHeight, 20), 230))
+            } else if let added {
+                Text(added)
+                    .font(.system(size: 12))
+                    .foregroundStyle(.white.opacity(0.75))
             } else {
-                Text("Questions about your files go to Bolton. Everything else goes to Leo. Quick answers run on this Mac.")
+                Text("Questions about your files go to Bolton. Everything else goes to Leo. Start with + to add a task: + Call Tom tomorrow 3pm.")
                     .font(.system(size: 12))
                     .foregroundStyle(.white.opacity(0.5))
             }
@@ -424,6 +430,17 @@ private struct NotchAskPage: View {
     private func submit() {
         let text = state.askText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
+        // "+ Call Tom tomorrow" is a task, not a question.
+        if text.hasPrefix("+") {
+            if let task = tasks.add(String(text.dropFirst()), in: .inbox, select: false) {
+                let when = tasks.dueText(task).map { " · \($0)" } ?? ""
+                added = "Added to Tasks: \(task.title)\(when)"
+                state.askText = ""
+                state.askRun = nil
+            }
+            return
+        }
+        added = nil
         state.askRun = brain.run(AskRouter.request(for: text, files: files))
     }
 }

@@ -95,6 +95,12 @@ jobs:
           capture learn-spanish-light -startSection learn -forceAppearance light -learnTab languages -languageSample YES
           capture learn-lesson-dark -startSection learn -forceAppearance dark -learnTab languages -languageLesson YES
           capture learn-cards-light -startSection learn -forceAppearance light -learnTab cards
+          capture tasks-today-light -startSection tasks -forceAppearance light -tasksSample YES -tasksLayout list -tasksSelect "Call the accountant"
+          capture tasks-project-dark -startSection tasks -forceAppearance dark -tasksSample YES -tasksLayout list -tasksList project
+          capture tasks-board-light -startSection tasks -forceAppearance light -tasksSample YES -tasksLayout board -tasksList project
+          capture tasks-week-dark -startSection tasks -forceAppearance dark -tasksSample YES -tasksLayout week
+          capture tasks-upcoming-light -startSection tasks -forceAppearance light -tasksSample YES -tasksLayout list -tasksList upcoming -tasksSelect "Send Tom"
+          capture today-tasks-light -startSection today -forceAppearance light -tasksSample YES
           capture sheets-light -startSection sheets -forceAppearance light -sheetsSelect B2:E7
           capture sheets-sales-dark -startSection sheets -forceAppearance dark -sheetsSheet 1 -sheetsSelect E2:E18
           capture sheets-loan-light -startSection sheets -forceAppearance light -sheetsSheet 2 -sheetsSelect B7

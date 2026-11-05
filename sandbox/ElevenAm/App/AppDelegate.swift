@@ -7,6 +7,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var notch: NotchController?
     private var askHotKey: HotKey?
     private var noteHotKey: HotKey?
+    private var taskHotKey: HotKey?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         FontRegistry.registerBundledFonts()
@@ -22,6 +23,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // ⌥⇧N jots a note from anywhere.
         noteHotKey = HotKey(keyCode: UInt32(kVK_ANSI_N), modifiers: UInt32(optionKey | shiftKey)) { [weak self] in
             self?.quickNote()
+        }
+        // ⌥⇧T adds a task from anywhere.
+        taskHotKey = HotKey(keyCode: UInt32(kVK_ANSI_T), modifiers: UInt32(optionKey | shiftKey)) { [weak self] in
+            self?.quickTask()
         }
 
         model.start()
@@ -168,6 +173,27 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 self?.model.terminal.type(command + "\r")
             }
         }
+        // -tasksSample YES loads sample tasks; -tasksList upcoming (or project, for the first project); -tasksLayout board;
+        // -tasksSelect "Call the" selects the first task starting with those words.
+        if arguments.bool(forKey: "tasksSample") {
+            model.tasks.loadSample()
+        }
+        if let list = arguments.string(forKey: "tasksList") {
+            switch list {
+            case "inbox": model.tasks.list = .inbox
+            case "upcoming": model.tasks.list = .upcoming
+            case "someday": model.tasks.list = .someday
+            case "logbook": model.tasks.list = .logbook
+            case "project": if let first = model.tasks.projects.first { model.tasks.list = .project(first.id) }
+            default: model.tasks.list = .today
+            }
+        }
+        if let layout = arguments.string(forKey: "tasksLayout").flatMap(TaskLayout.init(rawValue:)) {
+            model.tasks.layout = layout
+        }
+        if let words = arguments.string(forKey: "tasksSelect") {
+            model.tasks.selectedID = model.tasks.book.tasks.first { $0.title.hasPrefix(words) }?.id
+        }
         if arguments.bool(forKey: "activate") {
             NSApp.activate()
         }
@@ -182,6 +208,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         model.automations.flushSave()
         model.terminal.save()
         model.languages.flushSave()
+        model.tasks.flushSave()
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
@@ -201,5 +228,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         model.notes.scope = .all
         model.notes.newNote()
         model.notes.wantsFocus = true
+    }
+
+    /// The quick add field in Tasks, ready to type into, from anywhere.
+    func quickTask() {
+        NSApp.activate()
+        NSApp.windows.first { $0.canBecomeMain }?.makeKeyAndOrderFront(nil)
+        model.go(to: .tasks)
+        if model.tasks.list == .logbook { model.tasks.list = .inbox }
+        model.tasks.layout = .list
+        model.tasks.wantsFocus = true
     }
 }

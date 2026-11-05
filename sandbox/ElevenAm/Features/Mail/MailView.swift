@@ -637,6 +637,7 @@ private struct MessageReader: View {
 private struct ReaderActions: View {
     @EnvironmentObject private var theme: Theme
     @EnvironmentObject private var mail: MailModel
+    @EnvironmentObject private var tasks: TasksModel
     @Environment(\.colorScheme) private var scheme
     var message: MailMessage
     @State private var confirmingUnsubscribe = false
@@ -651,6 +652,7 @@ private struct ReaderActions: View {
             icon("trash", "Delete (⌫)") { mail.delete(message) }
             icon(message.seen ? "envelope.badge" : "envelope.open", message.seen ? "Mark as unread (u)" : "Mark as read (u)") { mail.setSeen(message, !message.seen) }
             icon(message.flagged ? "flag.fill" : "flag", message.flagged ? "Unflag (s)" : "Flag (s)") { mail.toggleFlag(message) }
+            icon("checklist", "Make a task") { tasks.add(from: message) }
             Menu {
                 Button("Later today") { mail.snooze(message, until: MailDates.laterToday()) }
                 Button("Tomorrow morning") { mail.snooze(message, until: MailDates.tomorrowMorning()) }

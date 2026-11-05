@@ -81,5 +81,6 @@ extension View {
             .environmentObject(model.automations)
             .environmentObject(model.phone)
             .environmentObject(model.languages)
+            .environmentObject(model.tasks)
     }
 }

@@ -36,6 +36,9 @@ struct TodayView: View {
                         .entrance(1)
                 }
 
+                TodayTasksCard()
+                    .entrance(2)
+
                 if !today.isLive {
                     Card {
                         HStack(alignment: .top, spacing: 12) {

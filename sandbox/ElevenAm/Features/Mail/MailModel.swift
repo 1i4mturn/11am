@@ -36,6 +36,8 @@ struct MailLocalState: Codable {
 final class MailModel: ObservableObject {
     @Published private(set) var accounts: [MailAccount] = []
     @Published private(set) var messages: [MailMessage] = []
+    /// Called after a message goes out (to, subject, body), so Leo can keep the promises in it.
+    var onSent: (([String], String, String) -> Void)?
     @Published private(set) var lane: MailLane = .needsYou
     @Published var accountFilter: String?
     @Published var selectedID: String? { didSet { if selectedID != oldValue { selectionChanged(from: oldValue) } } }
@@ -802,6 +804,7 @@ final class MailModel: ObservableObject {
                 train(after: 3)
             }
             scheduleSave()
+            onSent?(mail.to, draft.subject, draft.body)
             notice = "Sent to \(mail.to.joined(separator: ", "))."
         } catch {
             pendingSend = nil
