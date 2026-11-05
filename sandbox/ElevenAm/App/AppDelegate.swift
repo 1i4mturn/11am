@@ -194,6 +194,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if let words = arguments.string(forKey: "tasksSelect") {
             model.tasks.selectedID = model.tasks.book.tasks.first { $0.title.hasPrefix(words) }?.id
         }
+        // -mailMessage s7 opens that sample email (s7 is a receipt Marc can send to Money).
+        if let id = arguments.string(forKey: "mailMessage") {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in self?.model.mail.selectedID = id }
+        }
         // -businessTab people (or deals, companies, forecast); -businessDeal "Acme" opens the first deal starting with that.
         if let tab = arguments.string(forKey: "businessTab").flatMap(BusinessTab.init(rawValue:)) {
             model.business.tab = tab

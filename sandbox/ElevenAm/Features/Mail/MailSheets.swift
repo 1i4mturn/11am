@@ -11,6 +11,10 @@ struct ComposeView: View {
     @Environment(\.colorScheme) private var scheme
     @Environment(\.dismiss) private var dismiss
     @State private var draft: MailDraft
+    @State private var filling: MailSnippet?
+    @State private var editingSnippets = false
+    @State private var pickingTime = false
+    @State private var customTime = Date().addingTimeInterval(3_600)
 
     init(draft: MailDraft) {
         _draft = State(initialValue: draft)
@@ -74,6 +78,18 @@ struct ComposeView: View {
                     .buttonStyle(.vellumSecondary)
                     .disabled(brain.isBusy)
                 }
+                Menu {
+                    ForEach(mail.snippets) { snippet in
+                        Button(snippet.name) { use(snippet) }
+                    }
+                    Divider()
+                    Button("Edit snippets…") { editingSnippets = true }
+                } label: {
+                    Label("Snippets", systemImage: "text.badge.plus")
+                }
+                .menuStyle(.button)
+                .fixedSize()
+                .help("Text you send often, with the blanks filled in")
                 Spacer()
                 Button("Cancel") {
                     mail.composer = nil
@@ -85,6 +101,35 @@ struct ComposeView: View {
                     Button("Open in Mail") { mail.openInMail(draft) }
                         .buttonStyle(.vellumPrimary)
                 } else {
+                    Menu {
+                        ForEach(Array(SendLater.options(now: Date(), calendar: .current).enumerated()), id: \.offset) { _, option in
+                            Button("\(option.title) · \(option.date.formatted(.dateTime.weekday(.abbreviated).hour().minute()))") {
+                                mail.schedule(draft, at: option.date)
+                                dismiss()
+                            }
+                        }
+                        Divider()
+                        Button("Pick a time…") { pickingTime = true }
+                    } label: {
+                        Label("Send later", systemImage: "clock")
+                    }
+                    .menuStyle(.button)
+                    .fixedSize()
+                    .disabled(!canSend)
+                    .popover(isPresented: $pickingTime, arrowEdge: .top) {
+                        VStack(alignment: .trailing, spacing: 10) {
+                            DatePicker("Send at", selection: $customTime, in: Date()..., displayedComponents: [.date, .hourAndMinute])
+                                .datePickerStyle(.graphical)
+                                .labelsHidden()
+                            Button("Schedule") {
+                                pickingTime = false
+                                mail.schedule(draft, at: customTime)
+                                dismiss()
+                            }
+                            .buttonStyle(.vellumPrimary)
+                        }
+                        .padding(14)
+                    }
                     Button("Send") { mail.send(draft) }
                         .buttonStyle(.vellumPrimary)
                         .disabled(!canSend)
@@ -96,6 +141,35 @@ struct ComposeView: View {
         .padding(22)
         .frame(width: 640)
         .frame(minHeight: 520)
+        .sheet(item: $filling) { snippet in
+            SnippetFillView(snippet: snippet, automatic: mail.automaticValues(for: draft)) { text in insert(text) }
+                .environmentObject(theme)
+        }
+        .sheet(isPresented: $editingSnippets) {
+            SnippetsEditor()
+                .environmentObject(mail)
+                .environmentObject(theme)
+        }
+    }
+
+    /// A snippet with blanks asks for them first; one without goes straight in.
+    private func use(_ snippet: MailSnippet) {
+        if Snippets.blanks(in: snippet.body).isEmpty {
+            insert(Snippets.fill(snippet.body, values: mail.automaticValues(for: draft)))
+        } else {
+            filling = snippet
+        }
+    }
+
+    /// Goes above the quoted email you're replying to, after anything you've written.
+    private func insert(_ text: String) {
+        if let range = draft.body.range(of: "\nOn ") {
+            let mine = draft.body[..<range.lowerBound].trimmingCharacters(in: .whitespacesAndNewlines)
+            draft.body = (mine.isEmpty ? "" : mine + "\n\n") + text + "\n\n" + draft.body[range.lowerBound...].trimmingCharacters(in: .newlines)
+        } else {
+            let mine = draft.body.trimmingCharacters(in: .whitespacesAndNewlines)
+            draft.body = (mine.isEmpty ? "" : mine + "\n\n") + text
+        }
     }
 
     /// Keeps the quoted original under a fresh draft.
@@ -522,5 +596,139 @@ struct LearningView: View {
                 }
             }
         }
+    }
+}
+
+
+/// The blanks in a snippet, then Insert.
+struct SnippetFillView: View {
+    @EnvironmentObject private var theme: Theme
+    @Environment(\.colorScheme) private var scheme
+    @Environment(\.dismiss) private var dismiss
+    var snippet: MailSnippet
+    var automatic: [String: String]
+    var insert: (String) -> Void
+    @State private var values: [String: String] = [:]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(snippet.name).font(.system(size: 16, weight: .semibold))
+            ForEach(Snippets.blanks(in: snippet.body), id: \.self) { field in
+                VStack(alignment: .leading, spacing: 3) {
+                    SectionLabel(text: field)
+                    TextField(field, text: Binding(get: { values[field] ?? "" }, set: { values[field] = $0 }))
+                        .textFieldStyle(.roundedBorder)
+                }
+            }
+            Text(Snippets.fill(snippet.body, values: automatic.merging(values) { _, typed in typed }))
+                .font(.system(size: 12))
+                .foregroundStyle(theme.inkSecondary(scheme))
+                .padding(10)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(theme.well(scheme)))
+            HStack {
+                Spacer()
+                Button("Cancel") { dismiss() }
+                    .buttonStyle(.vellumSecondary)
+                Button("Insert") {
+                    insert(Snippets.fill(snippet.body, values: automatic.merging(values) { _, typed in typed }))
+                    dismiss()
+                }
+                .buttonStyle(.vellumPrimary)
+                .keyboardShortcut(.return, modifiers: .command)
+            }
+        }
+        .padding(20)
+        .frame(width: 460)
+    }
+}
+
+/// Your snippets: add, change and remove them. {{first name}}, {{my name}}, {{today}} and {{free times}} fill themselves in.
+struct SnippetsEditor: View {
+    @EnvironmentObject private var mail: MailModel
+    @EnvironmentObject private var theme: Theme
+    @Environment(\.colorScheme) private var scheme
+    @Environment(\.dismiss) private var dismiss
+    @State private var selected: UUID?
+    @State private var name = ""
+    @State private var text = ""
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("Snippets").font(.system(size: 16, weight: .semibold))
+                Spacer()
+                Button("Done") { save(); dismiss() }
+                    .buttonStyle(.vellumPrimary)
+            }
+            HStack(alignment: .top, spacing: 12) {
+                VStack(alignment: .leading, spacing: 4) {
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 2) {
+                            ForEach(mail.snippets) { snippet in
+                                Button {
+                                    save()
+                                    pick(snippet)
+                                } label: {
+                                    Text(snippet.name)
+                                        .font(.system(size: 12.5, weight: selected == snippet.id ? .semibold : .regular))
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                        .padding(.horizontal, 8)
+                                        .padding(.vertical, 5)
+                                        .background(RoundedRectangle(cornerRadius: 6).fill(selected == snippet.id ? theme.raised(scheme) : Color.clear))
+                                        .contentShape(Rectangle())
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                    }
+                    HStack {
+                        Button {
+                            save()
+                            let snippet = MailSnippet(name: "New snippet", body: "Hi {{first name}},\n\n\n\n{{my name}}")
+                            mail.saveSnippet(snippet)
+                            pick(snippet)
+                        } label: { Image(systemName: "plus") }
+                        Button {
+                            if let selected { mail.deleteSnippet(selected) }
+                            selected = nil
+                        } label: { Image(systemName: "minus") }
+                        .disabled(selected == nil)
+                    }
+                    .buttonStyle(.borderless)
+                }
+                .frame(width: 170)
+                VStack(alignment: .leading, spacing: 6) {
+                    TextField("Name", text: $name)
+                        .textFieldStyle(.roundedBorder)
+                    TextEditor(text: $text)
+                        .font(.system(size: 12.5))
+                        .scrollContentBackground(.hidden)
+                        .padding(6)
+                        .background(RoundedRectangle(cornerRadius: 8).fill(theme.well(scheme)))
+                    Text("Blanks go in double braces: {{amount}}. {{first name}}, {{my name}}, {{today}} and {{free times}} fill themselves in.")
+                        .font(.system(size: 11))
+                        .foregroundStyle(theme.inkTertiary(scheme))
+                }
+                .disabled(selected == nil)
+            }
+        }
+        .padding(20)
+        .frame(width: 620, height: 420)
+        .onAppear { if let first = mail.snippets.first { pick(first) } }
+    }
+
+    private func pick(_ snippet: MailSnippet) {
+        selected = snippet.id
+        name = snippet.name
+        text = snippet.body
+    }
+
+    private func save() {
+        guard let selected, var snippet = mail.snippets.first(where: { $0.id == selected }) else { return }
+        guard snippet.name != name || snippet.body != text else { return }
+        snippet.name = name.isEmpty ? "Snippet" : name
+        snippet.body = text
+        mail.saveSnippet(snippet)
     }
 }

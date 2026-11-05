@@ -20,6 +20,36 @@ struct MailDraft: Identifiable, Equatable {
     var replyingTo: String?
 }
 
+/// An email waiting to go at a set time. Kept on disk so it survives a restart.
+struct ScheduledMail: Codable, Identifiable, Equatable {
+    var id = UUID()
+    var accountID: String
+    var to: String
+    var cc: String
+    var subject: String
+    var body: String
+    var inReplyTo: String?
+    var references: String?
+    var replyingTo: String?
+    var sendAt: Date
+
+    init(_ draft: MailDraft, at date: Date) {
+        accountID = draft.accountID
+        to = draft.to
+        cc = draft.cc
+        subject = draft.subject
+        body = draft.body
+        inReplyTo = draft.inReplyTo
+        references = draft.references
+        replyingTo = draft.replyingTo
+        sendAt = date
+    }
+
+    var draft: MailDraft {
+        MailDraft(accountID: accountID, to: to, cc: cc, subject: subject, body: body, inReplyTo: inReplyTo, references: references, replyingTo: replyingTo)
+    }
+}
+
 struct PendingSend: Equatable {
     var draft: MailDraft
     var secondsLeft: Int
@@ -51,6 +81,12 @@ final class MailModel: ObservableObject {
     @Published private(set) var drafts: [String: BrainRun] = [:]
     @Published private(set) var summaries: [String: BrainRun] = [:]
     @Published var composer: MailDraft?
+    /// Snippets with fill-in fields, and email waiting to go later.
+    @Published private(set) var snippets: [MailSnippet] = []
+    @Published private(set) var scheduled: [ScheduledMail] = []
+    /// Your free times from Leo's calendar, for the "Times that work" snippet.
+    var freeTimes: (() -> String)?
+    private var scheduleTimer: Timer?
     /// Another app (Calendar) asking Mail to open "Add an account" on a provider.
     @Published var addAccountRequest: MailProvider?
     @Published private(set) var pendingSend: PendingSend?
@@ -84,10 +120,15 @@ final class MailModel: ObservableObject {
         self.brain = brain
         self.voice = voice
         liveAccounts = JSONStore.load([MailAccount].self, from: "mail-accounts") ?? []
+        snippets = JSONStore.load([MailSnippet].self, from: "mail-snippets") ?? Snippets.builtIns
+        scheduled = JSONStore.load([ScheduledMail].self, from: "mail-scheduled") ?? []
         if liveAccounts.isEmpty {
             useSample()
         } else {
             goLive()
+        }
+        scheduleTimer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in
+            Task { @MainActor in self?.sendDue() }
         }
     }
 
@@ -877,5 +918,64 @@ final class MailModel: ObservableObject {
         scheduleSave()
         let accuracy = result.accuracy.map { " Matches what you did \(Int($0 * 100))% of the time." } ?? ""
         return "Marc retrained on \(set.labels.count) emails.\(accuracy)"
+    }
+}
+
+
+// MARK: Snippets and sending later
+
+extension MailModel {
+    /// The values filled in for you: the recipient's first name, your name, today, your free times.
+    func automaticValues(for draft: MailDraft) -> [String: String] {
+        [
+            "first name": Snippets.firstName(fromRecipients: draft.to),
+            "my name": NSFullUserName().split(separator: " ").first.map(String.init) ?? NSFullUserName(),
+            "today": Date().formatted(date: .long, time: .omitted),
+            "free times": freeTimes?() ?? "",
+        ]
+    }
+
+    func saveSnippet(_ snippet: MailSnippet) {
+        if let index = snippets.firstIndex(where: { $0.id == snippet.id }) { snippets[index] = snippet } else { snippets.append(snippet) }
+        JSONStore.save(snippets, to: "mail-snippets")
+    }
+
+    func deleteSnippet(_ id: UUID) {
+        snippets.removeAll { $0.id == id }
+        JSONStore.save(snippets, to: "mail-snippets")
+    }
+
+    /// Sends at a set time, while 11am is running (it's in the notch even with no window open).
+    func schedule(_ draft: MailDraft, at date: Date) {
+        composer = nil
+        scheduled.append(ScheduledMail(draft, at: date))
+        scheduled.sort { $0.sendAt < $1.sendAt }
+        JSONStore.save(scheduled, to: "mail-scheduled")
+        notice = "Scheduled for \(date.formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated).hour().minute())). Change your mind under Scheduled."
+    }
+
+    func cancelScheduled(_ id: UUID) {
+        guard let item = scheduled.first(where: { $0.id == id }) else { return }
+        scheduled.removeAll { $0.id == id }
+        JSONStore.save(scheduled, to: "mail-scheduled")
+        composer = item.draft
+    }
+
+    func sendScheduledNow(_ id: UUID) {
+        guard let item = scheduled.first(where: { $0.id == id }) else { return }
+        scheduled.removeAll { $0.id == id }
+        JSONStore.save(scheduled, to: "mail-scheduled")
+        send(item.draft)
+    }
+
+    fileprivate func sendDue() {
+        let now = Date()
+        let due = scheduled.filter { $0.sendAt <= now }
+        guard !due.isEmpty else { return }
+        scheduled.removeAll { $0.sendAt <= now }
+        JSONStore.save(scheduled, to: "mail-scheduled")
+        for item in due {
+            Task { await deliver(item.draft) }
+        }
     }
 }

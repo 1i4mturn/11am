@@ -229,6 +229,13 @@ final class AppModel: ObservableObject {
         business.calendar = calendar
         business.write = write
         business.tasks = tasks
+        // Marc's "Times that work" comes from Leo's calendar.
+        mail.freeTimes = { [weak calendar] in
+            guard let calendar else { return "" }
+            let slots = Array(calendar.freeSlots(minutes: 30, days: 5).prefix(6))
+            guard !slots.isEmpty else { return "" }
+            return FreeTime.text(slots).components(separatedBy: "\n").dropFirst().joined(separator: "\n")
+        }
         // Leo's meeting prep knows the open deals; a task dropped on the calendar gets a block of time.
         calendar.dealFacts = { [weak business] attendees in business?.dealFacts(attendees: attendees) ?? "" }
         calendar.taskLookup = { [weak tasks] id in

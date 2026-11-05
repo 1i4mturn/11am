@@ -267,6 +267,18 @@ final class LedgerModel: ObservableObject {
 
     func approve(_ id: UUID) { change { try $0.approve(id) } }
 
+    /// Marc found a receipt or invoice in your mail: a draft bill to check and approve, with GST worked out.
+    func draftBill(from vendor: String, total: Cents, description: String, date: Date, reference: String) {
+        let contact = book.contacts.first { $0.name.caseInsensitiveCompare(vendor) == .orderedSame }?.id ?? addContact(named: vendor)
+        let gst: GSTCode = book.settings.gstRegistered ? .gst : .excluded
+        let net = total - GST.included(in: total, gst)
+        let bill = Invoice(kind: .bill, number: "", contact: contact, issued: date, due: date, reference: reference,
+                           lines: [InvoiceLine(description: description, unitPrice: net, account: "429", gst: gst)])
+        save(bill, approve: false)
+        tab = .bills
+        notice = "A draft bill from \(vendor) for \(LedgerMoney.text(total)) is ready to check and approve."
+    }
+
     func void(_ id: UUID) { change { $0.void(id) } }
 
     func deleteDraft(_ id: UUID) {

@@ -274,6 +274,24 @@ private struct LaneBar: View {
                 }
                 .buttonStyle(.plain)
             }
+            if !mail.scheduled.isEmpty {
+                Menu {
+                    ForEach(mail.scheduled) { item in
+                        Menu("\(item.sendAt.formatted(.dateTime.weekday(.abbreviated).hour().minute())) · \(item.subject.isEmpty ? item.to : item.subject)") {
+                            Button("Send now") { mail.sendScheduledNow(item.id) }
+                            Button("Edit (stops it going)") { mail.cancelScheduled(item.id) }
+                        }
+                    }
+                } label: {
+                    Label("\(mail.scheduled.count) scheduled", systemImage: "clock")
+                        .font(.system(size: 12))
+                }
+                .menuStyle(.button)
+                .buttonStyle(.borderless)
+                .fixedSize()
+                .foregroundStyle(theme.inkSecondary(scheme))
+                .help("Email waiting to go later")
+            }
             if !mail.snoozed.isEmpty {
                 Menu {
                     ForEach(mail.snoozed) { message in
@@ -596,6 +614,7 @@ private struct MessageReader: View {
                             .foregroundStyle(theme.ink(scheme))
 
                             ReasonLine(message: message)
+                            MarcNoticed(message: message)
 
                             if let run = mail.summaries[message.id] {
                                 Card { RunView(run: run) }

@@ -181,6 +181,17 @@ jobs:
           test -x businesstests
           ./businesstests
 
+      - name: Mail toolkit tests
+        working-directory: sandbox
+        run: |
+          mkdir -p mailtoolkittest
+          cd mailtoolkittest
+          swiftc -O -o mailtoolkittests \
+            ../ElevenAm/Features/Mail/MailToolkit.swift \
+            ../ci/MailToolkitTests/main.swift 2>&1 | grep -E "error|warning: unre" || true
+          test -x mailtoolkittests
+          ./mailtoolkittests
+
       - name: Build the iPhone app
         working-directory: sandbox
         run: |
