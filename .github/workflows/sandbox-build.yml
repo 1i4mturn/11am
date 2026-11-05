@@ -192,6 +192,17 @@ jobs:
           test -x mailtoolkittests
           ./mailtoolkittests
 
+      - name: Notes extras tests
+        working-directory: sandbox
+        run: |
+          mkdir -p notesextrastest
+          cd notesextrastest
+          swiftc -O -o notesextrastests \
+            ../ElevenAm/Features/Notes/NotesExtras.swift \
+            ../ci/NotesExtrasTests/main.swift 2>&1 | grep -E "error|warning: unre" || true
+          test -x notesextrastests
+          ./notesextrastests
+
       - name: Build the iPhone app
         working-directory: sandbox
         run: |

@@ -49,6 +49,9 @@ check(MailRouter.route(subject: "Invoice", body: "Please see attached.", fromNam
 check(MailRouter.route(subject: "Quick question", body: "Are you free for a quick call on Tuesday?", fromName: "Priya", fromAddress: "priya@northwind.vc") == .meeting, "A meeting request")
 check(MailRouter.route(subject: "Agreement for the pilot", body: "Attached is the agreement. Please sign when you can.", fromName: "Tom", fromAddress: "tom@acme.co") == .agreement, "An agreement to sign")
 check(MailRouter.route(subject: "Lunch?", body: "Loved the demo, well done.", fromName: "Jess", fromAddress: "jess@studiowong.com") == nil, "Most mail is none of these")
+let stripe = MailRouter.route(subject: "Your receipt from Vercel Inc. #2241-0093", body: "Amount paid: US$20.00", fromName: "Stripe", fromAddress: "receipts@stripe.com")
+check(stripe == .receipt(vendor: "Vercel Inc", total: 20), "A receipt sent by Stripe is named for who was paid: \(String(describing: stripe))")
+check(MailRouter.vendor(fromSubject: "Invoice from Kim Design - October") == "Kim Design" && MailRouter.vendor(fromSubject: "Hello") == nil, "Who an invoice is from, in the subject")
 check(MailRouter.amounts(in: "A$42 then 12.00 USD and $1,234.56") == [42, 12, 1_234.56], "Amounts written different ways")
 check(MailRouter.total(in: "Item $5.00\nItem $90.00") == 90, "No total line: the largest amount")
 

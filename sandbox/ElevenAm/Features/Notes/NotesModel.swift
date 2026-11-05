@@ -18,6 +18,7 @@ struct Note: Identifiable, Equatable {
 
     /// The first line after the title, as plain text.
     var snippet: String {
+        if NoteLock.isLocked(text) { return "Locked" }
         let lines = MarkdownPlain.text(text).split(separator: "\n").map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
         return lines.dropFirst().first.map { String($0.prefix(120)) } ?? ""
     }
@@ -34,6 +35,8 @@ enum NotesScope: Hashable {
     case all, pinned
     case folder(String)
     case tag(String)
+    /// A saved search.
+    case smart(UUID)
 }
 
 /// Bolton's notes: Markdown files in folders on this Mac, with tags, links between notes and backlinks,
@@ -44,7 +47,10 @@ final class NotesModel: ObservableObject {
     @Published private(set) var folders: [String] = []
     @Published var scope: NotesScope = .all
     @Published var search = ""
-    @Published var selectedID: UUID?
+    @Published var selectedID: UUID? {
+        // A locked note locks again when you move away from it.
+        didSet { if let old = oldValue, old != selectedID { unlocked[old] = nil } }
+    }
     @Published var notice: String?
     @Published private(set) var isImporting = false
     @Published private(set) var askRun: BrainRun?
@@ -59,6 +65,13 @@ final class NotesModel: ObservableObject {
     /// Pages where an agent is writing a reply to a comment.
     @Published var answering: Set<UUID> = []
     @Published var showsComments = false
+    /// Saved searches, locked notes opened this session, and voice notes being recorded or transcribed.
+    @Published var smartFolders: [SmartFolder] = []
+    @Published var unlocked: [UUID: String] = [:]
+    @Published var recordingNoteID: UUID?
+    @Published var transcribing: Set<UUID> = []
+    let recorder = MicRecorder()
+    var recordingURL: URL?
     /// Checkboxes become tasks in Leo's Tasks; Notion databases become workbooks in Sheets.
     weak var tasks: TasksModel?
     weak var sheets: SheetsModel?
@@ -118,6 +131,7 @@ final class NotesModel: ObservableObject {
         notes = found
         folders = folderNames.sorted { $0.localizedStandardCompare($1) == .orderedAscending }
         loadPages()
+        loadExtras()
         if notes.isEmpty && !UserDefaults.standard.bool(forKey: "notes.seeded") {
             UserDefaults.standard.set(true, forKey: "notes.seeded")
             for sample in NotesSamples.notes() { add(sample) }
@@ -146,6 +160,7 @@ final class NotesModel: ObservableObject {
             case .pinned: scoped = notes.filter(\.pinned)
             case .folder(let name): scoped = notes.filter { $0.folder == name }
             case .tag(let tag): scoped = notes.filter { MarkdownInfo.tags($0.text).contains(tag) }
+            case .smart(let id): scoped = notes.filter { matches(smart: id, $0) }
             }
         }
         let matching = terms.isEmpty ? scoped : scoped.filter { note in
@@ -179,6 +194,7 @@ final class NotesModel: ObservableObject {
         case .pinned: return "Pinned"
         case .folder(let name): return name
         case .tag(let tag): return "#\(tag)"
+        case .smart(let id): return smartFolders.first { $0.id == id }?.name ?? "Smart folder"
         }
     }
 

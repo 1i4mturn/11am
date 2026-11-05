@@ -108,6 +108,7 @@ jobs:
           capture business-forecast-light -startSection business -forceAppearance light -businessTab forecast
           capture calendar-tasks-light -startSection calendar -forceAppearance light -tasksSample YES
           capture mail-receipt-light -startSection mail -forceAppearance light -mailMessage s7
+          capture notes-smart-light -startSection notes -forceAppearance light -notesSmart YES
           capture sheets-light -startSection sheets -forceAppearance light -sheetsSelect B2:E7
           capture sheets-sales-dark -startSection sheets -forceAppearance dark -sheetsSheet 1 -sheetsSelect E2:E18
           capture sheets-loan-light -startSection sheets -forceAppearance light -sheetsSheet 2 -sheetsSelect B7

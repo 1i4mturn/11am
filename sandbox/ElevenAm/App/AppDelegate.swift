@@ -208,6 +208,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if let words = arguments.string(forKey: "businessPerson") {
             model.business.selectedPersonID = model.business.people.first { $0.name.hasPrefix(words) }?.id
         }
+        // -notesSmart YES opens the first smart folder.
+        if arguments.bool(forKey: "notesSmart"), let first = model.notes.smartFolders.first {
+            model.notes.scope = .smart(first.id)
+        }
         // -pagesSample YES adds a small company wiki to Notes and opens a page in it; -notesComments YES shows its comments.
         if arguments.bool(forKey: "pagesSample") {
             model.notes.loadPageSample()

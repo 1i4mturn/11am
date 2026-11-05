@@ -115,7 +115,7 @@ enum MailRouter {
     static func route(subject: String, body: String, fromName: String, fromAddress: String) -> Route? {
         let head = (subject + "\n" + String(body.prefix(1_500))).lowercased()
         if receiptWords.contains(where: { head.contains($0) }), let total = total(in: subject + "\n" + body) {
-            return .receipt(vendor: vendor(name: fromName, address: fromAddress), total: total)
+            return .receipt(vendor: vendor(fromSubject: subject) ?? vendor(name: fromName, address: fromAddress), total: total)
         }
         if meetingWords.contains(where: { head.contains($0) }) { return .meeting }
         if agreementWords.contains(where: { head.contains($0) }) { return .agreement }
@@ -150,6 +150,16 @@ enum MailRouter {
             }
             return nil
         }
+    }
+
+    /// "Your receipt from Vercel Inc." → "Vercel Inc.": payment services send receipts for others.
+    static func vendor(fromSubject subject: String) -> String? {
+        guard let regex = try? NSRegularExpression(pattern: #"(?:receipt|invoice|order|payment)\s+(?:from|to)\s+(.+?)(?:\s*[#:(\[|]|\s+-\s+|$)"#,
+                                                   options: [.caseInsensitive]),
+              let match = regex.firstMatch(in: subject, range: NSRange(subject.startIndex..., in: subject)),
+              let range = Range(match.range(at: 1), in: subject) else { return nil }
+        let name = subject[range].trimmingCharacters(in: CharacterSet.whitespaces.union(CharacterSet(charactersIn: ".,")))
+        return name.isEmpty ? nil : name
     }
 
     /// "Lumen Coffee" or, for "receipts@lumen.coffee" with no name, "Lumen".

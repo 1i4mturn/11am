@@ -31,6 +31,7 @@ struct NotesView: View {
                             .environmentObject(notes)
                             .environmentObject(theme)
                     }
+                    VoiceNoteButton(recorder: notes.recorder)
                     Button {
                         withAnimation(theme.spring) { notes.openToday() }
                     } label: {
@@ -209,12 +210,47 @@ private struct NotesSidebar: View {
     @State private var addingFolder = false
     @State private var folderName = ""
     @State private var renaming: String?
+    @State private var savingSearch = false
+    @State private var smartName = ""
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 2) {
                 row(.all, title: "All notes", symbol: "note.text", count: notes.notes.count)
                 row(.pinned, title: "Pinned", symbol: "pin", count: notes.notes.filter(\.pinned).count)
+                if !notes.search.isEmpty {
+                    Button {
+                        savingSearch = true
+                        smartName = notes.search
+                    } label: {
+                        Label("Save this search", systemImage: "plus.magnifyingglass")
+                            .font(.system(size: 12))
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 5)
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(theme.inkSecondary(scheme))
+                    .popover(isPresented: $savingSearch, arrowEdge: .trailing) {
+                        FolderNameField(title: "Smart folder for \u{201C}\(notes.search)\u{201D}", name: $smartName) {
+                            notes.saveSmartFolder(named: smartName, query: notes.search)
+                            savingSearch = false
+                        }
+                        .environmentObject(theme)
+                    }
+                }
+                if !notes.smartFolders.isEmpty {
+                    SectionLabel(text: "Smart folders")
+                        .padding(.horizontal, 8)
+                        .padding(.top, 14)
+                        .padding(.bottom, 3)
+                    ForEach(notes.smartFolders) { folder in
+                        row(.smart(folder.id), title: folder.name, symbol: "sparkle.magnifyingglass", count: notes.count(smart: folder.id))
+                            .help(folder.query)
+                            .contextMenu {
+                                Button("Delete smart folder", role: .destructive) { notes.deleteSmartFolder(folder.id) }
+                            }
+                    }
+                }
                 PagesSidebarSection()
 
                 HStack {
@@ -471,6 +507,13 @@ private struct NoteDetail: View {
                 ToolButton(symbol: note.pinned ? "pin.fill" : "pin", help: note.pinned ? "Unpin" : "Pin to the top", on: note.pinned) {
                     withAnimation(theme.spring) { notes.togglePin(note.id) }
                 }
+                if notes.isLocked(note) {
+                    if notes.isOpen(note) {
+                        ToolButton(symbol: "lock.open", help: "Take the lock off (the note goes back to plain Markdown)") { notes.removeLock(note.id) }
+                    }
+                } else {
+                    ToolButton(symbol: "lock", help: "Lock this note (Touch ID or your Mac password to open)") { notes.lock(note.id) }
+                }
                 ToolButton(symbol: "text.badge.star", help: "Summarise with Bolton") { notes.summarise() }
                 ToolButton(symbol: "rectangle.on.rectangle.angled", help: "Make flashcards in Learn") {
                     learn.makeCards(from: note.text)
@@ -481,8 +524,12 @@ private struct NoteDetail: View {
             .padding(.vertical, 6)
             Rectangle().fill(theme.edge(scheme)).frame(height: 0.5)
 
+            if notes.isLocked(note) && !notes.isOpen(note) {
+                LockedNoteView(note: note)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
             DocEditor(
-                text: Binding(get: { notes.selected?.text ?? "" }, set: { notes.update(note.id, text: $0) }),
+                text: Binding(get: { notes.editableText(note.id) }, set: { notes.edit(note.id, text: $0) }),
                 selection: $selection,
                 style: .from(theme, scheme, font: NSFont.systemFont(ofSize: 14)),
                 controller: editor,
@@ -500,6 +547,7 @@ private struct NoteDetail: View {
             )
             .padding(.horizontal, 22)
             .frame(maxHeight: .infinity)
+            }
 
             PageBlocksStrip(note: note)
 
@@ -606,5 +654,73 @@ private struct AskNotesView: View {
         }
         .padding(16)
         .frame(width: 380)
+    }
+}
+
+
+/// A locked note, until you open it.
+private struct LockedNoteView: View {
+    @EnvironmentObject private var theme: Theme
+    @EnvironmentObject private var notes: NotesModel
+    @Environment(\.colorScheme) private var scheme
+    var note: Note
+
+    var body: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "lock.fill")
+                .font(.system(size: 30))
+                .foregroundStyle(theme.inkSecondary(scheme))
+            Text(note.title)
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(theme.ink(scheme))
+            Text("This note is locked. It's sealed on disk with a key in your Keychain.")
+                .font(.system(size: 12.5))
+                .foregroundStyle(theme.inkTertiary(scheme))
+            Button("Open with Touch ID or your password") { notes.unlock(note.id) }
+                .buttonStyle(.vellumPrimary)
+        }
+        .padding(30)
+    }
+}
+
+/// Record a voice note into the open note; it's written out on this Mac when you stop.
+private struct VoiceNoteButton: View {
+    @EnvironmentObject private var theme: Theme
+    @EnvironmentObject private var notes: NotesModel
+    @Environment(\.colorScheme) private var scheme
+    @ObservedObject var recorder: MicRecorder
+
+    var body: some View {
+        if recorder.isRecording {
+            Button {
+                withAnimation(theme.spring) { notes.stopVoiceNote() }
+            } label: {
+                HStack(spacing: 6) {
+                    Circle().fill(Color.red).frame(width: 8, height: 8)
+                    Text(String(format: "%d:%02d", Int(recorder.elapsed) / 60, Int(recorder.elapsed) % 60)).monospacedDigit()
+                    Capsule()
+                        .fill(theme.ink(scheme).opacity(0.6))
+                        .frame(width: max(2, CGFloat((recorder.level + 60) / 60) * 30), height: 4)
+                        .frame(width: 30, alignment: .leading)
+                    Text("Stop")
+                }
+            }
+            .buttonStyle(.vellumSecondary)
+            .help("Stop, and write out what was said")
+        } else if !notes.transcribing.isEmpty {
+            HStack(spacing: 6) {
+                ProgressView().controlSize(.small)
+                Text("Writing it out…").font(.system(size: 12))
+            }
+            .foregroundStyle(theme.inkSecondary(scheme))
+        } else {
+            Button {
+                notes.startVoiceNote()
+            } label: {
+                Image(systemName: "mic")
+            }
+            .buttonStyle(.vellumSecondary)
+            .help("Record a voice note into this note. It's written out on this Mac.")
+        }
     }
 }
