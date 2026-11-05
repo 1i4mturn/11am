@@ -42,6 +42,7 @@ enum LedgerSamples {
         ]))
 
         func invoice(_ kind: Invoice.Kind, _ who: UUID, _ ago: Int, days: Int = 14, _ lines: [InvoiceLine], approve: Bool = true, reference: String = "") -> String {
+            book.clock = day(ago)
             let number = kind == .sale ? book.takeInvoiceNumber() : reference
             let item = Invoice(kind: kind, number: number, contact: who, issued: day(ago), due: day(ago - days), reference: reference, lines: lines)
             book.invoices.append(item)
@@ -57,8 +58,7 @@ enum LedgerSamples {
         let third = invoice(.sale, bluegum, 60, [line("Monthly retainer, September", 1, 300_000)])
         _ = invoice(.sale, acme, 45, [line("Campaign design", 12, 15_000), line("Stock images", 1, 18_000)])
         let fifth = invoice(.sale, kestrel, 25, [line("Photography day", 1, 240_000), line("Image licence, 12 months", 1, 60_000)])
-        _ = invoice(.sale, bluegum, 10, [line("Monthly retainer, October", 1, 300_000)])
-        _ = invoice(.sale, northwind, 0, [line("Website design, phase 2", 1, 750_000)], approve: false)
+        let retainer = invoice(.sale, bluegum, 10, [line("Monthly retainer, October", 1, 300_000)])
         let illustration = invoice(.bill, kim, 50, [line("Illustration set", 1, 200_000, "410")], reference: "KDS-2207")
         _ = invoice(.bill, harper, 20, days: 30, [line("Year-end accounts and tax return", 1, 150_000, "412")], reference: "HA-1189")
 
@@ -107,8 +107,10 @@ enum LedgerSamples {
             statement.append(bankLine)
             treatments[bankLine.id] = item.treatment
         }
+        book.clock = day(96)
         book.importStatement(statement)
         for bankLine in statement {
+            book.clock = calendar.date(byAdding: .hour, value: 30, to: bankLine.date)
             switch treatments[bankLine.id] ?? .leave {
             case .code(let account, let gst):
                 try? book.code(bankLine.id, account: account, gst: gst)
@@ -120,6 +122,50 @@ enum LedgerSamples {
                 break
             }
         }
+
+        // Quotes: one accepted and half invoiced, one waiting, one being written, one that lapsed.
+        func quote(_ who: UUID, _ title: String, _ ago: Int, _ lines: [InvoiceLine], status: Quote.Status) -> UUID {
+            book.clock = day(ago)
+            let id = book.saveQuote(Quote(number: "", contact: who, title: title, issued: day(ago), expires: day(ago - book.settings.quoteDays), lines: lines))
+            if status != .draft {
+                book.clock = day(max(0, ago - 1))
+                book.setQuote(id, status: .sent)
+            }
+            if status == .accepted || status == .declined {
+                book.clock = day(max(0, ago - 6))
+                book.setQuote(id, status: status)
+            }
+            return id
+        }
+        let phaseTwo = quote(northwind, "Website design, phase 2", 14, [line("Website design, phase 2", 1, 750_000), line("Content migration", 8, 15_000)], status: .accepted)
+        book.clock = day(0)
+        _ = try? book.invoice(fromQuote: phaseTwo, part: 0.5, issued: day(0))
+        _ = quote(bluegum, "Annual report design", 5, [line("Annual report design, 48 pages", 1, 640_000), line("Print management", 1, 90_000)], status: .sent)
+        _ = quote(kestrel, "Lookbook shoot", 1, [line("Shoot day", 2, 240_000), line("Retouching, per image", 40, 4_500)], status: .draft)
+        _ = quote(acme, "Packaging refresh", 44, [line("Packaging design, three SKUs", 1, 380_000)], status: .sent)
+
+        // Repeating: Bluegum's retainer every month, Acme's care plan every quarter from next week.
+        book.clock = day(10)
+        var monthly = RepeatingInvoice(contact: bluegum, lines: [line("Monthly retainer, [month]", 1, 300_000)], start: day(10))
+        monthly.made = 1
+        monthly.lastInvoice = book.invoices.first { $0.number == retainer }?.id
+        book.saveSchedule(monthly)
+        book.clock = day(3)
+        book.saveSchedule(RepeatingInvoice(contact: acme, lines: [line("Website care plan, quarter from [month]", 1, 45_000)], every: 3, start: day(-12)))
+
+        // Marc has chased Acme twice; the third reminder is the final one.
+        if let campaign = book.invoices.first(where: { $0.number == "INV-0004" }) {
+            book.clock = day(27)
+            book.noteReminder(campaign.id, stage: 0)
+            book.clock = day(16)
+            book.noteReminder(campaign.id, stage: 1)
+        }
+
+        // Last quarter's BAS is in, so it's locked.
+        book.clock = day(8)
+        let quarter = book.quarter(containing: today)
+        book.setLockDate(calendar.date(byAdding: .day, value: -1, to: quarter.start))
+        book.clock = nil
         return book
     }
 }

@@ -89,7 +89,7 @@ let stripe = book.bank.first { $0.bankID == "A7" }!
 try? book.code(stripe.id, account: "200", gst: .free)
 check(book.unreconciled.isEmpty, "Everything reconciled")
 let before = book.entries.count
-book.unreconcile(stripe.id)
+try? book.unreconcile(stripe.id)
 check(book.entries.count == before - 1 && book.unreconciled.count == 1, "Undoing a reconciliation takes its entry back out")
 try? book.code(stripe.id, account: "200", gst: .free)
 check(book.entries.allSatisfy(\.isBalanced), "Every entry balances")
@@ -153,7 +153,7 @@ let aged = aging.aged(.sale, asOf: date(2026, 10, 1))
 check(aged.first?.buckets == [0, 0, 11_000, 0, 0], "Aged receivables: 47 days late is in 31–60 (\(aged.first?.buckets ?? []))")
 let payables = aging.aged(.bill, asOf: date(2026, 10, 10))
 check(payables.first?.buckets.first == 55_000, "Aged payables: not yet due is current")
-aging.void(late.id)
+try? aging.void(late.id)
 check(aging.invoice(late.id)?.status == .void && aging.aged(.sale, asOf: date(2026, 10, 1)).isEmpty, "Voiding takes it out of the books")
 
 // MARK: Statements
@@ -232,6 +232,216 @@ check(debits.flatMap(\.number).map { debit in credits.flatMap(\.number).map { ab
       "The pack's trial balance totals agree")
 check(GridXLSX.data(pack).count > 2_000, "The pack saves as Excel")
 
+// MARK: Quotes
+
+var quoting = LedgerBook()
+quoting.settings.businessName = "Northside Studio"
+let tom = Contact(name: "Northwind Traders", email: "tom@northwind.example")
+quoting.contacts = [tom]
+let websiteQuote = quoting.saveQuote(Quote(number: "", contact: tom.id, title: "Website", issued: date(2026, 10, 1), expires: date(2026, 10, 31), lines: [
+    InvoiceLine(description: "Design", unitPrice: 750_000, account: "200", gst: .gst),
+    InvoiceLine(description: "Migration", quantity: 8, unitPrice: 15_001, account: "200", gst: .gst),
+]))
+check(quoting.quote(websiteQuote)?.number == "QU-0001" && quoting.quote(websiteQuote)?.subtotal == 870_008, "Quotes are numbered and add up")
+quoting.setQuote(websiteQuote, status: .sent)
+check(quoting.quote(websiteQuote)?.sentAt != nil && quoting.quote(websiteQuote)?.isExpired(on: date(2026, 11, 2), calendar: calendar) == true
+      && quoting.quote(websiteQuote)?.statusText(on: date(2026, 11, 2), calendar: calendar) == "Expired"
+      && quoting.openQuotes(on: date(2026, 10, 20)).count == 1, "A sent quote lapses after its date")
+quoting.setQuote(websiteQuote, status: .accepted)
+let deposit = try? quoting.invoice(fromQuote: websiteQuote, part: 0.3, issued: date(2026, 10, 10))
+let depositInvoice = deposit.flatMap { quoting.invoice($0) }
+check(depositInvoice?.lines.map(\.net) == [225_000, 36_002] && depositInvoice?.number == "INV-0001" && depositInvoice?.status == .draft
+      && depositInvoice?.reference == "QU-0001 · Website" && depositInvoice?.lines.first?.description == "Design (30% of QU-0001)",
+      "A 30% deposit invoice from the quote (\(depositInvoice?.lines.map(\.net) ?? []))")
+check(quoting.quote(websiteQuote)?.status == .accepted && quoting.quote(websiteQuote)?.statusText(on: date(2026, 10, 10), calendar: calendar) == "30% invoiced",
+      "…and the quote shows how much is invoiced")
+let balance = try? quoting.invoice(fromQuote: websiteQuote, issued: date(2026, 10, 30), approve: true)
+let balanceInvoice = balance.flatMap { quoting.invoice($0) }
+check(balanceInvoice?.lines.map(\.net) == [525_000, 84_006] && balanceInvoice?.status == .approved
+      && (depositInvoice?.subtotal ?? 0) + (balanceInvoice?.subtotal ?? 0) == 870_008, "The balance makes it up to the cent, approved")
+check(quoting.quote(websiteQuote)?.status == .invoiced && quoting.quote(websiteQuote)?.invoices.count == 2, "The quote is invoiced in full")
+var tooMuch: LedgerError?
+do { _ = try quoting.invoice(fromQuote: websiteQuote, issued: date(2026, 11, 1)) } catch { tooMuch = error as? LedgerError }
+check(tooMuch == .alreadyInvoiced, "Not invoiced twice")
+let wholeQuote = quoting.saveQuote(Quote(number: "", contact: tom.id, issued: date(2026, 10, 2), expires: date(2026, 11, 1), lines: [
+    InvoiceLine(description: "Shoot", quantity: 2, unitPrice: 240_000, account: "200", gst: .gst),
+]))
+let whole = (try? quoting.invoice(fromQuote: wholeQuote, issued: date(2026, 10, 3))).flatMap { quoting.invoice($0) }
+check(whole?.lines.first?.quantity == 2 && whole?.lines.first?.description == "Shoot" && whole?.total == 528_000, "A whole quote keeps its lines as they are")
+let declinedQuote = quoting.saveQuote(Quote(number: "", contact: tom.id, issued: date(2026, 10, 2), expires: date(2026, 11, 1), lines: [
+    InvoiceLine(description: "Extra", unitPrice: 10_000, account: "200", gst: .gst),
+]))
+quoting.setQuote(declinedQuote, status: .declined)
+check((try? quoting.invoice(fromQuote: declinedQuote, issued: date(2026, 10, 3))) == nil && quoting.quote(declinedQuote)?.number == "QU-0003",
+      "A declined quote can't be invoiced")
+quoting.deleteQuote(websiteQuote)
+quoting.deleteQuote(declinedQuote)
+check(quoting.quote(websiteQuote) != nil && quoting.quote(declinedQuote) == nil, "Only quotes never invoiced can be deleted")
+let quoteText = QuoteDocument.markdown(quoting.quote(wholeQuote)!, contact: tom, settings: quoting.settings)
+check(quoteText.hasPrefix("# Quote QU-0002") && quoteText.contains("**Valid until:** 1 November 2026") && quoteText.contains("**Total:** $5,280.00"),
+      "The quote as a document")
+
+// MARK: Repeating invoices
+
+var repeats = LedgerBook()
+repeats.contacts = [tom]
+let endOfMonth = RepeatingInvoice(contact: tom.id, lines: [InvoiceLine(description: "Retainer, [Month] [year]", unitPrice: 300_000, account: "200", gst: .gst)],
+                                  start: date(2026, 1, 31))
+check(calendar.component(.day, from: endOfMonth.occurrence(1, calendar: calendar)) == 28
+      && calendar.component(.day, from: endOfMonth.occurrence(2, calendar: calendar)) == 31, "Monthly from the 31st: 28 February, then 31 March")
+repeats.saveSchedule(endOfMonth)
+let made = repeats.makeRepeatingInvoices(upTo: date(2026, 4, 15))
+let madeInvoices = made.compactMap { repeats.invoice($0) }
+check(madeInvoices.map(\.number) == ["INV-0001", "INV-0002", "INV-0003"] && madeInvoices.allSatisfy { $0.status == .approved }
+      && madeInvoices.last?.lines.first?.description == "Retainer, March 2026", "Catches up on three months, approved (\(madeInvoices.map { $0.lines.first?.description ?? "" }))")
+check(repeats.makeRepeatingInvoices(upTo: date(2026, 4, 15)).isEmpty && repeats.schedule(endOfMonth.id)?.made == 3, "Not made twice")
+check(madeInvoices.first.map { calendar.dateComponents([.day], from: $0.issued, to: $0.due).day } == 14, "Due 14 days after")
+check(repeats.audit.contains { $0.by == "George" && $0.action == "Made repeating invoice INV-0001" } && repeats.actor == "You", "George makes them, in the trail")
+var ending = endOfMonth
+ending.end = date(2026, 3, 1)
+ending.made = 2
+check(ending.next(calendar: calendar) == nil, "A schedule ends")
+var paused = endOfMonth
+paused.id = UUID()
+paused.made = 3
+paused.paused = true
+repeats.saveSchedule(paused)
+check(repeats.makeRepeatingInvoices(upTo: date(2026, 5, 15)).count == 1, "A paused one waits (only the first schedule's April invoice)")
+check(RepeatingInvoice(contact: tom.id, lines: [], every: 3, start: date(2026, 1, 1)).summary == "Every 3 months"
+      && RepeatingInvoice(contact: tom.id, lines: [], unit: .week, start: date(2026, 1, 1)).summary == "Every week", "Schedules in words")
+var lockedRepeats = LedgerBook()
+lockedRepeats.contacts = [tom]
+lockedRepeats.saveSchedule(RepeatingInvoice(contact: tom.id, lines: [InvoiceLine(description: "Care plan", unitPrice: 45_000, account: "200", gst: .gst)],
+                                            start: date(2026, 3, 15)))
+lockedRepeats.setLockDate(date(2026, 3, 31))
+let lockedMade = lockedRepeats.makeRepeatingInvoices(upTo: date(2026, 4, 20)).compactMap { lockedRepeats.invoice($0) }
+check(lockedMade.map(\.status) == [.draft, .approved], "One dated in a locked period is left as a draft")
+let repeated = repeats.repeatInvoice(madeInvoices[0].id, every: 1, unit: .month).flatMap { repeats.schedule($0) }
+check(repeated?.made == 1 && repeated.flatMap { $0.next(calendar: calendar) }.map { calendar.component(.month, from: $0) } == 2,
+      "Repeat an invoice: the next is a month on")
+check(repeats.upcomingRepeats(from: date(2026, 4, 20), days: 20).count == 1, "What's coming up")
+
+// MARK: Overdue reminders
+
+var chasing = LedgerBook()
+chasing.settings.businessName = "Northside Studio"
+chasing.settings.bsb = "063-000"
+chasing.settings.accountNumber = "1234 5678"
+chasing.settings.accountName = "Northside Studio Pty Ltd"
+chasing.contacts = [tom]
+let owed = Invoice(kind: .sale, number: chasing.takeInvoiceNumber(), contact: tom.id, issued: date(2026, 9, 17), due: date(2026, 10, 1),
+                   lines: [InvoiceLine(description: "Campaign", unitPrice: 180_000, account: "200", gst: .gst)])
+chasing.invoices.append(owed)
+try? chasing.approve(owed.id)
+check(chasing.remindersDue(on: date(2026, 10, 2)).isEmpty, "Not the day after")
+let friendly = chasing.remindersDue(on: date(2026, 10, 4))
+check(friendly.count == 1 && friendly.first?.tone == .friendly && friendly.first?.daysLate == 3, "Three days late: a friendly reminder")
+let friendlyMail = friendly.first.map { chasing.reminderDraft($0) }
+check(friendlyMail?.to == "tom@northwind.example" && friendlyMail?.subject == "Reminder: invoice INV-0001 from Northside Studio"
+      && friendlyMail?.body.hasPrefix("Hi Tom,\n\nA friendly reminder that invoice INV-0001 for $1,980.00 was due on 1 October.") == true
+      && friendlyMail?.body.contains("BSB 063-000, account 1234 5678, with INV-0001 as the reference") == true
+      && friendlyMail?.body.hasSuffix("Thanks,\nNorthside Studio") == true, "Marc's draft: \(friendlyMail?.body ?? "")")
+chasing.clock = date(2026, 10, 4)
+chasing.noteReminder(owed.id, stage: 0)
+check(chasing.remindersDue(on: date(2026, 10, 9)).isEmpty, "Not twice at the same stage")
+let firm = chasing.remindersDue(on: date(2026, 10, 15))
+check(firm.first?.tone == .firm && firm.first.map { chasing.reminderDraft($0).subject } == "Invoice INV-0001 is 14 days overdue"
+      && firm.first?.lastSent == date(2026, 10, 4), "Two weeks late: firmer")
+chasing.clock = date(2026, 10, 28)
+chasing.noteReminder(owed.id, stage: 1)
+check(chasing.remindersDue(on: date(2026, 10, 31)).isEmpty, "At least five days between reminders")
+let last = chasing.remindersDue(on: date(2026, 11, 2))
+check(last.first?.tone == .final && last.first.map { chasing.reminderDraft($0).subject } == "Final reminder: invoice INV-0001, 32 days overdue"
+      && last.first.map { chasing.reminderDraft($0).body.contains("Kind regards,") } == true, "A month late: the final reminder")
+try? chasing.recordPayment(owed.id, amount: 98_000, date: date(2026, 11, 1), bankAccount: "090")
+check(last.first.map { chasing.reminderDraft($0).body.contains("Final reminder") == false && chasing.reminderDraft($0).body.contains("The remaining $1,000.00 on invoice INV-0001 is now 32 days overdue") } == true,
+      "Part paid: it asks for the rest")
+chasing.clock = date(2026, 11, 2)
+chasing.noteReminder(owed.id, stage: 2, skipped: true)
+check(chasing.remindersDue(on: date(2026, 11, 20)).isEmpty && chasing.remindersSent(for: owed.id).count == 2
+      && chasing.audit.last?.action == "Skipped a reminder for INV-0001" && chasing.audit.last?.by == "You", "Skipping one counts as dealt with")
+let veryLate = Invoice(kind: .sale, number: chasing.takeInvoiceNumber(), contact: tom.id, issued: date(2026, 8, 1), due: date(2026, 8, 15),
+                       lines: [InvoiceLine(description: "Old", unitPrice: 50_000, account: "200", gst: .gst)])
+chasing.invoices.append(veryLate)
+try? chasing.approve(veryLate.id)
+check(chasing.remindersDue(on: date(2026, 10, 1)).first { $0.invoice == veryLate.id }?.tone == .final, "Never chased and very late: straight to the final one")
+chasing.bank.append(BankLine(account: "090", date: date(2026, 9, 30), description: "NORTHWIND TRADERS", amount: 55_000))
+check(!chasing.remindersDue(on: date(2026, 10, 1)).contains { $0.invoice == veryLate.id }
+      && chasing.latePaymentsWaiting(on: date(2026, 10, 1)).first?.invoice.id == veryLate.id, "Not when the payment looks like it's in the bank")
+check(ReminderText.greeting(name: "Acme Pty Ltd", email: "accounts@acme.example") == "Hi there,"
+      && ReminderText.greeting(name: "Priya Shah", email: "accounts@northwind.vc") == "Hi Priya,"
+      && ReminderText.greeting(name: "Kestrel Studio", email: "hello@kestrel.example") == "Hi there,"
+      && ReminderText.greeting(name: "", email: "tom.baker@acme.co") == "Hi Tom,", "Greetings by name, not to the accounts inbox")
+check(chasing.invoiceMentioned(inSubject: "Re: Final reminder: invoice INV-0002, 47 days overdue") == veryLate.id
+      && chasing.invoiceMentioned(inSubject: "About INV-00021") == nil && chasing.invoiceMentioned(inSubject: "Hello") == nil,
+      "Which invoice an email is about")
+var oneStage = LedgerBook()
+oneStage.contacts = [tom]
+oneStage.settings.reminderDays = [7]
+oneStage.invoices.append(owed)
+oneStage.invoices[0].status = .draft
+try? oneStage.approve(owed.id)
+check(oneStage.remindersDue(on: date(2026, 11, 1)).first?.tone == .friendly, "One reminder day: one friendly reminder")
+
+// MARK: Lock date and audit trail
+
+var locking = LedgerBook()
+locking.contacts = [tom]
+let septemberWork = Invoice(kind: .sale, number: "INV-1", contact: tom.id, issued: date(2026, 9, 10), due: date(2026, 9, 24),
+                            lines: [InvoiceLine(description: "September", unitPrice: 10_000, account: "200", gst: .gst)])
+let lateDraft = Invoice(kind: .sale, number: "INV-2", contact: tom.id, issued: date(2026, 9, 20), due: date(2026, 10, 4),
+                        lines: [InvoiceLine(description: "Forgotten", unitPrice: 10_000, account: "200", gst: .gst)])
+locking.invoices = [septemberWork, lateDraft]
+try? locking.approve(septemberWork.id)
+locking.importStatement([BankLine(account: "090", date: date(2026, 9, 12), description: "GOOGLE*WORKSPACE", amount: -3_300)])
+let googleLine = locking.bank[0].id
+try? locking.code(googleLine, account: "485", gst: .gst)
+locking.setLockDate(date(2026, 9, 30))
+check(locking.isLocked(date(2026, 9, 30)) && !locking.isLocked(date(2026, 10, 1)), "Locked up to and including the lock date")
+var lockError: LedgerError?
+do {
+    try locking.post(JournalEntry(date: date(2026, 9, 15), memo: "Late", source: .manual, lines: [
+        JournalLine(account: "090", amount: 100), JournalLine(account: "880", amount: -100)]))
+} catch { lockError = error as? LedgerError }
+check(lockError == .locked(locking.settings.lockDate!) && lockError?.errorDescription?.contains("locked up to 30 September 2026") == true,
+      "Nothing new before the lock date: \(lockError?.errorDescription ?? "")")
+check((try? locking.post(JournalEntry(date: date(2026, 10, 1), memo: "Fine", source: .manual, lines: [
+    JournalLine(account: "090", amount: 100), JournalLine(account: "880", amount: -100)]))) != nil, "After it is fine")
+check((try? locking.approve(lateDraft.id)) == nil && locking.invoice(lateDraft.id)?.status == .draft, "A draft dated in a locked period can't be approved")
+check((try? locking.void(septemberWork.id)) == nil && locking.invoice(septemberWork.id)?.status == .approved, "Nor voided")
+check((try? locking.unreconcile(googleLine)) == nil && locking.bank[0].isReconciled, "Nor unreconciled")
+locking.setLockDate(nil)
+check((try? locking.void(septemberWork.id)) != nil && locking.invoice(septemberWork.id)?.status == .void, "Unlocked, it can be")
+let trail = locking.auditTrail()
+check(trail.first?.action == "Voided invoice INV-1" && trail.contains { $0.action == "Locked the books" && $0.detail == "Up to 30 September 2026" }
+      && trail.contains { $0.action == "Unlocked the books" } && trail.contains { $0.action == "Coded a bank line to \(locking.account("485")?.name ?? "")" }
+      && trail.contains { $0.action == "Imported a bank statement" && $0.detail == "1 new line" },
+      "The audit trail, newest first: \(trail.map(\.action))")
+check(locking.auditTrail(matching: "invoice inv-1").map(\.action) == ["Voided invoice INV-1", "Approved invoice INV-1"], "Searching the trail")
+locking.clock = date(2026, 1, 1)
+locking.actor = "Marc"
+locking.log("Something")
+check(locking.audit.last?.date == date(2026, 1, 1) && locking.audit.last?.by == "Marc", "Stamped with who and when")
+
+// MARK: Saved books
+
+var saved = quoting
+saved.actor = "George"
+saved.clock = date(2026, 1, 1)
+saved.saveSchedule(endOfMonth)
+let savedData = try! JSONEncoder().encode(saved)
+let reopened = try? JSONDecoder().decode(LedgerBook.self, from: savedData)
+check(reopened?.quotes.count == saved.quotes.count && reopened?.repeating.count == 1 && reopened?.audit.count == saved.audit.count
+      && reopened?.actor == "You" && reopened?.clock == nil, "Quotes, schedules and the trail are saved; who and when aren't")
+var older = try! JSONSerialization.jsonObject(with: savedData) as! [String: Any]
+for key in ["quotes", "repeating", "reminders", "audit"] { older.removeValue(forKey: key) }
+var oldSettings = older["settings"] as! [String: Any]
+for key in ["quotePrefix", "nextQuote", "quoteDays", "lockDate", "reminderDays"] { oldSettings.removeValue(forKey: key) }
+older["settings"] = oldSettings
+let olderBook = try? JSONDecoder().decode(LedgerBook.self, from: JSONSerialization.data(withJSONObject: older))
+check(olderBook?.invoices.count == saved.invoices.count && olderBook?.quotes.isEmpty == true && olderBook?.settings.quotePrefix == "QU-"
+      && olderBook?.settings.reminderDays == [3, 14, 30] && olderBook?.settings.businessName == "Northside Studio", "Books saved by an older version still open")
+
 // MARK: The sample books
 
 let sample = LedgerSamples.book(now: date(2026, 11, 1))
@@ -244,6 +454,20 @@ let awsSample = sample.unreconciled.first { $0.description.hasPrefix("AWS") }
 check(awsSample.map { sample.suggestion(for: $0) } == .rule(account: "485", gst: .gst, times: 3), "…and AWS is coded like the last three")
 check(sample.overdue(.sale, on: date(2026, 11, 1)).count == 2 && sample.invoices.contains { $0.status == .draft },
       "…with overdue invoices and a draft (\(sample.overdue(.sale, on: date(2026, 11, 1)).map(\.number)))")
+check(sample.quotes.count == 4 && sample.quotes.filter { $0.isExpired(on: date(2026, 11, 1), calendar: calendar) }.count == 1
+      && sample.quotes.contains { $0.parts == [0.5] } && sample.openQuotes(on: date(2026, 11, 1)).count == 1, "…quotes in every state")
+let sampleReminders = sample.remindersDue(on: date(2026, 11, 1))
+check(sampleReminders.map(\.number) == ["INV-0004"] && sampleReminders.first?.tone == .final
+      && sample.latePaymentsWaiting(on: date(2026, 11, 1)).map(\.invoice.number) == ["INV-0005"],
+      "…Marc's final reminder for Acme, and Kestrel's payment waiting in the bank (\(sampleReminders.map(\.number)))")
+var sampleRepeats = sample
+check(sampleRepeats.makeRepeatingInvoices(upTo: date(2026, 11, 1)).isEmpty, "…no repeating invoice due yet")
+let novemberRepeats = sampleRepeats.makeRepeatingInvoices(upTo: date(2026, 11, 30)).compactMap { sampleRepeats.invoice($0) }
+check(novemberRepeats.compactMap { $0.lines.first?.description }.sorted() == ["Monthly retainer, November", "Website care plan, quarter from November"],
+      "…two repeating invoices in November (\(novemberRepeats.compactMap { $0.lines.first?.description }))")
+check(sample.isLocked(date(2026, 9, 30)) && !sample.isLocked(date(2026, 10, 1)) && sample.audit.count > 30
+      && sample.audit.allSatisfy { $0.date <= date(2026, 11, 1) } && sample.auditTrail().first.map { $0.date > date(2026, 10, 25) } == true,
+      "…locked to last quarter, with a backdated trail (\(sample.audit.count) changes)")
 
 print(failures == 0 ? "ALL PASSED" : "\(failures) FAILED")
 exit(failures == 0 ? 0 : 1)

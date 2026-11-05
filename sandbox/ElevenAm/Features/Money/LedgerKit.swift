@@ -299,6 +299,41 @@ struct LedgerSettings: Codable, Hashable, Sendable {
     var invoicePrefix = "INV-"
     var nextInvoice = 1
     var paymentDays = 14
+    var quotePrefix = "QU-"
+    var nextQuote = 1
+    /// How long a quote stands.
+    var quoteDays = 30
+    /// Nothing dated on or before this can be added, changed or removed. Lock a quarter once its BAS is in.
+    var lockDate: Date?
+    /// Days after the due date Marc drafts a reminder: friendly, then firmer, then a final one.
+    var reminderDays = [3, 14, 30]
+
+    init() {}
+}
+
+extension LedgerSettings {
+    /// Tolerant of fields added in later versions.
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        self.init()
+        businessName = try c.decodeIfPresent(String.self, forKey: .businessName) ?? businessName
+        abn = try c.decodeIfPresent(String.self, forKey: .abn) ?? ""
+        email = try c.decodeIfPresent(String.self, forKey: .email) ?? ""
+        address = try c.decodeIfPresent(String.self, forKey: .address) ?? ""
+        bsb = try c.decodeIfPresent(String.self, forKey: .bsb) ?? ""
+        accountNumber = try c.decodeIfPresent(String.self, forKey: .accountNumber) ?? ""
+        accountName = try c.decodeIfPresent(String.self, forKey: .accountName) ?? ""
+        gstRegistered = try c.decodeIfPresent(Bool.self, forKey: .gstRegistered) ?? true
+        cashBasis = try c.decodeIfPresent(Bool.self, forKey: .cashBasis) ?? false
+        invoicePrefix = try c.decodeIfPresent(String.self, forKey: .invoicePrefix) ?? invoicePrefix
+        nextInvoice = try c.decodeIfPresent(Int.self, forKey: .nextInvoice) ?? 1
+        paymentDays = try c.decodeIfPresent(Int.self, forKey: .paymentDays) ?? 14
+        quotePrefix = try c.decodeIfPresent(String.self, forKey: .quotePrefix) ?? quotePrefix
+        nextQuote = try c.decodeIfPresent(Int.self, forKey: .nextQuote) ?? 1
+        quoteDays = try c.decodeIfPresent(Int.self, forKey: .quoteDays) ?? 30
+        lockDate = try c.decodeIfPresent(Date.self, forKey: .lockDate)
+        reminderDays = try c.decodeIfPresent([Int].self, forKey: .reminderDays) ?? reminderDays
+    }
 }
 
 // MARK: Reports
@@ -377,7 +412,7 @@ struct CashRow: Identifiable, Hashable, Sendable {
 }
 
 enum LedgerError: LocalizedError, Equatable {
-    case unbalanced, missingAccount(String), notFound, alreadyReconciled, nothingOwing, notApproved
+    case unbalanced, missingAccount(String), notFound, alreadyReconciled, nothingOwing, notApproved, locked(Date), alreadyInvoiced
 
     var errorDescription: String? {
         switch self {
@@ -387,6 +422,11 @@ enum LedgerError: LocalizedError, Equatable {
         case .alreadyReconciled: return "That bank line is already reconciled."
         case .nothingOwing: return "Nothing is owing on it."
         case .notApproved: return "Approve it first."
+        case .locked(let date):
+            let formatter = DateFormatter()
+            formatter.dateFormat = "d MMMM yyyy"
+            return "The books are locked up to \(formatter.string(from: date)). Change the lock date in Settings to change anything before it."
+        case .alreadyInvoiced: return "That quote has been invoiced in full."
         }
     }
 }
@@ -411,8 +451,37 @@ struct LedgerBook: Codable, Sendable {
     var bank: [BankLine] = []
     var invoices: [Invoice] = []
     var rules: [String: CodingRule] = [:]
+    var quotes: [Quote] = []
+    var repeating: [RepeatingInvoice] = []
+    var reminders: [ReminderSent] = []
+    /// Every change, newest last: who, what and when.
+    var audit: [AuditEvent] = []
+    /// Who's making changes right now, for the audit trail. Not saved.
+    var actor = "You"
+    /// The time changes are stamped with; nil is now. Not saved (the samples use it to backdate).
+    var clock: Date?
 
     init() {}
+
+    private enum CodingKeys: String, CodingKey {
+        case settings, accounts, contacts, entries, bank, invoices, rules, quotes, repeating, reminders, audit
+    }
+
+    /// Tolerant of parts added in later versions.
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        settings = try c.decodeIfPresent(LedgerSettings.self, forKey: .settings) ?? LedgerSettings()
+        accounts = try c.decodeIfPresent([LedgerAccount].self, forKey: .accounts) ?? LedgerAccount.australian
+        contacts = try c.decodeIfPresent([Contact].self, forKey: .contacts) ?? []
+        entries = try c.decodeIfPresent([JournalEntry].self, forKey: .entries) ?? []
+        bank = try c.decodeIfPresent([BankLine].self, forKey: .bank) ?? []
+        invoices = try c.decodeIfPresent([Invoice].self, forKey: .invoices) ?? []
+        rules = try c.decodeIfPresent([String: CodingRule].self, forKey: .rules) ?? [:]
+        quotes = (try? c.decodeIfPresent([Quote].self, forKey: .quotes)) ?? []
+        repeating = (try? c.decodeIfPresent([RepeatingInvoice].self, forKey: .repeating)) ?? []
+        reminders = (try? c.decodeIfPresent([ReminderSent].self, forKey: .reminders)) ?? []
+        audit = (try? c.decodeIfPresent([AuditEvent].self, forKey: .audit)) ?? []
+    }
 
     var calendar: Calendar {
         var calendar = Calendar(identifier: .gregorian)
@@ -442,6 +511,7 @@ struct LedgerBook: Codable, Sendable {
     @discardableResult
     mutating func post(_ entry: JournalEntry) throws -> UUID {
         guard entry.isBalanced else { throw LedgerError.unbalanced }
+        if let lock = settings.lockDate, isLocked(entry.date) { throw LedgerError.locked(lock) }
         for line in entry.lines where account(line.account) == nil { throw LedgerError.missingAccount(line.account) }
         entries.append(entry)
         return entry.id
@@ -450,6 +520,33 @@ struct LedgerBook: Codable, Sendable {
     mutating func removeEntry(_ id: UUID?) {
         guard let id else { return }
         entries.removeAll { $0.id == id }
+    }
+
+    // MARK: Lock date and audit trail
+
+    /// On or before the lock date.
+    func isLocked(_ date: Date) -> Bool {
+        guard let lock = settings.lockDate else { return false }
+        return calendar.startOfDay(for: date) <= calendar.startOfDay(for: lock)
+    }
+
+    private func checkUnlocked(_ entryIDs: [UUID?]) throws {
+        guard let lock = settings.lockDate else { return }
+        for id in entryIDs.compactMap({ $0 }) {
+            if let entry = entries.first(where: { $0.id == id }), isLocked(entry.date) { throw LedgerError.locked(lock) }
+        }
+    }
+
+    /// Locks the books up to a date (nil unlocks them), and notes it.
+    mutating func setLockDate(_ date: Date?) {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "d MMMM yyyy"
+        settings.lockDate = date.map { calendar.date(bySettingHour: 12, minute: 0, second: 0, of: $0) ?? $0 }
+        log(date == nil ? "Unlocked the books" : "Locked the books", date.map { "Up to \(formatter.string(from: $0))" } ?? "")
+    }
+
+    mutating func log(_ action: String, _ detail: String = "", amount: Cents? = nil) {
+        audit.append(AuditEvent(date: clock ?? Date(), by: actor, action: action, detail: detail, amount: amount))
     }
 
     /// The next invoice number, like INV-0042.
@@ -488,11 +585,15 @@ struct LedgerBook: Codable, Sendable {
         invoice.entry = try post(entry)
         invoice.status = .approved
         invoices[index] = invoice
+        log("Approved \(sale ? "invoice" : "bill") \(invoice.number)", contact(invoice.contact)?.name ?? "", amount: invoice.total)
     }
 
     /// Voiding takes it back out of the books (and any payments with it).
-    mutating func void(_ id: UUID) {
+    mutating func void(_ id: UUID) throws {
         guard let index = invoices.firstIndex(where: { $0.id == id }) else { return }
+        try checkUnlocked([invoices[index].entry] + invoices[index].payments.map(\.entry))
+        let total = invoices[index].total
+        log("Voided \(invoices[index].kind == .sale ? "invoice" : "bill") \(invoices[index].number)", contact(invoices[index].contact)?.name ?? "", amount: total)
         removeEntry(invoices[index].entry)
         for payment in invoices[index].payments {
             removeEntry(payment.entry)
@@ -520,6 +621,7 @@ struct LedgerBook: Codable, Sendable {
         let entryID = try post(entry)
         invoices[index].payments.append(Payment(date: date, amount: amount, bankAccount: bankAccount, entry: entryID))
         if invoices[index].owing == 0 { invoices[index].status = .paid }
+        log("\(sale ? "Payment received for" : "Paid") \(invoice.number)", contact(invoice.contact)?.name ?? "", amount: amount)
         return entryID
     }
 
@@ -541,6 +643,7 @@ struct LedgerBook: Codable, Sendable {
             added += 1
         }
         bank.sort { $0.date < $1.date }
+        if added > 0 { log("Imported a bank statement", "\(added) new \(added == 1 ? "line" : "lines")\(duplicates > 0 ? ", \(duplicates) already here" : "")") }
         return (added, duplicates)
     }
 
@@ -566,6 +669,7 @@ struct LedgerBook: Codable, Sendable {
         let entry = JournalEntry(date: line.date, memo: memo ?? line.description, source: .bank, reference: line.id, lines: lines)
         let id = try post(entry)
         bank[index].entry = id
+        log("Coded a bank line to \(account(code)?.name ?? code)", line.description, amount: gross)
         if learn {
             let key = Self.payeeKey(line.description)
             if !key.isEmpty {
@@ -599,6 +703,7 @@ struct LedgerBook: Codable, Sendable {
         ])
         let id = try post(entry)
         bank[index].entry = id
+        log("Recorded a transfer to \(account(other)?.name ?? other)", line.description, amount: line.amount)
         // The same transfer seen from the other account reconciles against the same entry.
         if let twin = bank.firstIndex(where: { $0.account == other && !$0.isReconciled && $0.amount == -line.amount
             && abs($0.date.timeIntervalSince(line.date)) < 4 * 86_400 }) {
@@ -608,8 +713,10 @@ struct LedgerBook: Codable, Sendable {
     }
 
     /// Takes a bank line's entry back out, so it can be coded again.
-    mutating func unreconcile(_ lineID: UUID) {
+    mutating func unreconcile(_ lineID: UUID) throws {
         guard let index = bank.firstIndex(where: { $0.id == lineID }), let entryID = bank[index].entry else { return }
+        try checkUnlocked([entryID])
+        log("Undid a reconciliation", bank[index].description, amount: bank[index].amount)
         for invoice in invoices.indices {
             if let payment = invoices[invoice].payments.firstIndex(where: { $0.entry == entryID }) {
                 invoices[invoice].payments.remove(at: payment)

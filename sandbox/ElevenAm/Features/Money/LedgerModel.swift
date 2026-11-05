@@ -194,7 +194,7 @@ final class LedgerModel: ObservableObject {
     }
 
     func unreconcile(_ line: BankLine) {
-        change { $0.unreconcile(line.id) }
+        change { try $0.unreconcile(line.id) }
     }
 
     /// Accepts every suggestion that matches an invoice exactly or a payee coded at least twice.
@@ -279,7 +279,7 @@ final class LedgerModel: ObservableObject {
         notice = "A draft bill from \(vendor) for \(LedgerMoney.text(total)) is ready to check and approve."
     }
 
-    func void(_ id: UUID) { change { $0.void(id) } }
+    func void(_ id: UUID) { change { try $0.void(id) } }
 
     func deleteDraft(_ id: UUID) {
         change { book in book.invoices.removeAll { $0.id == id && $0.status == .draft } }
