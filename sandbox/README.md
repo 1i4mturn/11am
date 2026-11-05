@@ -127,6 +127,11 @@ The apps share what they know, so one thing done in one place shows up where it'
 | press **Write a proposal** on a deal | Write opens the proposal with the client, contact and price filled in |
 | press **Next step to Tasks** on a deal | the next step becomes a dated task, linked to the deal |
 | look at Today | today's tasks sit beside your calendar, and the brief names the ones that matter |
+| open a receipt or invoice (Stripe, your hosting, a supplier) | Marc offers **Add to Money**: a draft bill for that amount, GST worked out, ready to approve in Money › Bills |
+| open an email asking to meet ("are you free…", "can we find a time") | Marc offers **Reply with times**: a reply with your free times over the next five days from Calendar |
+| open an agreement or contract to sign | Marc offers **Remind me to sign it**: a task for tomorrow, linked to the email |
+| pick **Snippets** while writing | your saved text goes in, asking only for the blanks; the first name, your name, today and your free times fill themselves in |
+| pick **Send later** | it goes at that time (while 11am is running, which it is in the notch); **Scheduled** in Mail lets you send it now or take it back to edit |
 
 ## Tasks: how Leo keeps them
 
