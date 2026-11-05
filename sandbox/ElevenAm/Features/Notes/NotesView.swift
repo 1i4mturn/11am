@@ -122,6 +122,7 @@ struct NotesView: View {
                 Button("All notes as Markdown…") { notes.exportAll() }
             }
             Divider()
+            Button("Try the sample pages (a small company wiki)") { withAnimation(theme.spring) { notes.loadPageSample() } }
             Button("Show the notes folder in Finder") { NSWorkspace.shared.activateFileViewerSelecting([notes.root]) }
         } label: {
             Image(systemName: "ellipsis.circle")

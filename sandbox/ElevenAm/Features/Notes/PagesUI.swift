@@ -75,10 +75,10 @@ struct PagesSidebarSection: View {
             return withAnimation(theme.spring) { notes.setParent(dropped, to: id) }
         }
         .contextMenu {
-            Button("Add a sub-page") { notes.newSubpage(of: id) }
+            Button("Add a sub-page") { _ = notes.newSubpage(of: id) }
             Button(notes.pages[id]?.favourite == true ? "Remove from favourites" : "Add to favourites") { notes.toggleFavourite(id) }
             if notes.pages[id]?.parent != nil {
-                Button("Move to the top") { notes.setParent(id, to: nil) }
+                Button("Move to the top") { _ = notes.setParent(id, to: nil) }
             }
         }
     }
@@ -154,10 +154,10 @@ struct PageHeaderBar: View {
                 notes.toggleFavourite(note.id)
             }
             ToolButton(symbol: "plus.square.on.square", help: "Add a sub-page inside this one") {
-                withAnimation(theme.spring) { notes.newSubpage(of: note.id) }
+                withAnimation(theme.spring) { _ = notes.newSubpage(of: note.id) }
             }
             ToolButton(symbol: "checklist", help: open == 0 ? "Checkboxes on this page go to Tasks" : "Send \(open) open checkbox\(open == 1 ? "" : "es") to Tasks") {
-                notes.sendCheckboxesToTasks(note.id)
+                _ = notes.sendCheckboxesToTasks(note.id)
             }
             ToolButton(symbol: "clock.arrow.circlepath", help: "Earlier versions of this page") {
                 showsHistory = true
