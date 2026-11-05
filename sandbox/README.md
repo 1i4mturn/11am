@@ -111,6 +111,23 @@ The first units of Spanish and French are written by hand and tested (every word
 - The review boxes, placement levels, minutes and streaks.
 - Reading units Harris writes, and refusing broken ones.
 
+## How the agents work together
+
+The apps share what they know, so one thing done in one place shows up where it's needed:
+
+| When you… | Then… |
+|---|---|
+| send an email saying "I'll send you the deck by Friday" | Marc adds **Send Tom the deck**, due Friday, to Tasks, with the sentence it came from |
+| press the bell on an email and pick a day | you get a follow-up task for that day, and it **ticks itself off when they reply** |
+| press the person button beside a sender | you see their company, open deals and meetings coming up, and can add them to Business |
+| tick checkboxes on a page, or ask "@Leo turn these into tasks" | they go to Tasks with their dates, and the page notes "→ Tasks" |
+| put `{{tasks: …}}`, `{{sheet: …}}` or `{{calendar: …}}` in a page | the page shows them live from Tasks, Sheets and Calendar |
+| drag a task from **Fit in** onto the calendar | Leo blocks an hour for it (90 minutes for a long checklist) and dates the task |
+| ask Leo to **Prep me** for a meeting | the note includes recent mail with them and where any open deal stands |
+| press **Write a proposal** on a deal | Write opens the proposal with the client, contact and price filled in |
+| press **Next step to Tasks** on a deal | the next step becomes a dated task, linked to the deal |
+| look at Today | today's tasks sit beside your calendar, and the brief names the ones that matter |
+
 ## Tasks: how Leo keeps them
 
 **Lists.** The **Inbox** holds tasks with no date and no project. **Today** has what's due today or overdue (overdue first, then the most important), and anything whose start date has come. **Upcoming** has the future, grouped by day. **Someday** is for ideas. The **Logbook** has what you've ticked off. A task added while you're looking at a list takes that list's meaning: added in Today, it's due today; added in a project, it's in the project.
