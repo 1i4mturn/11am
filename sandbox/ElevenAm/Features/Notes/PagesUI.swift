@@ -137,10 +137,6 @@ struct PageHeaderBar: View {
             .help("Choose an icon")
             // The page above (clickable) and this page; the title keeps its room and the parent shortens first.
             if let parent = path.last {
-                if path.count > 1 {
-                    Text("…").foregroundStyle(theme.inkTertiary(scheme))
-                    chevron
-                }
                 Button(parent.title) { withAnimation(theme.spring) { notes.selectedID = parent.id } }
                     .buttonStyle(.plain)
                     .font(.system(size: 12))
@@ -158,12 +154,20 @@ struct PageHeaderBar: View {
             ToolButton(symbol: favourite ? "star.fill" : "star", help: favourite ? "Remove from favourites" : "Add to favourites", on: favourite) {
                 notes.toggleFavourite(note.id)
             }
-            ToolButton(symbol: "plus.square.on.square", help: "Add a sub-page inside this one") {
-                withAnimation(theme.spring) { _ = notes.newSubpage(of: note.id) }
+            Menu {
+                Button("Add a sub-page inside this one") { withAnimation(theme.spring) { _ = notes.newSubpage(of: note.id) } }
+                Button(open == 0 ? "Send checkboxes to Tasks (none open)" : "Send \(open) open checkbox\(open == 1 ? "" : "es") to Tasks") {
+                    _ = notes.sendCheckboxesToTasks(note.id)
+                }
+                .disabled(open == 0)
+            } label: {
+                Image(systemName: "plus.square.on.square")
             }
-            ToolButton(symbol: "checklist", help: open == 0 ? "Checkboxes on this page go to Tasks" : "Send \(open) open checkbox\(open == 1 ? "" : "es") to Tasks") {
-                _ = notes.sendCheckboxesToTasks(note.id)
-            }
+            .menuStyle(.button)
+            .buttonStyle(.borderless)
+            .menuIndicator(.hidden)
+            .fixedSize()
+            .help("Add a sub-page, or send this page's checkboxes to Tasks")
             ToolButton(symbol: "clock.arrow.circlepath", help: "Earlier versions of this page") {
                 showsHistory = true
             }

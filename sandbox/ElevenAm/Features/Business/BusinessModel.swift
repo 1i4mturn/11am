@@ -121,10 +121,14 @@ final class BusinessModel: ObservableObject {
         self.voice = voice
         tab = UserDefaults.standard.string(forKey: "business.tab").flatMap(BusinessTab.init(rawValue:)) ?? .pipeline
         deals = JSONStore.load([Deal].self, from: "business-deals") ?? BusinessSamples.deals()
-        people = JSONStore.load([CRMPerson].self, from: "business-people") ?? BusinessSamples.people()
-        organisations = JSONStore.load([CRMOrganisation].self, from: "business-organisations") ?? BusinessSamples.organisations()
+        let savedPeople = JSONStore.load([CRMPerson].self, from: "business-people")
+        let savedOrganisations = JSONStore.load([CRMOrganisation].self, from: "business-organisations")
+        people = savedPeople ?? BusinessSamples.people()
+        organisations = savedOrganisations ?? BusinessSamples.organisations()
         sent = JSONStore.load([CRMSentMail].self, from: "business-sent") ?? []
         linkSampleDeals()
+        // Samples are saved straight away, so deals keep pointing at the same people and companies next time.
+        if savedPeople == nil || savedOrganisations == nil { saveContacts() }
     }
 
     var selected: Deal? { deals.first { $0.id == selectedID } }
@@ -329,7 +333,12 @@ extension BusinessModel {
             }
         }
         var changed = false
+        let personIDs = Set(people.map(\.id))
+        let organisationIDs = Set(organisations.map(\.id))
         for index in deals.indices {
+            // A link to someone or something that's gone is found again.
+            if let id = deals[index].personID, !personIDs.contains(id) { deals[index].personID = nil; changed = true }
+            if let id = deals[index].organisationID, !organisationIDs.contains(id) { deals[index].organisationID = nil; changed = true }
             let address = CRMMatch.address(deals[index].contact)
             if deals[index].personID == nil, let match = people.first(where: { $0.email == address }) {
                 deals[index].personID = match.id

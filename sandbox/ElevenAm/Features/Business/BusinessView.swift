@@ -11,12 +11,6 @@ struct BusinessView: View {
         VStack(alignment: .leading, spacing: 16) {
             SectionHeader(title: "business", subtitle: subtitle) {
                 HStack(spacing: 10) {
-                    Picker("", selection: $business.tab) {
-                        ForEach(BusinessTab.allCases) { tab in Text(tab.title).tag(tab) }
-                    }
-                    .pickerStyle(.segmented)
-                    .labelsHidden()
-                    .fixedSize()
                     Button {
                         withAnimation(theme.spring) { business.refreshContacts() }
                     } label: {
@@ -32,6 +26,13 @@ struct BusinessView: View {
                     .buttonStyle(.vellumPrimary)
                 }
             }
+
+            Picker("", selection: $business.tab) {
+                ForEach(BusinessTab.allCases) { tab in Text(tab.title).tag(tab) }
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+            .fixedSize()
 
             if let notice = business.notice {
                 Text(notice)
@@ -68,7 +69,6 @@ struct BusinessView: View {
         var parts = ["Weighted pipeline \(Money.short(business.weightedPipeline))"]
         let quiet = business.staleCount
         if quiet > 0 { parts.append("\(quiet) going quiet") }
-        parts.append("\(business.people.count) people · \(business.organisations.count) companies")
         return "Conner · " + parts.joined(separator: " · ")
     }
 
@@ -883,7 +883,7 @@ private struct ForecastView: View {
                                 .frame(height: max(2, 200 * month.weighted / largest))
                         }
                         .frame(width: 54, height: 200, alignment: .bottom)
-                        Text(month.month.formatted(.dateTime.month(.abbreviated).year(.twoDigits)))
+                        Text(month.month.formatted(.dateTime.month(.abbreviated).year()))
                             .font(.system(size: 11.5, weight: .medium))
                         Text("\(month.count) deal\(month.count == 1 ? "" : "s") · \(Money.short(month.total))")
                             .font(.system(size: 10.5))
