@@ -55,11 +55,17 @@ struct NotesView: View {
                     .transition(.rise(theme.rise))
             }
 
+            GeometryReader { geometry in
+            // On a narrow window the list of notes steps aside while a page's comments are open.
+            let showsList = !(notes.showsComments && geometry.size.width < 1_150)
             HStack(alignment: .top, spacing: 14) {
                 NotesSidebar()
                     .frame(width: 176)
-                NoteList(deleting: $deleting)
-                    .frame(width: 230)
+                if showsList {
+                    NoteList(deleting: $deleting)
+                        .frame(width: 230)
+                        .transition(.move(edge: .leading).combined(with: .opacity))
+                }
                 ZStack {
                     if let note = notes.selected {
                         NoteDetail(note: note, editor: editor)
@@ -76,9 +82,12 @@ struct NotesView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
+            .frame(width: geometry.size.width, height: geometry.size.height, alignment: .top)
+            }
         }
         .padding(24)
         .animation(theme.spring, value: notes.selectedID)
+        .animation(theme.spring, value: notes.showsComments)
         .animation(theme.spring, value: notes.notice)
         .confirmationDialog("Move \u{201C}\(deleting?.title ?? "")\u{201D} to the Trash?", isPresented: Binding(get: { deleting != nil }, set: { if !$0 { deleting = nil } }),
                             presenting: deleting) { note in

@@ -135,21 +135,14 @@ struct PageHeaderBar: View {
             .menuIndicator(.hidden)
             .fixedSize()
             .help("Choose an icon")
-            ForEach(path) { page in
-                Button(page.title) { withAnimation(theme.spring) { notes.selectedID = page.id } }
-                    .buttonStyle(.plain)
-                    .font(.system(size: 12))
-                    .foregroundStyle(theme.inkSecondary(scheme))
-                    .lineLimit(1)
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 7.5, weight: .bold))
-                    .foregroundStyle(theme.inkTertiary(scheme))
+            // The whole path when it fits, then just the page above, then just this page.
+            ViewThatFits(in: .horizontal) {
+                crumbs(path, current: note)
+                crumbs(Array(path.suffix(1)), current: note, elided: path.count > 1)
+                crumbs([], current: note)
+                Color.clear.frame(width: 1, height: 1)
             }
-            Text(note.title)
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(theme.ink(scheme))
-                .lineLimit(1)
-            Spacer(minLength: 6)
+            .frame(maxWidth: .infinity, alignment: .leading)
             ToolButton(symbol: favourite ? "star.fill" : "star", help: favourite ? "Remove from favourites" : "Add to favourites", on: favourite) {
                 notes.toggleFavourite(note.id)
             }
@@ -173,6 +166,35 @@ struct PageHeaderBar: View {
                 .environmentObject(notes)
                 .environmentObject(theme)
         }
+    }
+}
+
+extension PageHeaderBar {
+    fileprivate func crumbs(_ pages: [Note], current: Note, elided: Bool = false) -> some View {
+        HStack(spacing: 6) {
+            if elided {
+                Text("…").foregroundStyle(theme.inkTertiary(scheme))
+                chevron
+            }
+            ForEach(pages) { page in
+                Button(page.title) { withAnimation(theme.spring) { notes.selectedID = page.id } }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(theme.inkSecondary(scheme))
+                    .fixedSize()
+                chevron
+            }
+            Text(current.title)
+                .fontWeight(.semibold)
+                .foregroundStyle(theme.ink(scheme))
+                .fixedSize()
+        }
+        .font(.system(size: 12))
+    }
+
+    private var chevron: some View {
+        Image(systemName: "chevron.right")
+            .font(.system(size: 7.5, weight: .bold))
+            .foregroundStyle(theme.inkTertiary(scheme))
     }
 }
 
