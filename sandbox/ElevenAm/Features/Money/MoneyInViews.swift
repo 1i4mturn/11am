@@ -244,9 +244,16 @@ private struct QuoteDetail: View {
                     HStack {
                         Button("Email") { ledger.emailQuote(quote) }.buttonStyle(.vellumPrimary)
                         Button("Edit") { ledger.editQuote(quote.id) }.buttonStyle(.vellumSecondary)
-                        Button("PDF") { ledger.saveQuotePDF(quote) }.buttonStyle(.vellumSecondary)
-                        Spacer()
-                        Button("Delete") { deleting = true }.buttonStyle(.vellumSecondary)
+                        Spacer(minLength: 0)
+                        Menu {
+                            Button("Save as PDF…") { ledger.saveQuotePDF(quote) }
+                            Button("Delete…", role: .destructive) { deleting = true }
+                        } label: {
+                            Image(systemName: "ellipsis.circle")
+                        }
+                        .menuStyle(.button)
+                        .buttonStyle(.borderless)
+                        .fixedSize()
                     }
                     Button("Mark as sent") { ledger.markQuote(quote.id, .sent) }
                         .buttonStyle(.borderless)
@@ -256,7 +263,7 @@ private struct QuoteDetail: View {
                     HStack {
                         Button("They said yes") { ledger.markQuote(quote.id, .accepted) }.buttonStyle(.vellumPrimary)
                         Button("No") { ledger.markQuote(quote.id, .declined) }.buttonStyle(.vellumSecondary)
-                        Spacer()
+                        Spacer(minLength: 0)
                         Menu {
                             Button("Email again") { ledger.emailQuote(quote) }
                             Button("Save as PDF…") { ledger.saveQuotePDF(quote) }
@@ -272,16 +279,23 @@ private struct QuoteDetail: View {
                     HStack {
                         Button(quote.parts.isEmpty ? "Invoice it all" : "Invoice the balance, \(remaining)%") { ledger.invoiceQuote(quote.id) }
                             .buttonStyle(.vellumPrimary)
-                        if remaining > 10 {
-                            Button(quote.parts.isEmpty ? "Deposit first…" : "Another part…") {
-                                percent = quote.parts.isEmpty ? 50 : Double(min(50, remaining - 5))
-                                parting = true
-                            }
-                            .buttonStyle(.vellumSecondary)
-                            .popover(isPresented: $parting, arrowEdge: .bottom) { partForm(remaining: remaining) }
+                        Spacer(minLength: 0)
+                        Menu {
+                            Button("Save as PDF…") { ledger.saveQuotePDF(quote) }
+                        } label: {
+                            Image(systemName: "ellipsis.circle")
                         }
-                        Spacer()
-                        Button("PDF") { ledger.saveQuotePDF(quote) }.buttonStyle(.vellumSecondary)
+                        .menuStyle(.button)
+                        .buttonStyle(.borderless)
+                        .fixedSize()
+                    }
+                    if remaining > 10 {
+                        Button(quote.parts.isEmpty ? "Deposit first…" : "Another part…") {
+                            percent = quote.parts.isEmpty ? 50 : Double(min(50, remaining - 5))
+                            parting = true
+                        }
+                        .buttonStyle(.vellumSecondary)
+                        .popover(isPresented: $parting, arrowEdge: .bottom) { partForm(remaining: remaining) }
                     }
                     Text("The invoice is a draft with the quote's lines, for you to check before it goes.")
                         .font(.system(size: 10.5))
@@ -539,7 +553,7 @@ struct RepeatingDetail: View {
                         }
                     }
                     Divider()
-                    ReportRow(label: "Total each time", cents: schedule.total, bold: true)
+                    ReportRow(label: "Each time", cents: schedule.total, bold: true)
                 }
                 HStack {
                     Button("Edit") { ledger.editingSchedule = schedule }.buttonStyle(.vellumSecondary)

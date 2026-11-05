@@ -604,10 +604,20 @@ private struct InvoiceDetail: View {
                     }
                     if sale {
                         Button("Email") { ledger.email(invoice) }.buttonStyle(.vellumSecondary)
+                    } else {
+                        Button("PDF") { ledger.savePDF(invoice) }.buttonStyle(.vellumSecondary)
                     }
-                    Button("PDF") { ledger.savePDF(invoice) }.buttonStyle(.vellumSecondary)
-                    Spacer()
-                    Button("Void") { voiding = true }.buttonStyle(.vellumSecondary)
+                    Spacer(minLength: 0)
+                    Menu {
+                        if sale { Button("Save as PDF…") { ledger.savePDF(invoice) } }
+                        Button("Void…", role: .destructive) { voiding = true }
+                    } label: {
+                        Image(systemName: "ellipsis.circle")
+                    }
+                    .menuStyle(.button)
+                    .buttonStyle(.borderless)
+                    .fixedSize()
+                    .help("More")
                 }
                 if sale {
                     let reminders = ledger.book.remindersSent(for: invoice.id)
