@@ -824,8 +824,12 @@ Ordered by what saves the most money and gets used every day, and by which engin
 | 9 | Leo's Tasks | Tasks, promises from mail, Reminders sync | Notion projects and tasks, Todoist, Things |
 | 10 | Bolton's pages | Sub-pages, live blocks, versions, comments the agents answer, Notion import with nesting | Notion pages |
 | 11 | Conner's Business, finished | People and companies from mail, what's happened from mail and meetings, forecast, proposals | Notion CRM boards |
+| 12 | The agents connected | Time blocking from Tasks, meeting prep with open deals, the person card in Mail, reply nudges | Manual copying between apps |
+| 13 | Marc's toolkit | Snippets with fill-in fields, send later, receipts to Money, meeting requests to Leo, agreements to sign | Text expanders, mail schedulers |
+| 14 | Bolton's Notes extras | Smart folders, locked notes, voice notes written out on the Mac | Apple Notes' locked notes, voice memo apps |
+| 15 | George's money in | Quotes that become invoices (deposit then balance), repeating invoices, overdue reminders Marc drafts for you to approve, lock dates and an audit trail, bills to pay in Leo's Tasks | The rest of Xero's invoicing |
 
-The sandbox has all eleven steps built: accounts, Mail and Calendar (0.5), documents, Notes and PDF (0.6), Sheets and the Money ledger (0.7), Design and Decks (0.8), Video and Audio (0.9), Johnny's Terminal, Scripts and Automations (0.10), the iPhone app (0.11), Harris's language course (0.12), Leo's Tasks (0.13), Bolton's pages (0.14) and Conner's Business (0.15). Notion is fully replaced.
+The sandbox has every step built: accounts, Mail and Calendar (0.5), documents, Notes and PDF (0.6), Sheets and the Money ledger (0.7), Design and Decks (0.8), Video and Audio (0.9), Johnny's Terminal, Scripts and Automations (0.10), the iPhone app (0.11), Harris's language course (0.12), Leo's Tasks (0.13), Bolton's pages (0.14), Conner's Business (0.15), the agents connected (0.16), Marc's toolkit (0.17), Notes extras (0.18) and George's money in (0.19). Notion is fully replaced; for a business without staff, so is Xero's invoicing.
 
 ## 6. Sources
 

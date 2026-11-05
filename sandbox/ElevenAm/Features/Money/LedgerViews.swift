@@ -381,6 +381,13 @@ struct InvoicesPanel: View {
     private var filterBinding: Binding<Filter> { kind == .sale ? $ledger.salesFilter : $billFilter }
 
     var body: some View {
+        GeometryReader { geo in
+            content(narrow: geo.size.width < 800)
+        }
+    }
+
+    @ViewBuilder
+    private func content(narrow: Bool) -> some View {
         let all = ledger.invoices(kind)
         let shown = all.filter(matches)
         let owing = all.reduce(0) { $0 + $1.owing }
@@ -388,12 +395,21 @@ struct InvoicesPanel: View {
         HStack(alignment: .top, spacing: 14) {
             VStack(alignment: .leading, spacing: 10) {
                 HStack(spacing: 10) {
-                    Picker("", selection: filterBinding) {
-                        ForEach(Filter.allCases.filter { kind == .sale || $0 != .repeating }) { item in Text(item.title).tag(item) }
+                    if narrow {
+                        Picker("", selection: filterBinding) {
+                            ForEach(Filter.allCases.filter { kind == .sale || $0 != .repeating }) { item in Text(item.title).tag(item) }
+                        }
+                        .pickerStyle(.menu)
+                        .labelsHidden()
+                        .fixedSize()
+                    } else {
+                        Picker("", selection: filterBinding) {
+                            ForEach(Filter.allCases.filter { kind == .sale || $0 != .repeating }) { item in Text(item.title).tag(item) }
+                        }
+                        .pickerStyle(.segmented)
+                        .labelsHidden()
+                        .frame(maxWidth: kind == .sale ? 460 : 360)
                     }
-                    .pickerStyle(.segmented)
-                    .labelsHidden()
-                    .frame(maxWidth: kind == .sale ? 460 : 360)
                     Spacer(minLength: 8)
                     Button {
                         if filter == .repeating { ledger.newSchedule() } else { ledger.newInvoice(kind) }
@@ -426,16 +442,16 @@ struct InvoicesPanel: View {
                     }
                 }
             }
-            .frame(minWidth: 360, maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            .frame(minWidth: narrow ? 250 : 360, maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             if filter == .repeating {
                 if let id = ledger.selectedSchedule, let schedule = ledger.book.schedule(id) {
                     RepeatingDetail(schedule: schedule)
-                        .frame(width: 320)
+                        .frame(width: narrow ? 270 : 320)
                         .transition(.rise(theme.rise))
                 }
             } else if let id = ledger.selectedInvoice, let invoice = ledger.book.invoice(id), invoice.kind == kind {
                 InvoiceDetail(invoice: invoice)
-                    .frame(width: 320)
+                    .frame(width: narrow ? 270 : 320)
                     .transition(.rise(theme.rise))
             }
         }

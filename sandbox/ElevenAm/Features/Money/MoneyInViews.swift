@@ -26,6 +26,13 @@ struct QuotesPanel: View {
     }
 
     var body: some View {
+        GeometryReader { geo in
+            content(narrow: geo.size.width < 800)
+        }
+    }
+
+    @ViewBuilder
+    private func content(narrow: Bool) -> some View {
         let today = ledger.today
         let calendar = ledger.book.calendar
         let all = ledger.quotes
@@ -35,12 +42,21 @@ struct QuotesPanel: View {
         HStack(alignment: .top, spacing: 14) {
             VStack(alignment: .leading, spacing: 10) {
                 HStack(spacing: 10) {
-                    Picker("", selection: $filter) {
-                        ForEach(Filter.allCases) { item in Text(item.title).tag(item) }
+                    if narrow {
+                        Picker("", selection: $filter) {
+                            ForEach(Filter.allCases) { item in Text(item.title).tag(item) }
+                        }
+                        .pickerStyle(.menu)
+                        .labelsHidden()
+                        .fixedSize()
+                    } else {
+                        Picker("", selection: $filter) {
+                            ForEach(Filter.allCases) { item in Text(item.title).tag(item) }
+                        }
+                        .pickerStyle(.segmented)
+                        .labelsHidden()
+                        .frame(maxWidth: 460)
                     }
-                    .pickerStyle(.segmented)
-                    .labelsHidden()
-                    .frame(maxWidth: 460)
                     Spacer(minLength: 8)
                     Button {
                         ledger.newQuote()
@@ -69,10 +85,10 @@ struct QuotesPanel: View {
                     }
                 }
             }
-            .frame(minWidth: 360, maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            .frame(minWidth: narrow ? 250 : 360, maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             if let id = ledger.selectedQuote, let quote = ledger.book.quote(id) {
                 QuoteDetail(quote: quote)
-                    .frame(width: 320)
+                    .frame(width: narrow ? 270 : 320)
                     .transition(.rise(theme.rise))
             }
         }
@@ -667,7 +683,7 @@ struct MarcRemindersCard: View {
                     Spacer()
                 }
                 ForEach(due) { item in
-                    HStack(spacing: 10) {
+                    VStack(alignment: .leading, spacing: 6) {
                         VStack(alignment: .leading, spacing: 1) {
                             Text("\(item.number) · \(item.contact)")
                                 .font(.system(size: 12.5, weight: .medium))
@@ -676,28 +692,35 @@ struct MarcRemindersCard: View {
                             Text(detail(item))
                                 .font(.system(size: 11).monospacedDigit())
                                 .foregroundStyle(theme.inkTertiary(scheme))
-                                .lineLimit(1)
+                                .lineLimit(2)
+                                .fixedSize(horizontal: false, vertical: true)
                         }
-                        .layoutPriority(1)
-                        Spacer(minLength: 8)
-                        if ledger.sending.contains(item.invoice) {
-                            Text("Sending…").font(.system(size: 11.5)).foregroundStyle(theme.inkTertiary(scheme))
-                        } else {
-                            Button("Skip") { ledger.skip(item) }.buttonStyle(.vellumSecondary)
-                            Button("Read and send…") { ledger.review(item) }.buttonStyle(.vellumPrimary)
+                        HStack(spacing: 8) {
+                            Spacer(minLength: 0)
+                            if ledger.sending.contains(item.invoice) {
+                                Text("Sending…").font(.system(size: 11.5)).foregroundStyle(theme.inkTertiary(scheme))
+                            } else {
+                                Button("Skip") { ledger.skip(item) }.buttonStyle(.vellumSecondary)
+                                Button("Read and send…") { ledger.review(item) }.buttonStyle(.vellumPrimary)
+                            }
                         }
                     }
+                    .padding(.vertical, 2)
                 }
                 ForEach(waiting) { pair in
-                    HStack(spacing: 10) {
+                    VStack(alignment: .leading, spacing: 6) {
                         Text("\(ledger.book.contact(pair.invoice.contact)?.name ?? "Their") \(LedgerMoney.text(pair.invoice.owing)) for \(pair.invoice.number) looks like it's in the bank (\(pair.line.date.shortDay)), so Marc isn't chasing it.")
                             .font(.system(size: 11.5))
                             .foregroundStyle(theme.inkSecondary(scheme))
-                            .lineLimit(2)
+                            .lineLimit(3)
                             .fixedSize(horizontal: false, vertical: true)
-                        Spacer(minLength: 8)
-                        Button("Reconcile") { ledger.reconcileWaiting(pair.invoice, line: pair.line) }.buttonStyle(.vellumSecondary)
+                        HStack {
+                            Spacer(minLength: 0)
+                            Button("Reconcile") { ledger.reconcileWaiting(pair.invoice, line: pair.line) }.buttonStyle(.vellumSecondary)
+                        }
                     }
+                    .padding(.top, 2)
+                    .overlay(alignment: .top) { Rectangle().fill(theme.edge(scheme)).frame(height: 0.5).offset(y: -4) }
                 }
             }
             .padding(12)
