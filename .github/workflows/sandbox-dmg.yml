@@ -53,7 +53,10 @@ jobs:
           cp -R build/Build/Products/Release/ElevenAm.app "dist/root/11am.app"
           ln -s /Applications dist/root/Applications
           hdiutil create -volname "11am sandbox" -srcfolder dist/root -ov -format UDZO "dist/11am-sandbox-${VERSION}.dmg"
-          hdiutil verify "dist/11am-sandbox-${VERSION}.dmg"
+          # hdiutil sometimes reports "Resource temporarily unavailable"; one more try after a pause.
+          hdiutil verify "dist/11am-sandbox-${VERSION}.dmg" || { sleep 10; hdiutil verify "dist/11am-sandbox-${VERSION}.dmg"; }
+          # A copy with a fixed name, so one download link always gets the newest.
+          cp "dist/11am-sandbox-${VERSION}.dmg" "dist/11am-sandbox-latest.dmg"
           rm -rf dist/root
           shasum -a 256 dist/*.dmg | tee dist/SHA256.txt
           ls -la dist

@@ -49,6 +49,8 @@ The app is signed "to run locally" (no Apple Developer account needed). Because 
 
 Shortcuts: **⌘1–⌘9** switch between the first nine apps · **⌘Z / ⇧⌘Z** undo and redo in Photo, Video, Audio, Sheets, Design and Decks · in a language lesson, **↩** checks and continues, **esc** stops · **⌘B** splits, **⌘↩** plays and pauses, **⌘⌫** removes a clip in Video · in Audio, **space** plays, **⌘B** splits, **⌫** deletes and closes the gap, **⌘D** duplicates, **M** drops a marker · **⇧⌘N** writes a new email (a new event in Calendar, a new note in Notes) · **⌥⇧N** jots a note from anywhere · **⌥⇧T** adds a task from anywhere · in Write and Notes, **⌘B ⌘I ⌘U ⌘K ⌘E**, **⌥⌘1–3** headings, **⇧⌘7 ⇧⌘8 ⇧⌘L** lists, **⌘F** find and replace · in Calendar, **T** today, **← →** move, **D 3 W M A** change the view, **↩** edits, **⌫** deletes · in Sheets, arrows move (**⌘** jumps to the edge of the data, **⇧** selects), type to replace, **↩** or **F2** to edit, **⌘D** fills down, **⌘B ⌘I** bold and italic · on a canvas, arrows nudge (**⇧** for 10), **⌘D** duplicates, **⌘G / ⇧⌘G** group and ungroup, **⌘] ⌘[** layer order, **⌘L** locks, **↩** edits text, hold **⌘** while dragging to skip snapping · **⌥⌘↩** presents a deck · **⌘\\** shows or hides the agent pane (it also steps aside on narrow windows) · **⌥Space** asks from anywhere · **⇧⌘R** runs tonight's work now · **⌘,** opens settings.
 
+The newest DMG is always at https://github.com/1i4mturn/11am/raw/ci/sandbox-dmg/11am-sandbox-latest.dmg (each build also keeps its version number in the name).
+
 Screenshots from the CI Mac (a small virtual display without a notch, so the notch shows as a pill, with a busy test desktop behind the app) are on the `ci/sandbox-shots` branch. Push a commit with `[shots]` in its message to refresh them.
 
 ## Your iPhone (11am for iPhone)
@@ -201,6 +203,14 @@ They show under the page, in the order they appear, rather than in the middle of
 **Proposals** start from Write's proposal template, with the deal's name, the company, the person and the price filled in, and a note on the deal that you started one.
 
 **Tested on every build** (`ci/BusinessTests`): addresses and names from mail headers, company names from domains, who becomes a person (and who doesn't), what's happened with a company, the last touch, the forecast, quiet deals and a filled-in proposal.
+
+## Notes: smart folders, locked notes and voice notes
+
+**Smart folders** are saved searches that keep themselves up to date. Search, then **Save this search** in the sidebar. Words must all appear, and these narrow it down: `#tag`, `is:pinned`, `has:todo` (an open checkbox), `has:link`, `in:Folder` (`in:Board_papers` for a folder with a space), `edited:today`, `edited:week`, `edited:month` or `edited:3d`. **To do** and **This week** are there to start with.
+
+**Locked notes.** The lock button seals a note on disk with AES-GCM, using a key kept in your Keychain. Only the title stays readable, so you can still find it by name; search and Ask can't read the rest. Open it with Touch ID or your Mac password. It locks again when you move to another note. **Take the lock off** turns it back into plain Markdown. The key never leaves this Mac, so a locked note copied to another Mac won't open there.
+
+**Voice notes.** The microphone button records into the open note (or a new one). When you stop, the recording is kept with the note and what was said is written out underneath, on this Mac.
 
 ## Mail: how Marc learns
 
