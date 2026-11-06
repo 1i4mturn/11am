@@ -299,14 +299,20 @@ final class GridView: NSView, NSTextFieldDelegate {
         NSGraphicsContext.saveGraphicsState()
         defer { NSGraphicsContext.restoreGraphicsState() }
         NSBezierPath(rect: clip).addClip()
+        let decorations = model.decorations
 
-        // Fills
+        // Fills: conditional formatting first, then the cell's own.
         for row in rows {
             for column in columns {
                 let address = CellAddress(row: row, column: column)
-                if let fill = GridColor.ns(sheet.cells[address]?.format?.fill) {
+                if let fill = GridColor.ns(decorations.effects[address]?.fill ?? sheet.cells[address]?.format?.fill) {
                     fill.setFill()
                     cellRect(address).fill()
+                }
+                if let effect = decorations.effects[address], let bar = effect.bar, bar > 0 {
+                    let well = cellRect(address).insetBy(dx: 3, dy: 5)
+                    (GridColor.ns(effect.barColor) ?? style.secondary).withAlphaComponent(0.5).setFill()
+                    NSBezierPath(roundedRect: NSRect(x: well.minX, y: well.minY, width: max(2, well.width * bar), height: well.height), xRadius: 2, yRadius: 2).fill()
                 }
             }
         }
@@ -320,25 +326,91 @@ final class GridView: NSView, NSTextFieldDelegate {
         for column in columns {
             NSRect(x: x(column + 1) - 1, y: top, width: 1, height: bottom - top).fill()
         }
-        // Text
+        // Text, and tick boxes where validation asks for them
         let engine = model.engine
         let sheetIndex = model.sheetIndex
+        let tickRanges = sheet.validations.filter { $0.kind == .checkbox }.map(\.range)
         for row in rows {
             for column in columns {
                 let address = CellAddress(row: row, column: column)
+                if tickRanges.contains(where: { $0.contains(address) }), let ticked = GridValidation.checkbox(at: address, in: sheet, engine: engine, index: sheetIndex) {
+                    drawCheckbox(at: address, ticked: ticked)
+                    continue
+                }
                 guard let cell = sheet.cells[address], !cell.input.isEmpty else { continue }
-                drawText(cell: cell, at: address, engine: engine, sheetIndex: sheetIndex, sheet: sheet, lastVisible: columns.upperBound)
+                drawText(cell: cell, at: address, engine: engine, sheetIndex: sheetIndex, sheet: sheet, lastVisible: columns.upperBound,
+                         effect: decorations.effects[address])
             }
+        }
+        // Corners: red for a value that breaks its rule, ink for a comment.
+        for address in decorations.invalid where rows.contains(address.row) && columns.contains(address.column) {
+            let rect = cellRect(address)
+            let corner = NSBezierPath()
+            corner.move(to: NSPoint(x: rect.minX, y: rect.minY))
+            corner.line(to: NSPoint(x: rect.minX + 7, y: rect.minY))
+            corner.line(to: NSPoint(x: rect.minX, y: rect.minY + 7))
+            corner.close()
+            NSColor(srgbRed: 0.78, green: 0.22, blue: 0.17, alpha: 1).setFill()
+            corner.fill()
+        }
+        for address in decorations.comments where rows.contains(address.row) && columns.contains(address.column) {
+            let rect = cellRect(address)
+            let corner = NSBezierPath()
+            corner.move(to: NSPoint(x: rect.maxX - 1, y: rect.minY))
+            corner.line(to: NSPoint(x: rect.maxX - 8, y: rect.minY))
+            corner.line(to: NSPoint(x: rect.maxX - 1, y: rect.minY + 7))
+            corner.close()
+            style.ink.setFill()
+            corner.fill()
+        }
+    }
+
+    private func checkboxRect(_ address: CellAddress) -> NSRect {
+        let rect = cellRect(address)
+        return NSRect(x: rect.midX - 7, y: rect.midY - 7.5, width: 14, height: 14)
+    }
+
+    private func chevronRect(_ address: CellAddress) -> NSRect {
+        let rect = cellRect(address)
+        return NSRect(x: rect.maxX - 20, y: rect.minY, width: 20, height: rect.height)
+    }
+
+    private func drawCheckbox(at address: CellAddress, ticked: Bool) {
+        let box = checkboxRect(address)
+        let path = NSBezierPath(roundedRect: box.insetBy(dx: 0.5, dy: 0.5), xRadius: 3, yRadius: 3)
+        if ticked {
+            style.ink.setFill()
+            path.fill()
+            let tick = NSBezierPath()
+            tick.move(to: NSPoint(x: box.minX + 3.5, y: box.midY + 0.5))
+            tick.line(to: NSPoint(x: box.minX + 6, y: box.maxY - 3.5))
+            tick.line(to: NSPoint(x: box.maxX - 3, y: box.minY + 3.5))
+            tick.lineWidth = 1.8
+            tick.lineCapStyle = .round
+            tick.lineJoinStyle = .round
+            style.paper.setStroke()
+            tick.stroke()
+        } else {
+            path.lineWidth = 1.2
+            style.secondary.setStroke()
+            path.stroke()
         }
     }
 
     private static let lineHeight: CGFloat = 15
 
-    private func drawText(cell: GridCell, at address: CellAddress, engine: GridEngine, sheetIndex: Int, sheet: GridSheet, lastVisible: Int) {
+    private func drawText(cell: GridCell, at address: CellAddress, engine: GridEngine, sheetIndex: Int, sheet: GridSheet, lastVisible: Int,
+                          effect: RuleEffect? = nil) {
         let value = engine.value(sheet: sheetIndex, address)
         var text = engine.display(sheet: sheetIndex, address)
         guard !text.isEmpty else { return }
-        let format = cell.format ?? CellFormat()
+        var format = cell.format ?? CellFormat()
+        if let effect {
+            if effect.bold { format.bold = true }
+            if effect.italic { format.italic = true }
+            if let color = effect.color { format.color = color }
+            if let fill = effect.fill { format.fill = fill }
+        }
         let isNumber: Bool
         if case .number = value { isNumber = true } else { isNumber = false }
         var font = isNumber ? NSFont.monospacedDigitSystemFont(ofSize: 12, weight: format.bold ? .semibold : .regular)
@@ -414,6 +486,17 @@ final class GridView: NSView, NSTextFieldDelegate {
             handle.insetBy(dx: -1, dy: -1).fill()
             accent.setFill()
             handle.fill()
+        }
+        if editing == nil, let sheet, GridValidation.rule(at: model.active, in: sheet)?.kind == .list {
+            let chevron = chevronRect(model.active)
+            let mark = NSBezierPath()
+            mark.move(to: NSPoint(x: chevron.midX - 3.5, y: chevron.midY - 1.5))
+            mark.line(to: NSPoint(x: chevron.midX, y: chevron.midY + 2))
+            mark.line(to: NSPoint(x: chevron.midX + 3.5, y: chevron.midY - 1.5))
+            mark.lineWidth = 1.5
+            mark.lineCapStyle = .round
+            accent.setStroke()
+            mark.stroke()
         }
         if let fillTarget, fillTarget != model.selection {
             let dashed = NSBezierPath(rect: rangeRect(fillTarget).insetBy(dx: 0.5, dy: 0.5))
@@ -540,6 +623,18 @@ final class GridView: NSView, NSTextFieldDelegate {
             fillTarget = model.selection
             drag = .fill
         case .cell(let address):
+            if event.clickCount == 1, !shift, let sheet, let rule = GridValidation.rule(at: address, in: sheet) {
+                if rule.kind == .checkbox, checkboxRect(address).insetBy(dx: -5, dy: -5).contains(point) {
+                    model.select(address)
+                    model.toggleCheckbox(address)
+                    needsDisplay = true
+                    return
+                }
+                if rule.kind == .list, address == model.active, chevronRect(address).contains(point) {
+                    showChoices(rule, at: address)
+                    return
+                }
+            }
             if event.clickCount >= 2 {
                 model.select(address)
                 beginEditing(initial: nil, enterMode: false)
@@ -644,6 +739,39 @@ final class GridView: NSView, NSTextFieldDelegate {
         if frozen > 0 && model.active.row + 1 != frozen { add("Unfreeze Rows", #selector(unfreeze)) }
         add("Fit Column Width", #selector(fitColumn))
         return menu
+    }
+
+    private var choosingAt: CellAddress?
+
+    /// A list cell's choices, under the cell.
+    private func showChoices(_ rule: DataValidation, at address: CellAddress) {
+        guard let model else { return }
+        let menu = NSMenu()
+        let current = model.input(address)
+        for choice in model.choices(for: rule) {
+            let item = NSMenuItem(title: choice, action: #selector(chooseValue(_:)), keyEquivalent: "")
+            item.target = self
+            item.representedObject = choice
+            item.state = choice.caseInsensitiveCompare(current) == .orderedSame ? .on : .off
+            menu.addItem(item)
+        }
+        if !current.isEmpty {
+            menu.addItem(.separator())
+            let clear = NSMenuItem(title: "Clear", action: #selector(chooseValue(_:)), keyEquivalent: "")
+            clear.target = self
+            clear.representedObject = ""
+            menu.addItem(clear)
+        }
+        choosingAt = address
+        let rect = cellRect(address)
+        menu.popUp(positioning: nil, at: NSPoint(x: rect.minX, y: rect.maxY + 2), in: self)
+    }
+
+    @objc private func chooseValue(_ sender: NSMenuItem) {
+        guard let model, let address = choosingAt, let value = sender.representedObject as? String else { return }
+        model.setInput(value, at: address)
+        choosingAt = nil
+        needsDisplay = true
     }
 
     @objc private func insertRowsAbove() { model?.insertRows() }

@@ -277,7 +277,13 @@ enum GridRules {
 
     static func mix(_ a: String, _ b: String, _ t: Double) -> String {
         guard let from = rgb(a), let to = rgb(b) else { return t < 0.5 ? a : b }
-        let parts = (0..<3).map { Int((Double(from[$0]) + (Double(to[$0]) - Double(from[$0])) * t).rounded()) }
+        var parts: [Int] = []
+        for channel in 0..<3 {
+            let start = Double(from[channel])
+            let end = Double(to[channel])
+            let value: Double = start + (end - start) * t
+            parts.append(Int(value.rounded()))
+        }
         return String(format: "#%02X%02X%02X", parts[0], parts[1], parts[2])
     }
 

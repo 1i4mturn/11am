@@ -56,9 +56,10 @@ struct SheetsView: View {
 
             GeometryReader { proxy in
             let chartsShown = sheets.showsCharts && !(sheets.sheet?.charts.isEmpty ?? true)
+            let sideShown = chartsShown || sheets.panel != nil
             HStack(alignment: .top, spacing: 14) {
-                // On a smaller screen the charts get the workbook list's room (workbooks are in the ⋯ menu too).
-                if proxy.size.width >= 1120 || !chartsShown {
+                // On a smaller screen the charts or a panel get the workbook list's room (workbooks are in the ⋯ menu too).
+                if proxy.size.width >= 1120 || !sideShown {
                     WorkbookList()
                         .frame(width: 170)
                 }
@@ -75,7 +76,11 @@ struct SheetsView: View {
                         SheetTabs()
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    if chartsShown {
+                    if let panel = sheets.panel {
+                        SheetsSidePanel(panel: panel)
+                            .frame(width: proxy.size.width >= 1120 ? 300 : 270)
+                            .transition(.rise(theme.rise))
+                    } else if chartsShown {
                         ChartsPanel()
                             .frame(width: proxy.size.width >= 1120 ? 290 : 250)
                             .transition(.rise(theme.rise))
@@ -95,6 +100,12 @@ struct SheetsView: View {
         .padding(24)
         .animation(theme.spring, value: sheets.notice)
         .animation(theme.spring, value: sheets.showsCharts)
+        .animation(theme.spring, value: sheets.panel)
+        .sheet(isPresented: $sheets.showsVersions) {
+            SheetsVersionsView()
+                .environmentObject(sheets)
+                .environmentObject(theme)
+        }
         .task(id: sheets.notice) {
             guard sheets.notice != nil, (try? await Task.sleep(for: .seconds(10))) != nil else { return }
             sheets.notice = nil
@@ -122,6 +133,10 @@ struct SheetsView: View {
                 ForEach(SheetsModel.Export.allCases) { kind in
                     Button(kind.title + "…") { sheets.export(kind) }
                 }
+            }
+            Section("This workbook") {
+                Button("Earlier versions…") { sheets.showsVersions = true }
+                    .disabled(sheets.book == nil)
             }
             Divider()
             Button("Show the workbooks folder in Finder") {
@@ -296,10 +311,19 @@ private struct SheetsFormatBar: View {
             }
             insertMenu
             chartMenu
+            divider
+            ForEach(SheetsPanel.allCases) { panel in
+                ToolButton(symbol: panel.symbol, help: panel.title, on: sheets.panel == panel) { sheets.togglePanel(panel) }
+            }
             if let sheet = sheets.sheet, !sheet.charts.isEmpty {
                 divider
-                ToolButton(symbol: "sidebar.right", help: sheets.showsCharts ? "Hide charts" : "Show charts", on: sheets.showsCharts) {
-                    sheets.showsCharts.toggle()
+                ToolButton(symbol: "sidebar.right", help: sheets.showsCharts ? "Hide charts" : "Show charts", on: sheets.showsCharts && sheets.panel == nil) {
+                    if sheets.panel != nil {
+                        sheets.panel = nil
+                        sheets.showsCharts = true
+                    } else {
+                        sheets.showsCharts.toggle()
+                    }
                 }
             }
         }
@@ -498,6 +522,27 @@ private struct FormulaBar: View {
                     text = sheets.input(sheets.active)
                     sheets.focusRequest += 1
                 }
+            if let rule = sheets.activeValidation {
+                if rule.kind == .list {
+                    Menu {
+                        ForEach(sheets.choices(for: rule), id: \.self) { choice in
+                            Button(choice) { sheets.setInput(choice, at: sheets.active) }
+                        }
+                    } label: {
+                        Label("Pick", systemImage: "chevron.down.circle")
+                            .font(.system(size: 11.5))
+                    }
+                    .menuStyle(.button)
+                    .buttonStyle(.borderless)
+                    .fixedSize()
+                    .help("Choose from the list")
+                } else if !rule.help.isEmpty {
+                    Text(rule.help)
+                        .font(.system(size: 11))
+                        .foregroundStyle(theme.inkTertiary(scheme))
+                        .lineLimit(1)
+                }
+            }
             if let formula = sheets.input(sheets.active).nilIfEmpty, formula.hasPrefix("=") {
                 Text("= " + sheets.display(sheets.active))
                     .font(.system(size: 11.5).monospacedDigit())

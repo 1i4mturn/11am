@@ -67,12 +67,19 @@ final class SheetsModel: ObservableObject {
     @Published var editRequest = 0
     /// Bumped to hand the keyboard back to the grid (after the formula bar).
     @Published var focusRequest = 0
+    /// The panel beside the grid: conditional formatting, validation, cleaning a column or comments.
+    @Published var panel: SheetsPanel?
+    /// George answering a comment.
+    @Published var commentRun: BrainRun?
+    @Published var showsVersions = false
+    /// What the grid draws over the cells, worked out once per change.
+    var decorationCache: SheetDecorations?
 
     private(set) var engine = GridEngine(Workbook(name: "Empty"))
     private var undoStack: [Workbook] = []
     private var redoStack: [Workbook] = []
     private var saveTask: Task<Void, Never>?
-    private let brain: Brain
+    let brain: Brain
     var clip: GridClip?
 
     let root: URL = JSONStore.folder.appendingPathComponent("Sheets", isDirectory: true)
@@ -148,13 +155,13 @@ final class SheetsModel: ObservableObject {
 
     private func url(for id: UUID) -> URL { root.appendingPathComponent("\(id.uuidString).json") }
 
-    private static var encoder: JSONEncoder {
+    static var encoder: JSONEncoder {
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
         return encoder
     }
 
-    private static var decoder: JSONDecoder {
+    static var decoder: JSONDecoder {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
         return decoder
@@ -162,7 +169,10 @@ final class SheetsModel: ObservableObject {
 
     private func write(_ workbook: Workbook) {
         try? FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
-        if let data = try? Self.encoder.encode(workbook) { try? data.write(to: url(for: workbook.id), options: .atomic) }
+        if let data = try? Self.encoder.encode(workbook) {
+            try? data.write(to: url(for: workbook.id), options: .atomic)
+            snapshotIfDue(workbook, data: data)
+        }
         let entry = SheetsEntry(id: workbook.id, name: workbook.name, modified: workbook.modified, sheets: workbook.sheets.count)
         if let index = entries.firstIndex(where: { $0.id == workbook.id }) { entries[index] = entry } else { entries.append(entry) }
         saveIndex()
@@ -338,6 +348,11 @@ final class SheetsModel: ObservableObject {
     func display(_ address: CellAddress) -> String { engine.display(sheet: sheetIndex, address) }
 
     func setInput(_ text: String, at address: CellAddress) {
+        if let sheet, let rule = GridValidation.rule(at: address, in: sheet),
+           case .invalid(let message) = GridValidation.check(text, against: rule, engine: engine, sheet: sheetIndex) {
+            notice = "\(address.a1): \(message)\(rule.reject ? "" : " It's marked so you can fix it later.")"
+            if rule.reject { return }
+        }
         changeSheet { sheet in
             var cell = sheet[address]
             cell.input = Self.normalised(text)

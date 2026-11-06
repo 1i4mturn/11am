@@ -2,7 +2,7 @@ import Foundation
 
 /// The workbooks Sheets starts with, so there's something real to poke at.
 enum SheetsSamples {
-    static var all: [Workbook] { [budget, trip] }
+    static var all: [Workbook] { [budget, trip, clientImport] }
 
     private static func put(_ sheet: inout GridSheet, _ a1: String, _ input: String, _ format: CellFormat? = nil) {
         guard let address = CellAddress(a1) else { return }
@@ -55,7 +55,7 @@ enum SheetsSamples {
         budget.charts = [GridChart(kind: .column, range: CellRange(CellAddress("A1")!, CellAddress("E7")!), title: "Spend by month")]
 
         var sales = GridSheet(name: "Sales")
-        for (index, title) in ["Date", "Client", "Region", "Product", "Amount"].enumerated() {
+        for (index, title) in ["Date", "Client", "Region", "Product", "Amount", "Status", "Checked"].enumerated() {
             sales[CellAddress(row: 0, column: index)] = GridCell(input: title, format: index == 4 ? CellFormat(bold: true, alignment: .right, fill: "#ECEAE6") : header)
         }
         let rows: [(String, String, String, String, String)] = [
@@ -77,20 +77,45 @@ enum SheetsSamples {
             ("21/10/2026", "Kestrel", "South", "Workshop", "$2,600"),
             ("28/10/2026", "Bluegum", "East", "Retainer", "$2,750"),
         ]
+        // Who's paid: a list to pick from, and a tick once it's checked against the bank.
+        let statuses = ["Paid", "Paid", "Paid", "Paid", "Paid", "Paid", "Paid", "Paid", "Paid", "Paid", "Invoiced", "Overdue",
+                        "Invoiced", "Overdue", "Invoiced", "Sent", "Invoiced"]
         for (offset, row) in rows.enumerated() {
-            let values = [row.0, row.1, row.2, row.3, row.4]
-            for (column, value) in values.enumerated() {
+            let values = [row.0, row.1, row.2, row.3, row.4, statuses[offset], offset < 10 ? "TRUE" : ""]
+            for (column, value) in values.enumerated() where !value.isEmpty {
                 sales[CellAddress(row: offset + 1, column: column)] = GridCell(input: value)
             }
         }
         let last = rows.count + 1
+        let amounts = CellRange(CellAddress(row: 1, column: 4), CellAddress(row: last - 1, column: 4))
+        let status = CellRange(CellAddress(row: 1, column: 5), CellAddress(row: last - 1, column: 5))
+        sales.rules = [
+            ConditionalRule(range: status, kind: .equalTo, value1: "Overdue", style: RuleStyle(fill: "#F7DAD6", color: "#8E2A1E", bold: true)),
+            ConditionalRule(range: status, kind: .equalTo, value1: "Paid", style: RuleStyle(fill: "#DCEFD9", color: "#1F5F2A")),
+            ConditionalRule(range: amounts, kind: .top, value1: "3", style: RuleStyle(bold: true)),
+            ConditionalRule(range: amounts, kind: .dataBar, high: "#8FB59A"),
+        ]
+        sales.validations = [
+            DataValidation(range: status, kind: .list, choices: ["Invoiced", "Paid", "Overdue"], help: "Invoiced, paid or overdue"),
+            DataValidation(range: CellRange(CellAddress(row: 1, column: 6), CellAddress(row: last - 1, column: 6)), kind: .checkbox),
+        ]
+        let asked = Date().addingTimeInterval(-3_600 * 26)
+        sales.comments = [
+            GridComment(address: CellAddress(row: 6, column: 4), author: "You", text: "Is this one job or two? @George", date: asked),
+            GridComment(address: CellAddress(row: 6, column: 4), author: "George",
+                        text: "One job: Kestrel's audit on 12 August, $5,100. It's the biggest sale on the sheet.", date: asked.addingTimeInterval(40)),
+        ]
         put(&sales, "D\(last + 2)", "Total", bold)
         put(&sales, "E\(last + 2)", "=SUM(E2:E\(last))", bold)
         put(&sales, "D\(last + 3)", "North only")
         put(&sales, "E\(last + 3)", "=SUMIF(C2:C\(last),\"North\",E2:E\(last))")
         put(&sales, "D\(last + 4)", "Retainers")
         put(&sales, "E\(last + 4)", "=COUNTIF(D2:D\(last),\"Retainer\")")
-        sales.columnWidths = [0: 96, 1: 130, 2: 80, 3: 100, 4: 96]
+        put(&sales, "D\(last + 5)", "To collect")
+        put(&sales, "E\(last + 5)", "=SUMIF(F2:F\(last),\"<>Paid\",E2:E\(last))")
+        put(&sales, "D\(last + 6)", "Checked")
+        put(&sales, "E\(last + 6)", "=COUNTIF(G2:G\(last),TRUE)")
+        sales.columnWidths = [0: 96, 1: 130, 2: 80, 3: 100, 4: 96, 5: 92, 6: 72]
         sales.frozenRows = 1
 
         var loan = GridSheet(name: "Loan")
@@ -113,6 +138,34 @@ enum SheetsSamples {
 
         var book = Workbook(name: "Budget 2026–27", sheets: [budget, sales, loan])
         book.modified = Date()
+        return book
+    }
+
+    /// A contact list exported from somewhere else, untidy in all the usual ways, for George to clean.
+    static var clientImport: Workbook {
+        var sheet = GridSheet(name: "Import")
+        for (index, title) in ["Name", "Email", "Amount", "Date", "Status"].enumerated() {
+            sheet[CellAddress(row: 0, column: index)] = GridCell(input: title, format: header)
+        }
+        let rows: [[String]] = [
+            ["  Tom   Baker ", "tom@acme.example", "AUD 1,200", "3rd Nov 2026", "Done"],
+            ["Priya Shah", "priya@northwind.example", "1 200", "Tuesday 3 November 2026", "done"],
+            ["Kim Lee", "kim@kimdesign.example", "$300", "1/11/2026", "Done"],
+            ["Tom Baker", "tom@acme.example", "1.5k", "03.11.2026", ""],
+            ["Ana Ruiz", "ana@bluegum.example", "45-", "Sept 3 2026", "Late"],
+            ["sam o'neil", "sam@harbour.example", "2,400", "28 Oct 2026", "DONE"],
+            ["Jess Wong", "jess@studiowong.example", "US$980", "2026/10/21", "Late"],
+            ["Lee Park", "lee@kestrel.example", "640", "14.10.2026", "Done"],
+        ]
+        for (offset, values) in rows.enumerated() {
+            for (column, value) in values.enumerated() where !value.isEmpty {
+                sheet[CellAddress(row: offset + 1, column: column)] = GridCell(input: value)
+            }
+        }
+        sheet.columnWidths = [0: 130, 1: 190, 2: 96, 3: 180, 4: 72]
+        sheet.frozenRows = 1
+        var book = Workbook(name: "Client import", sheets: [sheet])
+        book.modified = Date().addingTimeInterval(-86_400)
         return book
     }
 

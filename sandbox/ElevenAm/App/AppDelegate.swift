@@ -101,6 +101,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if let text = arguments.string(forKey: "sheetsSelect"), let range = CellRange(text) {
             model.sheets.select(range)
         }
+        // -sheetsPanel rules (validation, clean, comments) opens a panel beside the grid; -sheetsVersions YES the versions.
+        if let panel = arguments.string(forKey: "sheetsPanel").flatMap(SheetsPanel.init(rawValue:)) {
+            model.sheets.panel = panel
+        }
+        if arguments.bool(forKey: "sheetsVersions") {
+            model.sheets.showsVersions = true
+        }
         // -moneyTab bank opens a Money tab; -moneyInvoice INV-0004 selects one; -moneyEditor YES starts a new invoice.
         if let tab = arguments.string(forKey: "moneyTab").flatMap(MoneyTab.init(rawValue:)) {
             model.ledger.tab = tab

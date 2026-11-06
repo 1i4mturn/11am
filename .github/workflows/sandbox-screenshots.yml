@@ -113,6 +113,10 @@ jobs:
           capture sheets-sales-dark -startSection sheets -forceAppearance dark -sheetsSheet 1 -sheetsSelect E2:E18
           capture sheets-loan-light -startSection sheets -forceAppearance light -sheetsSheet 2 -sheetsSelect B7
           capture sheets-trip-dark -startSection sheets -forceAppearance dark -sheetsBook "Japan trip"
+          capture sheets-rules-light -startSection sheets -forceAppearance light -sheetsSheet 1 -sheetsSelect F2:F18 -sheetsPanel rules
+          capture sheets-validation-dark -startSection sheets -forceAppearance dark -sheetsSheet 1 -sheetsSelect F17 -sheetsPanel validation
+          capture sheets-comments-light -startSection sheets -forceAppearance light -sheetsSheet 1 -sheetsSelect E7 -sheetsPanel comments
+          capture sheets-clean-light -startSection sheets -forceAppearance light -sheetsBook "Client import" -sheetsSelect C2 -sheetsPanel clean
           capture money-light -startSection money -forceAppearance light
           capture money-bank-light -startSection money -forceAppearance light -moneyTab bank
           capture money-bank-dark -startSection money -forceAppearance dark -moneyTab bank
