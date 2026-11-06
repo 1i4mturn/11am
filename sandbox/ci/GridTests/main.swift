@@ -303,7 +303,7 @@ check(GridComments.mentionsGeorge("thoughts @george?") && !GridComments.mentions
 
 var messy = Workbook(name: "Messy", sheets: [GridSheet(name: "Import")])
 let messyRows = [["Name", "Amount", "Date", "Status"], ["  Tom   Baker ", "AUD 1,200", "3rd Nov 2026", "Done"], ["Priya Shah", "1 200", "Tuesday 3 November 2026", "done"],
-                 ["Tom Baker", "$300", "1/11/2026", "Done"], ["Kim Lee", "1.5k", "03.11.2026", ""], ["Ana Ruiz", "45-", "Sept 3 2026", "Late"]]
+                 ["Tom Baker", "$300", "1/11/2026", "Done"], ["Kim Lee", "1.5k", "Nov 3rd, 2026", ""], ["Ana Ruiz", "45-", "Sept 3 2026", "Late"]]
 for (row, values) in messyRows.enumerated() {
     for (column, value) in values.enumerated() where !value.isEmpty { messy.sheets[0][CellAddress(row: row, column: column)] = GridCell(input: value) }
 }

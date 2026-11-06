@@ -828,8 +828,9 @@ Ordered by what saves the most money and gets used every day, and by which engin
 | 13 | Marc's toolkit | Snippets with fill-in fields, send later, receipts to Money, meeting requests to Leo, agreements to sign | Text expanders, mail schedulers |
 | 14 | Bolton's Notes extras | Smart folders, locked notes, voice notes written out on the Mac | Apple Notes' locked notes, voice memo apps |
 | 15 | George's money in | Quotes that become invoices (deposit then balance), repeating invoices, overdue reminders Marc drafts for you to approve, lock dates and an audit trail, bills to pay in Leo's Tasks | The rest of Xero's invoicing |
+| 16 | George's Sheets, finished | Conditional formatting, validation (lists, tick boxes, limits), comments George answers, Clean a column, earlier versions; rules and lists in and out of Excel files | The rest of Google Sheets for one person |
 
-The sandbox has every step built: accounts, Mail and Calendar (0.5), documents, Notes and PDF (0.6), Sheets and the Money ledger (0.7), Design and Decks (0.8), Video and Audio (0.9), Johnny's Terminal, Scripts and Automations (0.10), the iPhone app (0.11), Harris's language course (0.12), Leo's Tasks (0.13), Bolton's pages (0.14), Conner's Business (0.15), the agents connected (0.16), Marc's toolkit (0.17), Notes extras (0.18) and George's money in (0.19). Notion is fully replaced; for a business without staff, so is Xero's invoicing.
+The sandbox has every step built: accounts, Mail and Calendar (0.5), documents, Notes and PDF (0.6), Sheets and the Money ledger (0.7), Design and Decks (0.8), Video and Audio (0.9), Johnny's Terminal, Scripts and Automations (0.10), the iPhone app (0.11), Harris's language course (0.12), Leo's Tasks (0.13), Bolton's pages (0.14), Conner's Business (0.15), the agents connected (0.16), Marc's toolkit (0.17), Notes extras (0.18), George's money in (0.19) and George's Sheets (0.20). Notion is fully replaced; for a business without staff, so is Xero's invoicing.
 
 ## 6. Sources
 

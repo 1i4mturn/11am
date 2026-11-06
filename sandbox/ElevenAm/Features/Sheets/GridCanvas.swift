@@ -158,7 +158,17 @@ final class GridView: NSView, NSTextFieldDelegate {
         }
     }
 
+    /// Whether the selection made at launch (or before the first layout) has been scrolled into view.
+    private var revealedAtStart = false
+
     @objc func clipChanged() {
+        if !revealedAtStart, visibleRect.width > 80, visibleRect.height > 80, let model {
+            revealedAtStart = true
+            if model.extent != CellAddress(row: 0, column: 0) {
+                reveal(model.extent)
+                reveal(model.active)
+            }
+        }
         needsDisplay = true
         positionEditor()
         if let superview, frame.width < superview.bounds.width || frame.height < superview.bounds.height { updateSize() }
