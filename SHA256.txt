@@ -1,0 +1,2 @@
+7de0b2eb0b28cefea2916ed049739ffda2c46270dea28b665423a1f8721220f5  dist/11am-sandbox-0.20.0.dmg
+7de0b2eb0b28cefea2916ed049739ffda2c46270dea28b665423a1f8721220f5  dist/11am-sandbox-latest.dmg
