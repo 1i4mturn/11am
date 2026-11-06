@@ -206,7 +206,21 @@ private struct QuoteDetail: View {
                             Button {
                                 open(invoice)
                             } label: {
-                                ReportRow(label: "\(invoice.number), \(share(index))% · \(invoice.status.title.lowercased())", cents: invoice.total)
+                                HStack(alignment: .firstTextBaseline) {
+                                    VStack(alignment: .leading, spacing: 1) {
+                                        Text(invoice.number)
+                                            .font(.system(size: 12.5, weight: .medium).monospacedDigit())
+                                            .foregroundStyle(theme.ink(scheme))
+                                        Text("\(share(index))% · \(invoice.status.title.lowercased())")
+                                            .font(.system(size: 11))
+                                            .foregroundStyle(theme.inkTertiary(scheme))
+                                            .lineLimit(1)
+                                    }
+                                    Spacer(minLength: 8)
+                                    LedgerAmount(cents: invoice.total, width: 90)
+                                }
+                                .padding(.vertical, 3)
+                                .contentShape(Rectangle())
                             }
                             .buttonStyle(.plain)
                             .help("Open \(invoice.number)")
