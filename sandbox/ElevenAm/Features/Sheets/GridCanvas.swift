@@ -164,10 +164,7 @@ final class GridView: NSView, NSTextFieldDelegate {
     @objc func clipChanged() {
         if !revealedAtStart, visibleRect.width > 80, visibleRect.height > 80, let model {
             revealedAtStart = true
-            if model.extent != CellAddress(row: 0, column: 0) {
-                reveal(model.extent)
-                reveal(model.active)
-            }
+            if model.active != CellAddress(row: 0, column: 0) { reveal(model.active) }
         }
         needsDisplay = true
         positionEditor()
