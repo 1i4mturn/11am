@@ -154,6 +154,21 @@ enum GridEdit {
                 workbook.sheets[sheetIndex].charts[position].range = shift(workbook.sheets[sheetIndex].charts[position].range, rows: rows, at: index, count: count)
             }
         }
+        // Conditional formatting, validation and comments move with their cells.
+        for position in workbook.sheets[sheet].rules.indices {
+            workbook.sheets[sheet].rules[position].range = shift(workbook.sheets[sheet].rules[position].range, rows: rows, at: index, count: count)
+        }
+        for position in workbook.sheets[sheet].validations.indices {
+            workbook.sheets[sheet].validations[position].range = shift(workbook.sheets[sheet].validations[position].range, rows: rows, at: index, count: count)
+        }
+        workbook.sheets[sheet].comments = workbook.sheets[sheet].comments.compactMap { comment in
+            var moved = comment
+            let position = rows ? comment.address.row : comment.address.column
+            guard position >= index else { return moved }
+            if count < 0 && position < index - count { return nil }
+            moved.address = rows ? comment.address.offset(rows: count, columns: 0) : comment.address.offset(rows: 0, columns: count)
+            return moved
+        }
     }
 
     private static func shift(_ range: CellRange, rows: Bool, at index: Int, count: Int) -> CellRange {

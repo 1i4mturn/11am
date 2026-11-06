@@ -223,6 +223,11 @@ struct GridSheet: Codable, Equatable, Identifiable, Sendable {
     var charts: [GridChart] = []
     /// Rows a filter is hiding.
     var hiddenRows: Set<Int> = []
+    /// Conditional formatting, in priority order.
+    var rules: [ConditionalRule] = []
+    /// Lists, tick boxes and limits on what cells take.
+    var validations: [DataValidation] = []
+    var comments: [GridComment] = []
 
     init(name: String) {
         self.name = name
@@ -248,6 +253,24 @@ struct GridSheet: Codable, Equatable, Identifiable, Sendable {
     }
 
     func width(of column: Int) -> Double { columnWidths[column] ?? 100 }
+}
+
+extension GridSheet {
+    /// Tolerant of parts added in later versions.
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(name: try c.decodeIfPresent(String.self, forKey: .name) ?? "Sheet")
+        id = try c.decodeIfPresent(UUID.self, forKey: .id) ?? UUID()
+        cells = try c.decodeIfPresent([CellAddress: GridCell].self, forKey: .cells) ?? [:]
+        columnWidths = try c.decodeIfPresent([Int: Double].self, forKey: .columnWidths) ?? [:]
+        frozenRows = try c.decodeIfPresent(Int.self, forKey: .frozenRows) ?? 0
+        color = try c.decodeIfPresent(String.self, forKey: .color)
+        charts = (try? c.decodeIfPresent([GridChart].self, forKey: .charts)) ?? []
+        hiddenRows = try c.decodeIfPresent(Set<Int>.self, forKey: .hiddenRows) ?? []
+        rules = (try? c.decodeIfPresent([ConditionalRule].self, forKey: .rules)) ?? []
+        validations = (try? c.decodeIfPresent([DataValidation].self, forKey: .validations)) ?? []
+        comments = (try? c.decodeIfPresent([GridComment].self, forKey: .comments)) ?? []
+    }
 }
 
 struct Workbook: Codable, Equatable, Identifiable, Sendable {

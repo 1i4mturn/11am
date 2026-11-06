@@ -113,12 +113,121 @@ enum GridXLSX {
         let pane = sheet.frozenRows > 0
             ? "<pane ySplit=\"\(sheet.frozenRows)\" topLeftCell=\"A\(sheet.frozenRows + 1)\" activePane=\"bottomLeft\" state=\"frozen\"/>"
             : ""
+        let extras = conditionalXML(sheet, styles: &styles) + validationXML(sheet)
         return """
         <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
         <worksheet xmlns="\(main)" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">\
         <sheetViews><sheetView workbookViewId="0"\(index == 0 ? " tabSelected=\"1\"" : "")>\(pane)</sheetView></sheetViews>\
-        <sheetFormatPr defaultRowHeight="15"/>\(columns)<sheetData>\(data)</sheetData></worksheet>
+        <sheetFormatPr defaultRowHeight="15"/>\(columns)<sheetData>\(data)</sheetData>\(extras)</worksheet>
         """
+    }
+
+    // MARK: Conditional formatting and validation out
+
+    private static func conditionalXML(_ sheet: GridSheet, styles: inout StyleTable) -> String {
+        var priority = 0
+        var xml = ""
+        for rule in sheet.rules {
+            priority += 1
+            let corner = rule.range.start.a1
+            let dxf = rule.kind.isGradient ? "" : " dxfId=\"\(styles.dxf(for: rule.style))\""
+            var body = ""
+            var attributes = ""
+            switch rule.kind {
+            case .greaterThan, .lessThan, .equalTo, .notEqualTo, .between:
+                let op = ["greaterThan": "greaterThan", "lessThan": "lessThan", "equalTo": "equal", "notEqualTo": "notEqual", "between": "between"][rule.kind.rawValue] ?? "equal"
+                attributes = "type=\"cellIs\"\(dxf) operator=\"\(op)\""
+                body = "<formula>\(escape(formulaValue(rule.value1)))</formula>"
+                if rule.kind == .between { body += "<formula>\(escape(formulaValue(rule.value2)))</formula>" }
+            case .containsText:
+                let text = rule.value1.replacingOccurrences(of: "\"", with: "\"\"")
+                attributes = "type=\"containsText\"\(dxf) operator=\"containsText\" text=\"\(escape(rule.value1))\""
+                body = "<formula>\(escape("NOT(ISERROR(SEARCH(\"\(text)\",\(corner))))"))</formula>"
+            case .blank:
+                attributes = "type=\"containsBlanks\"\(dxf)"
+                body = "<formula>LEN(TRIM(\(corner)))=0</formula>"
+            case .notBlank:
+                attributes = "type=\"notContainsBlanks\"\(dxf)"
+                body = "<formula>LEN(TRIM(\(corner)))&gt;0</formula>"
+            case .duplicate: attributes = "type=\"duplicateValues\"\(dxf)"
+            case .unique: attributes = "type=\"uniqueValues\"\(dxf)"
+            case .top, .bottom:
+                let text = rule.value1.trimmingCharacters(in: .whitespaces)
+                let percent = text.hasSuffix("%")
+                let rank = Int(percent ? String(text.dropLast()) : text) ?? 10
+                attributes = "type=\"top10\"\(dxf) rank=\"\(rank)\"\(percent ? " percent=\"1\"" : "")\(rule.kind == .bottom ? " bottom=\"1\"" : "")"
+            case .aboveAverage: attributes = "type=\"aboveAverage\"\(dxf)"
+            case .belowAverage: attributes = "type=\"aboveAverage\"\(dxf) aboveAverage=\"0\""
+            case .formula:
+                attributes = "type=\"expression\"\(dxf)"
+                let formula = rule.value1.hasPrefix("=") ? String(rule.value1.dropFirst()) : rule.value1
+                body = "<formula>\(escape(formula))</formula>"
+            case .colorScale:
+                attributes = "type=\"colorScale\""
+                let middle = rule.middle.map { _ in "<cfvo type=\"percentile\" val=\"50\"/>" } ?? ""
+                let colors = ([rule.low] + (rule.middle.map { [$0] } ?? []) + [rule.high]).map { "<color rgb=\"\(argb($0))\"/>" }.joined()
+                body = "<colorScale><cfvo type=\"min\"/>\(middle)<cfvo type=\"max\"/>\(colors)</colorScale>"
+            case .dataBar:
+                attributes = "type=\"dataBar\""
+                body = "<dataBar><cfvo type=\"min\"/><cfvo type=\"max\"/><color rgb=\"\(argb(rule.high))\"/></dataBar>"
+            }
+            xml += "<conditionalFormatting sqref=\"\(rule.range.a1)\"><cfRule \(attributes) priority=\"\(priority)\">\(body)</cfRule></conditionalFormatting>"
+        }
+        return xml
+    }
+
+    private static func validationXML(_ sheet: GridSheet) -> String {
+        guard !sheet.validations.isEmpty else { return "" }
+        var items = ""
+        for rule in sheet.validations {
+            var type = ""
+            var op = ""
+            var formulas = ""
+            switch rule.kind {
+            case .list, .checkbox:
+                type = "list"
+                if rule.kind == .checkbox {
+                    formulas = "<formula1>\"TRUE,FALSE\"</formula1>"
+                } else if !rule.source.isEmpty {
+                    formulas = "<formula1>\(escape(rule.source.replacingOccurrences(of: "=", with: "")))</formula1>"
+                } else {
+                    formulas = "<formula1>\(escape("\"" + rule.choices.joined(separator: ",") + "\""))</formula1>"
+                }
+            case .wholeNumber, .decimal, .date, .textLength:
+                type = ["wholeNumber": "whole", "decimal": "decimal", "date": "date", "textLength": "textLength"][rule.kind.rawValue] ?? "decimal"
+                let low = limitValue(rule.minimum), high = limitValue(rule.maximum)
+                switch (low, high) {
+                case let (low?, high?): op = "between"; formulas = "<formula1>\(low)</formula1><formula2>\(high)</formula2>"
+                case let (low?, nil): op = "greaterThanOrEqual"; formulas = "<formula1>\(low)</formula1>"
+                case let (nil, high?): op = "lessThanOrEqual"; formulas = "<formula1>\(high)</formula1>"
+                case (nil, nil): op = "greaterThanOrEqual"; formulas = "<formula1>\(rule.kind == .textLength ? "0" : "-1E+307")</formula1>"
+                }
+            }
+            var attributes = "type=\"\(type)\" allowBlank=\"1\" showErrorMessage=\"1\""
+            if !op.isEmpty { attributes += " operator=\"\(op)\"" }
+            if !rule.reject { attributes += " errorStyle=\"warning\"" }
+            if !rule.help.isEmpty { attributes += " showInputMessage=\"1\" prompt=\"\(escape(String(rule.help.prefix(255))))\"" }
+            items += "<dataValidation \(attributes) sqref=\"\(rule.range.a1)\">\(formulas)</dataValidation>"
+        }
+        return "<dataValidations count=\"\(sheet.validations.count)\">\(items)</dataValidations>"
+    }
+
+    /// A rule's value as Excel writes it: a number, "text" in quotes, or a formula without its =.
+    static func formulaValue(_ value: String) -> String {
+        let trimmed = value.trimmingCharacters(in: .whitespaces)
+        if trimmed.hasPrefix("=") { return String(trimmed.dropFirst()) }
+        if let number = GridInput.interpret(trimmed).value.number { return GridDisplay.general(number) }
+        return "\"" + trimmed.replacingOccurrences(of: "\"", with: "\"\"") + "\""
+    }
+
+    private static func limitValue(_ text: String) -> String? {
+        let trimmed = text.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty, let number = GridInput.interpret(trimmed).value.number else { return nil }
+        return GridDisplay.general(number)
+    }
+
+    private static func argb(_ hex: String) -> String {
+        "FF" + hex.replacingOccurrences(of: "#", with: "").uppercased()
     }
 
     /// The cell type and the value as it's written.
@@ -140,6 +249,14 @@ enum GridXLSX {
     private struct StyleTable {
         var formats: [CellFormat] = [CellFormat()]
         var codes: [String] = []
+        /// Conditional formatting looks.
+        var dxfs: [RuleStyle] = []
+
+        mutating func dxf(for style: RuleStyle) -> Int {
+            if let found = dxfs.firstIndex(of: style) { return found }
+            dxfs.append(style)
+            return dxfs.count - 1
+        }
 
         mutating func index(for format: CellFormat) -> Int {
             var key = format
@@ -150,6 +267,20 @@ enum GridXLSX {
             let code = key.number.excelCode
             if key.number != .general && !codes.contains(code) { codes.append(code) }
             return formats.count - 1
+        }
+
+        private var dxfXML: String {
+            guard !dxfs.isEmpty else { return "" }
+            let items = dxfs.map { style -> String in
+                var font = ""
+                if style.bold || style.italic || style.color != nil {
+                    let color = style.color.map { "<color rgb=\"FF\($0.replacingOccurrences(of: "#", with: "").uppercased())\"/>" } ?? ""
+                    font = "<font>\(style.bold ? "<b/>" : "")\(style.italic ? "<i/>" : "")\(color)</font>"
+                }
+                let fill = style.fill.map { "<fill><patternFill><bgColor rgb=\"FF\($0.replacingOccurrences(of: "#", with: "").uppercased())\"/></patternFill></fill>" } ?? ""
+                return "<dxf>\(font)\(fill)</dxf>"
+            }
+            return "<dxfs count=\"\(dxfs.count)\">\(items.joined())</dxfs>"
         }
 
         var xml: String {
@@ -192,7 +323,7 @@ enum GridXLSX {
             <cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>\
             <cellXfs count="\(xfs.count)">\(xfs.joined())</cellXfs>\
             <cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>\
-            </styleSheet>
+            \(dxfXML)</styleSheet>
             """
         }
     }
@@ -262,6 +393,7 @@ enum GridXLSX {
 
     private struct Styles {
         var formats: [CellFormat] = []
+        var dxfs: [RuleStyle] = []
     }
 
     private static func readStyles(_ data: Data?) -> Styles {
@@ -301,6 +433,19 @@ enum GridXLSX {
                 format.wrap = alignment.attribute(forName: "wrapText")?.stringValue == "1"
             }
             styles.formats.append(format)
+        }
+        for dxf in root.elements(forLocalName: "dxfs", uri: main).first?.elements(forLocalName: "dxf", uri: main) ?? [] {
+            var style = RuleStyle()
+            if let font = dxf.elements(forLocalName: "font", uri: main).first {
+                style.bold = !font.elements(forLocalName: "b", uri: main).isEmpty
+                style.italic = !font.elements(forLocalName: "i", uri: main).isEmpty
+                style.color = font.elements(forLocalName: "color", uri: main).first?.attribute(forName: "rgb")?.stringValue.map { "#" + String($0.suffix(6)) }
+            }
+            if let pattern = dxf.elements(forLocalName: "fill", uri: main).first?.elements(forLocalName: "patternFill", uri: main).first {
+                let color = pattern.elements(forLocalName: "bgColor", uri: main).first ?? pattern.elements(forLocalName: "fgColor", uri: main).first
+                style.fill = color?.attribute(forName: "rgb")?.stringValue.map { "#" + String($0.suffix(6)) }
+            }
+            styles.dxfs.append(style)
         }
         return styles
     }
@@ -396,7 +541,132 @@ enum GridXLSX {
                 sheet[address] = gridCell
             }
         }
+        sheet.rules = readRules(root, styles: styles)
+        sheet.validations = readValidations(root)
         return sheet
+    }
+
+    // MARK: Conditional formatting and validation in
+
+    private static func ranges(_ sqref: String) -> [CellRange] {
+        sqref.split(separator: " ").compactMap { CellRange(String($0).replacingOccurrences(of: "$", with: "")) }
+    }
+
+    /// A formula from the file as a rule's value: numbers and quoted text as typed, anything else as a formula.
+    static func ruleValue(_ formula: String) -> String {
+        let trimmed = formula.trimmingCharacters(in: .whitespaces)
+        if Double(trimmed) != nil { return trimmed }
+        if trimmed.hasPrefix("\""), trimmed.hasSuffix("\""), trimmed.count >= 2 {
+            return String(trimmed.dropFirst().dropLast()).replacingOccurrences(of: "\"\"", with: "\"")
+        }
+        return "=" + trimmed
+    }
+
+    private static func readRules(_ root: XMLElement, styles: Styles) -> [ConditionalRule] {
+        var found: [(priority: Int, rule: ConditionalRule)] = []
+        for block in root.elements(forLocalName: "conditionalFormatting", uri: main) {
+            let targets = ranges(block.attribute(forName: "sqref")?.stringValue ?? "")
+            for item in block.elements(forLocalName: "cfRule", uri: main) {
+                let attribute = { (name: String) in item.attribute(forName: name)?.stringValue }
+                let formulas = item.elements(forLocalName: "formula", uri: main).compactMap(\.stringValue)
+                var kind: ConditionalRule.Kind?
+                var value1 = "", value2 = ""
+                switch attribute("type") ?? "" {
+                case "cellIs":
+                    let map: [String: ConditionalRule.Kind] = ["greaterThan": .greaterThan, "lessThan": .lessThan, "equal": .equalTo,
+                                                               "notEqual": .notEqualTo, "between": .between,
+                                                               "greaterThanOrEqual": .greaterThan, "lessThanOrEqual": .lessThan]
+                    kind = map[attribute("operator") ?? ""]
+                    value1 = formulas.first.map(ruleValue) ?? ""
+                    value2 = formulas.dropFirst().first.map(ruleValue) ?? ""
+                case "containsText": kind = .containsText; value1 = attribute("text") ?? ""
+                case "containsBlanks": kind = .blank
+                case "notContainsBlanks": kind = .notBlank
+                case "duplicateValues": kind = .duplicate
+                case "uniqueValues": kind = .unique
+                case "top10":
+                    kind = attribute("bottom") == "1" ? .bottom : .top
+                    value1 = (attribute("rank") ?? "10") + (attribute("percent") == "1" ? "%" : "")
+                case "aboveAverage": kind = attribute("aboveAverage") == "0" ? .belowAverage : .aboveAverage
+                case "expression": kind = .formula; value1 = formulas.first.map { "=" + $0 } ?? ""
+                case "colorScale": kind = .colorScale
+                case "dataBar": kind = .dataBar
+                default: kind = nil
+                }
+                guard let kind else { continue }
+                let dxfID = Int(attribute("dxfId") ?? "")
+                let style = dxfID.flatMap { styles.dxfs.indices.contains($0) ? styles.dxfs[$0] : nil } ?? RuleStyle(fill: "#DCEFD9", color: "#1F5F2A")
+                var colors: [String] = []
+                if let scale = item.elements(forLocalName: "colorScale", uri: main).first {
+                    colors = scale.elements(forLocalName: "color", uri: main).compactMap { $0.attribute(forName: "rgb")?.stringValue }.map { "#" + String($0.suffix(6)) }
+                } else if let bar = item.elements(forLocalName: "dataBar", uri: main).first {
+                    colors = bar.elements(forLocalName: "color", uri: main).compactMap { $0.attribute(forName: "rgb")?.stringValue }.map { "#" + String($0.suffix(6)) }
+                }
+                let priority = Int(attribute("priority") ?? "") ?? Int.max
+                for range in targets {
+                    var rule = ConditionalRule(range: range, kind: kind, value1: value1, value2: value2, style: style)
+                    if kind == .colorScale, colors.count >= 2 {
+                        rule.low = colors[0]
+                        rule.high = colors[colors.count - 1]
+                        rule.middle = colors.count >= 3 ? colors[1] : nil
+                    } else if kind == .dataBar, let color = colors.first {
+                        rule.high = color
+                    }
+                    found.append((priority, rule))
+                }
+            }
+        }
+        return found.enumerated().sorted { ($0.element.priority, $0.offset) < ($1.element.priority, $1.offset) }.map(\.element.rule)
+    }
+
+    private static func readValidations(_ root: XMLElement) -> [DataValidation] {
+        guard let block = root.elements(forLocalName: "dataValidations", uri: main).first else { return [] }
+        var rules: [DataValidation] = []
+        for item in block.elements(forLocalName: "dataValidation", uri: main) {
+            let attribute = { (name: String) in item.attribute(forName: name)?.stringValue }
+            let first = item.elements(forLocalName: "formula1", uri: main).first?.stringValue ?? ""
+            let second = item.elements(forLocalName: "formula2", uri: main).first?.stringValue ?? ""
+            for range in ranges(attribute("sqref") ?? "") {
+                var rule: DataValidation
+                switch attribute("type") ?? "" {
+                case "list":
+                    if first.hasPrefix("\"") {
+                        let choices = String(first.dropFirst().dropLast()).split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
+                        if Set(choices.map { $0.uppercased() }) == ["TRUE", "FALSE"] {
+                            rule = DataValidation(range: range, kind: .checkbox)
+                        } else {
+                            rule = DataValidation(range: range, kind: .list, choices: choices)
+                        }
+                    } else {
+                        rule = DataValidation(range: range, kind: .list, source: first.replacingOccurrences(of: "$", with: ""))
+                    }
+                case "whole", "decimal", "date", "textLength":
+                    let kinds: [String: DataValidation.Kind] = ["whole": .wholeNumber, "decimal": .decimal, "date": .date, "textLength": .textLength]
+                    let kind = kinds[attribute("type") ?? ""] ?? .decimal
+                    rule = DataValidation(range: range, kind: kind)
+                    func shown(_ text: String) -> String {
+                        guard let number = Double(text), abs(number) < 1e300 else { return "" }
+                        if kind == .date {
+                            let parts = ExcelDate.parts(number)
+                            return "\(parts.day ?? 1)/\(parts.month ?? 1)/\(parts.year ?? 1900)"
+                        }
+                        return GridDisplay.general(number)
+                    }
+                    switch attribute("operator") ?? "between" {
+                    case "between": rule.minimum = shown(first); rule.maximum = shown(second)
+                    case "greaterThanOrEqual", "greaterThan": rule.minimum = shown(first)
+                    case "lessThanOrEqual", "lessThan": rule.maximum = shown(first)
+                    default: break
+                    }
+                default:
+                    continue
+                }
+                rule.reject = (attribute("errorStyle") ?? "stop") == "stop"
+                rule.help = attribute("prompt") ?? ""
+                rules.append(rule)
+            }
+        }
+        return rules
     }
 
     /// Text that would read as a number or a date keeps a leading ' so it stays text.
