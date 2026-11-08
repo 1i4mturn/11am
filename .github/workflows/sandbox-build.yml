@@ -92,6 +92,17 @@ jobs:
           test -x ledgertests
           TZ=Australia/Sydney ./ledgertests
 
+      - name: Image tests
+        working-directory: sandbox
+        run: |
+          mkdir -p imagetest
+          cd imagetest
+          swiftc -O -o imagetests \
+            ../ElevenAm/Features/Files/ImageKit.swift \
+            ../ci/ImageTests/main.swift 2>&1 | grep -E "error|warning: unre" || true
+          test -x imagetests
+          TZ=Australia/Sydney ./imagetests
+
       - name: Canvas and deck tests
         working-directory: sandbox
         run: |
