@@ -5,7 +5,7 @@ import UniformTypeIdentifiers
 
 /// The places inside Money.
 enum MoneyTab: String, CaseIterable, Identifiable {
-    case overview, bank, invoices, quotes, bills, contacts, reports, gst
+    case overview, bank, invoices, quotes, bills, spend, contacts, reports, gst
 
     var id: String { rawValue }
 
@@ -16,6 +16,7 @@ enum MoneyTab: String, CaseIterable, Identifiable {
         case .invoices: return "Invoices"
         case .quotes: return "Quotes"
         case .bills: return "Bills"
+        case .spend: return "Spend"
         case .contacts: return "Contacts"
         case .reports: return "Reports"
         case .gst: return "GST"
@@ -486,6 +487,7 @@ final class LedgerModel: ObservableObject {
         GST this quarter so far: on sales \(LedgerMoney.text(gst.gstOnSales)), on purchases \(LedgerMoney.text(gst.gstOnPurchases)), net \(LedgerMoney.text(gst.net)).
         Bank lines still to reconcile: \(book.unreconciled.count).
         \(moneyInFacts)
+        \(moneyOutFacts)
         """
     }
 }

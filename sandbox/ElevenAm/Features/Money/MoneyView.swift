@@ -46,7 +46,7 @@ struct MoneyView: View {
             }
             .pickerStyle(.segmented)
             .labelsHidden()
-            .frame(maxWidth: 720)
+            .frame(maxWidth: 780)
 
             if let notice = ledger.notice ?? money.notice {
                 HStack(spacing: 10) {
@@ -75,6 +75,7 @@ struct MoneyView: View {
                 case .invoices: InvoicesPanel(kind: .sale)
                 case .quotes: QuotesPanel()
                 case .bills: InvoicesPanel(kind: .bill)
+                case .spend: SpendPanel()
                 case .contacts: ContactsPanel()
                 case .reports: ReportsPanel()
                 case .gst: GSTPanel()

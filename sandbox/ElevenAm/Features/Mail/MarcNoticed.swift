@@ -44,8 +44,15 @@ struct MarcNoticed: View {
         switch route {
         case .receipt(let vendor, let total):
             Button("Add to Money") {
-                ledger.draftBill(from: vendor, total: LedgerMoney.cents(total ?? 0), description: message.subject, date: message.date,
-                                 reference: String(message.messageID.prefix(60)))
+                let cents = LedgerMoney.cents(total ?? 0)
+                let lower = message.body.lowercased()
+                // An invoice still to pay becomes a bill; a receipt for something paid is kept and matched to the bank.
+                if ["amount due", "due date", "please pay", "payment due", "due by", "balance due"].contains(where: { lower.contains($0) }) {
+                    ledger.draftBill(from: vendor, total: cents, description: message.subject, date: message.date,
+                                     reference: String(message.messageID.prefix(60)))
+                } else {
+                    ledger.addMailReceipt(vendor: vendor, total: cents, date: message.date, subject: message.subject, body: message.body)
+                }
                 model.go(to: .money)
             }
         case .meeting:

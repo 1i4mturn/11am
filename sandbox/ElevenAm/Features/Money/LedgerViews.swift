@@ -89,6 +89,8 @@ struct BankPanel: View {
         let lines = ledger.bankLines.sorted { $0.date > $1.date }
         let open = lines.filter { !$0.isReconciled }
         let done = lines.filter(\.isReconciled)
+        let needing = Set(ledger.book.missingReceipts(from: .distantPast, to: ledger.today).map(\.id))
+        let kept = Set(ledger.book.receipts.compactMap(\.bankLine))
         HStack(alignment: .top, spacing: 14) {
             VStack(alignment: .leading, spacing: 8) {
                 SectionLabel(text: "Accounts")
@@ -130,7 +132,7 @@ struct BankPanel: View {
                         LedgerCard {
                             LazyVStack(spacing: 0) {
                                 ForEach(done.prefix(80)) { line in
-                                    reconciledRow(line)
+                                    reconciledRow(line, receipt: kept.contains(line.id), needsReceipt: needing.contains(line.id))
                                 }
                             }
                         }
@@ -172,7 +174,7 @@ struct BankPanel: View {
         .buttonStyle(.plain)
     }
 
-    private func reconciledRow(_ line: BankLine) -> some View {
+    private func reconciledRow(_ line: BankLine, receipt: Bool, needsReceipt: Bool) -> some View {
         let entry = ledger.book.entries.first { $0.id == line.entry }
         let coded = entry?.lines.first { $0.account != line.account && $0.account != ledger.book.code(for: .gst) }
         let account = coded.flatMap { ledger.book.account($0.account) }
@@ -193,12 +195,27 @@ struct BankPanel: View {
             if let tax = coded?.tax, tax != .excluded {
                 Chip(text: tax.title)
             }
+            Group {
+                if receipt {
+                    Image(systemName: "paperclip").help("Receipt kept")
+                } else if needsReceipt {
+                    Image(systemName: "exclamationmark.circle").help("Over $82.50 with GST claimed: keep its tax invoice")
+                } else {
+                    Color.clear
+                }
+            }
+            .font(.system(size: 11))
+            .foregroundStyle(needsReceipt ? theme.ink(scheme) : theme.inkTertiary(scheme))
+            .frame(width: 14)
             LedgerAmount(cents: line.amount)
         }
         .padding(.vertical, 6)
         .overlay(alignment: .bottom) { Rectangle().fill(theme.edge(scheme)).frame(height: 0.5) }
         .contextMenu {
             Button("Undo reconciliation") { withAnimation(theme.spring) { ledger.unreconcile(line) } }
+            if line.amount < 0 {
+                Button("Add its receipt…") { ledger.addReceipt(for: line) }
+            }
         }
     }
 }
@@ -953,7 +970,7 @@ struct ReportsPanel: View {
     private var report: Report { ledger.report }
 
     enum Report: String, CaseIterable, Identifiable {
-        case profit, balance, cash, trial, receivables, payables, audit
+        case profit, balance, cash, trial, receivables, payables, budget, audit
         var id: String { rawValue }
         var title: String {
             switch self {
@@ -963,6 +980,7 @@ struct ReportsPanel: View {
             case .trial: return "Trial balance"
             case .receivables: return "Owed to you"
             case .payables: return "You owe"
+            case .budget: return "Budget"
             case .audit: return "Audit trail"
             }
         }
@@ -976,7 +994,7 @@ struct ReportsPanel: View {
             }
             .pickerStyle(.segmented)
             .labelsHidden()
-            .frame(maxWidth: 720)
+            .frame(maxWidth: 780)
             if report == .audit {
                 AuditTrailView()
             } else {
@@ -1010,7 +1028,8 @@ struct ReportsPanel: View {
                         case .trial: trial(dates.end)
                         case .receivables: aged(.sale, dates.end)
                         case .payables: aged(.bill, dates.end)
-                        case .audit: EmptyView()
+                        case .budget: BudgetReport(dates: dates)
+                    case .audit: EmptyView()
                         }
                     }
                     .frame(maxWidth: 760, alignment: .leading)
