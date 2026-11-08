@@ -139,6 +139,7 @@ final class AppModel: ObservableObject {
     let machine: MachineProfile
     let brain: Brain
     let files: FileIndex
+    let browser = FileBrowser()
     let today: TodayModel
     let nightShift: NightShift
     let voice: VoiceProfile

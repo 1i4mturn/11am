@@ -338,22 +338,28 @@ enum GridlessNumber {
 }
 
 enum ImageMetadata {
-    /// The same image with its location taken out (and nothing else changed: pixels, camera and dates stay).
+    /// The same image with its location taken out: camera, dates and pixels stay. ImageIO's lossless copy is tried first and
+    /// checked; where it can't drop the place cleanly, the picture is written again with everything but the place.
     static func removingLocation(_ data: Data) -> Data? {
         guard let source = CGImageSourceCreateWithData(data as CFData, nil), let type = CGImageSourceGetType(source) else { return nil }
-        let output = NSMutableData()
-        guard let destination = CGImageDestinationCreateWithData(output, type, 1, nil) else { return nil }
-        var error: Unmanaged<CFError>?
-        let options: [CFString: Any] = [kCGImageMetadataShouldExcludeGPS: true]
-        if CGImageDestinationCopyImageSource(destination, source, options as CFDictionary, &error) {
-            return output as Data
+        let before = ImageInfo.read(data: data)
+        let copied = NSMutableData()
+        if let destination = CGImageDestinationCreateWithData(copied, type, 1, nil) {
+            var error: Unmanaged<CFError>?
+            let options: [CFString: Any] = [kCGImageMetadataShouldExcludeGPS: true]
+            if CGImageDestinationCopyImageSource(destination, source, options as CFDictionary, &error),
+               let after = ImageInfo.read(data: copied as Data), !after.hasLocation, after.camera == before?.camera, after.taken == before?.taken {
+                return copied as Data
+            }
         }
-        // Formats that can't be copied without re-encoding: write the pixels again, with the other metadata.
-        let rewritten = NSMutableData()
-        guard let fresh = CGImageDestinationCreateWithData(rewritten, type, 1, nil),
+        guard let image = CGImageSourceCreateImageAtIndex(source, 0, nil),
               var properties = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any] else { return nil }
         properties.removeValue(forKey: kCGImagePropertyGPSDictionary)
-        CGImageDestinationAddImageFromSource(fresh, source, 0, properties as CFDictionary)
+        let typeName = type as String
+        if typeName == UTType.jpeg.identifier || typeName == UTType.heic.identifier { properties[kCGImageDestinationLossyCompressionQuality] = 0.97 }
+        let rewritten = NSMutableData()
+        guard let fresh = CGImageDestinationCreateWithData(rewritten, type, 1, nil) else { return nil }
+        CGImageDestinationAddImage(fresh, image, properties as CFDictionary)
         return CGImageDestinationFinalize(fresh) ? rewritten as Data : nil
     }
 

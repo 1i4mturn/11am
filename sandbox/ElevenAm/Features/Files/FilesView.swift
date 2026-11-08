@@ -4,6 +4,80 @@ import SwiftUI
 struct FilesView: View {
     @EnvironmentObject private var theme: Theme
     @EnvironmentObject private var files: FileIndex
+    @EnvironmentObject private var browser: FileBrowser
+    @Environment(\.colorScheme) private var scheme
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            SectionHeader(title: "files", subtitle: subtitle) {
+                HStack(spacing: 8) {
+                    Picker("", selection: $browser.mode) {
+                        ForEach(FilesMode.allCases) { mode in Text(mode.title).tag(mode) }
+                    }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
+                    .fixedSize()
+                    if browser.mode == .search {
+                        Button("Add Folder…") { files.chooseFolder() }
+                            .buttonStyle(.vellumSecondary)
+                        Button(files.isIndexing ? "Indexing…" : "Index Now") {
+                            Task { await files.reindex() }
+                        }
+                        .buttonStyle(.vellumPrimary)
+                        .disabled(files.isIndexing || files.folders.isEmpty)
+                    }
+                }
+            }
+            if let notice = browser.notice {
+                HStack(spacing: 10) {
+                    AgentLogo(code: "bn", size: 18, color: theme.inkSecondary(scheme))
+                    Text(notice).font(.system(size: 12.5)).foregroundStyle(theme.ink(scheme)).lineLimit(2)
+                    Spacer()
+                    Button {
+                        browser.notice = nil
+                    } label: {
+                        Image(systemName: "xmark").font(.system(size: 10, weight: .bold))
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(theme.inkTertiary(scheme))
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 8)
+                .vellum(level: 3, radius: max(theme.radius - 4, 8))
+                .transition(.rise(theme.rise))
+            }
+            if browser.mode == .browse {
+                FilesBrowserView()
+            } else {
+                FilesSearchView()
+            }
+        }
+        .padding(24)
+        .animation(theme.spring, value: browser.notice)
+        .animation(theme.spring, value: browser.mode)
+        .task(id: browser.notice) {
+            guard browser.notice != nil, (try? await Task.sleep(for: .seconds(8))) != nil else { return }
+            browser.notice = nil
+        }
+        .overlay {
+            if !browser.slideshow.isEmpty {
+                SlideshowView()
+                    .environmentObject(browser)
+                    .transition(.opacity)
+            }
+        }
+    }
+
+    private var subtitle: String {
+        if browser.mode == .search { return "Bolton · " + files.status }
+        return "Bolton · " + (browser.folder?.path.replacingOccurrences(of: NSHomeDirectory(), with: "~") ?? "your folders")
+    }
+}
+
+/// Finding things by what's in them, across the folders 11am indexes.
+private struct FilesSearchView: View {
+    @EnvironmentObject private var theme: Theme
+    @EnvironmentObject private var files: FileIndex
     @EnvironmentObject private var brain: Brain
     @Environment(\.colorScheme) private var scheme
 
@@ -14,22 +88,10 @@ struct FilesView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                SectionHeader(title: "files", subtitle: files.status) {
-                    HStack(spacing: 8) {
-                        Button("Add Folder…") { files.chooseFolder() }
-                            .buttonStyle(.vellumSecondary)
-                        Button(files.isIndexing ? "Indexing…" : "Index Now") {
-                            Task { await files.reindex() }
-                        }
-                        .buttonStyle(.vellumPrimary)
-                        .disabled(files.isIndexing || files.folders.isEmpty)
-                    }
-                }
-
                 DisplayTitle(text: "What are you looking for?", size: 26)
 
                 AskField(placeholder: "contract signed with acme last year", text: $query) {
-                    search()
+                    hits = files.search(query)
                 }
                 .onChange(of: query) { _, _ in
                     hits = files.search(query)
@@ -95,13 +157,8 @@ struct FilesView: View {
                     }
                 }
             }
-            .padding(24)
         }
         .scrollContentBackground(.hidden)
-    }
-
-    private func search() {
-        hits = files.search(query)
     }
 }
 

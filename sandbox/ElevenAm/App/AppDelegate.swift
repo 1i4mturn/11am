@@ -108,6 +108,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if arguments.bool(forKey: "sheetsVersions") {
             model.sheets.showsVersions = true
         }
+        // -filesSample YES makes and opens the sample photos; -filesSelect "Lake Eildon.jpg" selects one; -filesEdit YES opens the editor;
+        // -filesMode search shows the search.
+        if let mode = arguments.string(forKey: "filesMode").flatMap(FilesMode.init(rawValue:)) {
+            model.browser.mode = mode
+        }
+        if arguments.bool(forKey: "filesSample") {
+            model.browser.makeSampleFolder()
+        }
+        if let name = arguments.string(forKey: "filesSelect"), let item = model.browser.items.first(where: { $0.name == name }) {
+            model.browser.select(item, extend: false)
+            if arguments.bool(forKey: "filesEdit") { model.browser.editing = item.url }
+        }
         // -moneyTab bank opens a Money tab; -moneyInvoice INV-0004 selects one; -moneyEditor YES starts a new invoice.
         if let tab = arguments.string(forKey: "moneyTab").flatMap(MoneyTab.init(rawValue:)) {
             model.ledger.tab = tab

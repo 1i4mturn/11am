@@ -133,6 +133,9 @@ jobs:
           capture money-spend-light -startSection money -forceAppearance light -moneyTab spend
           capture money-spend-dark -startSection money -forceAppearance dark -moneyTab spend
           capture money-budget-light -startSection money -forceAppearance light -moneyTab reports -moneyReport budget
+          capture files-browse-light -startSection files -forceAppearance light -filesSample YES -filesSelect "Lake Eildon.jpg"
+          capture files-browse-dark -startSection files -forceAppearance dark -filesSample YES -filesSelect "Bells Beach.heic"
+          capture files-edit-light -startSection files -forceAppearance light -filesSample YES -filesSelect "Fitzroy laneway.jpg" -filesEdit YES
           capture design-light -startSection design -forceAppearance light
           capture design-select-dark -startSection design -forceAppearance dark -designSelect 3
           capture design-event-light -startSection design -forceAppearance light -designName Founder -designSelect 3

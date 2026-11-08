@@ -54,6 +54,7 @@ extension View {
             .environmentObject(model.machine)
             .environmentObject(model.brain)
             .environmentObject(model.files)
+            .environmentObject(model.browser)
             .environmentObject(model.today)
             .environmentObject(model.nightShift)
             .environmentObject(model.voice)
