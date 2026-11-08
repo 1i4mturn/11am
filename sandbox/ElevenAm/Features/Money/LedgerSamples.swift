@@ -163,7 +163,7 @@ enum LedgerSamples {
 
         // Budgets for the year, by the month.
         book.clock = stamp(100)
-        for (code, monthly) in [("200", 1_200_000), ("410", 150_000), ("469", 105_000), ("485", 45_000), ("400", 60_000), ("477", 480_000),
+        for (code, monthly) in [("200", 520_000), ("410", 150_000), ("469", 105_000), ("485", 45_000), ("400", 60_000), ("477", 480_000),
                                 ("478", 55_000), ("493", 30_000), ("429", 20_000)] {
             book.setBudget(code, monthly: monthly)
         }
