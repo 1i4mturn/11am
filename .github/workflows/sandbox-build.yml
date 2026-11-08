@@ -85,7 +85,7 @@ jobs:
           mkdir -p ledgertest
           cd ledgertest
           swiftc -O -o ledgertests \
-            ../ElevenAm/Features/Money/{LedgerKit,LedgerExtras,LedgerSamples}.swift \
+            ../ElevenAm/Features/Money/{LedgerKit,LedgerExtras,LedgerSpend,LedgerSamples}.swift \
             ../ElevenAm/Features/Sheets/{GridKit,GridFormula,GridEngine,GridEdit,GridFiles,GridRules}.swift \
             ../ElevenAm/Features/Documents/{DocumentKit,DocxWriter}.swift \
             ../ci/LedgerTests/main.swift 2>&1 | grep -E "error|warning: unre" || true

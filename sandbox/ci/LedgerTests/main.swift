@@ -423,6 +423,126 @@ locking.actor = "Marc"
 locking.log("Something")
 check(locking.audit.last?.date == date(2026, 1, 1) && locking.audit.last?.by == "Marc", "Stamped with who and when")
 
+// MARK: Receipts
+
+let cafe = ReceiptReader.read("LUMEN COFFEE\nABN 12 345 678 901\n12 Smith St Fitzroy\nTax Invoice\n03/11/2026 08:14\nFlat white 5.50\nBanana bread 6.00\nTotal $11.50\nIncludes GST $1.05\nEFTPOS CARD $11.50", calendar: calendar)
+check(cafe.vendor == "LUMEN COFFEE" && cafe.total == 1_150 && cafe.gst == 105 && cafe.abn == "12 345 678 901" && cafe.date == date(2026, 11, 3),
+      "Receipt: a café docket (\(String(describing: cafe)))")
+let online = ReceiptReader.read("Tax invoice\nVercel Inc.\nInvoice number 2241-0093\nDate of issue November 3, 2026\nPro plan  US$20.00\nSubtotal US$20.00\nTotal US$20.00\nAmount paid US$20.00", calendar: calendar)
+check(online.vendor == "Vercel Inc." && online.total == 2_000 && online.date == date(2026, 11, 3), "Receipt: an emailed invoice (\(String(describing: online)))")
+let fuel = ReceiptReader.read("BP Fitzroy North\nTAX INVOICE ABN 51 824 753 556\nTue 3 Nov 2026 17:42\nUnleaded 42.31L @ 189.9\nFuel $80.35\nGST included 7.30\nTOTAL $80.35", calendar: calendar)
+check(fuel.vendor == "BP Fitzroy North" && fuel.total == 8_035 && fuel.gst == 730 && fuel.date == date(2026, 11, 3) && fuel.abn == "51 824 753 556",
+      "Receipt: fuel, with litres that aren't money (\(String(describing: fuel)))")
+check(ReceiptReader.amounts(in: "Total $1,234.50 on 03/11/2026 at 12:30, 2.5% off, $12") == [123_450, 1_200], "Receipt: amounts, not dates, times or percentages")
+
+var spending = LedgerBook()
+let spendDay = date(2026, 10, 20)
+let spendLines = [
+    BankLine(account: "090", date: spendDay, description: "AWS EMEA aws.amazon.com", amount: -46_320),
+    BankLine(account: "090", date: spendDay, description: "UBER *TRIP", amount: -3_850),
+    BankLine(account: "090", date: spendDay, description: "SPOTIFY P1234", amount: -2_000),
+    BankLine(account: "090", date: spendDay, description: "NETFLIX.COM", amount: -2_000),
+    BankLine(account: "090", date: date(2026, 9, 1), description: "FITZROY COWORK RENT", amount: -115_500),
+    BankLine(account: "090", date: date(2026, 9, 2), description: "COMMBANK FEE", amount: -1_000),
+    BankLine(account: "090", date: date(2026, 9, 3), description: "LINKEDIN ADS", amount: -88_000),
+    BankLine(account: "090", date: date(2026, 9, 4), description: "GOOGLE*WORKSPACE", amount: -3_300),
+]
+spending.importStatement(spendLines)
+let awsReceipt = LedgerReceipt(vendor: "Amazon Web Services", date: date(2026, 10, 19), total: 46_320)
+check(spending.confidentMatch(for: awsReceipt)?.id == spendLines[0].id, "Receipts: the bank line for exactly that amount, a day later")
+check(spending.confidentMatch(for: LedgerReceipt(vendor: "Netflix", date: spendDay, total: 2_000))?.id == spendLines[3].id
+      && spending.confidentMatch(for: LedgerReceipt(vendor: "Disney", date: spendDay, total: 2_000)) == nil, "Receipts: two the same amount, so only by name")
+check(spending.confidentMatch(for: LedgerReceipt(vendor: "AWS", date: date(2026, 9, 1), total: 46_320)) == nil, "Receipts: not seven weeks apart")
+let awsID = spending.addReceipt(awsReceipt)
+let lonely = spending.addReceipt(LedgerReceipt(vendor: "Lumen Coffee", date: spendDay, total: 1_150))
+check(spending.receipt(awsID)?.bankLine == spendLines[0].id && spending.receipt(lonely)?.isMatched == false && spending.receipts(forLine: spendLines[0].id).count == 1,
+      "Receipts: kept and matched straight away when sure; kept waiting when not")
+check(spending.candidates(for: LedgerReceipt(vendor: "Amazon", date: spendDay, total: 46_320)).isEmpty, "Receipts: a line with a receipt isn't offered again")
+for (index, coding) in [("469", GSTCode.gst), ("404", .free), ("400", .gst), ("485", .gst)].enumerated() {
+    try? spending.code(spendLines[4 + index].id, account: coding.0, gst: coding.1)
+}
+let linkedIn = spending.addReceipt(LedgerReceipt(vendor: "LinkedIn", date: date(2026, 9, 3), total: 88_000))
+check(spending.receipt(linkedIn)?.bankLine == spendLines[6].id, "Receipts: matched to a line already coded")
+let missing = spending.missingReceipts(from: date(2026, 7, 1), to: date(2026, 10, 31))
+check(missing.map(\.id) == [spendLines[4].id] && spending.gstWaitingOnReceipts(from: date(2026, 7, 1), to: date(2026, 10, 31)) == 10_500,
+      "Missing: only the rent (over $82.50, with GST, no receipt): $105 of GST waiting on it")
+spending.detachReceipt(linkedIn)
+check(spending.missingReceipts(from: date(2026, 7, 1), to: date(2026, 10, 31)).count == 2 && spending.matchReceipts() == 1 && spending.receipt(linkedIn)?.bankLine == spendLines[6].id,
+      "Receipts: unmatched, then matched again by George")
+
+// MARK: Expense claims
+
+var claiming = LedgerBook()
+let samLee = Contact(name: "Sam Lee")
+claiming.contacts = [samLee]
+let inkReceipt = claiming.addReceipt(LedgerReceipt(vendor: "Officeworks", date: date(2026, 10, 12), total: 6_490))
+let claimID = try? claiming.makeClaim([
+    ClaimItem(description: "Parking", total: 1_800, account: "493", gst: .gst, date: date(2026, 10, 11)),
+    ClaimItem(description: "Printer ink", total: 6_490, account: "453", gst: .gst, date: date(2026, 10, 12), receipt: inkReceipt),
+], by: samLee.id, date: date(2026, 10, 14))
+let claim = claimID.flatMap { claiming.invoice($0) }
+check(claim?.number == "CLAIM-0001" && claim?.status == .approved && claim?.total == 8_290 && claiming.owedOnClaims == 8_290 && claiming.claims.count == 1,
+      "Claims: a bill from you, to the cent (\(claim?.total ?? 0))")
+check(claiming.receipt(inkReceipt)?.bill == claimID && claim.map { claiming.receipts(forBill: $0.id).count } == 1, "Claims: the receipt goes with it")
+check(LedgerBook.line(for: ClaimItem(description: "x", total: 1_150, account: "429", gst: .gst, date: Date()), registered: true).net == 1_045
+      && LedgerBook.line(for: ClaimItem(description: "x", total: 1_150, account: "429", gst: .gst, date: Date()), registered: false).gst == .excluded,
+      "Claims: GST taken out of what was paid, unless you're not registered")
+if let claimID { try? claiming.recordPayment(claimID, amount: 8_290, date: date(2026, 10, 20), bankAccount: "090") }
+check(claiming.owedOnClaims == 0 && claiming.claims.first?.status == .paid, "Claims: paid back like any bill")
+check((try? claiming.makeClaim([], by: samLee.id, date: date(2026, 10, 20))) == nil, "Claims: not an empty one")
+
+// MARK: Budgets
+
+var budgeting = LedgerBook()
+budgeting.setBudget("469", monthly: 105_000)
+check(budgeting.budget(for: "469", from: date(2026, 10, 1), to: date(2026, 10, 31)) == 105_000
+      && budgeting.budget(for: "469", from: date(2026, 10, 1), to: date(2026, 10, 15)) == 50_806
+      && budgeting.budget(for: "469", from: date(2026, 9, 16), to: date(2026, 10, 15)) == 103_306
+      && budgeting.budget(for: "400", from: date(2026, 10, 1), to: date(2026, 10, 31)) == 0, "Budgets: by the month, in proportion to the days")
+budgeting.importStatement([BankLine(account: "090", date: date(2026, 10, 2), description: "RENT", amount: -132_000),
+                           BankLine(account: "090", date: date(2026, 10, 3), description: "ADS", amount: -11_000),
+                           BankLine(account: "090", date: date(2026, 10, 4), description: "CLIENT", amount: 220_000)])
+try? budgeting.code(budgeting.bank[0].id, account: "469", gst: .gst)
+try? budgeting.code(budgeting.bank[1].id, account: "400", gst: .gst)
+try? budgeting.code(budgeting.bank[2].id, account: "200", gst: .gst)
+budgeting.setBudget("200", monthly: 150_000)
+let budgetRows = budgeting.budgetReport(from: date(2026, 10, 1), to: date(2026, 10, 31))
+let rentRow = budgetRows.first { $0.account.code == "469" }, salesRow = budgetRows.first { $0.account.code == "200" }, adsRow = budgetRows.first { $0.account.code == "400" }
+check(rentRow?.actual == 120_000 && rentRow?.variance == -15_000 && rentRow?.used.map { abs($0 - 120_000.0 / 105_000) < 1e-9 } == true,
+      "Budgets: rent $150 over (\(String(describing: rentRow?.variance)))")
+check(salesRow?.actual == 200_000 && salesRow?.variance == 50_000 && adsRow?.budget == 0 && adsRow?.actual == 10_000 && adsRow?.used == nil,
+      "Budgets: income ahead is good; spending with no budget still shows")
+check(budgeting.suggestedBudgets(before: date(2026, 11, 1))["469"].map { $0 > 0 && $0 % 100 == 0 } == true, "Budgets: a start from what's happened, to the dollar")
+budgeting.setBudget("469", monthly: 0)
+check(budgeting.budgets["469"] == nil && budgeting.audit.contains { $0.action == "Set the budget for Rent" }, "Budgets: cleared, and in the trail")
+
+// MARK: George's checks
+
+var checking = LedgerBook()
+let printer = Contact(name: "Inkwell Printing")
+checking.contacts = [printer]
+for (number, issued) in [("P-77", date(2026, 10, 2)), ("P-77b", date(2026, 10, 9))] {
+    let bill = Invoice(kind: .bill, number: number, contact: printer.id, issued: issued, due: issued, lines: [InvoiceLine(description: "Flyers", unitPrice: 40_000, account: "400", gst: .gst)])
+    checking.invoices.append(bill)
+}
+var history: [BankLine] = []
+for (offset, amount) in [-10_000, -11_000, -10_500, -60_000].enumerated() {
+    history.append(BankLine(account: "090", date: date(2026, 9, 1 + offset * 7), description: "AWS EMEA \(offset)", amount: amount))
+}
+history.append(BankLine(account: "090", date: date(2026, 9, 2), description: "WAGES SAM LEE", amount: -480_000))
+history.append(BankLine(account: "090", date: date(2026, 8, 20), description: "MYSTERY", amount: -2_000))
+checking.importStatement(history)
+for line in checking.bank where line.description.hasPrefix("AWS") { try? checking.code(line.id, account: "485", gst: .gst) }
+if let wages = checking.bank.first(where: { $0.description.hasPrefix("WAGES") }) { try? checking.code(wages.id, account: "477", gst: .gst) }
+let found = checking.checks(on: date(2026, 10, 31))
+check(found.contains { $0.kind == .duplicateBill && $0.title == "Two bills from Inkwell Printing for $440.00" }, "Checks: the same bill twice (\(found.map(\.title)))")
+check(found.contains { $0.kind == .unusualAmount && $0.detail.hasPrefix("About 5.7 times the usual $105.00") }, "Checks: much more than usual for a payee")
+check(found.contains { $0.kind == .gstOnWages } && found.contains { $0.kind == .staleBankLines && $0.title == "1 bank line has waited over a month" }
+      && found.contains { $0.kind == .missingReceipts && $0.title == "5 purchases need their tax invoice" }, "Checks: GST on wages, a line left waiting, receipts to find")
+if let duplicate = found.first(where: { $0.kind == .duplicateBill }) { checking.dismissCheck(duplicate.id) }
+check(!checking.checks(on: date(2026, 10, 31)).contains { $0.kind == .duplicateBill } && checking.checks(on: date(2026, 10, 31)).count == found.count - 1,
+      "Checks: one you've said is fine stays gone")
+
 // MARK: Saved books
 
 var saved = quoting
@@ -434,7 +554,7 @@ let reopened = try? JSONDecoder().decode(LedgerBook.self, from: savedData)
 check(reopened?.quotes.count == saved.quotes.count && reopened?.repeating.count == 1 && reopened?.audit.count == saved.audit.count
       && reopened?.actor == "You" && reopened?.clock == nil, "Quotes, schedules and the trail are saved; who and when aren't")
 var older = try! JSONSerialization.jsonObject(with: savedData) as! [String: Any]
-for key in ["quotes", "repeating", "reminders", "audit"] { older.removeValue(forKey: key) }
+for key in ["quotes", "repeating", "reminders", "audit", "receipts", "budgets", "dismissedChecks"] { older.removeValue(forKey: key) }
 var oldSettings = older["settings"] as! [String: Any]
 for key in ["quotePrefix", "nextQuote", "quoteDays", "lockDate", "reminderDays"] { oldSettings.removeValue(forKey: key) }
 older["settings"] = oldSettings
@@ -468,6 +588,13 @@ check(novemberRepeats.compactMap { $0.lines.first?.description }.sorted() == ["M
 check(sample.isLocked(date(2026, 9, 30)) && !sample.isLocked(date(2026, 10, 1)) && sample.audit.count > 30
       && sample.audit.allSatisfy { $0.date <= date(2026, 11, 1) } && sample.auditTrail().first.map { $0.date > date(2026, 10, 25) } == true,
       "…locked to last quarter, with a backdated trail (\(sample.audit.count) changes)")
+let sampleMissing = sample.missingReceipts(from: sample.financialYearStart(for: date(2026, 11, 1)), to: date(2026, 11, 1))
+check(sample.receipts.count == 12 && sample.receipts.filter(\.isMatched).count == 11 && sampleMissing.count == 4
+      && sampleMissing.allSatisfy { $0.description.contains("RENT") || $0.description.contains("LINKEDIN") },
+      "…receipts for most purchases, the rent and one ad still to find (\(sample.receipts.filter(\.isMatched).count) matched, \(sampleMissing.map(\.description)))")
+check(sample.claims.count == 1 && sample.owedOnClaims == 8_290 && sample.budgets["469"] == 105_000
+      && sample.checks(on: date(2026, 11, 1)).map(\.kind) == [.duplicateBill, .missingReceipts],
+      "…a claim, budgets, and George's checks (\(sample.checks(on: date(2026, 11, 1)).map(\.title)))")
 
 print(failures == 0 ? "ALL PASSED" : "\(failures) FAILED")
 exit(failures == 0 ? 0 : 1)

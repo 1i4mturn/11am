@@ -70,6 +70,8 @@ enum LedgerSamples {
         book.makeRepeatingInvoices(upTo: day(10))
         let illustration = invoice(.bill, kim, 50, [line("Illustration set", 1, 200_000, "410")], reference: "KDS-2207")
         _ = invoice(.bill, harper, 20, days: 30, [line("Year-end accounts and tax return", 1, 150_000, "412")], reference: "HA-1189")
+        // The same bill keyed in again from the emailed copy, for George to catch.
+        _ = invoice(.bill, harper, 18, days: 30, [line("Year-end accounts and tax return", 1, 150_000, "412")], approve: false, reference: "HA-1189")
 
         let lines: [(ago: Int, account: String, text: String, amount: Cents, treatment: Treatment)] = [
             (95, "090", "FITZROY COWORK RENT", -115_500, .code("469", .gst)),
@@ -131,6 +133,39 @@ enum LedgerSamples {
             case .leave:
                 break
             }
+        }
+
+        // Receipts: kept for most purchases and matched to their bank lines; the rent and one ad still to find.
+        func receipt(_ vendor: String, _ ago: Int, _ total: Cents, file: String = "") -> LedgerReceipt {
+            LedgerReceipt(file: file, vendor: vendor, date: day(ago), total: total, gst: GST.included(in: total, .gst))
+        }
+        let kept = [receipt("Amazon Web Services", 93, 41_030), receipt("Amazon Web Services", 63, 42_815), receipt("Amazon Web Services", 33, 45_190),
+                    receipt("Amazon Web Services", 3, 46_320), receipt("LinkedIn", 71, 88_000), receipt("LinkedIn", 41, 88_000),
+                    receipt("Qantas", 56, 64_200), receipt("Officeworks", 76, 132_000), receipt("Uber", 3, 3_850)]
+        for item in kept {
+            book.clock = stamp(max(0, Int((today.timeIntervalSince(item.date) / 86_400).rounded()) - 1))
+            book.addReceipt(item)
+        }
+        // Sam paid for parking and printer ink himself; they're on an expense claim. A café receipt waits for its bank line.
+        let sam = contact("Sam Lee", "sam@northside.studio")
+        let parking = receipt("Wilson Parking", 21, 1_800)
+        let ink = receipt("Officeworks", 20, 6_490)
+        book.clock = stamp(20)
+        book.addReceipt(parking)
+        book.addReceipt(ink)
+        book.clock = stamp(18)
+        _ = try? book.makeClaim([
+            ClaimItem(description: "Parking, Acme workshop", total: 1_800, account: "493", gst: .gst, date: day(21), receipt: parking.id),
+            ClaimItem(description: "Printer ink", total: 6_490, account: "453", gst: .gst, date: day(20), receipt: ink.id),
+        ], by: sam, date: day(18))
+        book.clock = stamp(6)
+        book.addReceipt(receipt("Lune Croissanterie", 6, 2_340))
+
+        // Budgets for the year, by the month.
+        book.clock = stamp(100)
+        for (code, monthly) in [("200", 1_200_000), ("410", 150_000), ("469", 105_000), ("485", 45_000), ("400", 60_000), ("477", 480_000),
+                                ("478", 55_000), ("493", 30_000), ("429", 20_000)] {
+            book.setBudget(code, monthly: monthly)
         }
 
         // Quotes: one accepted and half invoiced, one waiting, one being written, one that lapsed.

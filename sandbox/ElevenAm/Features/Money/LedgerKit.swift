@@ -456,6 +456,11 @@ struct LedgerBook: Codable, Sendable {
     var reminders: [ReminderSent] = []
     /// Every change, newest last: who, what and when.
     var audit: [AuditEvent] = []
+    var receipts: [LedgerReceipt] = []
+    /// Monthly budgets by account code.
+    var budgets: [String: Cents] = [:]
+    /// George's checks you've said are fine.
+    var dismissedChecks: Set<String> = []
     /// Who's making changes right now, for the audit trail. Not saved.
     var actor = "You"
     /// The time changes are stamped with; nil is now. Not saved (the samples use it to backdate).
@@ -464,7 +469,7 @@ struct LedgerBook: Codable, Sendable {
     init() {}
 
     private enum CodingKeys: String, CodingKey {
-        case settings, accounts, contacts, entries, bank, invoices, rules, quotes, repeating, reminders, audit
+        case settings, accounts, contacts, entries, bank, invoices, rules, quotes, repeating, reminders, audit, receipts, budgets, dismissedChecks
     }
 
     /// Tolerant of parts added in later versions.
@@ -481,6 +486,9 @@ struct LedgerBook: Codable, Sendable {
         repeating = (try? c.decodeIfPresent([RepeatingInvoice].self, forKey: .repeating)) ?? []
         reminders = (try? c.decodeIfPresent([ReminderSent].self, forKey: .reminders)) ?? []
         audit = (try? c.decodeIfPresent([AuditEvent].self, forKey: .audit)) ?? []
+        receipts = (try? c.decodeIfPresent([LedgerReceipt].self, forKey: .receipts)) ?? []
+        budgets = (try? c.decodeIfPresent([String: Cents].self, forKey: .budgets)) ?? [:]
+        dismissedChecks = (try? c.decodeIfPresent(Set<String>.self, forKey: .dismissedChecks)) ?? []
     }
 
     var calendar: Calendar {
