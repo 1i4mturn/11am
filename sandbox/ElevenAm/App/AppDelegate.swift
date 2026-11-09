@@ -148,6 +148,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if arguments.bool(forKey: "moneyReminder"), let first = model.ledger.remindersDue.first {
             model.ledger.review(first)
         }
+        // -moneyWhatIf "hire at 8k a month from February" tries a change on the forecast (several, split by "|");
+        // -moneyExplain 485 opens George's explanation of that account this financial year; -moneyXero YES opens the move from Xero.
+        if let sentences = arguments.string(forKey: "moneyWhatIf") {
+            model.ledger.whatIfs = []
+            for sentence in sentences.split(separator: "|") { model.ledger.tryWhatIf(String(sentence)) }
+            model.ledger.notice = nil
+        }
+        if let account = arguments.string(forKey: "moneyExplain") {
+            let year = model.ledger.range(.thisYear)
+            model.ledger.explain(account: account, from: year.start, to: model.ledger.today)
+        }
+        if arguments.bool(forKey: "moneyXero") {
+            model.ledger.showsXero = true
+        }
         if arguments.bool(forKey: "moneyEditor") {
             model.ledger.newInvoice(.sale)
             if var draft = model.ledger.editing, let contact = model.ledger.book.contacts.first {

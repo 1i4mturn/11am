@@ -307,6 +307,8 @@ struct LedgerSettings: Codable, Hashable, Sendable {
     var lockDate: Date?
     /// Days after the due date Marc drafts a reminder: friendly, then firmer, then a final one.
     var reminderDays = [3, 14, 30]
+    /// A pay-online link printed on invoices (a Stripe payment link, say), with [invoice], [amount] and [email] filled in.
+    var payLink = ""
 
     init() {}
 }
@@ -333,6 +335,7 @@ extension LedgerSettings {
         quoteDays = try c.decodeIfPresent(Int.self, forKey: .quoteDays) ?? 30
         lockDate = try c.decodeIfPresent(Date.self, forKey: .lockDate)
         reminderDays = try c.decodeIfPresent([Int].self, forKey: .reminderDays) ?? reminderDays
+        payLink = try c.decodeIfPresent(String.self, forKey: .payLink) ?? ""
     }
 }
 
@@ -1119,6 +1122,9 @@ enum InvoiceDocument {
         parts.append(totals)
         if invoice.kind == .sale && (!settings.bsb.isEmpty || !settings.accountNumber.isEmpty) {
             parts.append("## How to pay\n\nBank transfer to **\(settings.accountName.isEmpty ? settings.businessName : settings.accountName)**  \nBSB \(settings.bsb) · Account \(settings.accountNumber)  \nPlease use \(invoice.number) as the reference.")
+        }
+        if let link = payLink(settings.payLink, invoice: invoice, contact: contact) {
+            parts.append("**Pay online:** [\(link)](\(link))")
         }
         if !invoice.notes.isEmpty { parts.append(invoice.notes) }
         return parts.joined(separator: "\n\n")

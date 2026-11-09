@@ -406,6 +406,9 @@ extension LedgerBook {
             let name = settings.accountName.isEmpty ? settings.businessName : settings.accountName
             pay = "\n\nTo pay by bank transfer: \(name), BSB \(settings.bsb), account \(settings.accountNumber), with \(number) as the reference."
         }
+        if let link = InvoiceDocument.payLink(settings.payLink, invoice: item, contact: contact(item.contact)) {
+            pay += "\n\nOr pay online: \(link)"
+        }
         let subject: String
         let message: String
         let signOff: String

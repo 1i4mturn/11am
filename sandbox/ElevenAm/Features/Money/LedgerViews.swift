@@ -1049,10 +1049,10 @@ struct ReportsPanel: View {
     private func profit(_ dates: (start: Date, end: Date)) -> some View {
         let report = ledger.book.profitAndLoss(from: dates.start, to: dates.end)
         ReportRow(label: "Income", cents: nil, bold: true)
-        ForEach(report.income) { line in ReportRow(label: line.account.name, cents: line.amount, indent: 12) }
+        ForEach(report.income) { line in ExplainableRow(label: line.account.name, cents: line.amount, account: line.account.code, dates: dates) }
         ReportRow(label: "Total income", cents: report.totalIncome, bold: true)
         ReportRow(label: "Expenses", cents: nil, bold: true).padding(.top, 8)
-        ForEach(report.expenses.sorted { $0.amount > $1.amount }) { line in ReportRow(label: line.account.name, cents: line.amount, indent: 12) }
+        ForEach(report.expenses.sorted { $0.amount > $1.amount }) { line in ExplainableRow(label: line.account.name, cents: line.amount, account: line.account.code, dates: dates) }
         ReportRow(label: "Total expenses", cents: report.totalExpenses, bold: true)
         ReportRow(label: report.net >= 0 ? "Net profit" : "Net loss", cents: report.net, bold: true).padding(.top, 8)
     }
@@ -1315,6 +1315,12 @@ struct LedgerSettingsView: View {
                     Text("due in").foregroundStyle(theme.inkTertiary(scheme))
                     TextField("", value: $settings.paymentDays, format: .number).frame(width: 50)
                     Text("days").foregroundStyle(theme.inkTertiary(scheme))
+                } }
+                GridRow { label("Pay online"); VStack(alignment: .leading, spacing: 3) {
+                    TextField("https://buy.stripe.com/… (optional)", text: $settings.payLink)
+                    Text("Printed on invoices and reminders. [invoice], [amount] and [email] are filled in for each one.")
+                        .font(.system(size: 11))
+                        .foregroundStyle(theme.inkTertiary(scheme))
                 } }
                 GridRow { label("Quotes"); HStack {
                     TextField("Prefix", text: $settings.quotePrefix).frame(width: 80)

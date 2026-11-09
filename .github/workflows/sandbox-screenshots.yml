@@ -133,6 +133,10 @@ jobs:
           capture money-spend-light -startSection money -forceAppearance light -moneyTab spend
           capture money-spend-dark -startSection money -forceAppearance dark -moneyTab spend
           capture money-budget-light -startSection money -forceAppearance light -moneyTab reports -moneyReport budget
+          capture money-forecast-light -startSection money -forceAppearance light -moneyTab forecast -moneyWhatIf "hire at 8k a month from February|a \$5,000 laptop in March"
+          capture money-forecast-dark -startSection money -forceAppearance dark -moneyTab forecast -moneyWhatIf "lose Acme in January"
+          capture money-explain-light -startSection money -forceAppearance light -moneyTab reports -moneyReport profit -moneyExplain 485
+          capture money-xero-light -startSection money -forceAppearance light -moneyTab overview -moneyXero YES
           capture files-browse-light -startSection files -forceAppearance light -filesSample YES -filesSelect "Lake Eildon.jpg"
           capture files-browse-dark -startSection files -forceAppearance dark -filesSample YES -filesSelect "Bells Beach.heic"
           capture files-edit-light -startSection files -forceAppearance light -filesSample YES -filesSelect "Fitzroy laneway.jpg" -filesEdit YES

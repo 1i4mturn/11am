@@ -85,12 +85,25 @@ jobs:
           mkdir -p ledgertest
           cd ledgertest
           swiftc -O -o ledgertests \
-            ../ElevenAm/Features/Money/{LedgerKit,LedgerExtras,LedgerSpend,LedgerSamples}.swift \
+            ../ElevenAm/Features/Money/{LedgerKit,LedgerExtras,LedgerSpend,LedgerSamples,LedgerForecast}.swift \
             ../ElevenAm/Features/Sheets/{GridKit,GridFormula,GridEngine,GridEdit,GridFiles,GridRules}.swift \
             ../ElevenAm/Features/Documents/{DocumentKit,DocxWriter}.swift \
             ../ci/LedgerTests/main.swift 2>&1 | grep -E "error|warning: unre" || true
           test -x ledgertests
           TZ=Australia/Sydney ./ledgertests
+
+      - name: Forecast tests
+        working-directory: sandbox
+        run: |
+          mkdir -p forecasttest
+          cd forecasttest
+          swiftc -O -o forecasttests \
+            ../ElevenAm/Features/Money/{LedgerKit,LedgerExtras,LedgerSpend,LedgerSamples,LedgerForecast}.swift \
+            ../ElevenAm/Features/Sheets/{GridKit,GridFormula,GridEngine,GridEdit,GridFiles,GridRules}.swift \
+            ../ElevenAm/Features/Documents/{DocumentKit,DocxWriter}.swift \
+            ../ci/ForecastTests/main.swift 2>&1 | grep -E "error|warning: unre" || true
+          test -x forecasttests
+          TZ=Australia/Sydney ./forecasttests
 
       - name: Image tests
         working-directory: sandbox

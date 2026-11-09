@@ -5,13 +5,14 @@ import UniformTypeIdentifiers
 
 /// The places inside Money.
 enum MoneyTab: String, CaseIterable, Identifiable {
-    case overview, bank, invoices, quotes, bills, spend, contacts, reports, gst
+    case overview, forecast, bank, invoices, quotes, bills, spend, contacts, reports, gst
 
     var id: String { rawValue }
 
     var title: String {
         switch self {
         case .overview: return "Overview"
+        case .forecast: return "Forecast"
         case .bank: return "Bank"
         case .invoices: return "Invoices"
         case .quotes: return "Quotes"
@@ -66,6 +67,18 @@ final class LedgerModel: ObservableObject {
     @Published var reviewing: ReminderReview?
     /// Reminders on their way through Mail.
     @Published var sending: Set<UUID> = []
+
+    /// Changes being tried on the forecast, kept between launches.
+    @Published var whatIfs: [WhatIf] = JSONStore.load([WhatIf].self, from: "money-whatifs") ?? [] {
+        didSet { JSONStore.save(whatIfs, to: "money-whatifs") }
+    }
+    @Published var forecastMonths = 12
+    @Published var forecastRun: BrainRun?
+    /// A report line George is explaining.
+    @Published var explaining: ExplainRequest?
+    @Published var showsXero = false
+    /// George's brain, for explaining lines and the forecast.
+    weak var brain: Brain?
 
     /// Marc sends reminders from your own mail; Leo keeps bills to pay in Tasks.
     weak var mail: MailModel?
@@ -488,6 +501,7 @@ final class LedgerModel: ObservableObject {
         Bank lines still to reconcile: \(book.unreconciled.count).
         \(moneyInFacts)
         \(moneyOutFacts)
+        \(forecastFacts)
         """
     }
 }

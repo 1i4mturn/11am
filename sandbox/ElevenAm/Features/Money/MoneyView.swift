@@ -17,6 +17,7 @@ struct MoneyView: View {
                     Menu {
                         Section("Books") {
                             Button("Import a bank statement…") { ledger.importStatement() }
+                            Button("Move across from Xero…") { ledger.showsXero = true }
                             Button("Your business and GST…") { ledger.showsSettings = true }
                         }
                         Section("Overview") {
@@ -46,7 +47,7 @@ struct MoneyView: View {
             }
             .pickerStyle(.segmented)
             .labelsHidden()
-            .frame(maxWidth: 780)
+            .frame(maxWidth: 860)
 
             if let notice = ledger.notice ?? money.notice {
                 HStack(spacing: 10) {
@@ -71,6 +72,7 @@ struct MoneyView: View {
             Group {
                 switch ledger.tab {
                 case .overview: MoneyOverview()
+                case .forecast: ForecastPanel()
                 case .bank: BankPanel()
                 case .invoices: InvoicesPanel(kind: .sale)
                 case .quotes: QuotesPanel()
@@ -110,6 +112,16 @@ struct MoneyView: View {
                 .environmentObject(ledger)
                 .environmentObject(theme)
         }
+        .sheet(item: $ledger.explaining) { request in
+            LineExplainerSheet(request: request)
+                .environmentObject(ledger)
+                .environmentObject(theme)
+        }
+        .sheet(isPresented: $ledger.showsXero) {
+            XeroImportSheet()
+                .environmentObject(ledger)
+                .environmentObject(theme)
+        }
         .sheet(isPresented: $ledger.showsSettings) {
             LedgerSettingsView(settings: ledger.book.settings)
                 .environmentObject(ledger)
@@ -142,7 +154,12 @@ private struct MoneyOverview: View {
                     CashTile().entrance(0)
                     StatTile(label: "Net burn / month", value: Money.short(money.netBurn), detail: "\(Money.short(money.grossBurn)) out, \(Money.short(money.monthlyRevenue)) in").entrance(1)
                     StatTile(label: "Revenue / month", value: Money.short(money.monthlyRevenue), detail: "Average of the last 3 months").entrance(2)
-                    StatTile(label: "Runway", value: money.runwayMonths.map { String(format: "%.1f mo", $0) } ?? "∞", detail: money.runwayMonths == nil ? "Not burning cash" : "At the current net burn").entrance(3)
+                    Button { ledger.tab = .forecast } label: {
+                        StatTile(label: "Runway", value: money.runwayMonths.map { String(format: "%.1f mo", $0) } ?? "∞", detail: money.runwayMonths == nil ? "Not burning cash" : "At the current net burn · forecast")
+                    }
+                    .buttonStyle(.plain)
+                    .help("The forecast, and what if you hire, lose a client or change prices")
+                    .entrance(3)
                 }
 
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 12)], spacing: 12) {

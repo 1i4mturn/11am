@@ -264,6 +264,7 @@ final class AppModel: ObservableObject {
         }
         // George's bills to pay go on Leo's list; Marc sends the reminders for late invoices.
         ledger.mail = mail
+        ledger.brain = brain
         ledger.tasks = tasks
         nightShift.attach(to: self)
         money.extraFacts = { [weak ledger] in ledger?.georgeFacts ?? "" }
