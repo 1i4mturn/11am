@@ -294,6 +294,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if arguments.bool(forKey: "researchEditor") {
             model.research.editing = model.research.library.first
         }
+        // -writeComments YES shows comments on the investor update; -writeSummary YES shows William's summary card.
+        if arguments.bool(forKey: "writeComments") {
+            model.write.loadCommentSample()
+        }
+        if arguments.bool(forKey: "writeSummary") {
+            model.write.showSampleSummary()
+        }
         // -decksLinked YES links the chart slide to the budget in Sheets; -decksRehearsal YES shows a sample rehearsal.
         if arguments.bool(forKey: "decksLinked") {
             model.decks.linkSampleChart()

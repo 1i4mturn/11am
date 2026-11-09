@@ -116,6 +116,18 @@ jobs:
           test -x imagetests
           TZ=Australia/Sydney ./imagetests
 
+      - name: Writing tests (comments, your own material, summaries)
+        working-directory: sandbox
+        run: |
+          mkdir -p writetest
+          cd writetest
+          swiftc -O -o writetests \
+            ../ElevenAm/Features/Write/WriteKit.swift \
+            ../ElevenAm/Features/Documents/{DocumentKit,DocxWriter}.swift \
+            ../ci/WriteTests/main.swift 2>&1 | grep -E "error|warning: unre" || true
+          test -x writetests
+          ./writetests
+
       - name: Research tests
         working-directory: sandbox
         run: |

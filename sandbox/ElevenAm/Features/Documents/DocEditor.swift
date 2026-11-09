@@ -49,6 +49,16 @@ final class DocEditorController: ObservableObject {
         textView.replace(textView.selectedRange(), with: text, select: nil)
     }
 
+    /// Selects a passage and brings it into view.
+    func select(_ range: NSRange) {
+        guard let textView else { return }
+        let length = (textView.string as NSString).length
+        guard range.location != NSNotFound, NSMaxRange(range) <= length else { return }
+        textView.setSelectedRange(range)
+        textView.scrollRangeToVisible(range)
+        textView.showFindIndicator(for: range)
+    }
+
     func focus() {
         guard let textView else { return }
         textView.window?.makeFirstResponder(textView)
@@ -82,6 +92,8 @@ struct DocEditor: NSViewRepresentable {
     var onTag: ((String) -> Void)?
     /// A citation was clicked: its source keys, comma-separated.
     var onCite: ((String) -> Void)?
+    /// Passages with comments on them, shaded.
+    var highlights: [NSRange] = []
 
     func makeCoordinator() -> Coordinator { Coordinator(self) }
 
@@ -169,9 +181,24 @@ struct DocEditor: NSViewRepresentable {
             textView.textContainerInset = insets
         }
         if needsStyle { textView.restyle() }
+        if needsStyle || context.coordinator.highlights != highlights {
+            context.coordinator.highlights = highlights
+            shade(textView)
+        }
+    }
+
+    /// Comment highlights as temporary attributes, so they never end up in the text or its styles.
+    private func shade(_ textView: NSTextView) {
+        guard let layout = textView.layoutManager else { return }
+        let length = (textView.string as NSString).length
+        layout.removeTemporaryAttribute(.backgroundColor, forCharacterRange: NSRange(location: 0, length: length))
+        for range in highlights where range.location != NSNotFound && NSMaxRange(range) <= length {
+            layout.addTemporaryAttribute(.backgroundColor, value: NSColor.systemYellow.withAlphaComponent(0.28), forCharacterRange: range)
+        }
     }
 
     final class Coordinator: NSObject, NSTextViewDelegate {
+        var highlights: [NSRange] = []
         var parent: DocEditor
         var isUpdating = false
 

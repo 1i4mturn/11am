@@ -259,6 +259,10 @@ final class AppModel: ObservableObject {
         research.notes = self.notes
         research.decks = self.decks
         self.decks.sheets = self.sheets
+        // William finds your own material in Bolton's notes and files, and hands documents to Harris for cards.
+        write.notes = self.notes
+        write.files = files
+        write.learn = self.learn
         write.formatCitations = { [weak research = self.research] text in
             guard let research, !Citations.markers(in: text).isEmpty else { return text }
             return Citations.format(text, sources: research.library, style: research.style).text
@@ -297,6 +301,7 @@ final class AppModel: ObservableObject {
         business.onOpen = { [weak self] section in self?.go(to: section) }
         ledger.onOpen = { [weak self] section in self?.go(to: section) }
         research.onOpen = { [weak self] section in self?.go(to: section) }
+        write.onOpen = { [weak self] section in self?.go(to: section) }
         research.onShowPane = { [weak self] in self?.showsPane = true }
         research.onLog = { [weak self] text in self?.log("jm", text) }
         // When someone you were waiting on replies, their follow-up comes off the list.

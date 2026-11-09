@@ -781,6 +781,9 @@ struct RehearsalRow: Identifiable, Hashable, Sendable {
 /// How a rehearsal went: per slide, against the time you're aiming for and the run before.
 enum RehearsalReport {
     static func title(_ slide: Slide) -> String {
+        if slide.layout == .bigNumber, !slide.content.number.isEmpty {
+            return ([slide.content.number, slide.content.title].filter { !$0.isEmpty }).joined(separator: " ")
+        }
         let words = [slide.content.title, slide.content.quote, slide.content.number].first { !$0.isEmpty } ?? slide.layout.title
         return String(words.split(separator: "\n").first ?? Substring(words))
     }

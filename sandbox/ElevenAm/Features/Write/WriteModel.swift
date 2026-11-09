@@ -123,13 +123,29 @@ final class WriteModel: ObservableObject {
     Return only the new text: no preamble, no quotation marks around it, no notes about what you changed.
     """
 
-    private let brain: Brain
-    private let voice: VoiceProfile
+    let brain: Brain
+    let voice: VoiceProfile
     private var saveTasks: [UUID: Task<Void, Never>] = [:]
+
+    /// Comments on passages, by document; William answers the ones that ask him.
+    @Published var comments: [UUID: [DocComment]] = [:]
+    @Published var answering: Set<UUID> = []
+    @Published var showsComments = false
+    /// William's summary, translation or draft in progress.
+    @Published var william: WilliamJob?
+    @Published var showsDraft = false
+    /// Where William finds your own material, and Harris's cards.
+    weak var notes: NotesModel?
+    weak var files: FileIndex?
+    weak var learn: LearnModel?
+    var onOpen: ((AppSection) -> Void)?
 
     init(brain: Brain, voice: VoiceProfile) {
         self.brain = brain
         self.voice = voice
+        if let saved = JSONStore.load([String: [DocComment]].self, from: "write-comments") {
+            comments = Dictionary(uniqueKeysWithValues: saved.compactMap { key, value in UUID(uuidString: key).map { ($0, value) } })
+        }
         if let data = UserDefaults.standard.data(forKey: "write.pageSetup"), let saved = try? JSONDecoder().decode(PageSetup.self, from: data) {
             pageSetup = saved
         } else {

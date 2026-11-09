@@ -72,8 +72,26 @@ struct WriteView: View {
                         }
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    // The outline steps aside when the page would get too narrow.
-                    if showsOutline, proxy.size.width > 860, let document = write.selected {
+                    // On a narrow window the comments float over the page instead.
+                    .overlay(alignment: .topTrailing) {
+                        if write.showsComments, proxy.size.width <= 860, let document = write.selected {
+                            CommentsPanel(document: document, editor: editor)
+                                .padding(12)
+                                .frame(width: 270)
+                                .frame(maxHeight: proxy.size.height - 60)
+                                .vellum(level: 1, radius: max(theme.radius - 2, 10))
+                                .shadow(color: .black.opacity(0.14), radius: 16, y: 6)
+                                .padding(.top, 44)
+                                .padding(.trailing, 10)
+                                .transition(.move(edge: .trailing).combined(with: .opacity))
+                        }
+                    }
+                    // The outline (or the comments) step aside when the page would get too narrow.
+                    if write.showsComments, proxy.size.width > 860, let document = write.selected {
+                        CommentsPanel(document: document, editor: editor)
+                            .frame(width: 250)
+                            .transition(.move(edge: .trailing).combined(with: .opacity))
+                    } else if showsOutline, proxy.size.width > 860, let document = write.selected {
                         OutlineList(markdown: document.text) { editor.scroll(to: $0) }
                             .frame(width: 150)
                             .transition(.move(edge: .trailing).combined(with: .opacity))
@@ -84,6 +102,12 @@ struct WriteView: View {
         .padding(24)
         .animation(theme.spring, value: write.selectedID)
         .animation(theme.spring, value: showsOutline)
+        .animation(theme.spring, value: write.showsComments)
+        .sheet(isPresented: $write.showsDraft) {
+            DraftSheet()
+                .environmentObject(write)
+                .environmentObject(theme)
+        }
         .onChange(of: write.selectedID) { _, _ in selection = NSRange(location: 0, length: 0) }
         .fileImporter(isPresented: $importing, allowedContentTypes: WriteModel.importTypes, allowsMultipleSelection: true) { result in
             if case .success(let urls) = result { write.importFiles(urls) }
@@ -116,6 +140,7 @@ struct WriteView: View {
     private var newMenu: some View {
         Menu {
             Button("Blank document") { withAnimation(theme.spring) { write.newDocument() } }
+            Button("Draft from my notes and files…") { write.showsDraft = true }
             Divider()
             ForEach(DocTemplate.all) { template in
                 Button {
@@ -269,6 +294,8 @@ private struct Page: View {
                 ToolButton(symbol: "magnifyingglass", help: "Find and replace · ⌘F") { editor.showFind() }
                 ToolButton(symbol: "scope", help: "Focus: dim everything but this paragraph", on: focusMode) { focusMode.toggle() }
                 ToolButton(symbol: "text.aligncenter", help: "Typewriter: keep the line you're on in the middle", on: typewriter) { typewriter.toggle() }
+                CommentButton(document: document, selection: selection)
+                WilliamMenu()
                 CiteButton(document: document, editor: editor)
                 ToolButton(symbol: "clock.arrow.circlepath", help: "Versions") { showingVersions = true }
                     .popover(isPresented: $showingVersions, arrowEdge: .bottom) {
@@ -299,7 +326,8 @@ private struct Page: View {
                     typewriter: typewriter,
                     baseURL: write.folder,
                     onAttach: { [document] data, name in write.attach(data, named: name, to: document.id) },
-                    onCite: { keys in research.openSource(keys: keys) }
+                    onCite: { keys in research.openSource(keys: keys) },
+                    highlights: write.commentRanges(for: document.id)
                 )
             }
             .padding(.leading, 30)
@@ -326,6 +354,15 @@ private struct Page: View {
             toolbar
         }
         .vellum(level: 3, radius: max(theme.radius - 2, 8))
+        .overlay(alignment: .bottom) {
+            if let job = write.william, job.documentID == nil || job.documentID == document.id {
+                WilliamJobCard(job: job)
+                    .padding(12)
+                    .padding(.bottom, 44)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+        }
+        .animation(theme.spring, value: write.william?.id)
         .overlay(alignment: .bottom) {
             if let suggestion = write.suggestion, suggestion.documentID == document.id {
                 SuggestionCard(suggestion: suggestion, run: suggestion.run)

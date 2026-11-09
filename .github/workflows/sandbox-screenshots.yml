@@ -146,6 +146,8 @@ jobs:
           capture research-editor-light -startSection research -forceAppearance light -researchSample YES -researchTab sources -researchEditor YES -researchStyle apa
           capture research-lookup-light -startSection research -forceAppearance light -researchSample YES -researchLookUp YES -researchStyle apa
           capture research-lookup-dark -startSection today -forceAppearance dark -researchLookUp YES -researchStyle apa
+          capture write-comments-light -startSection write -forceAppearance light -writeComments YES
+          capture write-summary-dark -startSection write -forceAppearance dark -writeSummary YES
           capture write-cited-light -startSection write -forceAppearance light -researchDocument YES -researchStyle apa
           capture write-cited-ieee-dark -startSection write -forceAppearance dark -researchDocument YES -researchStyle ieee
           capture decks-linked-light -startSection decks -forceAppearance light -decksLinked YES
