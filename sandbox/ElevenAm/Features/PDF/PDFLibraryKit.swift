@@ -119,21 +119,28 @@ enum PageIndex {
     static func rank(_ question: String, _ passages: [PDFPassage], limit: Int = 8, perFile: Int = 4) -> [PDFPassage] {
         let query = Array(Set(terms(question)))
         guard !query.isEmpty, !passages.isEmpty else { return [] }
-        let documents = passages.map(terms)
-        let average = Double(documents.reduce(0) { $0 + $1.count }) / Double(documents.count)
+        let documents: [[String]] = passages.map { passage in terms(passage.text) }
+        let totalLength: Int = documents.reduce(0) { sum, document in sum + document.count }
+        let average: Double = Double(totalLength) / Double(documents.count)
         var frequency: [String: Int] = [:]
         for document in documents { for term in Set(document) { frequency[term, default: 0] += 1 } }
-        let count = Double(documents.count)
-        let k1 = 1.2, b = 0.75
+        let count: Double = Double(documents.count)
+        let k1: Double = 1.2
+        let b: Double = 0.75
         var scored: [(index: Int, score: Double)] = []
         for (index, document) in documents.enumerated() {
             var counts: [String: Int] = [:]
             for term in document { counts[term, default: 0] += 1 }
-            var score = 0.0
+            var score: Double = 0
+            let length: Double = Double(document.count) / max(average, 1)
+            let norm: Double = k1 * (1 - b + b * length)
             for term in query {
-                guard let tf = counts[term].map({ Double($0) }), let df = frequency[term].map({ Double($0) }) else { continue }
-                let idf = log(1 + (count - df + 0.5) / (df + 0.5))
-                score += idf * tf * (k1 + 1) / (tf + k1 * (1 - b + b * Double(document.count) / max(average, 1)))
+                guard let found = counts[term], let seen = frequency[term] else { continue }
+                let tf = Double(found)
+                let df = Double(seen)
+                let idf: Double = log(1 + (count - df + 0.5) / (df + 0.5))
+                let weight: Double = tf * (k1 + 1) / (tf + norm)
+                score += idf * weight
             }
             if score > 0 { scored.append((index, score)) }
         }
@@ -324,7 +331,11 @@ enum PDFPullOut {
     /// An invoice, an agreement, or something else, from the words it uses.
     static func kind(_ text: String) -> PDFKind {
         let lower = text.lowercased()
-        func score(_ words: [(String, Int)]) -> Int { words.reduce(0) { $0 + (lower.contains($1.0) ? $1.1 : 0) } }
+        func score(_ words: [(String, Int)]) -> Int {
+            var total = 0
+            for (word, weight) in words where lower.contains(word) { total += weight }
+            return total
+        }
         let invoice = score([("tax invoice", 3), ("invoice", 1), ("amount due", 2), ("balance due", 2), ("total", 1), ("due date", 1),
                              ("bill to", 1), ("abn", 1), ("gst", 1), ("receipt", 1)])
         let contract = score([("agreement", 2), ("contract", 2), ("between", 1), ("parties", 1), ("terminat", 1), ("notice", 1),
