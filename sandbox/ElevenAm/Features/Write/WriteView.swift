@@ -75,7 +75,7 @@ struct WriteView: View {
                     // On a narrow window the comments float over the page instead.
                     .overlay(alignment: .topTrailing) {
                         if write.showsComments, proxy.size.width <= 860, let document = write.selected {
-                            CommentsPanel(document: document, editor: editor)
+                            DocCommentsPanel(document: document, editor: editor)
                                 .padding(12)
                                 .frame(width: 270)
                                 .frame(maxHeight: proxy.size.height - 60)
@@ -88,7 +88,7 @@ struct WriteView: View {
                     }
                     // The outline (or the comments) step aside when the page would get too narrow.
                     if write.showsComments, proxy.size.width > 860, let document = write.selected {
-                        CommentsPanel(document: document, editor: editor)
+                        DocCommentsPanel(document: document, editor: editor)
                             .frame(width: 250)
                             .transition(.move(edge: .trailing).combined(with: .opacity))
                     } else if showsOutline, proxy.size.width > 860, let document = write.selected {

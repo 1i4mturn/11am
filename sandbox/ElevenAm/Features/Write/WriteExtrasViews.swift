@@ -97,7 +97,7 @@ struct WilliamMenu: View {
 }
 
 /// The document's comments: open ones in the order they appear, then any whose words are gone, then resolved.
-struct CommentsPanel: View {
+struct DocCommentsPanel: View {
     @EnvironmentObject private var theme: Theme
     @EnvironmentObject private var write: WriteModel
     @Environment(\.colorScheme) private var scheme
@@ -130,7 +130,7 @@ struct CommentsPanel: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
                     ForEach(shown) { comment in
-                        CommentThread(document: document, comment: comment, editor: editor)
+                        DocCommentThread(document: document, comment: comment, editor: editor)
                     }
                 }
             }
@@ -140,7 +140,7 @@ struct CommentsPanel: View {
     }
 }
 
-private struct CommentThread: View {
+private struct DocCommentThread: View {
     @EnvironmentObject private var theme: Theme
     @EnvironmentObject private var write: WriteModel
     @Environment(\.colorScheme) private var scheme
