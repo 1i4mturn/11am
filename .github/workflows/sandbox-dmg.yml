@@ -53,8 +53,15 @@ jobs:
           cp -R build/Build/Products/Release/ElevenAm.app "dist/root/11am.app"
           ln -s /Applications dist/root/Applications
           hdiutil create -volname "11am sandbox" -srcfolder dist/root -ov -format UDZO "dist/11am-sandbox-${VERSION}.dmg"
-          # hdiutil sometimes reports "Resource temporarily unavailable"; one more try after a pause.
-          hdiutil verify "dist/11am-sandbox-${VERSION}.dmg" || { sleep 10; hdiutil verify "dist/11am-sandbox-${VERSION}.dmg"; }
+          # hdiutil sometimes reports "Resource temporarily unavailable" while the image is still being let go of:
+          # wait for the disk image helper to finish, then try again, a few times with longer pauses.
+          verified=no
+          for pause in 5 10 20 30 45; do
+            sync
+            if hdiutil verify "dist/11am-sandbox-${VERSION}.dmg"; then verified=yes; break; fi
+            sleep "$pause"
+          done
+          test "$verified" = yes
           # A copy with a fixed name, so one download link always gets the newest.
           cp "dist/11am-sandbox-${VERSION}.dmg" "dist/11am-sandbox-latest.dmg"
           rm -rf dist/root

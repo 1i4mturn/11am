@@ -23,13 +23,20 @@ struct PDFAppView: View {
             SectionHeader(title: "pdf", subtitle: subtitle) {
                 HStack(spacing: 8) {
                     if pdf.document != nil && !pdf.showsCollections { searchField.frame(width: 190) }
-                    Button { pdf.showsCollections.toggle() } label: {
-                        Label(pdf.showsCollections && pdf.document != nil ? "Back to \(pdf.title)" : "Collections",
-                              systemImage: pdf.showsCollections && pdf.document != nil ? "chevron.left" : "books.vertical")
-                            .lineLimit(1)
+                    if pdf.document != nil && !pdf.showsCollections {
+                        // Room for the file's name and size: just the icon while a PDF is open.
+                        Button { pdf.showsCollections = true } label: { Image(systemName: "books.vertical") }
+                            .buttonStyle(.vellumSecondary)
+                            .help("Collections: ask questions across a set of PDFs")
+                    } else {
+                        Button { pdf.showsCollections.toggle() } label: {
+                            Label(pdf.showsCollections && pdf.document != nil ? "Back to \(pdf.title)" : "Collections",
+                                  systemImage: pdf.showsCollections && pdf.document != nil ? "chevron.left" : "books.vertical")
+                                .lineLimit(1)
+                        }
+                        .buttonStyle(.vellumSecondary)
+                        .help("Ask questions across a set of PDFs")
                     }
-                    .buttonStyle(.vellumSecondary)
-                    .help("Ask questions across a set of PDFs")
                     Button { pdf.openPanel() } label: { Label("Open", systemImage: "doc") }
                         .buttonStyle(.vellumSecondary)
                         .keyboardShortcut("o", modifiers: .command)
