@@ -19,6 +19,10 @@ final class DecksModel: ObservableObject {
     @Published var notice: String?
     @Published var askRun: BrainRun?
     @Published var presenting = false
+    /// The rehearsal just finished, shown with how it went.
+    @Published var rehearsal: Rehearsal?
+    /// Charts can read from George's sheets.
+    weak var sheets: SheetsModel?
 
     let root = JSONStore.folder.appendingPathComponent("Decks", isDirectory: true)
     let assets: CanvasAssetStore
@@ -99,6 +103,7 @@ final class DecksModel: ObservableObject {
             return
         }
         deck = loaded
+        refreshCharts(quietly: true)
         showSlide(0)
     }
 
@@ -425,13 +430,121 @@ final class DecksModel: ObservableObject {
 
     // MARK: Presenting
 
-    func present(from index: Int? = nil) {
+    func present(from index: Int? = nil, rehearse: Bool = false) {
+        refreshCharts(quietly: true)
         guard let deck, !deck.visibleSlides.isEmpty else { return }
         flushSave()
-        Presenter.shared.start(deck: deck, from: index ?? visibleIndex(for: slideIndex), images: images) { [weak self] in
+        Presenter.shared.start(deck: deck, from: index ?? visibleIndex(for: slideIndex), images: images, rehearse: rehearse, onRehearsed: { [weak self] run in
+            self?.keepRehearsal(run)
+        }) { [weak self] in
             self?.presenting = false
         }
         presenting = true
+    }
+
+    /// From the first slide with a clock on each one; how it went shows when you finish.
+    func rehearse() { present(from: 0, rehearse: true) }
+
+    private func keepRehearsal(_ run: Rehearsal) {
+        guard run.total >= 1 else { return }
+        change { deck in
+            var runs = deck.rehearsals ?? []
+            runs.append(run)
+            deck.rehearsals = Array(runs.suffix(10))
+        }
+        rehearsal = run
+    }
+
+    /// The run before this one, to compare with.
+    func previousRehearsal(before run: Rehearsal) -> Rehearsal? {
+        guard let runs = deck?.rehearsals, let index = runs.firstIndex(where: { $0.id == run.id }), index > 0 else { return nil }
+        return runs[index - 1]
+    }
+
+    func setTarget(minutes: Double?) {
+        change { $0.targetMinutes = minutes.flatMap { $0 > 0 ? $0 : nil } }
+    }
+
+    // MARK: Charts from Sheets
+
+    /// Every linked chart brought up to date from Sheets.
+    func refreshCharts(quietly: Bool = false) {
+        guard let sheets, deck?.slides.contains(where: { $0.content.link != nil }) == true else {
+            if !quietly { notice = "No charts here are linked to a sheet." }
+            return
+        }
+        var changed = 0
+        change { deck in changed = deck.refreshCharts(from: { sheets.workbook(named: $0) }) }
+        if changed > 0 { reloadCanvas() }
+        if !quietly || changed > 0 {
+            notice = changed == 0 ? "The linked charts already match their sheets."
+                : "Brought \(changed) \(changed == 1 ? "chart" : "charts") up to date from Sheets."
+        }
+    }
+
+    /// Links the chart on this slide to a sheet, guessing the columns, and fills it in.
+    func linkChart(workbook name: String, sheet: String) {
+        guard let book = sheets?.workbook(named: name) else { notice = "That workbook couldn't be read."; return }
+        guard let guess = DeckCharts.suggest(book, sheet: sheet) else {
+            notice = "George couldn't find a column of names with numbers beside it on \(sheet). Put the labels in one column and the numbers in the next."
+            return
+        }
+        linkChart(ChartLink(workbook: book.name, sheet: sheet, labels: guess.labels, values: guess.values))
+    }
+
+    func linkChart(_ link: ChartLink) {
+        guard let book = sheets?.workbook(named: link.workbook), let points = DeckCharts.points(link, in: book), !points.isEmpty else {
+            notice = "Those cells don't make a chart: the labels and numbers need to be the same length."
+            return
+        }
+        let heading = DeckCharts.heading(book, sheet: link.sheet, values: link.values)
+        updateContent { content in
+            var linked = link
+            linked.updated = Date()
+            content.link = linked
+            content.chart = points
+            if let heading, content.title.isEmpty || content.title == "New slide" { content.title = heading }
+            if content.caption.isEmpty { content.caption = "From \(link.workbook) in Sheets" }
+        }
+        notice = "Linked to \(link.summary). It updates whenever you open or present the deck."
+    }
+
+    func unlinkChart() {
+        updateContent { $0.link = nil }
+    }
+
+    /// For screenshots: the chart slide reading the budget's totals from Sheets.
+    func linkSampleChart() {
+        guard let index = deck?.slides.firstIndex(where: { $0.layout == .chart }) else { return }
+        showSlide(index)
+        linkChart(ChartLink(workbook: "Budget 2026–27", sheet: "Budget", labels: "A2:A7", values: "F2:F7"))
+        updateContent { $0.title = "Where the money went, July to October" }
+    }
+
+    /// For screenshots: two run-throughs, the second against a six-minute target.
+    func loadRehearsalSample() {
+        guard let slides = deck?.visibleSlides, !slides.isEmpty else { return }
+        let first = [48, 95, 30, 70, 25, 64, 40, 55, 38, 20]
+        let second = [40, 72, 28, 64, 22, 101, 35, 41, 30, 18]
+        func run(_ seconds: [Int], _ minutesAgo: Double) -> Rehearsal {
+            var times: [UUID: Double] = [:]
+            for (index, slide) in slides.enumerated() { times[slide.id] = Double(seconds[index % seconds.count]) }
+            return Rehearsal(date: Date().addingTimeInterval(-minutesAgo * 60), times: times)
+        }
+        let earlier = run(first, 30)
+        let latest = run(second, 1)
+        change { deck in
+            deck.rehearsals = [earlier, latest]
+            deck.targetMinutes = 6
+        }
+        rehearsal = latest
+    }
+
+    /// The look of another deck: its colours, fonts and footer.
+    func useTheme(ofDeck id: UUID) {
+        guard let data = try? Data(contentsOf: url(id)), let other = try? Self.decoder.decode(SlideDeck.self, from: data) else { return }
+        setTheme(other.theme)
+        notice = "Now in the look of \u{201C}\(other.name)\u{201D}."
     }
 
     private func visibleIndex(for index: Int) -> Int {
@@ -500,18 +613,31 @@ final class Presenter: ObservableObject {
     @Published var index = 0
     @Published private(set) var slides: [Slide] = []
     @Published private(set) var started = Date()
+    /// Rehearsing: a clock on each slide, and the times kept.
+    @Published private(set) var rehearsing = false
+    @Published private(set) var slideStarted = Date()
+    /// Seconds each slide should take, when the deck has a target.
+    private(set) var target: Double?
+    private var times: [UUID: Double] = [:]
+    private var onRehearsed: ((Rehearsal) -> Void)?
     private(set) var images: CanvasImages = { _ in nil }
     private var windows: [NSWindow] = []
     private var monitor: Any?
     private var onEnd: (() -> Void)?
 
-    func start(deck: SlideDeck, from start: Int, images: @escaping CanvasImages, onEnd: @escaping () -> Void) {
+    func start(deck: SlideDeck, from start: Int, images: @escaping CanvasImages, rehearse: Bool = false,
+               onRehearsed: ((Rehearsal) -> Void)? = nil, onEnd: @escaping () -> Void) {
         stop()
         slides = deck.visibleSlides
         index = max(0, min(start, slides.count - 1))
         self.images = images
         self.onEnd = onEnd
+        self.onRehearsed = onRehearsed
+        rehearsing = rehearse
+        target = deck.targetMinutes.map { $0 * 60 / Double(max(1, deck.visibleSlides.count)) }
+        times = [:]
         started = Date()
+        slideStarted = started
         let screens = NSScreen.screens
         guard let main = NSScreen.main ?? screens.first else { return }
         let audience = screens.count > 1 ? (screens.first { $0 != main } ?? main) : main
@@ -544,14 +670,38 @@ final class Presenter: ObservableObject {
     }
 
     func next() {
-        if index < slides.count - 1 { index += 1 } else { stop() }
+        if index < slides.count - 1 {
+            keepTime()
+            index += 1
+        } else {
+            stop()
+        }
     }
 
     func previous() {
-        if index > 0 { index -= 1 }
+        if index > 0 {
+            keepTime()
+            index -= 1
+        }
+    }
+
+    /// Adds the time on the slide being left (going back to a slide adds to it).
+    private func keepTime() {
+        guard rehearsing, slides.indices.contains(index) else { return }
+        let now = Date()
+        times[slides[index].id, default: 0] += now.timeIntervalSince(slideStarted)
+        slideStarted = now
     }
 
     func stop() {
+        if rehearsing && !windows.isEmpty {
+            keepTime()
+            let run = Rehearsal(date: Date(), times: times)
+            let report = onRehearsed
+            onRehearsed = nil
+            rehearsing = false
+            report?(run)
+        }
         if let monitor { NSEvent.removeMonitor(monitor) }
         monitor = nil
         for window in windows { window.orderOut(nil) }
@@ -580,8 +730,39 @@ private struct SlideStage: View {
             .animation(.easeInOut(duration: 0.25), value: presenter.index)
             .contentShape(Rectangle())
             .onTapGesture { presenter.next() }
+            .overlay(alignment: .bottomTrailing) {
+                if presenter.rehearsing { RehearsalClock().padding(28) }
+            }
         }
         .ignoresSafeArea()
+    }
+}
+
+/// While rehearsing: time on this slide (against its share of the target) and in all.
+private struct RehearsalClock: View {
+    @EnvironmentObject private var presenter: Presenter
+
+    var body: some View {
+        TimelineView(.periodic(from: .now, by: 1)) { context in
+            let here = context.date.timeIntervalSince(presenter.slideStarted)
+            let over = presenter.target.map { here > $0 } ?? false
+            HStack(spacing: 14) {
+                Image(systemName: "stopwatch")
+                Text(RehearsalReport.clock(here))
+                    .foregroundStyle(over ? Color.orange : .white)
+                if let target = presenter.target {
+                    Text("of \(RehearsalReport.clock(target))").foregroundStyle(.white.opacity(0.5))
+                }
+                Text("·").foregroundStyle(.white.opacity(0.4))
+                Text(RehearsalReport.clock(context.date.timeIntervalSince(presenter.started)))
+                    .foregroundStyle(.white.opacity(0.7))
+            }
+            .font(.system(size: 22, weight: .semibold).monospacedDigit())
+            .foregroundStyle(.white)
+            .padding(.horizontal, 18)
+            .padding(.vertical, 10)
+            .background(Capsule().fill(.black.opacity(0.65)))
+        }
     }
 }
 

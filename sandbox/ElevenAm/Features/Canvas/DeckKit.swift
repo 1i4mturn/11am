@@ -61,6 +61,8 @@ struct SlideContent: Codable, Hashable, Sendable {
     var image: String?
     var chart: [ChartPoint] = []
     var table: [[String]] = []
+    /// A chart that reads its numbers from a range in Sheets, so it updates when the sheet does.
+    var link: ChartLink?
 }
 
 struct ChartPoint: Codable, Hashable, Sendable {
@@ -130,6 +132,10 @@ struct SlideDeck: Codable, Identifiable, Hashable, Sendable {
     var theme: DeckTheme
     var slides: [Slide]
     var modified = Date()
+    /// Times from rehearsing, newest last. Optional so decks saved before rehearsing still open.
+    var rehearsals: [Rehearsal]?
+    /// How long the talk should take, in minutes.
+    var targetMinutes: Double?
 
     static let size = CanvasSize(width: 1920, height: 1080)
 
@@ -738,4 +744,99 @@ enum PPTXWriter {
 
 extension ZipWriter {
     mutating func add(_ name: String, _ text: String) { add(name, Data(text.utf8)) }
+}
+
+// MARK: - Linked charts and rehearsals
+
+/// Where a chart's numbers come from: a workbook, a sheet, and the ranges for its labels and values.
+struct ChartLink: Codable, Hashable, Sendable {
+    var workbook: String
+    var sheet: String
+    var labels: String
+    var values: String
+    var updated: Date?
+
+    var summary: String { "\(workbook) › \(sheet) · \(labels), \(values)" }
+}
+
+/// One run-through: seconds spent on each slide.
+struct Rehearsal: Codable, Hashable, Identifiable, Sendable {
+    var id = UUID()
+    var date: Date
+    var times: [UUID: Double]
+
+    var total: Double { times.values.reduce(0, +) }
+}
+
+struct RehearsalRow: Identifiable, Hashable, Sendable {
+    var id: UUID
+    var number: Int
+    var title: String
+    var seconds: Double
+    var previous: Double?
+    /// More than half again its share of the time.
+    var long: Bool
+}
+
+/// How a rehearsal went: per slide, against the time you're aiming for and the run before.
+enum RehearsalReport {
+    static func title(_ slide: Slide) -> String {
+        let words = [slide.content.title, slide.content.quote, slide.content.number].first { !$0.isEmpty } ?? slide.layout.title
+        return String(words.split(separator: "\n").first ?? Substring(words))
+    }
+
+    static func rows(_ deck: SlideDeck, _ rehearsal: Rehearsal, previous: Rehearsal? = nil, targetMinutes: Double? = nil) -> [RehearsalRow] {
+        let slides = deck.visibleSlides
+        guard !slides.isEmpty else { return [] }
+        let share: Double
+        if let target = targetMinutes, target > 0 {
+            share = target * 60 / Double(slides.count)
+        } else {
+            share = rehearsal.total / Double(slides.count)
+        }
+        return slides.enumerated().map { index, slide in
+            let seconds = rehearsal.times[slide.id] ?? 0
+            return RehearsalRow(id: slide.id, number: index + 1, title: title(slide), seconds: seconds,
+                                previous: previous?.times[slide.id], long: seconds >= 20 && seconds > share * 1.5)
+        }
+    }
+
+    /// "7:40 for 9 slides, 40 seconds over your 7 minutes, 35 seconds faster than last time. Longest: The problem (1:45)."
+    static func summary(_ deck: SlideDeck, _ rehearsal: Rehearsal, previous: Rehearsal? = nil, targetMinutes: Double? = nil) -> String {
+        let count = deck.visibleSlides.count
+        var parts = ["\(clock(rehearsal.total)) for \(count) \(count == 1 ? "slide" : "slides")"]
+        if let target = targetMinutes, target > 0 {
+            let difference = rehearsal.total - target * 60
+            let minutes = target == target.rounded() ? "\(Int(target)) minutes" : "\(target) minutes"
+            if abs(difference) < 5 {
+                parts.append("right on your \(minutes)")
+            } else {
+                parts.append("\(span(abs(difference))) \(difference > 0 ? "over" : "under") your \(minutes)")
+            }
+        }
+        if let previous {
+            let difference = rehearsal.total - previous.total
+            if abs(difference) >= 5 { parts.append("\(span(abs(difference))) \(difference < 0 ? "faster" : "slower") than last time") }
+        }
+        var text = parts.joined(separator: ", ") + "."
+        let long = rows(deck, rehearsal, previous: previous, targetMinutes: targetMinutes).filter(\.long).sorted { $0.seconds > $1.seconds }
+        if let first = long.first {
+            text += " Longest: " + long.prefix(2).map { "\($0.title) (\(clock($0.seconds)))" }.joined(separator: ", ") + (first.seconds > 0 ? "." : "")
+        }
+        return text
+    }
+
+    /// "1:05", "12:00", "0:08".
+    static func clock(_ seconds: Double) -> String {
+        let whole = Int(seconds.rounded())
+        return String(format: "%d:%02d", whole / 60, whole % 60)
+    }
+
+    /// "40 seconds", "1 minute", "1:20".
+    static func span(_ seconds: Double) -> String {
+        let whole = Int(seconds.rounded())
+        if whole < 60 { return "\(whole) seconds" }
+        if whole % 60 == 0 { return whole == 60 ? "1 minute" : "\(whole / 60) minutes" }
+        return clock(seconds)
+    }
 }

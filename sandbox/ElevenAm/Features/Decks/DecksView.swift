@@ -21,6 +21,14 @@ struct DecksView: View {
                         }
                         Divider()
                         Button("From the brand kit") { withAnimation(theme.spring) { decks.setTheme(.brand(studio.brand)) } }
+                        let others = decks.entries.filter { $0.id != decks.deck?.id }
+                        if !others.isEmpty {
+                            Menu("The look of another deck") {
+                                ForEach(others) { entry in
+                                    Button(entry.name) { withAnimation(theme.spring) { decks.useTheme(ofDeck: entry.id) } }
+                                }
+                            }
+                        }
                     } label: {
                         Label(decks.deck?.theme.name ?? "Theme", systemImage: "paintpalette")
                     }
@@ -44,6 +52,14 @@ struct DecksView: View {
                     .foregroundStyle(theme.inkSecondary(scheme))
                     .help("Export")
                     newMenu
+                    Button {
+                        decks.rehearse()
+                    } label: {
+                        Label("Rehearse", systemImage: "stopwatch")
+                    }
+                    .buttonStyle(.vellumSecondary)
+                    .disabled(decks.deck == nil)
+                    .help("Present from the start with a clock on each slide; see how long each one took")
                     Button {
                         decks.present()
                     } label: {
@@ -104,6 +120,9 @@ struct DecksView: View {
         .onDisappear { decks.flushSave() }
         .sheet(isPresented: $outlining) { OutlineSheet(done: { outlining = false }).environmentObject(decks).environmentObject(theme) }
         .popover(isPresented: $asking) { AskConner(done: { asking = false }).environmentObject(decks).environmentObject(theme) }
+        .sheet(item: $decks.rehearsal) { run in
+            RehearsalView(run: run).environmentObject(decks).environmentObject(theme)
+        }
     }
 
     private var subtitle: String {
@@ -359,6 +378,9 @@ private struct SlideContentEditor: View {
                     field("Who said it", $attribution) { value in decks.updateContent { $0.attribution = value } }
                 }
                 if layout == .chart {
+                    ChartLinkBox()
+                }
+                if layout == .chart && decks.slide?.content.link == nil {
                     lines("Bars (Label: number), one per line", $chart) { value in
                         decks.updateContent { content in
                             content.chart = Self.split(value).compactMap { line in

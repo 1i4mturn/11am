@@ -294,6 +294,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if arguments.bool(forKey: "researchEditor") {
             model.research.editing = model.research.library.first
         }
+        // -decksLinked YES links the chart slide to the budget in Sheets; -decksRehearsal YES shows a sample rehearsal.
+        if arguments.bool(forKey: "decksLinked") {
+            model.decks.linkSampleChart()
+        }
+        if arguments.bool(forKey: "decksRehearsal") {
+            model.decks.loadRehearsalSample()
+        }
         if arguments.bool(forKey: "decksSources") {
             model.research.addSampleSourcesSlide()
         }

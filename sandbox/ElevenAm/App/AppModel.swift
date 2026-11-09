@@ -258,6 +258,7 @@ final class AppModel: ObservableObject {
         // James clips into Bolton's notes, cites in William's documents and Conner's decks.
         research.notes = self.notes
         research.decks = self.decks
+        self.decks.sheets = self.sheets
         write.formatCitations = { [weak research = self.research] text in
             guard let research, !Citations.markers(in: text).isEmpty else { return text }
             return Citations.format(text, sources: research.library, style: research.style).text

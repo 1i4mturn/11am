@@ -119,6 +119,14 @@ final class SheetsModel: ObservableObject {
         revision += 1
     }
 
+    /// A workbook as it's saved (or as it is now, if it's the one open), without opening it: for charts in Decks.
+    func workbook(named name: String) -> Workbook? {
+        if let book, book.name.localizedCaseInsensitiveCompare(name) == .orderedSame { return book }
+        guard let entry = entries.first(where: { $0.name.localizedCaseInsensitiveCompare(name) == .orderedSame }),
+              let data = try? Data(contentsOf: url(for: entry.id)) else { return nil }
+        return try? Self.decoder.decode(Workbook.self, from: data)
+    }
+
     /// Opens a workbook by name (launch flags, links from other apps).
     func open(named name: String) {
         if let entry = entries.first(where: { $0.name.localizedCaseInsensitiveCompare(name) == .orderedSame }) { open(entry.id) }

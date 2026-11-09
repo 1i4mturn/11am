@@ -139,6 +139,20 @@ jobs:
           test -x canvastests
           ./canvastests
 
+      - name: Deck tests (linked charts, rehearsals)
+        working-directory: sandbox
+        run: |
+          mkdir -p decktest
+          cd decktest
+          swiftc -O -o decktests \
+            ../ElevenAm/Features/Canvas/{CanvasKit,CanvasRender,DeckKit}.swift \
+            ../ElevenAm/Features/Decks/DeckLinks.swift \
+            ../ElevenAm/Features/Sheets/{GridKit,GridFormula,GridEngine,GridEdit,GridFiles,GridRules}.swift \
+            ../ElevenAm/Features/Documents/{DocumentKit,DocxWriter}.swift \
+            ../ci/DeckTests/main.swift 2>&1 | grep -E "error|warning: unre" || true
+          test -x decktests
+          ./decktests
+
       - name: Audio tests
         working-directory: sandbox
         run: |
