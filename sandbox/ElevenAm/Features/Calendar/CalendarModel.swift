@@ -3,7 +3,7 @@ import EventKit
 import SwiftUI
 
 enum CalendarMode: String, CaseIterable, Identifiable {
-    case day, threeDay, week, month, agenda
+    case day, threeDay, workWeek, week, month, agenda
 
     var id: String { rawValue }
 
@@ -11,6 +11,7 @@ enum CalendarMode: String, CaseIterable, Identifiable {
         switch self {
         case .day: return "Day"
         case .threeDay: return "3 days"
+        case .workWeek: return "Work week"
         case .week: return "Week"
         case .month: return "Month"
         case .agenda: return "Agenda"
@@ -37,6 +38,11 @@ struct EventDraft: Identifiable, Equatable {
     var isAllDay = false
     var location = ""
     var notes = ""
+    /// For a new event: how it repeats, and until when (nil for no end).
+    var repeats: EventRepeat = .never
+    var repeatUntil: Date?
+    /// Minutes before to be reminded; nil leaves it as it is.
+    var alert: Int?
 }
 
 /// Leo's calendar: every calendar on this Mac, your Outlook or Microsoft 365 calendar, Australian public holidays
@@ -62,6 +68,21 @@ final class CalendarModel: ObservableObject {
     @Published private(set) var needsMicrosoftConsent: [MailAccount] = []
     @Published private(set) var prepRuns: [String: BrainRun] = [:]
     @Published var showHolidays: Bool { didSet { UserDefaults.standard.set(showHolidays, forKey: "calendar.holidays"); rebuild() } }
+
+    // Weather, travel, calendar sets, week numbers and room between meetings (CalendarExtrasModel.swift).
+    @Published var weather: [Date: DayWeather] = [:]
+    @Published var weatherPlace: WeatherPlace?
+    @Published var showsWeather: Bool { didSet { UserDefaults.standard.set(showsWeather, forKey: "calendar.weather"); refreshWeather(force: true) } }
+    /// Event ID → how long it takes to get there and when to leave.
+    @Published var travel: [String: TravelInfo] = [:]
+    /// Where you start the day, for travel to the first place.
+    @Published var home: String { didSet { UserDefaults.standard.set(home, forKey: "calendar.home"); travelCache = [:]; refreshTravel() } }
+    @Published var sets: [CalendarSet] = []
+    @Published var showsWeekNumbers: Bool { didSet { UserDefaults.standard.set(showsWeekNumbers, forKey: "calendar.weekNumbers") } }
+    /// Minutes you like between meetings (0 for none).
+    @Published var bufferMinutes: Int { didSet { UserDefaults.standard.set(bufferMinutes, forKey: "calendar.buffer") } }
+    var weatherFetched: Date?
+    var travelCache: [String: TimeInterval] = [:]
 
     /// Today's events, for the Today screen, the brief and the notch countdown.
     var onToday: (@MainActor ([CalEvent]?) -> Void)?
@@ -92,6 +113,12 @@ final class CalendarModel: ObservableObject {
         self.mail = mail
         hidden = Set(UserDefaults.standard.stringArray(forKey: "calendar.hidden") ?? [])
         showHolidays = UserDefaults.standard.object(forKey: "calendar.holidays") as? Bool ?? (Locale.current.region?.identifier == "AU")
+        showsWeather = UserDefaults.standard.object(forKey: "calendar.weather") as? Bool ?? true
+        home = UserDefaults.standard.string(forKey: "calendar.home") ?? ""
+        showsWeekNumbers = UserDefaults.standard.bool(forKey: "calendar.weekNumbers")
+        bufferMinutes = UserDefaults.standard.object(forKey: "calendar.buffer") as? Int ?? 0
+        sets = JSONStore.load([CalendarSet].self, from: "calendar-sets") ?? []
+        weatherPlace = JSONStore.load(WeatherPlace.self, from: "calendar-weather-place")
         if let stored = UserDefaults.standard.string(forKey: "calendar.mode"), let mode = CalendarMode(rawValue: stored) { self.mode = mode }
         samples = CalendarModel.sampleWeek()
         observer = NotificationCenter.default.addObserver(forName: .EKEventStoreChanged, object: store, queue: .main) { [weak self] _ in
@@ -114,6 +141,11 @@ final class CalendarModel: ObservableObject {
         switch mode {
         case .day: return span(day, 1)
         case .threeDay: return span(day, 3)
+        case .workWeek:
+            // Monday to Friday, wherever the week starts.
+            let start = calendar.dateInterval(of: .weekOfYear, for: anchor)?.start ?? day
+            let monday = calendar.firstWeekday == 1 ? (calendar.date(byAdding: .day, value: 1, to: start) ?? start) : start
+            return span(monday, 5)
         case .week: return span(calendar.dateInterval(of: .weekOfYear, for: anchor)?.start ?? day, 7)
         case .month:
             let first = calendar.dateInterval(of: .month, for: anchor)?.start ?? day
@@ -170,6 +202,7 @@ final class CalendarModel: ObservableObject {
         switch mode {
         case .day: anchor = calendar.date(byAdding: .day, value: step, to: anchor) ?? anchor
         case .threeDay: anchor = calendar.date(byAdding: .day, value: 3 * step, to: anchor) ?? anchor
+        case .workWeek: anchor = calendar.date(byAdding: .day, value: 7 * step, to: anchor) ?? anchor
         case .week: anchor = calendar.date(byAdding: .day, value: 7 * step, to: anchor) ?? anchor
         case .month: anchor = calendar.date(byAdding: .month, value: step, to: anchor) ?? anchor
         case .agenda: anchor = calendar.date(byAdding: .day, value: 14 * step, to: anchor) ?? anchor
@@ -191,6 +224,13 @@ final class CalendarModel: ObservableObject {
         if hidden.contains(calendar.id) { hidden.remove(calendar.id) } else { hidden.insert(calendar.id) }
         UserDefaults.standard.set(Array(hidden), forKey: "calendar.hidden")
         if case .microsoft = calendar.source { reload() } else { rebuild() }
+    }
+
+    /// Shows a set of calendars ("Work", "Home") and hides the rest.
+    func apply(_ set: CalendarSet) {
+        hidden = CalendarSets.hidden(applying: set, all: calendars.filter { $0.source != .holidays }.map(\.id), current: hidden)
+        UserDefaults.standard.set(Array(hidden), forKey: "calendar.hidden")
+        reload()
     }
 
     // MARK: Access
@@ -249,6 +289,8 @@ final class CalendarModel: ObservableObject {
         rebuild()
         loadTask?.cancel()
         let accounts = mail.microsoftAccounts
+        refreshWeather()
+        refreshTravel()
         guard !accounts.isEmpty || reminderAccess == .granted else { return }
         loadTask = Task { @MainActor in
             isLoading = true
@@ -257,6 +299,7 @@ final class CalendarModel: ObservableObject {
             isLoading = false
             guard !Task.isCancelled else { return }
             rebuild()
+            refreshTravel()
         }
     }
 
@@ -393,10 +436,15 @@ final class CalendarModel: ObservableObject {
             return
         }
         let existing = draft.eventID.flatMap { id in events.first { $0.id == id } }
-        let fields = MicrosoftCalendar.EventFields(title: draft.title.isEmpty ? "New event" : draft.title, start: draft.start,
+        var fields = MicrosoftCalendar.EventFields(title: draft.title.isEmpty ? "New event" : draft.title, start: draft.start,
                                                    end: max(draft.end, draft.start.addingTimeInterval(draft.isAllDay ? 86_400 : 900)),
                                                    isAllDay: draft.isAllDay, location: draft.location.isEmpty ? nil : draft.location,
                                                    notes: draft.notes.isEmpty ? nil : draft.notes)
+        if draft.eventID == nil {
+            fields.repeats = draft.repeats
+            fields.repeatUntil = draft.repeatUntil
+        }
+        fields.alert = draft.alert
         switch target.source {
         case .eventKit:
             let item = draft.eventID.flatMap { ekEvents[$0] } ?? EKEvent(eventStore: store)
@@ -406,6 +454,8 @@ final class CalendarModel: ObservableObject {
             item.isAllDay = fields.isAllDay
             item.location = fields.location
             item.notes = fields.notes
+            if draft.eventID == nil, let rule = CalendarModel.rule(fields.repeats, until: fields.repeatUntil) { item.recurrenceRules = [rule] }
+            if let alert = fields.alert { item.alarms = [EKAlarm(relativeOffset: -Double(alert) * 60)] }
             if let calendar = store.calendar(withIdentifier: target.id) { item.calendar = calendar }
             do {
                 try store.save(item, span: .thisEvent, commit: true)
@@ -453,6 +503,7 @@ final class CalendarModel: ObservableObject {
         event.isAllDay = fields.isAllDay
         event.location = fields.location
         event.notes = fields.notes
+        if fields.repeats != .never { event.isRecurring = true }
         if case .sample = calendar.source {
             samples.removeAll { $0.id == event.id }
             samples.append(event)
@@ -471,6 +522,23 @@ final class CalendarModel: ObservableObject {
         moved.start = start
         moved.end = start.addingTimeInterval(event.duration)
         save(moved)
+    }
+
+    /// ⌘-drag: a copy at the new time, in the event's calendar if you can add to it, otherwise your default one.
+    func duplicate(_ event: CalEvent, to start: Date) {
+        guard !event.isHoliday else { return }
+        let target = event.writable ? event.calendarID : defaultCalendarID
+        guard let target else {
+            notice = "There's no calendar 11am can add the copy to."
+            return
+        }
+        var copy = editable(event)
+        copy.eventID = nil
+        copy.calendarID = target
+        copy.start = start
+        copy.end = start.addingTimeInterval(event.duration)
+        save(copy)
+        notice = "Copied \(event.title) to \(start.formatted(.dateTime.weekday(.abbreviated).day().hour().minute()))."
     }
 
     /// Drag the bottom edge.
@@ -580,7 +648,8 @@ final class CalendarModel: ObservableObject {
     // MARK: Planning help
 
     func freeSlots(minutes: Int, days: Int) -> [DateInterval] {
-        FreeTime.slots(busy: events, from: Date(), days: days, minimum: Double(minutes) * 60)
+        // Your buffer either side of what's booked, so a suggested time never runs straight into a meeting.
+        FreeTime.slots(busy: Buffers.padded(events, minutes: bufferMinutes), from: Date(), days: days, minimum: Double(minutes) * 60)
     }
 
     func copyFreeTime(minutes: Int, days: Int) -> Int {

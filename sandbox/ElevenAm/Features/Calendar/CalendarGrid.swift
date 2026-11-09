@@ -18,7 +18,17 @@ struct TimeGrid: View {
         VStack(spacing: 0) {
             VStack(spacing: 0) {
                 HStack(spacing: 0) {
-                    Color.clear.frame(width: TimeGrid.gutter, height: 1)
+                    Group {
+                        if calendar.showsWeekNumbers, let first = days.first {
+                            Text("W\(Calendar.current.isoWeek(of: first))")
+                                .font(.system(size: 10.5, weight: .semibold).monospacedDigit())
+                                .foregroundStyle(theme.inkTertiary(scheme))
+                                .help("Week \(Calendar.current.isoWeek(of: first))")
+                        } else {
+                            Color.clear.frame(height: 1)
+                        }
+                    }
+                    .frame(width: TimeGrid.gutter)
                     ForEach(days, id: \.self) { day in
                         DayHeader(day: day, wide: days.count == 1)
                             .frame(maxWidth: .infinity)
@@ -68,6 +78,8 @@ private struct DayHeader: View {
     var day: Date
     var wide: Bool
 
+    private var weather: DayWeather? { calendar.weather(on: day) }
+
     var body: some View {
         let isToday = Calendar.current.isDateInToday(day)
         Button {
@@ -77,6 +89,7 @@ private struct DayHeader: View {
                 Text(day.formatted(.dateTime.weekday(wide ? .wide : .abbreviated)))
                     .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(theme.inkSecondary(scheme))
+                    .layoutPriority(1)
                 Text(day.formatted(.dateTime.day()))
                     .font(.system(size: 13, weight: .semibold).monospacedDigit())
                     .foregroundStyle(isToday ? theme.paper(scheme) : theme.ink(scheme))
@@ -85,13 +98,24 @@ private struct DayHeader: View {
                     .background {
                         if isToday { Capsule().fill(theme.ink(scheme)) }
                     }
+                if let weather {
+                    HStack(spacing: 2) {
+                        Image(systemName: weather.symbol)
+                            .symbolRenderingMode(.hierarchical)
+                        Text(wide ? weather.line : weather.short)
+                            .monospacedDigit()
+                    }
+                    .font(.system(size: 10.5, weight: .medium))
+                    .foregroundStyle(theme.inkTertiary(scheme))
+                    .padding(.leading, 2)
+                }
             }
             .lineLimit(1)
             .frame(maxWidth: .infinity)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .help("Show this day")
+        .help(weather.map { "\($0.line). Show this day" } ?? "Show this day")
     }
 }
 
@@ -343,7 +367,7 @@ private struct EventBlock: View {
         .onDisappear {
             if resizeHover { NSCursor.pop() }
         }
-        .help(event.writable ? "\(event.title) · drag to move, drag the bottom edge to change the length" : event.title)
+        .help(event.writable ? "\(event.title) · drag to move, ⌘-drag to copy, drag the bottom edge to change the length" : "\(event.title) · ⌘-drag to copy")
     }
 
     private var timeText: String {
@@ -382,16 +406,20 @@ private struct EventBlock: View {
     private var moveGesture: some Gesture {
         DragGesture(minimumDistance: 4, coordinateSpace: .global)
             .onChanged { value in
-                guard event.writable else { return }
+                guard event.writable || NSEvent.modifierFlags.contains(.command) else { return }
                 if calendar.selectedID != event.id { calendar.selectedID = event.id }
                 drag = snapped(value.translation)
             }
             .onEnded { value in
-                guard event.writable else { return }
                 drag = snapped(value.translation)
                 let start = movedStart
                 drag = .zero
-                calendar.move(event, to: start)
+                // ⌘-drag leaves the original where it was and puts a copy here.
+                if NSEvent.modifierFlags.contains(.command) {
+                    if start != event.start { calendar.duplicate(event, to: start) }
+                } else if event.writable {
+                    calendar.move(event, to: start)
+                }
             }
     }
 

@@ -39,6 +39,8 @@ struct NotchView: View {
 
     private var countdown: String? {
         guard let next = today.nextEvent else { return nil }
+        // Time to go, for something across town.
+        if let leave = next.leaveBy, Travel.nudge(now: Date(), leaveBy: leave, start: next.start) { return "leave" }
         let minutes = Int(next.start.timeIntervalSinceNow / 60)
         guard minutes >= 0, minutes <= 60 else { return nil }
         return minutes == 0 ? "now" : "\(minutes)m"
@@ -218,7 +220,11 @@ private struct PeekLine: View {
         if nightShift.isRunning { return "Working overnight jobs…" }
         var parts: [String] = []
         if let next = today.nextEvent {
-            parts.append("\(next.title) at \(next.start.formatted(date: .omitted, time: .shortened))")
+            if let leave = next.leaveBy, Travel.nudge(now: Date(), leaveBy: leave, start: next.start) {
+                parts.append("Leave \(leave <= Date() ? "now" : "at \(leave.formatted(date: .omitted, time: .shortened))") for \(next.title)")
+            } else {
+                parts.append("\(next.title) at \(next.start.formatted(date: .omitted, time: .shortened))")
+            }
         }
         if let run = today.briefRun, run.status == .done {
             parts.append(today.briefWasPreparedOvernight ? "brief prepared overnight" : "brief ready")

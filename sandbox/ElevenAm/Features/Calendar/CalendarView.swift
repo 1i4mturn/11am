@@ -61,7 +61,7 @@ struct CalendarView: View {
 
             CalendarToolbar()
 
-            if calendar.mode == .day || calendar.mode == .threeDay || calendar.mode == .week {
+            if [.day, .threeDay, .workWeek, .week].contains(calendar.mode) {
                 TaskTray()
             }
 
@@ -138,7 +138,7 @@ struct CalendarView: View {
 
     @ViewBuilder private var grid: some View {
         switch calendar.mode {
-        case .day, .threeDay, .week: TimeGrid(days: calendar.days)
+        case .day, .threeDay, .workWeek, .week: TimeGrid(days: calendar.days)
         case .month: MonthGrid()
         case .agenda: AgendaList()
         }
@@ -146,7 +146,7 @@ struct CalendarView: View {
 
     /// The event card floats over the side of the week the event isn't on.
     private var cardOnLeft: Bool {
-        guard let event = calendar.selected, [.week, .threeDay, .month].contains(calendar.mode) else { return false }
+        guard let event = calendar.selected, [.week, .workWeek, .threeDay, .month].contains(calendar.mode) else { return false }
         let days = calendar.days
         guard let index = days.firstIndex(where: { Calendar.current.isDate($0, inSameDayAs: event.start) }) else { return false }
         let columns = calendar.mode == .month ? 7 : days.count
@@ -222,6 +222,7 @@ struct CalendarView: View {
         case "t": model.goToday()
         case "d": model.mode = .day
         case "3": model.mode = .threeDay
+        case "5": model.mode = .workWeek
         case "w": model.mode = .week
         case "m": model.mode = .month
         case "a": model.mode = .agenda
@@ -337,6 +338,28 @@ private struct CalendarToolbar: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.75)
                 .padding(.leading, 4)
+            if calendar.showsWeekNumbers && calendar.mode != .agenda {
+                Text("Week \(Calendar.current.isoWeek(of: calendar.visibleRange.start.addingTimeInterval(calendar.mode == .month ? 14 * 86_400 : 0)))")
+                    .font(.system(size: 11.5, weight: .semibold).monospacedDigit())
+                    .foregroundStyle(theme.inkTertiary(scheme))
+                    .lineLimit(1)
+                    .fixedSize()
+            }
+            if !calendar.sets.isEmpty {
+                Menu {
+                    ForEach(calendar.sets) { set in
+                        Button(set.name) { calendar.apply(set) }
+                    }
+                } label: {
+                    Text(calendar.activeSet?.name ?? "Calendars")
+                        .font(.system(size: 12, weight: .semibold))
+                }
+                .menuStyle(.button)
+                .buttonStyle(.borderless)
+                .fixedSize()
+                .foregroundStyle(theme.inkSecondary(scheme))
+                .help("Switch to another set of calendars")
+            }
             Spacer(minLength: 8)
             ModeBar()
         }
@@ -385,6 +408,7 @@ private struct ModeBar: View {
         switch mode {
         case .day: return "D"
         case .threeDay: return "3"
+        case .workWeek: return "5"
         case .week: return "W"
         case .month: return "M"
         case .agenda: return "A"
@@ -567,6 +591,9 @@ private struct CalendarsView: View {
     @EnvironmentObject private var theme: Theme
     @EnvironmentObject private var calendar: CalendarModel
     @Environment(\.colorScheme) private var scheme
+    @State private var city = ""
+    @State private var homeText = ""
+    @State private var setName = ""
 
     var body: some View {
         let own = calendar.calendars.filter { !$0.isHolidays }
@@ -602,17 +629,80 @@ private struct CalendarsView: View {
             Toggle("Australian public holidays", isOn: $calendar.showHolidays)
                 .toggleStyle(.checkbox)
                 .font(.system(size: 12.5))
+            if !calendar.sets.isEmpty {
+                SectionLabel(text: "Sets")
+                ForEach(calendar.sets) { set in
+                    HStack(spacing: 6) {
+                        Button {
+                            calendar.apply(set)
+                        } label: {
+                            Label(set.name, systemImage: calendar.activeSet?.id == set.id ? "checkmark.circle.fill" : "circle")
+                                .font(.system(size: 12.5))
+                        }
+                        .buttonStyle(.plain)
+                        Spacer()
+                        Button { calendar.deleteSet(set.id) } label: { Image(systemName: "xmark").font(.system(size: 9, weight: .bold)) }
+                            .buttonStyle(.plain)
+                            .foregroundStyle(theme.inkTertiary(scheme))
+                            .help("Delete this set")
+                    }
+                    .foregroundStyle(theme.ink(scheme))
+                }
+            }
+            HStack(spacing: 6) {
+                TextField("Save what's ticked as a set", text: $setName)
+                    .textFieldStyle(.roundedBorder)
+                    .onSubmit(saveSet)
+                Button("Save", action: saveSet)
+                    .buttonStyle(.vellumSecondary)
+                    .disabled(setName.trimmingCharacters(in: .whitespaces).isEmpty)
+            }
+            .font(.system(size: 12))
+            Divider()
+            Toggle("Week numbers", isOn: $calendar.showsWeekNumbers)
+                .toggleStyle(.checkbox)
+                .font(.system(size: 12.5))
+            Toggle("Weather for \(calendar.weatherPlace?.name ?? "your city")", isOn: $calendar.showsWeather)
+                .toggleStyle(.checkbox)
+                .font(.system(size: 12.5))
+            if calendar.showsWeather {
+                TextField("Another town or city", text: $city)
+                    .textFieldStyle(.roundedBorder)
+                    .font(.system(size: 12))
+                    .onSubmit {
+                        calendar.setWeatherCity(city)
+                        city = ""
+                    }
+            }
+            Picker("Between meetings", selection: $calendar.bufferMinutes) {
+                Text("No gap").tag(0)
+                Text("5 minutes").tag(5)
+                Text("10 minutes").tag(10)
+                Text("15 minutes").tag(15)
+                Text("30 minutes").tag(30)
+            }
+            .font(.system(size: 12.5))
+            TextField("Home, for travel times (a suburb is enough)", text: $homeText)
+                .textFieldStyle(.roundedBorder)
+                .font(.system(size: 12))
+                .onSubmit { calendar.home = homeText.trimmingCharacters(in: .whitespacesAndNewlines) }
+                .onAppear { homeText = calendar.home }
             if calendar.access == .granted && calendar.reminderAccess != .granted {
                 Button("Show reminders that are due") { Task { await calendar.requestReminders() } }
                     .buttonStyle(.vellumSecondary)
             }
-            Text("New events go to your default calendar. Outlook calendars come from accounts signed in with Microsoft in Mail.")
+            Text("New events go to your default calendar. Outlook calendars come from accounts signed in with Microsoft in Mail. The forecast is from Open-Meteo (only the town is sent); travel times are from Apple Maps.")
                 .font(.system(size: 11))
                 .foregroundStyle(theme.inkTertiary(scheme))
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding(16)
         .frame(width: 290)
+    }
+
+    private func saveSet() {
+        calendar.saveCurrentAsSet(setName)
+        setName = ""
     }
 }
 

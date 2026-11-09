@@ -105,9 +105,14 @@ enum MicrosoftCalendar {
         var isAllDay: Bool
         var location: String?
         var notes: String?
+        /// Only sent for a new event: changing a series from one of its days is left to Outlook.
+        var repeats: EventRepeat = .never
+        var repeatUntil: Date?
+        /// Minutes before; nil leaves the reminder as it is.
+        var alert: Int?
     }
 
-    static func body(for fields: EventFields) -> [String: Any] {
+    static func body(for fields: EventFields, calendar: Calendar = .current) -> [String: Any] {
         var body: [String: Any] = ["subject": fields.title, "isAllDay": fields.isAllDay]
         if fields.isAllDay {
             // All-day events start and end at midnight in a named zone.
@@ -120,6 +125,11 @@ enum MicrosoftCalendar {
         }
         body["location"] = ["displayName": fields.location ?? ""]
         if let notes = fields.notes { body["body"] = ["contentType": "text", "content": notes] }
+        if let recurrence = fields.repeats.graph(start: fields.start, until: fields.repeatUntil, calendar: calendar) { body["recurrence"] = recurrence }
+        if let alert = fields.alert {
+            body["isReminderOn"] = true
+            body["reminderMinutesBeforeStart"] = alert
+        }
         return body
     }
 

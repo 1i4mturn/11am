@@ -83,6 +83,8 @@ jobs:
           capture calendar-dark -startSection calendar -forceAppearance dark -calendarMode week
           capture calendar-month-light -startSection calendar -forceAppearance light -calendarMode month
           capture calendar-agenda-dark -startSection calendar -forceAppearance dark -calendarMode agenda -calendarEvent golive
+          capture calendar-extras-light -startSection calendar -forceAppearance light -calendarMode workWeek -calendarExtras YES
+          capture calendar-extras-dark -startSection calendar -forceAppearance dark -calendarMode week -calendarExtras YES
           capture calendar-new-light -startSection calendar -forceAppearance light -calendarMode day -calendarNew YES
           capture write-light -startSection write -forceAppearance light
           capture write-welcome-dark -startSection write -forceAppearance dark -writeDoc 1

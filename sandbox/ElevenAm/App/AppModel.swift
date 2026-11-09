@@ -284,7 +284,8 @@ final class AppModel: ObservableObject {
             today.useCalendar(events.map { list in
                 list.map { event in
                     DayEvent(id: event.id, title: event.title, start: event.start, end: event.end, isAllDay: event.isAllDay,
-                             location: event.location, calendar: calendar?.calendar(for: event)?.title ?? "")
+                             location: event.location, calendar: calendar?.calendar(for: event)?.title ?? "",
+                             leaveBy: calendar?.travel[event.id]?.leaveBy)
                 }
             })
         }

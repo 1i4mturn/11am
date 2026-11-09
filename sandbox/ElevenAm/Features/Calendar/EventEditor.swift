@@ -84,6 +84,36 @@ struct EventCard: View {
                 .help("Open in Maps")
             }
 
+            if let trip = calendar.travel[event.id] {
+                Label {
+                    Text("Leave by \(CalText.time(trip.leaveBy)) · \(Travel.duration(trip.seconds)) from \(trip.from)")
+                        .fixedSize(horizontal: false, vertical: true)
+                } icon: {
+                    Image(systemName: "car")
+                }
+                .font(.system(size: 12))
+                .foregroundStyle(theme.ink(scheme))
+                .help("Driving time from Apple Maps, with five minutes to spare")
+            }
+
+            if !event.isAllDay, let weather = calendar.weather(on: event.start) {
+                Label(weather.line, systemImage: weather.symbol)
+                    .font(.system(size: 12))
+                    .foregroundStyle(theme.inkSecondary(scheme))
+            }
+
+            let tight = calendar.tightNeighbours(of: event)
+            if tight.before != nil || tight.after != nil {
+                HStack(alignment: .top, spacing: 6) {
+                    Image(systemName: "timer")
+                    Text([tight.before.map { "Straight after \($0.title)" }, tight.after.map { "straight into \($0.title)" }]
+                        .compactMap { $0 }.joined(separator: ", ").capitalisedFirst + ", with less than your \(calendar.bufferMinutes) minutes between.")
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .font(.system(size: 12))
+                .foregroundStyle(theme.inkSecondary(scheme))
+            }
+
             if !clashes.isEmpty {
                 HStack(alignment: .top, spacing: 6) {
                     Image(systemName: "exclamationmark.triangle")
@@ -322,6 +352,37 @@ struct EventEditor: View {
                     Text("Where")
                     TextField("A place or a video link", text: $draft.location).textFieldStyle(.roundedBorder)
                 }
+                if draft.eventID == nil {
+                    GridRow {
+                        Text("Repeat")
+                        HStack(spacing: 8) {
+                            Picker("", selection: $draft.repeats) {
+                                ForEach(EventRepeat.allCases) { kind in Text(kind.title).tag(kind) }
+                            }
+                            .labelsHidden()
+                            .fixedSize()
+                            if draft.repeats != .never {
+                                Toggle("Until", isOn: Binding(get: { draft.repeatUntil != nil }, set: { on in
+                                    draft.repeatUntil = on ? Calendar.current.date(byAdding: .month, value: 3, to: draft.start) : nil
+                                }))
+                                .toggleStyle(.checkbox)
+                                if let until = draft.repeatUntil {
+                                    DatePicker("", selection: Binding(get: { until }, set: { draft.repeatUntil = $0 }), in: draft.start...,
+                                               displayedComponents: .date)
+                                        .labelsHidden()
+                                }
+                            }
+                        }
+                    }
+                }
+                GridRow {
+                    Text("Alert")
+                    Picker("", selection: $draft.alert) {
+                        ForEach(EventAlert.choices, id: \.self) { minutes in Text(EventAlert.title(minutes)).tag(minutes) }
+                    }
+                    .labelsHidden()
+                    .fixedSize()
+                }
                 GridRow(alignment: .top) {
                     Text("Notes").padding(.top, 4)
                     TextEditor(text: $draft.notes)
@@ -398,4 +459,8 @@ struct EventEditor: View {
         calendar.editor = nil
         dismiss()
     }
+}
+
+private extension String {
+    var capitalisedFirst: String { prefix(1).uppercased() + dropFirst() }
 }

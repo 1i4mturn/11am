@@ -10,6 +10,8 @@ struct DayEvent: Identifiable {
     let isAllDay: Bool
     let location: String?
     let calendar: String
+    /// When to set off, for something across town (from Leo's travel times).
+    var leaveBy: Date? = nil
 }
 
 /// Leo-lite: today's calendar, the brief, and the 11am check-in.

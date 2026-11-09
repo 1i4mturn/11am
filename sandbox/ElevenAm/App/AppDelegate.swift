@@ -73,6 +73,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if let event = arguments.string(forKey: "calendarEvent") {
             model.calendar.selectedID = "sample:\(event)"
         }
+        // -calendarExtras YES shows the sample week with weather, travel, a buffer, week numbers and sets, lunch selected.
+        if arguments.bool(forKey: "calendarExtras") {
+            model.calendar.loadExtrasSample()
+        }
         if arguments.bool(forKey: "calendarNew") {
             model.calendar.newEvent(at: CalendarView.suggestedStart(for: model.calendar))
         }

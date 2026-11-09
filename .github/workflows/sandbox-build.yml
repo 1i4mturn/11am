@@ -50,10 +50,22 @@ jobs:
           sleep 1
           swiftc -O -o mailtests \
             ../ElevenAm/Features/Mail/{MailTypes,MailSocket,IMAPClient,SMTPClient,MailParser,MailTriage,MailLearner,MailSync,MailSamples,MicrosoftAuth}.swift \
-            ../ElevenAm/Features/Calendar/{CalendarKit,MicrosoftCalendar}.swift \
+            ../ElevenAm/Features/Calendar/{CalendarKit,CalendarExtras,MicrosoftCalendar}.swift \
             ../ci/MailTests/main.swift 2>&1 | grep -E "error|warning: unre" || true
           test -x mailtests
           TZ=Australia/Sydney ./mailtests
+
+      - name: Calendar tests (weather, travel, sets, week numbers, buffers, repeats)
+        working-directory: sandbox
+        run: |
+          mkdir -p caltest
+          cd caltest
+          swiftc -O -o caltests \
+            ../ElevenAm/Features/Mail/{MailTypes,MailSocket,IMAPClient,SMTPClient,MailParser,MailTriage,MailLearner,MailSync,MailSamples,MicrosoftAuth}.swift \
+            ../ElevenAm/Features/Calendar/{CalendarKit,CalendarExtras,MicrosoftCalendar}.swift \
+            ../ci/CalendarTests/main.swift 2>&1 | grep -E "error|warning: unre" || true
+          test -x caltests
+          TZ=Australia/Sydney ./caltests
 
       - name: Document and PDF tests
         working-directory: sandbox
