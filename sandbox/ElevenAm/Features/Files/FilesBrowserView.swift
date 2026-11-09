@@ -410,10 +410,14 @@ struct ImageEditorView: View {
                 }
             }
             .frame(minWidth: 520, minHeight: 460)
-            controls
-                .frame(width: 280)
+            VStack(spacing: 0) {
+                controls
+                Divider()
+                actions
+            }
+            .frame(width: 280)
         }
-        .frame(width: 900, height: 620)
+        .frame(width: 900, height: 580)
         .task { load() }
         .onChange(of: edits) { _, _ in render() }
         .onChange(of: cropping) { _, _ in render() }
@@ -477,7 +481,16 @@ struct ImageEditorView: View {
                 }
                 .disabled(lifting)
                 if lifting { ProgressView("Finding the subject…").controlSize(.small) }
-                Divider()
+            }
+            .padding(16)
+        }
+        .textFieldStyle(.roundedBorder)
+        .controlSize(.small)
+    }
+
+    /// Always in view, under the controls.
+    private var actions: some View {
+        VStack(alignment: .leading, spacing: 10) {
                 HStack {
                     Button("Reset") {
                         edits = ImageEdits()
@@ -503,10 +516,8 @@ struct ImageEditorView: View {
                     .font(.system(size: 10.5))
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
-            }
-            .padding(16)
         }
-        .textFieldStyle(.roundedBorder)
+        .padding(16)
         .controlSize(.small)
     }
 
