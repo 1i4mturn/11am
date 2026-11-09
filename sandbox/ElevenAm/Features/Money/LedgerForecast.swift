@@ -477,8 +477,11 @@ extension LedgerBook {
             if let sale = self.invoice(reference), let name = contact(sale.contact)?.name { return name }
             if let paid = invoices.first(where: { $0.payments.contains { $0.entry == entry.id } }), let name = contact(paid.contact)?.name { return name }
             if let line = bank.first(where: { $0.id == reference }) {
-                let key = Self.payeeKey(line.description)
-                return key.isEmpty ? line.description : key.split(separator: " ").map { $0.prefix(1).uppercased() + $0.dropFirst() }.joined(separator: " ")
+                // The payee's words as the bank wrote them: "AWS EMEA", not "aws emea".
+                let key = Self.payeeKey(line.description).split(separator: " ").map(String.init)
+                guard !key.isEmpty else { return line.description }
+                let words = line.description.components(separatedBy: CharacterSet.alphanumerics.inverted).filter { !$0.isEmpty }
+                return key.map { part in words.first { $0.lowercased() == part } ?? part }.joined(separator: " ")
             }
         }
         return entry.memo.isEmpty ? "Other" : entry.memo
@@ -505,7 +508,8 @@ extension LedgerBook {
                 let who = counterparty(of: entry)
                 let current = payees[who] ?? (0, 0)
                 payees[who] = (current.0 + amount, current.1 + 1)
-                lines.append(ExplainedLine(date: entry.date, description: who == entry.memo ? who : "\(who) · \(entry.memo)", amount: amount))
+                let said = entry.memo.lowercased().contains(who.lowercased()) ? entry.memo : "\(who) · \(entry.memo)"
+                lines.append(ExplainedLine(date: entry.date, description: who == entry.memo ? who : said, amount: amount))
             } else if entry.date >= previousStart && entry.date < first {
                 previous += amount
             }

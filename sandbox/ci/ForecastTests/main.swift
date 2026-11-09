@@ -158,7 +158,7 @@ let software = book.explain(account: "485", from: date(2026, 8, 1), to: date(202
 same(software?.total, 450_000, "explain: software was $4,500 (net of GST) in the quarter")
 same(software?.previous, 300_000, "explain: $3,000 the quarter before")
 same(software?.months.map(\.amount), [150_000, 150_000, 150_000], "explain: by month")
-same(software?.payees.first?.name, "Aws Emea", "explain: who it went to")
+same(software?.payees.first?.name, "AWS EMEA", "explain: who it went to, as the bank wrote it")
 same(software?.payees.first?.count, 3, "explain: three entries")
 let facts = software?.facts(calendar: calendar) ?? ""
 check(facts.contains("Software and subscriptions (account 485) was $4,500.00") && facts.contains("up $1,500.00 (50%)"), "explain: the facts George works from")

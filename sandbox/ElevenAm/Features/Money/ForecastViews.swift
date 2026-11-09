@@ -125,6 +125,7 @@ private struct FlowChips: View {
                     Toggle("", isOn: Binding(get: { change.on }, set: { _ in withAnimation(theme.spring) { ledger.toggle(change) } }))
                         .toggleStyle(.switch)
                         .controlSize(.mini)
+                        .tint(theme.ink(scheme))
                         .labelsHidden()
                     Image(systemName: symbol(change))
                         .font(.system(size: 11))
@@ -380,15 +381,17 @@ struct LineExplainerSheet: View {
                 }
             }
 
-            if let run = request.run {
-                HStack(alignment: .top, spacing: 10) {
-                    AgentLogo(code: "ge", size: 20)
-                    RunView(run: run)
+            HStack(alignment: .top, spacing: 10) {
+                AgentLogo(code: "ge", size: 20)
+                if let run = request.run {
+                    GeorgeReading(run: run, facts: line.facts(calendar: ledger.book.calendar))
+                } else {
+                    FactsText(text: line.facts(calendar: ledger.book.calendar))
                 }
-                .padding(12)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(theme.well(scheme)))
             }
+            .padding(12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(theme.well(scheme)))
 
             if line.months.count > 1 {
                 Chart(line.months) { month in
@@ -462,6 +465,35 @@ struct LineExplainerSheet: View {
         let direction = line.change > 0 ? "Up" : (line.change < 0 ? "Down" : "Same as")
         let percent = line.changePercent.map { " (\(Int(abs($0).rounded()))%)" } ?? ""
         return line.change == 0 ? "Same as the period before" : "\(direction) \(LedgerMoney.text(abs(line.change)))\(percent) on the period before"
+    }
+}
+
+/// George's words, or the plain facts when no brain can answer.
+private struct GeorgeReading: View {
+    @ObservedObject var run: BrainRun
+    var facts: String
+
+    var body: some View {
+        if case .failed = run.status {
+            FactsText(text: facts)
+        } else {
+            RunView(run: run)
+        }
+    }
+}
+
+private struct FactsText: View {
+    @EnvironmentObject private var theme: Theme
+    @Environment(\.colorScheme) private var scheme
+    var text: String
+
+    var body: some View {
+        Text(text)
+            .font(.system(size: 12.5))
+            .lineSpacing(2.5)
+            .foregroundStyle(theme.ink(scheme))
+            .textSelection(.enabled)
+            .fixedSize(horizontal: false, vertical: true)
     }
 }
 
