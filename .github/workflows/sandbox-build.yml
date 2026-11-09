@@ -103,6 +103,17 @@ jobs:
           test -x imagetests
           TZ=Australia/Sydney ./imagetests
 
+      - name: Research tests
+        working-directory: sandbox
+        run: |
+          mkdir -p researchtest
+          cd researchtest
+          swiftc -O -o researchtests \
+            ../ElevenAm/Features/Research/ResearchKit.swift \
+            ../ci/ResearchTests/main.swift 2>&1 | grep -E "error|warning: unre" || true
+          test -x researchtests
+          TZ=Australia/Sydney ./researchtests
+
       - name: Canvas and deck tests
         working-directory: sandbox
         run: |
