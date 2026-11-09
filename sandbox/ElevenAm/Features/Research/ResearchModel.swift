@@ -170,7 +170,8 @@ final class ResearchModel: NSObject, ObservableObject {
         guard let url = pageURL else { return nil }
         let html = await evaluate("document.documentElement ? document.documentElement.outerHTML : ''")
         guard !html.isEmpty else { return nil }
-        return ArticleReader.read(html: html, url: url)
+        // Big pages take a moment to read; do it off the main thread.
+        return await Task.detached(priority: .userInitiated) { ArticleReader.read(html: html, url: url) }.value
     }
 
     func selectedText() async -> String { await evaluate("String(window.getSelection() || '')") }

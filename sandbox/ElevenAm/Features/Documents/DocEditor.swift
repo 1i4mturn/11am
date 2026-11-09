@@ -197,6 +197,21 @@ struct DocEditor: NSViewRepresentable {
             }
         }
 
+        /// No spelling marks inside a citation: its source key isn't a word.
+        func textView(_ textView: NSTextView, shouldSetSpellingState value: Int, range affectedCharRange: NSRange) -> Int {
+            guard value != 0 else { return value }
+            let ns = textView.string as NSString
+            guard affectedCharRange.location != NSNotFound, NSMaxRange(affectedCharRange) <= ns.length else { return value }
+            let paragraph = ns.paragraphRange(for: affectedCharRange)
+            let text = ns.substring(with: paragraph)
+            guard text.contains("cite:") else { return value }
+            for marker in Citations.markers(in: text) {
+                let range = NSRange(location: marker.range.location + paragraph.location, length: marker.range.length)
+                if NSIntersectionRange(range, affectedCharRange).length > 0 { return 0 }
+            }
+            return value
+        }
+
         func textView(_ textView: NSTextView, clickedOnLink link: Any, at charIndex: Int) -> Bool {
             let url = (link as? URL) ?? (link as? String).flatMap(URL.init(string:))
             guard let url else { return false }
@@ -856,6 +871,8 @@ enum MarkdownStyler {
                 dimMarkers(node, storage: storage, style: style, smaller: NSFont.systemFont(ofSize: font.pointSize * 0.8))
                 apply(node.children, storage: storage, font: font, style: style)
                 storage.addAttribute(.foregroundColor, value: style.accent, range: node.contentRange)
+                // Escapes inside the link (a citation's "\[1\]") stay quiet, like other marks.
+                apply(node.children.filter { $0.kind == .text }, storage: storage, font: font, style: style)
             case .wikiLink:
                 var attributes: [NSAttributedString.Key: Any] = [.foregroundColor: style.accent]
                 if let target = node.text.addingPercentEncoding(withAllowedCharacters: asciiWord), let url = URL(string: "elevenam-note:\(target)") {

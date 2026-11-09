@@ -4,6 +4,7 @@ import SwiftUI
 /// the sidebar printed straight onto it → the main sheet → the agent sheet. Sheets carry their own frost.
 struct RootView: View {
     @EnvironmentObject private var model: AppModel
+    @EnvironmentObject private var research: ResearchModel
     @EnvironmentObject private var theme: Theme
     @Environment(\.colorScheme) private var scheme
 
@@ -36,6 +37,23 @@ struct RootView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .clipped()
                     .vellum(level: 2)
+                    // A look-up from another app still shows when the agent pane has stepped aside.
+                    .overlay(alignment: .topTrailing) {
+                        if let lookup = research.lookup, !(model.showsPane && roomForPane), model.section != .research {
+                            ScrollView {
+                                LookUpCard(lookup: lookup)
+                            }
+                            .scrollContentBackground(.hidden)
+                            .frame(width: 340)
+                            .frame(maxHeight: 520)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .padding(8)
+                            .vellum(level: 1, radius: max(theme.radius, 12))
+                            .shadow(color: .black.opacity(0.18), radius: 18, y: 8)
+                            .padding(18)
+                            .transition(.move(edge: .trailing).combined(with: .opacity))
+                        }
+                    }
 
                     if model.showsPane && roomForPane {
                         AgentPane()
@@ -59,6 +77,7 @@ struct RootView: View {
         .handlesExternalEvents(preferring: ["*"], allowing: ["*"])
         .preferredColorScheme(theme.values.appearance.colorScheme)
         .animation(theme.spring, value: model.showsPane)
+        .animation(theme.spring, value: research.lookup?.id)
     }
 }
 

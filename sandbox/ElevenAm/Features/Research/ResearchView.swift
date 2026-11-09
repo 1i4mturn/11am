@@ -226,10 +226,15 @@ private struct PageTab: View {
                         .foregroundStyle(theme.inkTertiary(scheme))
                         .fixedSize(horizontal: false, vertical: true)
                     LookUpField()
+                    if let lookup = research.lookup {
+                        LookUpCard(lookup: lookup)
+                            .transition(.rise(theme.rise))
+                    }
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .animation(theme.spring, value: research.pageRun?.id)
+            .animation(theme.spring, value: research.lookup?.id)
         }
         .scrollContentBackground(.hidden)
     }

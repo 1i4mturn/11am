@@ -186,8 +186,8 @@ extension ResearchModel {
     /// The source on the slide you're on, as a line at its foot.
     func citeOnSlide(_ source: CitationSource) {
         guard let decks, decks.deck != nil else { return }
-        let short = Self.unmark(citeText(source))
-        let line = source.container.isEmpty ? "Source: \(short)" : "Source: \(short), \(source.container)"
+        let short = shortCite(source)
+        let line = source.container.isEmpty || source.authors.isEmpty ? "Source: \(short)" : "Source: \(short), \(source.container)"
         decks.updateContent { $0.caption = line }
         decks.notice = "Cited \(short) on this slide. Add a sources slide at the end so people can look them up."
     }
@@ -199,12 +199,21 @@ extension ResearchModel {
         var content = SlideContent()
         content.title = "Sources"
         content.bullets = sorted.map { source in
-            let who = source.authors.isEmpty ? source.title : Self.unmark(citeText(source)).trimmingCharacters(in: CharacterSet(charactersIn: "()"))
-            return source.authors.isEmpty ? "\(who) · \(source.host)" : "\(who). \(source.title) · \(source.host)"
+            let year = source.published.map { String($0.year) } ?? Citations.noDate(style)
+            let where_ = source.host.isEmpty ? source.container : source.host
+            let lead = source.authors.isEmpty ? "\(source.title) (\(year))" : "\(Citations.shortAuthors(source, style: style)) (\(year)), \(source.title)"
+            return Self.unmark(where_.isEmpty ? lead : "\(lead) · \(where_)")
         }
         let notes = sorted.map { Self.unmark(Citations.reference($0, style: style)) }.joined(separator: "\n\n")
         decks.insertSlide(.bullets, content: content, notes: notes, atEnd: true)
         decks.notice = "Added a sources slide with \(sorted.count) \(sorted.count == 1 ? "source" : "sources"); the full \(style.title) references are in its notes."
+    }
+
+    /// "Nguyen & Brown, 2025": the in-text citation without its brackets or marks.
+    func shortCite(_ source: CitationSource) -> String {
+        let year = source.published.map { String($0.year) } ?? Citations.noDate(style)
+        let who = Self.unmark(Citations.shortAuthors(source, style: style)).replacingOccurrences(of: "\u{201C}", with: "").replacingOccurrences(of: "\u{201D}", with: "")
+        return style == .mla ? who : "\(who), \(year)"
     }
 
     static func unmark(_ text: String) -> String {

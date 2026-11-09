@@ -108,7 +108,8 @@ extension ResearchModel {
     <script type="application/ld+json">{"@context":"https://schema.org","@type":"NewsArticle","headline":"Interest rates hold steady as inflation eases","datePublished":"2026-11-03T14:30:00+11:00","author":[{"@type":"Person","name":"Jane Citizen"},{"@type":"Person","name":"Sam Lee"}],"publisher":{"@type":"Organization","name":"The Harbour Times"}}</script>
     <style>
     body { font: 17px/1.6 Georgia, serif; color: #1d1d1f; background: #fff; margin: 0; }
-    .masthead { font: 600 13px -apple-system, system-ui; letter-spacing: 0.08em; text-transform: uppercase; padding: 14px 28px; border-bottom: 1px solid #e6e6e6; display: flex; gap: 22px; }
+    html, body { overflow-x: hidden; }
+    .masthead { font: 600 12px -apple-system, system-ui; letter-spacing: 0.06em; text-transform: uppercase; padding: 14px 28px; border-bottom: 1px solid #e6e6e6; display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 18px; }
     .masthead b { margin-right: auto; letter-spacing: 0.02em; text-transform: none; font: 700 19px Georgia, serif; }
     .masthead span { color: #777; }
     article { max-width: 640px; margin: 34px auto; padding: 0 28px; }
@@ -120,6 +121,11 @@ extension ResearchModel {
     blockquote { margin: 22px 0; padding-left: 18px; border-left: 3px solid #1d1d1f; font-style: italic; }
     aside { font: 13px -apple-system, system-ui; border-top: 1px solid #e6e6e6; margin-top: 30px; padding-top: 12px; color: #777; }
     .cookie { position: fixed; bottom: 0; left: 0; right: 0; background: #1d1d1f; color: #fff; font: 13px -apple-system, system-ui; padding: 10px 28px; }
+    @media (prefers-color-scheme: dark) {
+      body { background: #171717; color: #ececec; } .masthead { border-color: #333; } .masthead span, .byline, figcaption, aside { color: #999; }
+      .chart { background: linear-gradient(180deg, #262626, #1e1e1e); } .chart i { background: #ececec; } blockquote { border-color: #ececec; } a { color: #8ab4ff; }
+      .cookie { background: #ececec; color: #171717; }
+    }
     </style></head><body>
     <div class="masthead"><b>The Harbour Times</b><span>News</span><span>Business</span><span>Money</span><span>Opinion</span></div>
     <article>
