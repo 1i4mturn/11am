@@ -194,6 +194,7 @@ struct CanvasToolbar: View {
 /// Everything about the selection (or the page, when nothing is selected).
 struct CanvasInspector: View {
     @EnvironmentObject private var theme: Theme
+    @EnvironmentObject private var sheets: SheetsModel
     @Environment(\.colorScheme) private var scheme
     @ObservedObject var controller: CanvasController
     var brand: CanvasBrand
@@ -207,9 +208,15 @@ struct CanvasInspector: View {
                 } else {
                     if let layer = controller.single {
                         geometrySection(layer)
+                        if let chart = controller.selectedChart { chartSection(chart) }
                         if let style = layer.textStyle { textSection(style) }
                         if case .image(_, let fit) = layer.content { imageSection(fit) }
                         appearanceSection(layer)
+                    } else if let chart = controller.selectedChart {
+                        Text("Chart")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(theme.ink(scheme))
+                        chartSection(chart)
                     } else {
                         Text("\(controller.selection.count) layers selected")
                             .font(.system(size: 12.5, weight: .semibold))
@@ -357,6 +364,41 @@ struct CanvasInspector: View {
                 Slider(value: Binding(get: { style.tracking }, set: { value in controller.updateText { $0.tracking = value } }), in: -10...30).controlSize(.small)
             }
             colourRow("Text colour", current: style.color) { color in controller.updateText { $0.color = color } }
+        }
+    }
+
+    /// The chart's own settings: drawn as columns or bars, its colours, and where its numbers come from.
+    private func chartSection(_ chart: CanvasChart) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            SectionLabel(text: "Chart")
+            Picker("", selection: Binding(get: { chart.kind }, set: { kind in controller.redrawChart { $0.kind = kind } })) {
+                ForEach(CanvasChartKind.allCases) { kind in Text(kind.title).tag(kind) }
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+            colourRow("Bars", current: chart.color) { color in controller.redrawChart { $0.color = color } }
+            colourRow("The biggest", current: chart.accent) { color in controller.redrawChart { $0.accent = color } }
+            if let link = chart.link {
+                VStack(alignment: .leading, spacing: 4) {
+                    Label("From \(link.sheet) in \(link.workbook)", systemImage: "tablecells")
+                        .font(.system(size: 11.5))
+                        .foregroundStyle(theme.inkSecondary(scheme))
+                        .lineLimit(2)
+                    if let updated = link.updated {
+                        Text("Checked \(updated.formatted(.relative(presentation: .named)))")
+                            .font(.system(size: 10.5))
+                            .foregroundStyle(theme.inkTertiary(scheme))
+                    }
+                }
+                Button("Refresh from Sheets") { controller.refreshCharts { sheets.workbook(named: $0) } }
+                    .buttonStyle(.vellumSecondary)
+                    .help("Draws the chart again if the numbers in the sheet changed")
+            } else {
+                Text("\(chart.points.count) \(chart.points.count == 1 ? "point" : "points"), typed in. Make a chart from Sheets to keep it up to date.")
+                    .font(.system(size: 10.5))
+                    .foregroundStyle(theme.inkTertiary(scheme))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
     }
 

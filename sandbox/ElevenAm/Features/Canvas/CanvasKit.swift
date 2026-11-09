@@ -201,6 +201,7 @@ struct CanvasLayer: Codable, Identifiable, Hashable, Sendable {
     }
 
     var kindTitle: String {
+        if chart != nil { return "Chart" }
         switch content {
         case .text: return "Text"
         case .shape(let kind): return kind.title
