@@ -60,7 +60,7 @@ extension LedgerModel {
     }
 
     /// Copies a file into the receipts folder under a name of its own.
-    private func store(_ url: URL) -> String? {
+    func store(_ url: URL) -> String? {
         try? FileManager.default.createDirectory(at: receiptsFolder, withIntermediateDirectories: true)
         let name = UUID().uuidString + (url.pathExtension.isEmpty ? "" : "." + url.pathExtension.lowercased())
         do {

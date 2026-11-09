@@ -88,8 +88,25 @@ final class PDFModel: ObservableObject {
     @Published private(set) var isSpeaking = false
     @Published private(set) var recent: [URL] = []
 
+    // Collections, pulling out, translating and new PDFs (PDFLibraryModel.swift).
+    @Published var showsCollections = false
+    @Published var collections: [PDFCollection] = []
+    @Published var selectedCollection: UUID?
+    @Published var collectionAsk: CollectionAsk?
+    @Published var pullOut: PDFPullOutCard?
+    @Published var showsWebPage = false
+    /// What's happening while a PDF is made from a web page.
+    @Published var making: String?
+    /// The name of a PDF made here that hasn't been saved yet.
+    var suggestedName: String?
+    var pageCache: [String: CachedPages] = [:]
+    weak var ledger: LedgerModel?
+    weak var notes: NotesModel?
+    weak var write: WriteModel?
+    var onOpen: ((AppSection) -> Void)?
+
     let view = PDFViewController()
-    private let brain: Brain
+    let brain: Brain
     private let speech = AVSpeechSynthesizer()
 
     init(brain: Brain) {
@@ -99,9 +116,28 @@ final class PDFModel: ObservableObject {
         }
         recent = (UserDefaults.standard.stringArray(forKey: "pdf.recent") ?? []).map(URL.init(fileURLWithPath:))
             .filter { FileManager.default.fileExists(atPath: $0.path) }
+        loadCollections()
     }
 
-    var title: String { url?.deletingPathExtension().lastPathComponent ?? "Untitled" }
+    var title: String { url?.deletingPathExtension().lastPathComponent ?? suggestedName ?? "Untitled" }
+
+    /// A PDF made here (combined, from a web page or a document), open and waiting to be saved.
+    func adopt(_ made: PDFDocument, name: String?, notice text: String) {
+        stopSpeaking()
+        document = made
+        url = nil
+        suggestedName = name
+        isDirty = true
+        selectedPages = []
+        redactions = [:]
+        askRun = nil
+        pullOut = nil
+        currentPage = 0
+        mode = .read
+        showsCollections = false
+        revision += 1
+        notice = text
+    }
 
     var markColor: NSColor {
         switch tool {
@@ -122,10 +158,12 @@ final class PDFModel: ObservableObject {
         stopSpeaking()
         self.document = document
         self.url = url
+        suggestedName = nil
         isDirty = false
         selectedPages = []
         redactions = [:]
         askRun = nil
+        pullOut = nil
         currentPage = 0
         revision += 1
         recent.removeAll { $0 == url }
@@ -164,14 +202,7 @@ final class PDFModel: ObservableObject {
         guard panel.runModal() == .OK, !panel.urls.isEmpty else { return }
         do {
             let combined = try PDFEngine.combine(panel.urls)
-            stopSpeaking()
-            document = combined
-            url = nil
-            isDirty = true
-            selectedPages = []
-            redactions = [:]
-            revision += 1
-            notice = "Combined \(panel.urls.count) files into \(combined.pageCount) pages. Save to keep it."
+            adopt(combined, name: nil, notice: "Combined \(panel.urls.count) files into \(combined.pageCount) pages. Save to keep it.")
         } catch {
             notice = error.localizedDescription
         }
@@ -444,6 +475,7 @@ final class PDFModel: ObservableObject {
 
     func ask(_ request: PDFAsk, question: String = "") {
         guard let document else { return }
+        pullOut = nil
         let text = PDFEngine.text(document)
         guard !text.isEmpty else {
             notice = "There's no text in this PDF yet. Make it searchable first (it's in the ••• menu)."

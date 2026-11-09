@@ -365,6 +365,31 @@ final class LedgerModel: ObservableObject {
         notice = "A draft bill from \(vendor) for \(LedgerMoney.text(total)) is ready to check and approve."
     }
 
+    /// Bolton read an invoice PDF: a draft bill due when the invoice says, with the PDF kept as its receipt.
+    func draftBill(from facts: InvoiceFacts, file: URL?, name: String) {
+        guard let total = facts.total, total > 0 else { return }
+        let vendor = facts.vendor ?? name
+        let contact = book.contacts.first { $0.name.caseInsensitiveCompare(vendor) == .orderedSame }?.id ?? addContact(named: vendor)
+        let gst: GSTCode = book.settings.gstRegistered && facts.gst != 0 ? .gst : .excluded
+        let net = total - GST.included(in: total, gst)
+        let issued = facts.issued ?? Date()
+        let reference = facts.number ?? name
+        let bill = Invoice(kind: .bill, number: "", contact: contact, issued: issued, due: max(facts.due ?? issued, issued), reference: reference,
+                           lines: [InvoiceLine(description: facts.number.map { "\(vendor) invoice \($0)" } ?? name, unitPrice: net, account: "429", gst: gst)])
+        save(bill, approve: false)
+        guard book.invoices.contains(where: { $0.id == bill.id }) else { return }
+        if let file, let stored = store(file) {
+            var receipt = LedgerReceipt(file: stored, vendor: vendor, date: issued, total: total, gst: facts.gst)
+            receipt.abn = facts.abn ?? ""
+            receipt.bill = bill.id
+            change { _ = $0.addReceipt(receipt) }
+        }
+        tab = .bills
+        var parts = ["A draft bill from \(vendor) for \(LedgerMoney.text(total))"]
+        if let due = facts.due { parts.append("due \(due.formatted(.dateTime.day().month(.wide)))") }
+        notice = parts.joined(separator: ", ") + ", with the PDF kept. Check it and approve it."
+    }
+
     func void(_ id: UUID) { change { try $0.void(id) } }
 
     func deleteDraft(_ id: UUID) {

@@ -22,14 +22,19 @@ struct PDFAppView: View {
         VStack(alignment: .leading, spacing: 14) {
             SectionHeader(title: "pdf", subtitle: subtitle) {
                 HStack(spacing: 8) {
-                    if pdf.document != nil { searchField.frame(width: 190) }
+                    if pdf.document != nil && !pdf.showsCollections { searchField.frame(width: 190) }
+                    Button { pdf.showsCollections.toggle() } label: {
+                        Label(pdf.showsCollections && pdf.document != nil ? "Back to \(pdf.title)" : "Collections",
+                              systemImage: pdf.showsCollections && pdf.document != nil ? "chevron.left" : "books.vertical")
+                            .lineLimit(1)
+                    }
+                    .buttonStyle(.vellumSecondary)
+                    .help("Ask questions across a set of PDFs")
                     Button { pdf.openPanel() } label: { Label("Open", systemImage: "doc") }
                         .buttonStyle(.vellumSecondary)
                         .keyboardShortcut("o", modifiers: .command)
-                    Button { pdf.combinePanel() } label: { Label("Combine", systemImage: "rectangle.stack.badge.plus") }
-                        .buttonStyle(.vellumSecondary)
-                        .help("Put PDFs and pictures together into one PDF")
-                    if pdf.document != nil {
+                    NewPDFMenu()
+                    if pdf.document != nil && !pdf.showsCollections {
                         documentMenu
                         Button { pdf.save() } label: { Label("Save", systemImage: "square.and.arrow.down") }
                             .buttonStyle(.vellumPrimary)
@@ -54,7 +59,9 @@ struct PDFAppView: View {
                 }
             }
 
-            if pdf.document == nil {
+            if pdf.showsCollections {
+                PDFCollectionsView()
+            } else if pdf.document == nil {
                 EmptyPDF(dropTargeted: dropTargeted)
             } else {
                 toolbar
@@ -87,6 +94,7 @@ struct PDFAppView: View {
         .animation(theme.spring, value: pdf.notice)
         .animation(theme.spring, value: asking)
         .animation(theme.spring, value: pdf.mode)
+        .animation(theme.spring, value: pdf.showsCollections)
         .animation(theme.spring, value: pdf.redactionCount)
         .onChange(of: asking) { _, value in UserDefaults.standard.set(value, forKey: "pdfAsk") }
         .onDrop(of: [.fileURL], isTargeted: $dropTargeted) { providers in
@@ -113,6 +121,11 @@ struct PDFAppView: View {
                 .environmentObject(pdf)
                 .environmentObject(theme)
         }
+        .sheet(isPresented: $pdf.showsWebPage) {
+            WebPagePDFSheet()
+                .environmentObject(pdf)
+                .environmentObject(theme)
+        }
         .task(id: pdf.notice) {
             guard pdf.notice != nil, (try? await Task.sleep(for: .seconds(10))) != nil else { return }
             pdf.notice = nil
@@ -120,6 +133,7 @@ struct PDFAppView: View {
     }
 
     private var subtitle: String {
+        if pdf.showsCollections { return "Ask across a set of PDFs, with the page for every answer" }
         guard let document = pdf.document else { return "Read, mark up, sign, fill in and fix PDFs" }
         var parts = ["\(pdf.title)\(pdf.isDirty ? " · edited" : "")", "\(document.pageCount) \(document.pageCount == 1 ? "page" : "pages")"]
         if let url = pdf.url, let size = (try? url.resourceValues(forKeys: [.fileSizeKey]))?.fileSize {
@@ -270,6 +284,16 @@ struct PDFAppView: View {
             Button("Remove hidden details (author, title)…") { pdf.removeMetadata() }
             Button("Make scanned pages searchable…") { pdf.makeSearchable() }
             Divider()
+            Menu("Translate into") {
+                ForEach(DocShape.languages, id: \.self) { language in
+                    Button(language) { pdf.translate(to: language) }
+                }
+            }
+            Button("Open the text in Write") { pdf.openInWrite() }
+            if let collection = pdf.currentCollection, let url = pdf.url, !collection.files.contains(url.path) {
+                Button("Add to \u{201C}\(collection.name)\u{201D}") { pdf.addFiles([url], to: collection.id) }
+            }
+            Divider()
             Button("Split into parts…") { showingSplit = true }
             Button("Change my signature…") { pdf.editingSignature = true }
             Button("Show in Finder") { if let url = pdf.url { NSWorkspace.shared.activateFileViewerSelecting([url]) } }
@@ -384,6 +408,8 @@ private struct EmptyPDF: View {
             HStack(spacing: 8) {
                 Button("Open a PDF…") { pdf.openPanel() }
                     .buttonStyle(.vellumPrimary)
+                Button("A web page as a PDF…") { pdf.showsWebPage = true }
+                    .buttonStyle(.vellumSecondary)
                 Button("Try a sample agreement") { pdf.loadSample() }
                     .buttonStyle(.vellumSecondary)
             }
@@ -711,6 +737,8 @@ private struct AskPDFPanel: View {
                 Button("Summary") { pdf.ask(.summary) }
                 Button("Key points") { pdf.ask(.keyPoints) }
                 Button("Dates, money, obligations") { pdf.ask(.details) }
+                Button("For George or Notes") { pdf.pullOutDetails() }
+                    .help("An invoice becomes a draft bill; an agreement's key facts become a note")
             }
             .buttonStyle(.vellumSecondary)
             .disabled(brain.isBusy)
@@ -718,7 +746,11 @@ private struct AskPDFPanel: View {
                 guard !question.trimmingCharacters(in: .whitespaces).isEmpty else { return }
                 pdf.ask(.question, question: question)
             }
-            if let run = pdf.askRun {
+            if let card = pdf.pullOut {
+                ScrollView {
+                    PDFPullOutView(card: card).frame(maxWidth: .infinity, alignment: .leading)
+                }
+            } else if let run = pdf.askRun {
                 ScrollView {
                     RunView(run: run).frame(maxWidth: .infinity, alignment: .leading)
                 }

@@ -139,6 +139,21 @@ jobs:
           test -x researchtests
           TZ=Australia/Sydney ./researchtests
 
+      - name: PDF tests (collections, paragraphs, invoices and agreements, web pages)
+        working-directory: sandbox
+        run: |
+          mkdir -p pdflibtest
+          cd pdflibtest
+          swiftc -O -o pdftests \
+            ../ElevenAm/Features/PDF/PDFLibraryKit.swift \
+            ../ElevenAm/Features/Research/ResearchKit.swift \
+            ../ElevenAm/Features/Money/{LedgerKit,LedgerExtras,LedgerSpend,LedgerSamples,LedgerForecast}.swift \
+            ../ElevenAm/Features/Sheets/{GridKit,GridFormula,GridEngine,GridEdit,GridFiles,GridRules}.swift \
+            ../ElevenAm/Features/Documents/{DocumentKit,DocxWriter}.swift \
+            ../ci/PDFLibraryTests/main.swift 2>&1 | grep -E "error|warning: unre" || true
+          test -x pdftests
+          TZ=Australia/Sydney ./pdftests
+
       - name: Canvas and deck tests
         working-directory: sandbox
         run: |

@@ -257,6 +257,10 @@ final class AppModel: ObservableObject {
         }
         // James clips into Bolton's notes, cites in William's documents and Conner's decks.
         research.notes = self.notes
+        // Bolton sends invoices to George, agreements to Notes, and text to William to translate or edit.
+        self.pdf.ledger = ledger
+        self.pdf.notes = self.notes
+        self.pdf.write = write
         research.decks = self.decks
         self.decks.sheets = self.sheets
         self.studio.sheets = self.sheets
@@ -303,6 +307,7 @@ final class AppModel: ObservableObject {
         ledger.onOpen = { [weak self] section in self?.go(to: section) }
         research.onOpen = { [weak self] section in self?.go(to: section) }
         write.onOpen = { [weak self] section in self?.go(to: section) }
+        pdf.onOpen = { [weak self] section in self?.go(to: section) }
         research.onShowPane = { [weak self] in self?.showsPane = true }
         research.onLog = { [weak self] text in self?.log("jm", text) }
         // When someone you were waiting on replies, their follow-up comes off the list.

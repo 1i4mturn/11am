@@ -140,9 +140,14 @@ extension WriteModel {
     /// A translated copy, a part at a time, then a pass to sound like you in that language.
     func translate(to language: String) {
         guard let document = selected else { return }
-        let job = WilliamJob(kind: .translation(language), documentID: document.id)
+        translate(text: document.text, title: document.title, to: language, from: document.id)
+    }
+
+    /// Any text (a document here, or a PDF from Bolton) translated into a new document.
+    func translate(text source: String, title sourceTitle: String, to language: String, from documentID: UUID? = nil) {
+        let job = WilliamJob(kind: .translation(language), documentID: documentID)
         william = job
-        let parts = DocShape.chunks(document.text)
+        let parts = DocShape.chunks(source)
         let system = WriteModel.williamSystem + " Translate into \(language). Keep the Markdown exactly: headings, lists, links, tables, emphasis. "
             + "Translate meaning, not word for word, so it reads as if written in \(language). " + voice.instructions
         Task { @MainActor [weak self] in
@@ -162,7 +167,7 @@ extension WriteModel {
                 }
                 translated.append(run.text.trimmingCharacters(in: .whitespacesAndNewlines))
             }
-            let title = "\(document.title) (\(language))"
+            let title = "\(sourceTitle) (\(language))"
             var text = translated.joined(separator: "\n\n")
             if !text.hasPrefix("# ") { text = "# \(title)\n\n" + text }
             self.addDocument(text: text)

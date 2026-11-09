@@ -320,6 +320,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if arguments.bool(forKey: "decksSources") {
             model.research.addSampleSourcesSlide()
         }
+        // -pdfCollections YES asks a sample collection; -pdfPullOut YES pulls the sample agreement's key facts out for Notes.
+        if arguments.bool(forKey: "pdfCollections") {
+            model.pdf.loadCollectionSample()
+        }
+        if arguments.bool(forKey: "pdfPullOut") {
+            model.pdf.loadPullOutSample()
+        }
         if arguments.bool(forKey: "activate") {
             NSApp.activate()
         }
