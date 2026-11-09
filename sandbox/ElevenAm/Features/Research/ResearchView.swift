@@ -1,7 +1,7 @@
 import SwiftUI
 import WebKit
 
-/// James's app: browse normally with a sharp assistant beside you, then get a sourced answer.
+/// James's app: browse normally with a sharp assistant beside you, clip what's worth keeping, cite what you use.
 struct ResearchView: View {
     @EnvironmentObject private var theme: Theme
     @EnvironmentObject private var research: ResearchModel
@@ -11,10 +11,19 @@ struct ResearchView: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .lastTextBaseline) {
                 DisplayTitle(text: "research", size: 30)
-                Text("James · browse, ask, and get a sourced answer")
+                Text("James · browse, clip, cite, and get a sourced answer")
                     .font(.system(size: 12.5))
                     .foregroundStyle(theme.inkTertiary(scheme))
+                    .lineLimit(1)
                 Spacer()
+                Button {
+                    research.showsBrowserButton = true
+                } label: {
+                    Label("Clip from anywhere", systemImage: "bookmark")
+                }
+                .buttonStyle(.borderless)
+                .foregroundStyle(theme.inkSecondary(scheme))
+                .help("The browser button and the Services menu: clip and look things up from any app")
             }
             BrowserBar()
             HStack(alignment: .top, spacing: 12) {
@@ -34,17 +43,28 @@ struct ResearchView: View {
                         }
                     }
                 JamesPanel()
-                    .frame(width: 270)
+                    .frame(width: 300)
             }
         }
         .padding(20)
+        .sheet(item: $research.editing) { source in
+            SourceEditor(source: source)
+                .environmentObject(research)
+                .environmentObject(theme)
+        }
+        .sheet(isPresented: $research.showsBrowserButton) {
+            BrowserButtonSheet()
+                .environmentObject(research)
+                .environmentObject(theme)
+        }
     }
 }
 
-/// Back, forward, reload, the address, and "add to sources".
+/// Back, forward, reload, the address, Clip and Add to sources.
 private struct BrowserBar: View {
     @EnvironmentObject private var theme: Theme
     @EnvironmentObject private var research: ResearchModel
+    @EnvironmentObject private var notes: NotesModel
     @Environment(\.colorScheme) private var scheme
 
     var body: some View {
@@ -77,6 +97,27 @@ private struct BrowserBar: View {
             .background(Capsule().fill(theme.well(scheme)))
             .overlay(Capsule().strokeBorder(theme.edge(scheme), lineWidth: 0.5))
 
+            Menu {
+                Button("Clip to Notes › \(ResearchModel.clippingsFolder)") { research.clipCurrentPage() }
+                if !notes.favourites.isEmpty {
+                    Divider()
+                    Section("Inside a page") {
+                        ForEach(notes.favourites) { page in
+                            Button(page.title) { research.clipCurrentPage(to: .page(page.id)) }
+                        }
+                    }
+                }
+            } label: {
+                Label("Clip", systemImage: "scissors")
+            } primaryAction: {
+                research.clipCurrentPage()
+            }
+            .menuStyle(.button)
+            .buttonStyle(.vellumSecondary)
+            .fixedSize()
+            .disabled(!research.isOnWebPage)
+            .help("Keep the article in Notes, read like reader mode, with what you've selected on top")
+
             Button {
                 research.addCurrentPage()
             } label: {
@@ -103,10 +144,52 @@ private struct WebContainer: NSViewRepresentable {
 private struct JamesPanel: View {
     @EnvironmentObject private var theme: Theme
     @EnvironmentObject private var research: ResearchModel
+    @Environment(\.colorScheme) private var scheme
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Picker("", selection: $research.tab) {
+                ForEach(JamesTab.allCases) { tab in
+                    Text(tab == .sources ? "Sources · \(research.library.count)" : tab.title).tag(tab)
+                }
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+
+            if let notice = research.notice {
+                HStack(alignment: .top, spacing: 8) {
+                    AgentLogo(code: "jm", size: 16, color: theme.inkSecondary(scheme))
+                    Text(notice)
+                        .font(.system(size: 11.5))
+                        .foregroundStyle(theme.inkSecondary(scheme))
+                        .fixedSize(horizontal: false, vertical: true)
+                    Spacer(minLength: 0)
+                    Button { research.notice = nil } label: { Image(systemName: "xmark").font(.system(size: 8, weight: .bold)) }
+                        .buttonStyle(.plain)
+                        .foregroundStyle(theme.inkTertiary(scheme))
+                }
+                .padding(10)
+                .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(theme.well(scheme)))
+                .transition(.opacity)
+            }
+
+            switch research.tab {
+            case .page: PageTab()
+            case .sources: SourcesTab()
+            case .report: ReportTab()
+            }
+        }
+        .animation(theme.spring, value: research.tab)
+        .animation(theme.spring, value: research.notice)
+    }
+}
+
+private struct PageTab: View {
+    @EnvironmentObject private var theme: Theme
+    @EnvironmentObject private var research: ResearchModel
     @EnvironmentObject private var brain: Brain
     @Environment(\.colorScheme) private var scheme
     @State private var question = ""
-    @State private var reportQuestion = ""
 
     var body: some View {
         ScrollView {
@@ -122,6 +205,9 @@ private struct JamesPanel: View {
                     Button("Summarise") { research.summarisePage() }
                         .buttonStyle(.vellumSecondary)
                         .disabled(!research.isOnWebPage || brain.isBusy)
+                    Button("Clip") { research.clipCurrentPage() }
+                        .buttonStyle(.vellumSecondary)
+                        .disabled(!research.isOnWebPage)
                     Spacer()
                 }
                 AskField(placeholder: "Ask about this page…", text: $question) {
@@ -132,80 +218,188 @@ private struct JamesPanel: View {
                     RunView(run: run)
                         .transition(.rise(theme.rise))
                 }
-                if let notice = research.notice {
-                    Text(notice)
-                        .font(.system(size: 11.5))
-                        .foregroundStyle(theme.inkSecondary(scheme))
-                }
-
                 Rectangle().fill(theme.edge(scheme)).frame(height: 0.5)
-
-                HStack {
-                    SectionLabel(text: "Sources · \(research.sources.count)")
-                    Spacer()
-                    if !research.sources.isEmpty {
-                        Button("Clear") { withAnimation(theme.spring) { research.clearSources() } }
-                            .buttonStyle(.plain)
-                            .font(.system(size: 11, weight: .medium))
-                            .foregroundStyle(theme.inkTertiary(scheme))
-                    }
-                }
-                if research.sources.isEmpty {
-                    Text("Add pages you trust. James writes only from these, and cites each one.")
-                        .font(.system(size: 12))
+                VStack(alignment: .leading, spacing: 6) {
+                    SectionLabel(text: "Look this up")
+                    Text("Ask anything and James searches the web, reads the top pages and answers citing them. From any other app, select words and choose Services › Look Up with James.")
+                        .font(.system(size: 11.5))
                         .foregroundStyle(theme.inkTertiary(scheme))
                         .fixedSize(horizontal: false, vertical: true)
+                    LookUpField()
                 }
-                ForEach(Array(research.sources.enumerated()), id: \.element.id) { index, source in
-                    HStack(alignment: .top, spacing: 8) {
-                        Text("\(index + 1)")
-                            .font(.system(size: 11, weight: .semibold).monospacedDigit())
-                            .foregroundStyle(theme.inkTertiary(scheme))
-                            .frame(width: 14, alignment: .trailing)
-                        VStack(alignment: .leading, spacing: 1) {
-                            Button(source.title) { research.open(source.url) }
-                                .buttonStyle(.plain)
-                                .font(.system(size: 12, weight: .medium))
-                                .foregroundStyle(theme.ink(scheme))
-                                .lineLimit(2)
-                            Text(URL(string: source.url)?.host() ?? source.url)
-                                .font(.system(size: 10.5))
-                                .foregroundStyle(theme.inkTertiary(scheme))
-                                .lineLimit(1)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .animation(theme.spring, value: research.pageRun?.id)
+        }
+        .scrollContentBackground(.hidden)
+    }
+}
+
+struct LookUpField: View {
+    @EnvironmentObject private var research: ResearchModel
+    @State private var text = ""
+
+    var body: some View {
+        AskField(placeholder: "Look this up on the web…", text: $text) {
+            research.lookUp(text)
+            text = ""
+        }
+    }
+}
+
+private struct SourcesTab: View {
+    @EnvironmentObject private var theme: Theme
+    @EnvironmentObject private var research: ResearchModel
+    @Environment(\.colorScheme) private var scheme
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Menu {
+                    ForEach(CitationStyle.allCases) { style in
+                        Button {
+                            research.style = style
+                        } label: {
+                            if style == research.style { Label(style.title, systemImage: "checkmark") } else { Text(style.title) }
                         }
-                        Spacer(minLength: 4)
-                        Button { withAnimation(theme.spring) { research.remove(source) } } label: {
-                            Image(systemName: "xmark").font(.system(size: 9, weight: .bold))
-                        }
-                        .buttonStyle(.plain)
-                        .foregroundStyle(theme.inkTertiary(scheme))
-                        .help("Remove source")
                     }
-                    .entrance(index)
+                } label: {
+                    Label(research.style.title, systemImage: "text.quote")
                 }
+                .menuStyle(.button)
+                .buttonStyle(.borderless)
+                .fixedSize()
+                .foregroundStyle(theme.ink(scheme))
+                .help("The citation style for your references, documents and decks")
+                Spacer()
+                Menu {
+                    Button("Copy all as a reference list") { research.copyBibliography() }
+                        .disabled(research.library.isEmpty)
+                    Button("Add a source by hand…") {
+                        research.editing = CitationSource(title: "", kind: .book)
+                    }
+                    Divider()
+                    Button("Remove all sources", role: .destructive) { withAnimation(theme.spring) { research.clearSources() } }
+                        .disabled(research.library.isEmpty)
+                } label: {
+                    Image(systemName: "ellipsis.circle")
+                }
+                .menuStyle(.button)
+                .buttonStyle(.borderless)
+                .menuIndicator(.hidden)
+                .fixedSize()
+                .foregroundStyle(theme.inkSecondary(scheme))
+            }
+            if research.library.isEmpty {
+                Text("Add pages you trust. James cites them in your style, in Write and in Decks, and writes reports only from them.")
+                    .font(.system(size: 12))
+                    .foregroundStyle(theme.inkTertiary(scheme))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            ScrollView {
+                VStack(alignment: .leading, spacing: 12) {
+                    ForEach(Array(research.library.enumerated()), id: \.element.id) { index, source in
+                        SourceRow(source: source)
+                            .entrance(index)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .animation(theme.spring, value: research.library.count)
+            }
+            .scrollContentBackground(.hidden)
+        }
+    }
+}
 
-                Rectangle().fill(theme.edge(scheme)).frame(height: 0.5)
+private struct SourceRow: View {
+    @EnvironmentObject private var theme: Theme
+    @EnvironmentObject private var research: ResearchModel
+    @Environment(\.colorScheme) private var scheme
+    var source: CitationSource
 
-                SectionLabel(text: "Report")
+    var body: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Image(systemName: source.kind.symbol)
+                    .font(.system(size: 10.5))
+                    .foregroundStyle(theme.inkTertiary(scheme))
+                    .frame(width: 14)
+                Text(research.citeText(source))
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(theme.ink(scheme))
+                    .lineLimit(1)
+                Spacer(minLength: 4)
+                if source.authors.isEmpty || source.published == nil {
+                    Image(systemName: "exclamationmark.circle")
+                        .font(.system(size: 10.5))
+                        .foregroundStyle(theme.inkTertiary(scheme))
+                        .help(source.authors.isEmpty ? "No author: add one if the page names one" : "No date: add one if you know it")
+                }
+                Menu {
+                    Button("Edit…") { research.editing = source }
+                    Button("Copy reference") { research.copyReference(source) }
+                    if !source.url.isEmpty {
+                        Button("Open") { research.open(source.url) }
+                    }
+                    Divider()
+                    Button("Remove", role: .destructive) { withAnimation(theme.spring) { research.remove(source) } }
+                } label: {
+                    Image(systemName: "ellipsis")
+                }
+                .menuStyle(.button)
+                .buttonStyle(.borderless)
+                .menuIndicator(.hidden)
+                .fixedSize()
+                .foregroundStyle(theme.inkTertiary(scheme))
+            }
+            Text(Self.styled(research.reference(source)))
+                .font(.system(size: 11.5))
+                .foregroundStyle(theme.inkSecondary(scheme))
+                .lineSpacing(1.5)
+                .textSelection(.enabled)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.leading, 20)
+        }
+        .contentShape(Rectangle())
+        .onTapGesture(count: 2) { research.editing = source }
+    }
+
+    /// The reference's *italics* shown as italics.
+    static func styled(_ markdown: String) -> AttributedString {
+        (try? AttributedString(markdown: markdown, options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace))) ?? AttributedString(markdown)
+    }
+}
+
+private struct ReportTab: View {
+    @EnvironmentObject private var theme: Theme
+    @EnvironmentObject private var research: ResearchModel
+    @EnvironmentObject private var model: AppModel
+    @Environment(\.colorScheme) private var scheme
+    @State private var reportQuestion = ""
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("James answers from your \(research.library.count) \(research.library.count == 1 ? "source" : "sources") only, and cites each claim. In Write the citations follow \(research.style.title).")
+                    .font(.system(size: 12))
+                    .foregroundStyle(theme.inkTertiary(scheme))
+                    .fixedSize(horizontal: false, vertical: true)
                 AskField(placeholder: "What do you want to know?", text: $reportQuestion) {
                     research.writeReport(reportQuestion)
                 }
                 if let run = research.reportRun {
-                    ReportView(run: run)
+                    ReportRunView(run: run)
                         .transition(.rise(theme.rise))
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .animation(theme.spring, value: research.sources.count)
-            .animation(theme.spring, value: research.pageRun?.id)
             .animation(theme.spring, value: research.reportRun?.id)
         }
         .scrollContentBackground(.hidden)
     }
 }
 
-private struct ReportView: View {
-    @EnvironmentObject private var theme: Theme
+private struct ReportRunView: View {
     @EnvironmentObject private var research: ResearchModel
     @EnvironmentObject private var model: AppModel
     @ObservedObject var run: BrainRun

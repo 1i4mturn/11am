@@ -52,6 +52,11 @@ struct RootView: View {
             .ignoresSafeArea(.container, edges: .top)
         }
         .background(WindowConfigurator())
+        // elevenam://clip and elevenam://lookup from the browser button: handled in this window, not a new one.
+        .onOpenURL { url in
+            if let link = ClipLink.parse(url) { model.research.handle(link) }
+        }
+        .handlesExternalEvents(preferring: ["*"], allowing: ["*"])
         .preferredColorScheme(theme.values.appearance.colorScheme)
         .animation(theme.spring, value: model.showsPane)
     }

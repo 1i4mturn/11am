@@ -205,12 +205,14 @@ enum DeckLayoutEngine {
         case .bullets:
             text(content.title, style(theme, 72, heading: true), CanvasRect(x: m, y: 110, width: w - m * 2, height: 180), "title")
             text(bulletText(content.bullets), style(theme, 44, heading: false, lineHeight: 1.45), CanvasRect(x: m, y: 330, width: w - m * 2, height: h - 330 - 140), "body")
+            text(content.caption, style(theme, 26, heading: false, color: theme.ink.withAlpha(0.55)), CanvasRect(x: m, y: h - 104, width: w - m * 2, height: 52), "caption")
         case .twoColumns:
             text(content.title, style(theme, 72, heading: true), CanvasRect(x: m, y: 110, width: w - m * 2, height: 180), "title")
             let column = (w - m * 2 - 100) / 2
             text(bulletText(content.bullets), style(theme, 38, heading: false, lineHeight: 1.45), CanvasRect(x: m, y: 340, width: column, height: h - 480), "body")
             layers.append(.shapeLayer(.rectangle, frame: CanvasRect(x: m + column + 48, y: 340, width: 4, height: h - 520), fill: .solid(theme.soft), role: "divider"))
             text(bulletText(content.secondary), style(theme, 38, heading: false, lineHeight: 1.45), CanvasRect(x: m + column + 100, y: 340, width: column, height: h - 480), "body2")
+            text(content.caption, style(theme, 26, heading: false, color: theme.ink.withAlpha(0.55)), CanvasRect(x: m, y: h - 104, width: w - m * 2, height: 52), "caption")
         case .image:
             var picture = CanvasLayer(name: "Picture", content: .image(content.image ?? "", .fill), frame: CanvasRect(x: w * 0.5, y: 0, width: w * 0.5, height: h), role: "photo")
             if content.image == nil { picture.content = .shape(.rectangle); picture.fill = .solid(theme.soft) }
@@ -235,7 +237,8 @@ enum DeckLayoutEngine {
             text(content.caption, style(theme, 28, heading: false, color: theme.ink.withAlpha(0.6)), CanvasRect(x: m, y: h - 120, width: w - m * 2, height: 60), "caption")
         case .table:
             text(content.title, style(theme, 64, heading: true), CanvasRect(x: m, y: 100, width: w - m * 2, height: 160), "title")
-            layers += table(content.table, theme, in: CanvasRect(x: m, y: 310, width: w - m * 2, height: h - 310 - 120))
+            layers += table(content.table, theme, in: CanvasRect(x: m, y: 310, width: w - m * 2, height: h - 310 - 130))
+            text(content.caption, style(theme, 26, heading: false, color: theme.ink.withAlpha(0.55)), CanvasRect(x: m, y: h - 104, width: w - m * 2, height: 52), "caption")
         case .team:
             text(content.title, style(theme, 64, heading: true), CanvasRect(x: m, y: 100, width: w - m * 2, height: 160), "title")
             let people = Array(content.bullets.prefix(4))

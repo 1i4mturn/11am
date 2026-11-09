@@ -255,6 +255,13 @@ final class AppModel: ObservableObject {
             business?.noteSent(to: to, subject: subject, body: body)
             ledger?.noteSent(subject: subject)
         }
+        // James clips into Bolton's notes, cites in William's documents and Conner's decks.
+        research.notes = self.notes
+        research.decks = self.decks
+        write.formatCitations = { [weak research = self.research] text in
+            guard let research, !Citations.markers(in: text).isEmpty else { return text }
+            return Citations.format(text, sources: research.library, style: research.style).text
+        }
         // George's bills to pay go on Leo's list; Marc sends the reminders for late invoices.
         ledger.mail = mail
         ledger.tasks = tasks
@@ -287,6 +294,9 @@ final class AppModel: ObservableObject {
         tasks.onOpenOrigin = { [weak self] origin in self?.open(origin) }
         business.onOpen = { [weak self] section in self?.go(to: section) }
         ledger.onOpen = { [weak self] section in self?.go(to: section) }
+        research.onOpen = { [weak self] section in self?.go(to: section) }
+        research.onShowPane = { [weak self] in self?.showsPane = true }
+        research.onLog = { [weak self] text in self?.log("jm", text) }
         // When someone you were waiting on replies, their follow-up comes off the list.
         mail.$messages
             .sink { [weak tasks] messages in tasks?.checkReplies(messages.map { (from: $0.fromAddress, date: $0.date) }) }

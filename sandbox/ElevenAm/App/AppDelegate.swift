@@ -8,6 +8,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var askHotKey: HotKey?
     private var noteHotKey: HotKey?
     private var taskHotKey: HotKey?
+    private var services: ResearchServices?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         FontRegistry.registerBundledFonts()
@@ -28,6 +29,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         taskHotKey = HotKey(keyCode: UInt32(kVK_ANSI_T), modifiers: UInt32(optionKey | shiftKey)) { [weak self] in
             self?.quickTask()
         }
+
+        // Services › Look Up with James and Clip to 11am Notes, from any app.
+        let services = ResearchServices(research: model.research)
+        NSApp.servicesProvider = services
+        NSUpdateDynamicServices()
+        self.services = services
 
         model.start()
         applyLaunchArguments(notch: notch)
@@ -251,6 +258,30 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         if arguments.bool(forKey: "notesComments") {
             model.notes.showsComments = true
+        }
+        // -researchSample YES fills the sources and opens a sample article; -researchTab sources picks James's tab;
+        // -researchLookUp YES shows a finished look-up in the agent pane; -researchDocument YES opens a cited document in Write;
+        // -researchEditor YES edits the first source; -researchStyle ieee picks the style; -decksSources YES adds a sources slide.
+        if let style = arguments.string(forKey: "researchStyle").flatMap(CitationStyle.init(rawValue:)) {
+            model.research.style = style
+        }
+        if arguments.bool(forKey: "researchSample") {
+            model.research.loadSample()
+        }
+        if let tab = arguments.string(forKey: "researchTab").flatMap(JamesTab.init(rawValue:)) {
+            model.research.tab = tab
+        }
+        if arguments.bool(forKey: "researchLookUp") {
+            model.research.showSampleLookUp()
+        }
+        if arguments.bool(forKey: "researchDocument") {
+            model.research.writeSampleDocument()
+        }
+        if arguments.bool(forKey: "researchEditor") {
+            model.research.editing = model.research.library.first
+        }
+        if arguments.bool(forKey: "decksSources") {
+            model.research.addSampleSourcesSlide()
         }
         if arguments.bool(forKey: "activate") {
             NSApp.activate()

@@ -250,6 +250,7 @@ struct OutlineList: View {
 private struct Page: View {
     @EnvironmentObject private var theme: Theme
     @EnvironmentObject private var write: WriteModel
+    @EnvironmentObject private var research: ResearchModel
     @EnvironmentObject private var brain: Brain
     @Environment(\.colorScheme) private var scheme
     var document: WriteDocument
@@ -268,6 +269,7 @@ private struct Page: View {
                 ToolButton(symbol: "magnifyingglass", help: "Find and replace · ⌘F") { editor.showFind() }
                 ToolButton(symbol: "scope", help: "Focus: dim everything but this paragraph", on: focusMode) { focusMode.toggle() }
                 ToolButton(symbol: "text.aligncenter", help: "Typewriter: keep the line you're on in the middle", on: typewriter) { typewriter.toggle() }
+                CiteButton(document: document, editor: editor)
                 ToolButton(symbol: "clock.arrow.circlepath", help: "Versions") { showingVersions = true }
                     .popover(isPresented: $showingVersions, arrowEdge: .bottom) {
                         VersionsView(documentID: document.id)
@@ -296,7 +298,8 @@ private struct Page: View {
                     focusMode: focusMode,
                     typewriter: typewriter,
                     baseURL: write.folder,
-                    onAttach: { [document] data, name in write.attach(data, named: name, to: document.id) }
+                    onAttach: { [document] data, name in write.attach(data, named: name, to: document.id) },
+                    onCite: { keys in research.openSource(keys: keys) }
                 )
             }
             .padding(.leading, 30)

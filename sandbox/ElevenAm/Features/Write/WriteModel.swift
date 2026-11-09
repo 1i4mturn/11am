@@ -113,6 +113,8 @@ final class WriteModel: ObservableObject {
     @Published var selectedID: UUID?
     @Published private(set) var suggestion: WriteSuggestion?
     @Published var notice: String?
+    /// James brings citations and the reference list up to date before a document leaves 11am.
+    var formatCitations: ((String) -> String)?
     @Published var pageSetup: PageSetup { didSet { savePageSetup() } }
 
     static let williamSystem = """
@@ -352,21 +354,23 @@ final class WriteModel: ObservableObject {
     }
 
     func data(for kind: WriteExport, document: WriteDocument) -> Data {
+        // Citations go out as the words they show, with the reference list brought up to date.
+        let text = Citations.plain(formatCitations?(document.text) ?? document.text)
         switch kind {
         case .pdf:
-            return DocPDF.data(document.text, title: document.title, setup: pageSetup, baseURL: folder)
+            return DocPDF.data(text, title: document.title, setup: pageSetup, baseURL: folder)
         case .docx:
             let base = folder
-            return DocxWriter.data(markdown: document.text, title: document.title, setup: pageSetup) { source in
+            return DocxWriter.data(markdown: text, title: document.title, setup: pageSetup) { source in
                 let path = source.removingPercentEncoding ?? source
                 return try? Data(contentsOf: path.hasPrefix("/") ? URL(fileURLWithPath: path) : base.appendingPathComponent(path))
             }
         case .markdown:
-            return Data(document.text.utf8)
+            return Data(text.utf8)
         case .html:
-            return Data(MarkdownHTML.document(document.text, title: document.title).utf8)
+            return Data(MarkdownHTML.document(text, title: document.title).utf8)
         case .text:
-            return Data(MarkdownPlain.text(document.text).utf8)
+            return Data(MarkdownPlain.text(text).utf8)
         }
     }
 
@@ -388,7 +392,7 @@ final class WriteModel: ObservableObject {
 
     func copyRichText() {
         guard let document = selected else { return }
-        DocExport.copyRichText(document.text, baseURL: folder)
+        DocExport.copyRichText(Citations.plain(formatCitations?(document.text) ?? document.text), baseURL: folder)
         notice = "Copied with its formatting. Paste into Mail, Google Docs or Word."
     }
 

@@ -8,7 +8,7 @@ options:
 settings:
   base:
     SWIFT_VERSION: "5.0"
-    MARKETING_VERSION: "0.22.0"
+    MARKETING_VERSION: "0.23.0"
     CURRENT_PROJECT_VERSION: "1"
 targets:
   ElevenAm:
@@ -41,6 +41,29 @@ targets:
         NSAppTransportSecurity:
           NSAllowsLocalNetworking: true
           NSAllowsArbitraryLoadsInWebContent: true
+        CFBundleURLTypes:
+          - CFBundleURLName: au.elevenam.sandbox.clip
+            CFBundleURLSchemes:
+              - elevenam
+        NSServices:
+          - NSMenuItem:
+              default: Look Up with James
+            NSMessage: lookUp
+            NSPortName: ElevenAm
+            NSSendTypes:
+              - NSStringPboardType
+              - public.utf8-plain-text
+            NSRequiredContext: {}
+          - NSMenuItem:
+              default: Clip to 11am Notes
+            NSMessage: clipToNotes
+            NSPortName: ElevenAm
+            NSSendTypes:
+              - NSStringPboardType
+              - public.utf8-plain-text
+              - NSURLPboardType
+              - public.url
+            NSRequiredContext: {}
     settings:
       base:
         PRODUCT_NAME: ElevenAm

@@ -80,6 +80,8 @@ struct DocEditor: NSViewRepresentable {
     var onAttach: ((Data, String) -> String?)?
     var onWikiLink: ((String) -> Void)?
     var onTag: ((String) -> Void)?
+    /// A citation was clicked: its source keys, comma-separated.
+    var onCite: ((String) -> Void)?
 
     func makeCoordinator() -> Coordinator { Coordinator(self) }
 
@@ -206,6 +208,9 @@ struct DocEditor: NSViewRepresentable {
                 return true
             case "elevenam-tag":
                 parent.onTag?(value)
+                return true
+            case "cite":
+                parent.onCite?(value)
                 return true
             default:
                 NSWorkspace.shared.open(url)

@@ -237,6 +237,15 @@ final class DecksModel: ObservableObject {
         showSlide(index)
     }
 
+    /// A slide another agent wrote (James's sources slide), after the current one or at the end.
+    func insertSlide(_ layout: SlideLayout, content: SlideContent, notes: String = "", atEnd: Bool = false) {
+        guard let theme = deck?.theme else { return }
+        let slide = Slide(layout: layout, content: content, notes: notes, theme: theme)
+        let index = atEnd ? (deck?.slides.count ?? 0) : min(slideIndex + 1, deck?.slides.count ?? 0)
+        change { $0.slides.insert(slide, at: index) }
+        showSlide(index)
+    }
+
     func duplicateSlide(_ index: Int) {
         guard let deck, deck.slides.indices.contains(index) else { return }
         var copy = deck.slides[index]

@@ -6,6 +6,7 @@ struct AgentPane: View {
     @EnvironmentObject private var theme: Theme
     @EnvironmentObject private var brain: Brain
     @EnvironmentObject private var files: FileIndex
+    @EnvironmentObject private var research: ResearchModel
     @Environment(\.colorScheme) private var scheme
 
     @State private var askText = ""
@@ -27,10 +28,16 @@ struct AgentPane: View {
                 }
             }
 
-            AskField(placeholder: "Ask \(agent.name.lowercased())…", text: $askText) {
+            // In Research, the pane looks things up on the web; everywhere else it asks the team.
+            AskField(placeholder: model.section == .research ? "Look this up on the web…" : "Ask \(agent.name.lowercased())…", text: $askText) {
                 let text = askText.trimmingCharacters(in: .whitespacesAndNewlines)
                 guard !text.isEmpty else { return }
-                run = brain.run(AskRouter.request(for: text, files: files))
+                if model.section == .research {
+                    research.lookUp(text)
+                    askText = ""
+                } else {
+                    run = brain.run(AskRouter.request(for: text, files: files))
+                }
             }
 
             if let run {
@@ -41,6 +48,26 @@ struct AgentPane: View {
                 .frame(maxHeight: 260)
             }
 
+            // A look-up takes the pane until it's closed; the team's activity comes back after.
+            if let lookup = research.lookup {
+                ScrollView {
+                    LookUpCard(lookup: lookup)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .scrollContentBackground(.hidden)
+                .transition(.rise(theme.rise))
+            } else {
+                activity
+            }
+
+        }
+        .padding(18)
+        .animation(theme.spring, value: model.section)
+        .animation(theme.spring, value: research.lookup?.id)
+    }
+
+    private var activity: some View {
+        VStack(alignment: .leading, spacing: 14) {
             Divider().opacity(0.5)
 
             SectionLabel(text: "Activity")
@@ -72,8 +99,6 @@ struct AgentPane: View {
                 .animation(theme.spring, value: model.activity.first?.id)
             }
         }
-        .padding(18)
-        .animation(theme.spring, value: model.section)
     }
 
     private var agent: (monogram: String, name: String, role: String) {

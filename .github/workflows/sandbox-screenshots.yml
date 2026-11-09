@@ -136,6 +136,15 @@ jobs:
           capture files-browse-light -startSection files -forceAppearance light -filesSample YES -filesSelect "Lake Eildon.jpg"
           capture files-browse-dark -startSection files -forceAppearance dark -filesSample YES -filesSelect "Bells Beach.heic"
           capture files-edit-light -startSection files -forceAppearance light -filesSample YES -filesSelect "Fitzroy laneway.jpg" -filesEdit YES
+          capture research-page-light -startSection research -forceAppearance light -researchSample YES -researchTab page -researchStyle apa
+          capture research-sources-light -startSection research -forceAppearance light -researchSample YES -researchTab sources -researchStyle apa
+          capture research-sources-dark -startSection research -forceAppearance dark -researchSample YES -researchTab sources -researchStyle mla
+          capture research-editor-light -startSection research -forceAppearance light -researchSample YES -researchTab sources -researchEditor YES -researchStyle apa
+          capture research-lookup-light -startSection research -forceAppearance light -researchSample YES -researchLookUp YES -researchStyle apa
+          capture research-lookup-dark -startSection today -forceAppearance dark -researchLookUp YES -researchStyle apa
+          capture write-cited-light -startSection write -forceAppearance light -researchDocument YES -researchStyle apa
+          capture write-cited-ieee-dark -startSection write -forceAppearance dark -researchDocument YES -researchStyle ieee
+          capture decks-sources-light -startSection decks -forceAppearance light -decksSources YES -researchStyle apa
           capture design-light -startSection design -forceAppearance light
           capture design-select-dark -startSection design -forceAppearance dark -designSelect 3
           capture design-event-light -startSection design -forceAppearance light -designName Founder -designSelect 3

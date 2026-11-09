@@ -28,6 +28,8 @@ struct DecksView: View {
                     .buttonStyle(.borderless)
                     .fixedSize()
                     .foregroundStyle(theme.inkSecondary(scheme))
+                    DeckSourcesMenu()
+                        .disabled(decks.deck == nil)
                     Menu {
                         ForEach(DecksModel.Export.allCases) { kind in
                             Button(kind.title + "…") { decks.export(kind) }
