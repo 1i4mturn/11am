@@ -1,0 +1,2 @@
+4064188cc4f858a47e5ec3f7eca8c73110acce2780648afe999913f2b1b8cad2  dist/11am-sandbox-0.28.0.dmg
+4064188cc4f858a47e5ec3f7eca8c73110acce2780648afe999913f2b1b8cad2  dist/11am-sandbox-latest.dmg
