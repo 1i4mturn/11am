@@ -185,6 +185,8 @@ struct CanvasLayer: Codable, Identifiable, Hashable, Sendable {
     /// What the layer is for in a template or slide layout ("title", "body", "photo", "logo", "background"), so
     /// layouts, themes and magic resize know how to treat it.
     var role: String?
+    /// On a chart's frame layer: what it shows and, when linked, where in Sheets the numbers come from.
+    var chart: CanvasChart?
 
     var isText: Bool { if case .text = content { return true } else { return false } }
 
@@ -592,4 +594,35 @@ struct CanvasBrand: Codable, Hashable, Sendable {
 
     /// Ink that reads on a background.
     func ink(on background: CanvasColor) -> CanvasColor { background.luminance > 0.4 ? primary : paper }
+}
+
+// MARK: Charts on a design
+
+enum CanvasChartKind: String, Codable, CaseIterable, Identifiable, Sendable {
+    case columns, bars
+
+    var id: String { rawValue }
+    var title: String { self == .columns ? "Columns" : "Bars" }
+}
+
+/// A chart drawn as ordinary layers (so it exports anywhere), remembered on its frame layer so it can be drawn again.
+struct CanvasChart: Codable, Hashable, Sendable {
+    var kind: CanvasChartKind
+    var points: [ChartPoint]
+    var link: ChartLink?
+    var color: CanvasColor
+    var accent: CanvasColor
+    var ink: CanvasColor
+    var font: String
+
+    init(kind: CanvasChartKind, points: [ChartPoint], link: ChartLink? = nil, color: CanvasColor = .black, accent: CanvasColor = .black,
+         ink: CanvasColor = .black, font: String = "System") {
+        self.kind = kind
+        self.points = points
+        self.link = link
+        self.color = color
+        self.accent = accent
+        self.ink = ink
+        self.font = font
+    }
 }

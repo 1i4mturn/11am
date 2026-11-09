@@ -242,16 +242,19 @@ struct WilliamJobCard: View {
             if job.kind == .summary, let run = job.run {
                 ScrollView { RunView(run: run).frame(maxWidth: .infinity, alignment: .leading) }
                     .frame(maxHeight: 160)
+                    .fixedSize(horizontal: false, vertical: true)
                 SummaryActions(job: job, run: run)
             } else if let run = job.run, !job.finished {
                 ScrollView { RunView(run: run).frame(maxWidth: .infinity, alignment: .leading) }
                     .frame(maxHeight: 160)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
         .padding(14)
         .frame(maxWidth: 560)
-        .vellum(level: 1, radius: max(theme.radius - 2, 10))
-        .shadow(color: .black.opacity(0.12), radius: 16, y: 6)
+        .background(RoundedRectangle(cornerRadius: max(theme.radius - 2, 10), style: .continuous).fill(theme.paper(scheme)))
+        .overlay(RoundedRectangle(cornerRadius: max(theme.radius - 2, 10), style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5))
+        .shadow(color: .black.opacity(0.14), radius: 16, y: 6)
     }
 }
 

@@ -2,7 +2,7 @@ import Foundation
 
 /// Starting points for designs, laid out for any size from the brand kit.
 enum CanvasTemplate: String, CaseIterable, Identifiable, Sendable {
-    case blank, announcement, quote, bigNumber, event, hiring, launch, photo
+    case blank, announcement, quote, bigNumber, event, hiring, launch, photo, invitation, certificate, menu, resume
 
     var id: String { rawValue }
 
@@ -16,6 +16,10 @@ enum CanvasTemplate: String, CaseIterable, Identifiable, Sendable {
         case .hiring: return "Hiring"
         case .launch: return "Launch"
         case .photo: return "Photo and caption"
+        case .invitation: return "Invitation"
+        case .certificate: return "Certificate"
+        case .menu: return "Menu"
+        case .resume: return "Résumé"
         }
     }
 
@@ -130,6 +134,83 @@ enum CanvasTemplate: String, CaseIterable, Identifiable, Sendable {
             text(copy.headline, style(unit * 0.07, .bold, brand.primary, lineHeight: 1.06), CanvasRect(x: box.x, y: box.y, width: box.width, height: box.height * 0.62), role: "title")
             text(copy.detail, style(unit * 0.036, .regular, brand.primary.withAlpha(0.7), heading: false, lineHeight: 1.3),
                  CanvasRect(x: box.x, y: box.y + box.height * 0.66, width: box.width, height: box.height * 0.34), role: "body")
+        case .invitation:
+            background = .solid(brand.paper)
+            let ink = brand.primary
+            var border = CanvasLayer.shapeLayer(.rectangle, frame: CanvasRect(x: margin * 0.5, y: margin * 0.5, width: w - margin, height: h - margin), fill: .none, role: "border")
+            border.stroke = brand.accent
+            border.strokeWidth = max(2, unit * 0.004)
+            layers.append(border)
+            text("YOU'RE INVITED", style(unit * 0.034, .bold, brand.accent, heading: false, alignment: .center), CanvasRect(x: margin, y: h * 0.16, width: w - margin * 2, height: unit * 0.05), role: "kicker")
+            text("The 11am launch party", style(unit * 0.1, .bold, ink, alignment: .center, lineHeight: 1.04), CanvasRect(x: margin, y: h * 0.24, width: w - margin * 2, height: h * 0.26), role: "title")
+            layers.append(.shapeLayer(.rectangle, frame: CanvasRect(x: w / 2 - unit * 0.06, y: h * 0.53, width: unit * 0.12, height: max(2, unit * 0.004)), fill: .solid(brand.accent), role: "accent"))
+            text("Friday 20 March, 6 pm\nFitzroy Cowork, 12 Smith Street", style(unit * 0.042, .medium, ink.withAlpha(0.8), heading: false, alignment: .center, lineHeight: 1.4),
+                 CanvasRect(x: margin, y: h * 0.57, width: w - margin * 2, height: unit * 0.14), role: "body")
+            text("RSVP by 13 March · hello@11am.app", style(unit * 0.03, .regular, ink.withAlpha(0.6), heading: false, alignment: .center),
+                 CanvasRect(x: margin, y: h - margin * 1.6 - unit * 0.05, width: w - margin * 2, height: unit * 0.05), role: "footer")
+        case .certificate:
+            background = .solid(brand.paper)
+            let ink = brand.primary
+            for inset in [0.4, 0.62] {
+                var border = CanvasLayer.shapeLayer(.rectangle, frame: CanvasRect(x: margin * inset, y: margin * inset, width: w - margin * inset * 2, height: h - margin * inset * 2), fill: .none, role: "border")
+                border.stroke = inset < 0.5 ? ink : brand.accent
+                border.strokeWidth = max(1.5, unit * (inset < 0.5 ? 0.006 : 0.002))
+                layers.append(border)
+            }
+            text("CERTIFICATE OF COMPLETION", style(unit * 0.04, .bold, brand.accent, heading: false, alignment: .center), CanvasRect(x: margin, y: h * 0.18, width: w - margin * 2, height: unit * 0.06), role: "kicker")
+            text("This is to certify that", style(unit * 0.036, .regular, ink.withAlpha(0.7), heading: false, alignment: .center), CanvasRect(x: margin, y: h * 0.3, width: w - margin * 2, height: unit * 0.05), role: "body")
+            text("Priya Nair", style(unit * 0.11, .bold, ink, alignment: .center, lineHeight: 1), CanvasRect(x: margin, y: h * 0.37, width: w - margin * 2, height: unit * 0.14), role: "title")
+            text("has completed Bookkeeping for Small Business, 12 hours", style(unit * 0.036, .regular, ink.withAlpha(0.75), heading: false, alignment: .center),
+                 CanvasRect(x: margin * 1.5, y: h * 0.56, width: w - margin * 3, height: unit * 0.1), role: "detail")
+            for (index, label) in ["Date", "Signed"].enumerated() {
+                let x = index == 0 ? margin * 1.5 : w / 2 + margin * 0.5
+                let lineWidth = w / 2 - margin * 2
+                layers.append(.shapeLayer(.rectangle, frame: CanvasRect(x: x, y: h * 0.8, width: lineWidth, height: max(1.5, unit * 0.002)), fill: .solid(ink.withAlpha(0.6)), role: "line"))
+                text(label, style(unit * 0.026, .medium, ink.withAlpha(0.6), heading: false, alignment: .center), CanvasRect(x: x, y: h * 0.8 + unit * 0.015, width: lineWidth, height: unit * 0.04), role: "label")
+            }
+        case .menu:
+            background = .solid(brand.paper)
+            let ink = brand.primary
+            text("Lunch", style(unit * 0.12, .bold, ink, alignment: .center, lineHeight: 1), CanvasRect(x: margin, y: margin, width: w - margin * 2, height: unit * 0.14), role: "title")
+            text("Served noon to three", style(unit * 0.03, .medium, brand.accent, heading: false, alignment: .center), CanvasRect(x: margin, y: margin + unit * 0.15, width: w - margin * 2, height: unit * 0.045), role: "kicker")
+            let sections: [(String, String)] = [
+                ("Small", "Sourdough, cultured butter · 9\nCharred broccolini, almonds · 14\nKingfish crudo, finger lime · 22"),
+                ("Large", "Pumpkin risotto, sage · 28\nMarket fish, brown butter · 36\nSlow lamb shoulder, salsa verde · 38"),
+                ("Sweet", "Burnt honey custard · 14\nDark chocolate, olive oil · 15"),
+            ]
+            let columns = wide ? 3 : 1
+            let top = margin + unit * 0.26
+            let columnWidth = (w - margin * 2 - Double(columns - 1) * margin) / Double(columns)
+            let blockHeight = wide ? h - top - margin : (h - top - margin) / Double(sections.count)
+            for (index, section) in sections.enumerated() {
+                let x = margin + Double(index % columns) * (columnWidth + margin)
+                let y = top + (wide ? 0 : Double(index) * blockHeight)
+                text(section.0.uppercased(), style(unit * 0.034, .bold, brand.accent, heading: false, alignment: wide ? .left : .center),
+                     CanvasRect(x: x, y: y, width: columnWidth, height: unit * 0.05), role: "heading")
+                text(section.1, style(unit * 0.036, .regular, ink, heading: false, alignment: wide ? .left : .center, lineHeight: 1.5),
+                     CanvasRect(x: x, y: y + unit * 0.06, width: columnWidth, height: blockHeight - unit * 0.08), role: "body")
+            }
+        case .resume:
+            background = .solid(.white)
+            let ink = brand.primary
+            text("Sam Lee", style(unit * 0.08, .bold, ink, lineHeight: 1), CanvasRect(x: margin, y: margin, width: w - margin * 2, height: unit * 0.1), role: "title")
+            text("Product designer · Melbourne · sam@example.com · 0400 000 000", style(unit * 0.028, .medium, brand.accent, heading: false),
+                 CanvasRect(x: margin, y: margin + unit * 0.11, width: w - margin * 2, height: unit * 0.04), role: "kicker")
+            layers.append(.shapeLayer(.rectangle, frame: CanvasRect(x: margin, y: margin + unit * 0.17, width: w - margin * 2, height: max(1.5, unit * 0.002)), fill: .solid(ink.withAlpha(0.3)), role: "line"))
+            let blocks: [(String, String)] = [
+                ("Experience", "Lead designer, 11am · 2024 to now\nDesigned the Mac suite's look and its eleven agents' apps.\n\nProduct designer, Kestrel Labs · 2020 to 2024\nLed onboarding and billing for 40,000 small businesses."),
+                ("Skills", "Interaction and visual design · Prototyping · Research · Design systems · SwiftUI"),
+                ("Education", "Bachelor of Design, RMIT University · 2019"),
+            ]
+            var y = margin + unit * 0.21
+            let left = (w - margin * 2) * 0.24
+            for block in blocks {
+                let lines = Double(block.1.components(separatedBy: "\n").count)
+                let height = unit * 0.035 * 1.45 * max(1, lines) + unit * 0.02
+                text(block.0.uppercased(), style(unit * 0.026, .bold, brand.accent, heading: false), CanvasRect(x: margin, y: y, width: left - 12, height: unit * 0.04), role: "heading")
+                text(block.1, style(unit * 0.03, .regular, ink, heading: false, lineHeight: 1.45), CanvasRect(x: margin + left, y: y, width: w - margin * 2 - left, height: height), role: "body")
+                y += height + unit * 0.04
+            }
         }
         return CanvasDocument(name: "\(title) · \(preset.name)", size: size, background: background, layers: layers)
     }

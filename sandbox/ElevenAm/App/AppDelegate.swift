@@ -301,6 +301,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if arguments.bool(forKey: "writeSummary") {
             model.write.showSampleSummary()
         }
+        // -designCharts YES makes a report with a chart from Sheets and picture frames; -designTemplate certificate makes one on A4.
+        if arguments.bool(forKey: "designCharts") {
+            model.studio.makeChartSample()
+        }
+        if let name = arguments.string(forKey: "designTemplate"), let template = CanvasTemplate(rawValue: name) {
+            let landscape = template == .certificate
+            model.studio.create(template, preset: CanvasPreset(id: "a4", name: landscape ? "A4 landscape" : "A4 page",
+                                                               size: landscape ? CanvasSize(width: 1754, height: 1240) : CanvasSize(width: 1240, height: 1754), group: "Print"))
+        }
         // -decksLinked YES links the chart slide to the budget in Sheets; -decksRehearsal YES shows a sample rehearsal.
         if arguments.bool(forKey: "decksLinked") {
             model.decks.linkSampleChart()

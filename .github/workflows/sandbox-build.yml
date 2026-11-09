@@ -157,13 +157,27 @@ jobs:
           mkdir -p decktest
           cd decktest
           swiftc -O -o decktests \
-            ../ElevenAm/Features/Canvas/{CanvasKit,CanvasRender,DeckKit}.swift \
+            ../ElevenAm/Features/Canvas/{CanvasKit,CanvasRender,DeckKit,CanvasExtras}.swift \
             ../ElevenAm/Features/Decks/DeckLinks.swift \
             ../ElevenAm/Features/Sheets/{GridKit,GridFormula,GridEngine,GridEdit,GridFiles,GridRules}.swift \
             ../ElevenAm/Features/Documents/{DocumentKit,DocxWriter}.swift \
             ../ci/DeckTests/main.swift 2>&1 | grep -E "error|warning: unre" || true
           test -x decktests
           ./decktests
+
+      - name: Design tests (charts, frames, print sizes, templates)
+        working-directory: sandbox
+        run: |
+          mkdir -p designtest
+          cd designtest
+          swiftc -O -o designtests \
+            ../ElevenAm/Features/Canvas/{CanvasKit,CanvasRender,DeckKit,CanvasExtras,CanvasTemplates}.swift \
+            ../ElevenAm/Features/Decks/DeckLinks.swift \
+            ../ElevenAm/Features/Sheets/{GridKit,GridFormula,GridEngine,GridEdit,GridFiles,GridRules}.swift \
+            ../ElevenAm/Features/Documents/{DocumentKit,DocxWriter}.swift \
+            ../ci/DesignTests/main.swift 2>&1 | grep -E "error|warning: unre" || true
+          test -x designtests
+          ./designtests
 
       - name: Audio tests
         working-directory: sandbox

@@ -9,6 +9,7 @@ enum CanvasFonts {
 /// Add text, shapes, pictures and QR codes; undo; arrange.
 struct CanvasToolbar: View {
     @EnvironmentObject private var theme: Theme
+    @EnvironmentObject private var sheets: SheetsModel
     @Environment(\.colorScheme) private var scheme
     @ObservedObject var controller: CanvasController
     var brand: CanvasBrand
@@ -50,6 +51,55 @@ struct CanvasToolbar: View {
                 .fixedSize()
                 .padding(.horizontal, 4)
                 ToolButton(symbol: "photo", help: "Add a picture (or drop one on the canvas)", action: addPicture)
+                Menu {
+                    ForEach(PhotoGrid.allCases) { grid in
+                        Button(grid.title) { controller.addFrames(grid, fill: brand.soft) }
+                    }
+                } label: {
+                    Label("Frames", systemImage: "rectangle.split.2x2")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(theme.inkSecondary(scheme))
+                }
+                .menuStyle(.button)
+                .buttonStyle(.borderless)
+                .fixedSize()
+                .padding(.horizontal, 4)
+                .help("Picture frames: drop a picture on one to fill it")
+                Menu {
+                    if controller.selectedChart != nil {
+                        Section("This chart") {
+                            ForEach(CanvasChartKind.allCases) { kind in
+                                Button("Show as \(kind.title.lowercased())") { controller.redrawChart { $0.kind = kind } }
+                            }
+                            if controller.selectedChart?.link != nil {
+                                Button("Refresh from Sheets") { controller.refreshCharts { sheets.workbook(named: $0) } }
+                            }
+                        }
+                    }
+                    Section("From Sheets") {
+                        ForEach(sheets.entries) { entry in
+                            Menu(entry.name) {
+                                ForEach(sheets.workbook(named: entry.name)?.sheets.map(\.name) ?? [], id: \.self) { name in
+                                    Button(name) { addChart(workbook: entry.name, sheet: name) }
+                                }
+                            }
+                        }
+                    }
+                    Button("A sample chart") {
+                        controller.addChart(CanvasChart(kind: .columns, points: [ChartPoint(label: "Jul", value: 12), ChartPoint(label: "Aug", value: 19),
+                                                                                ChartPoint(label: "Sep", value: 31), ChartPoint(label: "Oct", value: 48)],
+                                                        color: brand.soft, accent: brand.accent, ink: brand.primary, font: brand.bodyFont))
+                    }
+                } label: {
+                    Label("Chart", systemImage: "chart.bar")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(theme.inkSecondary(scheme))
+                }
+                .menuStyle(.button)
+                .buttonStyle(.borderless)
+                .fixedSize()
+                .padding(.horizontal, 4)
+                .help("A chart from a sheet in George's Sheets; it stays linked")
                 ToolButton(symbol: "qrcode", help: "Add a QR code") { askingQR = true }
                     .popover(isPresented: $askingQR, arrowEdge: .bottom) {
                         VStack(alignment: .leading, spacing: 8) {
@@ -123,6 +173,14 @@ struct CanvasToolbar: View {
 
     private var divider: some View {
         Rectangle().fill(theme.edge(scheme)).frame(width: 1, height: 16).padding(.horizontal, 4)
+    }
+
+    private func addChart(workbook name: String, sheet: String) {
+        guard let book = sheets.workbook(named: name), let guess = DeckCharts.suggest(book, sheet: sheet) else { return }
+        let link = ChartLink(workbook: book.name, sheet: sheet, labels: guess.labels, values: guess.values, updated: Date())
+        guard let points = DeckCharts.points(link, in: book), !points.isEmpty else { return }
+        controller.addChart(CanvasChart(kind: points.count > 7 ? .bars : .columns, points: points, link: link,
+                                        color: brand.soft, accent: brand.accent, ink: brand.primary, font: brand.bodyFont))
     }
 
     private func addQR() {

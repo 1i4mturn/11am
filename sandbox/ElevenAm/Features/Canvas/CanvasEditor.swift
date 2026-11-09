@@ -178,6 +178,11 @@ final class CanvasController: ObservableObject {
     }
 
     func addImage(_ data: Data, at point: CGPoint? = nil) {
+        // Dropped on an empty picture frame: it fills the frame.
+        if let point, let frame = CanvasFrames.frame(at: Double(point.x), Double(point.y), in: document, hasImage: { [assets] in assets.image($0) != nil }) {
+            fillFrame(frame, with: data)
+            return
+        }
         let id = assets.add(data)
         guard let size = assets.size(id), size.width > 0, size.height > 0 else { return }
         let fit = min(document.size.width * 0.6 / size.width, document.size.height * 0.6 / size.height, 1)

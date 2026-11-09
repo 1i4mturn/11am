@@ -259,6 +259,7 @@ final class AppModel: ObservableObject {
         research.notes = self.notes
         research.decks = self.decks
         self.decks.sheets = self.sheets
+        self.studio.sheets = self.sheets
         // William finds your own material in Bolton's notes and files, and hands documents to Harris for cards.
         write.notes = self.notes
         write.files = files

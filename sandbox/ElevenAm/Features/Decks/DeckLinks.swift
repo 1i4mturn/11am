@@ -93,3 +93,24 @@ extension SlideDeck {
         return changed
     }
 }
+
+extension CanvasDocument {
+    /// Every linked chart on the design drawn again from Sheets. Returns how many changed.
+    @discardableResult
+    mutating func refreshCharts(from workbook: (String) -> Workbook?, now: Date = Date()) -> Int {
+        var changed = 0
+        for frame in chartFrames {
+            guard var chart = frame.chart, let link = chart.link, let book = workbook(link.workbook),
+                  let points = DeckCharts.points(link, in: book) else { continue }
+            chart.link?.updated = now
+            if points != chart.points {
+                chart.points = points
+                redrawChart(frame.id, chart: chart)
+                changed += 1
+            } else if let index = index(of: frame.id) {
+                layers[index].chart = chart
+            }
+        }
+        return changed
+    }
+}

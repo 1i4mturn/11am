@@ -22,6 +22,8 @@ final class DesignStudio: ObservableObject {
     @Published var notice: String?
     @Published var makeRun: BrainRun?
     @Published var tab: DesignView.DesignTab = .designs
+    /// Where linked charts get their numbers.
+    weak var sheets: SheetsModel?
 
     let root = JSONStore.folder.appendingPathComponent("Designs", isDirectory: true)
     let assets: CanvasAssetStore
@@ -117,6 +119,32 @@ final class DesignStudio: ObservableObject {
         guard let document = self.document(id) else { return }
         currentID = id
         controller.load(document)
+        // Charts linked to Sheets catch up with the numbers.
+        if let sheets, controller.refreshCharts(from: { sheets.workbook(named: $0) }) > 0 {
+            notice = "Charts brought up to date from Sheets."
+        }
+    }
+
+    /// For screenshots: a one-page report with a chart from the budget in Sheets and a grid of picture frames.
+    func makeChartSample() {
+        create(.blank, preset: CanvasPreset(id: "a4", name: "A4 page", size: CanvasSize(width: 1240, height: 1754), group: "Print"))
+        var heading = TextStyle()
+        heading.font = brand.headingFont
+        heading.size = 72
+        heading.weight = .bold
+        heading.color = brand.primary
+        controller.insert(.textLayer("Where the money went", heading, frame: CanvasRect(x: 100, y: 110, width: 1040, height: 100), role: "title"))
+        if let book = sheets?.workbook(named: "Budget 2026–27") {
+            let link = ChartLink(workbook: book.name, sheet: "Budget", labels: "A2:A7", values: "F2:F7", updated: Date())
+            if let points = DeckCharts.points(link, in: book) {
+                let chart = CanvasChart(kind: .bars, points: points, link: link, color: brand.soft, accent: brand.accent, ink: brand.primary, font: brand.bodyFont)
+                let layers = CanvasCharts.layers(chart, in: CanvasRect(x: 100, y: 260, width: 1040, height: 620))
+                controller.change { $0.layers.append(contentsOf: layers) }
+            }
+        }
+        let frames = CanvasFrames.layers(.three, in: CanvasRect(x: 100, y: 960, width: 1040, height: 660), gap: 20, radius: 14, fill: brand.soft)
+        controller.change { $0.layers.append(contentsOf: frames) }
+        controller.selection = Set(controller.document.layers.filter { $0.role == "chart" }.map(\.id))
     }
 
     func open(named name: String) {

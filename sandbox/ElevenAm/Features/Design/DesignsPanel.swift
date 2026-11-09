@@ -78,6 +78,7 @@ private struct DesignList: View {
     @State private var makeSize = "instagram"
     @State private var renaming: DesignEntry?
     @State private var newName = ""
+    @State private var customSize = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -93,12 +94,18 @@ private struct DesignList: View {
                         }
                     }
                 }
+                Section("Your own size") {
+                    Button("Custom size in pixels, millimetres or inches…") { customSize = true }
+                }
             } label: {
                 Label("New design", systemImage: "plus")
                     .frame(maxWidth: .infinity)
             }
             .menuStyle(.button)
             .buttonStyle(.vellumPrimary)
+            .sheet(isPresented: $customSize) {
+                CustomSizeSheet().environmentObject(studio).environmentObject(theme)
+            }
             Button {
                 making = true
             } label: {

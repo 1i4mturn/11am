@@ -153,6 +153,9 @@ jobs:
           capture decks-linked-light -startSection decks -forceAppearance light -decksLinked YES
           capture decks-rehearsal-dark -startSection decks -forceAppearance dark -decksRehearsal YES
           capture decks-sources-light -startSection decks -forceAppearance light -decksSources YES -researchStyle apa
+          capture design-charts-light -startSection design -forceAppearance light -designCharts YES
+          capture design-certificate-dark -startSection design -forceAppearance dark -designTemplate certificate
+          capture design-menu-light -startSection design -forceAppearance light -designTemplate menu
           capture design-light -startSection design -forceAppearance light
           capture design-select-dark -startSection design -forceAppearance dark -designSelect 3
           capture design-event-light -startSection design -forceAppearance light -designName Founder -designSelect 3
