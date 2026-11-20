@@ -338,8 +338,10 @@ private struct CalendarToolbar: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.75)
                 .padding(.leading, 4)
+                .layoutPriority(1)
             if calendar.showsWeekNumbers && calendar.mode != .agenda {
-                Text("Week \(Calendar.current.isoWeek(of: calendar.visibleRange.start.addingTimeInterval(calendar.mode == .month ? 14 * 86_400 : 0)))")
+                // The middle of what's showing, so a week that starts on Sunday gets its Monday's number.
+                Text("W\(Calendar.current.isoWeek(of: calendar.visibleRange.start.addingTimeInterval(calendar.mode == .month ? 14 * 86_400 : (calendar.mode == .day ? 0 : 2.5 * 86_400))))")
                     .font(.system(size: 11.5, weight: .semibold).monospacedDigit())
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .lineLimit(1)

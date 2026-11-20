@@ -19,18 +19,20 @@ struct TimeGrid: View {
             VStack(spacing: 0) {
                 HStack(spacing: 0) {
                     Group {
-                        if calendar.showsWeekNumbers, let first = days.first {
-                            Text("W\(Calendar.current.isoWeek(of: first))")
+                        // The middle day, so a week starting on Sunday still gets the number of most of its days.
+                        if calendar.showsWeekNumbers, !days.isEmpty {
+                            let week = Calendar.current.isoWeek(of: days[days.count / 2])
+                            Text("W\(week)")
                                 .font(.system(size: 10.5, weight: .semibold).monospacedDigit())
                                 .foregroundStyle(theme.inkTertiary(scheme))
-                                .help("Week \(Calendar.current.isoWeek(of: first))")
+                                .help("Week \(week)")
                         } else {
                             Color.clear.frame(height: 1)
                         }
                     }
                     .frame(width: TimeGrid.gutter)
                     ForEach(days, id: \.self) { day in
-                        DayHeader(day: day, wide: days.count == 1)
+                        DayHeader(day: day, wide: days.count == 1, compact: days.count >= 7)
                             .frame(maxWidth: .infinity)
                     }
                 }
@@ -77,6 +79,8 @@ private struct DayHeader: View {
     @Environment(\.colorScheme) private var scheme
     var day: Date
     var wide: Bool
+    /// A full week: just the weather's symbol, so the day names keep their room.
+    var compact = false
 
     private var weather: DayWeather? { calendar.weather(on: day) }
 
@@ -102,8 +106,10 @@ private struct DayHeader: View {
                     HStack(spacing: 2) {
                         Image(systemName: weather.symbol)
                             .symbolRenderingMode(.hierarchical)
-                        Text(wide ? weather.line : weather.short)
-                            .monospacedDigit()
+                        if !compact {
+                            Text(wide ? weather.line : weather.short)
+                                .monospacedDigit()
+                        }
                     }
                     .font(.system(size: 10.5, weight: .medium))
                     .foregroundStyle(theme.inkTertiary(scheme))
