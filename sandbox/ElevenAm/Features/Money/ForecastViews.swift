@@ -30,7 +30,7 @@ struct ForecastPanel: View {
                         SectionLabel(text: "What if…")
                         Spacer()
                         Text("Usually \(LedgerMoney.text(plain.usualIn)) in and \(LedgerMoney.text(plain.usualOut)) out a month, from the last \(plain.history) \(plain.history == 1 ? "month" : "months")")
-                            .font(.system(size: 11))
+                            .font(.brand(size: 11))
                             .foregroundStyle(theme.inkTertiary(scheme))
                             .lineLimit(1)
                     }
@@ -52,7 +52,7 @@ struct ForecastPanel: View {
                     }
                 }
                 .padding(16)
-                .vellum(level: 3, radius: max(theme.radius - 4, 8))
+                .vellum(level: 3, radius: theme.radius)
 
                 ForecastChart(plain: plain, tried: ledger.hasChanges ? tried : nil)
 
@@ -89,10 +89,10 @@ private struct ForecastTile: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(label)
-                .font(.system(size: 11, weight: .medium))
+                .font(.brand(size: 11, weight: .medium))
                 .foregroundStyle(theme.inkTertiary(scheme))
             HStack(spacing: 6) {
-                if warning { Image(systemName: "exclamationmark.triangle.fill").font(.system(size: 13)) }
+                if warning { Image(systemName: "exclamationmark.triangle.fill").font(.brand(size: 13)) }
                 Text(value)
                     .font(theme.display(24))
                     .monospacedDigit()
@@ -101,13 +101,13 @@ private struct ForecastTile: View {
             }
             .foregroundStyle(theme.ink(scheme))
             Text(detail)
-                .font(.system(size: 11))
+                .font(.brand(size: 11))
                 .foregroundStyle(theme.inkSecondary(scheme))
                 .lineLimit(1)
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .vellum(level: 3, radius: max(theme.radius - 4, 8))
+        .vellum(level: 3, radius: theme.radius)
     }
 }
 
@@ -123,21 +123,21 @@ private struct FlowChips: View {
             ForEach(changes) { change in
                 HStack(spacing: 8) {
                     Toggle("", isOn: Binding(get: { change.on }, set: { _ in withAnimation(theme.spring) { ledger.toggle(change) } }))
-                        .toggleStyle(.switch)
+                        .toggleStyle(.brandSwitch)
                         .controlSize(.mini)
                         .tint(theme.ink(scheme))
                         .labelsHidden()
                     Image(systemName: symbol(change))
-                        .font(.system(size: 11))
+                        .font(.brand(size: 11))
                         .foregroundStyle(theme.inkTertiary(scheme))
                         .frame(width: 16)
                     Text(change.name)
-                        .font(.system(size: 12.5, weight: .medium))
+                        .font(.brand(size: 12.5, weight: .medium))
                         .foregroundStyle(change.on ? theme.ink(scheme) : theme.inkTertiary(scheme))
                         .strikethrough(!change.on, color: theme.inkTertiary(scheme))
                     Spacer()
                     Button { withAnimation(theme.spring) { ledger.remove(change) } } label: {
-                        Image(systemName: "xmark").font(.system(size: 9, weight: .bold))
+                        Image(systemName: "xmark").font(.brand(size: 9, weight: .bold))
                     }
                     .buttonStyle(.plain)
                     .foregroundStyle(theme.inkTertiary(scheme))
@@ -222,7 +222,7 @@ private struct ForecastChart: View {
             .frame(height: 200)
         }
         .padding(16)
-        .vellum(level: 3, radius: max(theme.radius - 4, 8))
+        .vellum(level: 3, radius: theme.radius)
     }
 }
 
@@ -235,7 +235,7 @@ private struct LegendSwatch: View {
     var body: some View {
         HStack(spacing: 5) {
             Capsule().fill(color).frame(width: 14, height: 3)
-            Text(label).font(.system(size: 11)).foregroundStyle(theme.inkSecondary(scheme))
+            Text(label).font(.brand(size: 11)).foregroundStyle(theme.inkSecondary(scheme))
         }
     }
 }
@@ -255,7 +255,7 @@ private struct ForecastTable: View {
                 Text("Out").frame(width: 100, alignment: .trailing)
                 Text("Cash at the end").frame(width: 120, alignment: .trailing)
             }
-            .font(.system(size: 10.5, weight: .semibold))
+            .font(.brand(size: 10.5, weight: .semibold))
             .foregroundStyle(theme.inkTertiary(scheme))
             .padding(.bottom, 6)
             ForEach(forecast.months) { month in
@@ -265,7 +265,7 @@ private struct ForecastTable: View {
                     } label: {
                         HStack {
                             Image(systemName: openMonth == month.start ? "chevron.down" : "chevron.right")
-                                .font(.system(size: 9, weight: .semibold))
+                                .font(.brand(size: 9, weight: .semibold))
                                 .foregroundStyle(theme.inkTertiary(scheme))
                                 .frame(width: 12)
                             Text(month.start.formatted(.dateTime.month(.wide).year()))
@@ -276,7 +276,7 @@ private struct ForecastTable: View {
                                 .fontWeight(.semibold)
                                 .frame(width: 120, alignment: .trailing)
                         }
-                        .font(.system(size: 12.5).monospacedDigit())
+                        .font(.brand(size: 12.5).monospacedDigit())
                         .foregroundStyle(month.closing < 0 ? Color.red : theme.ink(scheme))
                         .padding(.vertical, 6)
                         .contentShape(Rectangle())
@@ -298,7 +298,7 @@ private struct ForecastTable: View {
                                         .monospacedDigit()
                                         .foregroundStyle(theme.inkSecondary(scheme))
                                 }
-                                .font(.system(size: 11.5))
+                                .font(.brand(size: 11.5))
                             }
                         }
                         .padding(.leading, 20)
@@ -310,7 +310,7 @@ private struct ForecastTable: View {
             }
         }
         .padding(16)
-        .vellum(level: 3, radius: max(theme.radius - 4, 8))
+        .vellum(level: 3, radius: theme.radius)
     }
 }
 
@@ -326,11 +326,11 @@ private struct GeorgeOnForecast: View {
             HStack(spacing: 8) {
                 AgentLogo(code: "ge", size: 20)
                 Text("George")
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.brand(size: 13, weight: .semibold))
                     .foregroundStyle(theme.ink(scheme))
             }
             Text("The forecast counts invoices and bills by their due dates, repeating invoices on their schedule, and your usual money in and out for the rest. Late invoices are counted in the next two weeks. Hiring includes 12% super.")
-                .font(.system(size: 11.5))
+                .font(.brand(size: 11.5))
                 .foregroundStyle(theme.inkSecondary(scheme))
                 .fixedSize(horizontal: false, vertical: true)
             if let run = ledger.forecastRun {
@@ -343,7 +343,7 @@ private struct GeorgeOnForecast: View {
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .vellum(level: 3, radius: max(theme.radius - 4, 8))
+        .vellum(level: 3, radius: theme.radius)
     }
 }
 
@@ -364,7 +364,7 @@ struct LineExplainerSheet: View {
                         .font(theme.display(22))
                         .foregroundStyle(theme.ink(scheme))
                     Text("\(line.from.fullDay) to \(line.to.fullDay) · account \(line.account.code)")
-                        .font(.system(size: 11.5))
+                        .font(.brand(size: 11.5))
                         .foregroundStyle(theme.inkTertiary(scheme))
                 }
                 Spacer()
@@ -375,7 +375,7 @@ struct LineExplainerSheet: View {
                         .foregroundStyle(theme.ink(scheme))
                     if line.previous != 0 || line.total != 0 {
                         Text(changeText(line))
-                            .font(.system(size: 11.5))
+                            .font(.brand(size: 11.5))
                             .foregroundStyle(theme.inkSecondary(scheme))
                     }
                 }
@@ -391,7 +391,7 @@ struct LineExplainerSheet: View {
             }
             .padding(12)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(theme.well(scheme)))
+            .background(RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.well(scheme)))
 
             if line.months.count > 1 {
                 Chart(line.months) { month in
@@ -424,7 +424,7 @@ struct LineExplainerSheet: View {
                             Spacer()
                             Text(LedgerMoney.text(payee.amount)).monospacedDigit()
                         }
-                        .font(.system(size: 12))
+                        .font(.brand(size: 12))
                         .foregroundStyle(theme.ink(scheme))
                     }
                 }
@@ -437,7 +437,7 @@ struct LineExplainerSheet: View {
                             Spacer()
                             Text(LedgerMoney.text(entry.amount)).monospacedDigit()
                         }
-                        .font(.system(size: 12))
+                        .font(.brand(size: 12))
                         .foregroundStyle(theme.ink(scheme))
                     }
                 }
@@ -445,7 +445,7 @@ struct LineExplainerSheet: View {
 
             if line.isTax {
                 Text(LineExplanation.taxNote)
-                    .font(.system(size: 11))
+                    .font(.brand(size: 11))
                     .foregroundStyle(theme.inkTertiary(scheme))
             }
 
@@ -489,7 +489,7 @@ private struct FactsText: View {
 
     var body: some View {
         Text(text)
-            .font(.system(size: 12.5))
+            .font(.brand(size: 12.5))
             .lineSpacing(2.5)
             .foregroundStyle(theme.ink(scheme))
             .textSelection(.enabled)
@@ -515,7 +515,7 @@ struct ExplainableRow: View {
             HStack(spacing: 4) {
                 ReportRow(label: label, cents: cents, indent: 12)
                 Image(systemName: "questionmark.circle")
-                    .font(.system(size: 11))
+                    .font(.brand(size: 11))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .opacity(hovering ? 1 : 0)
             }
@@ -544,7 +544,7 @@ struct XeroImportSheet: View {
                     .foregroundStyle(theme.ink(scheme))
             }
             Text("Export these from Xero as CSV files, then choose them here. George brings across your contacts, chart of accounts, and the invoices and bills still owing, so you can run both side by side for a quarter. Bring your bank statements in from the day you switch.")
-                .font(.system(size: 12))
+                .font(.brand(size: 12))
                 .foregroundStyle(theme.inkSecondary(scheme))
                 .fixedSize(horizontal: false, vertical: true)
             fileRow("Contacts", where: "Contacts › All contacts › Export", path: \.contacts)
@@ -574,9 +574,9 @@ struct XeroImportSheet: View {
             Image(systemName: files[keyPath: path] == nil ? "circle" : "checkmark.circle.fill")
                 .foregroundStyle(theme.ink(scheme))
             VStack(alignment: .leading, spacing: 1) {
-                Text(title).font(.system(size: 12.5, weight: .semibold)).foregroundStyle(theme.ink(scheme))
+                Text(title).font(.brand(size: 12.5, weight: .semibold)).foregroundStyle(theme.ink(scheme))
                 Text(files[keyPath: path]?.lastPathComponent ?? "In Xero: \(place)")
-                    .font(.system(size: 11))
+                    .font(.brand(size: 11))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .lineLimit(1)
             }
@@ -585,6 +585,6 @@ struct XeroImportSheet: View {
                 .buttonStyle(.vellumSecondary)
         }
         .padding(10)
-        .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(theme.well(scheme)))
+        .background(RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.well(scheme)))
     }
 }

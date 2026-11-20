@@ -56,7 +56,7 @@ struct GradePanel: View {
                     .buttonStyle(.vellumPrimary)
                     .popover(isPresented: $naming, arrowEdge: .bottom) {
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Name this look").font(.system(size: 12.5, weight: .semibold))
+                            Text("Name this look").font(.brand(size: 12.5, weight: .semibold))
                             TextField("Golden hour", text: $lookName)
                                 .textFieldStyle(.roundedBorder)
                                 .frame(width: 200)
@@ -112,7 +112,7 @@ struct GradePanel: View {
                     }
                 }
                 Text(GradeSettings.bandNames[band])
-                    .font(.system(size: 11.5, weight: .semibold))
+                    .font(.brand(size: 11.5, weight: .semibold))
                     .foregroundStyle(theme.inkSecondary(scheme))
                 GradeSlider(title: "Hue", value: $settings.hsl[band].hue)
                 GradeSlider(title: "Saturation", value: $settings.hsl[band].saturation)
@@ -149,7 +149,7 @@ struct GradePanel: View {
                     GradeSlider(title: "Amount", value: $settings.lutAmount, range: 0...1)
                 }
                 Text("Film emulations and camera LUTs from Resolve, Premiere or a LUT pack.")
-                    .font(.system(size: 11))
+                    .font(.brand(size: 11))
                     .foregroundStyle(theme.inkTertiary(scheme))
             }
         }
@@ -178,7 +178,7 @@ struct GradePanel: View {
                     SectionLabel(text: title)
                     Spacer()
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 9, weight: .bold))
+                        .font(.brand(size: 9, weight: .bold))
                         .rotationEffect(.degrees(isOpen ? 90 : 0))
                         .foregroundStyle(theme.inkTertiary(scheme))
                 }
@@ -210,13 +210,13 @@ struct GradeSlider: View {
         VStack(alignment: .leading, spacing: 1) {
             HStack {
                 Text(title)
-                    .font(.system(size: 12))
+                    .font(.brand(size: 12))
                     .foregroundStyle(theme.ink(scheme))
                     .onTapGesture(count: 2) { value = range.contains(0) ? 0 : range.lowerBound }
                     .help("Double-click to reset")
                 Spacer()
                 Text(String(format: range.lowerBound >= 0 ? "%.2f" : format, value))
-                    .font(.system(size: 11).monospacedDigit())
+                    .font(.brand(size: 11).monospacedDigit())
                     .foregroundStyle(abs(value) > 0.001 ? theme.ink(scheme) : theme.inkTertiary(scheme))
             }
             Slider(value: $value, in: range)
@@ -227,7 +227,7 @@ struct GradeSlider: View {
                     Spacer()
                     Text(high)
                 }
-                .font(.system(size: 9.5))
+                .font(.brand(size: 9.5))
                 .foregroundStyle(theme.inkTertiary(scheme))
             }
         }
@@ -245,7 +245,7 @@ private struct WheelColumn: View {
             ColorWheelControl(wheel: $wheel)
                 .frame(width: 76, height: 76)
             Text(title)
-                .font(.system(size: 11, weight: .medium))
+                .font(.brand(size: 11, weight: .medium))
                 .foregroundStyle(theme.inkSecondary(scheme))
             Slider(value: $wheel.luma, in: -1...1)
                 .controlSize(.mini)
@@ -315,7 +315,7 @@ struct CurveEditor: View {
             let h = proxy.size.height
             let curve = ToneCurve(points: points)
             ZStack {
-                RoundedRectangle(cornerRadius: 6).fill(theme.well(scheme))
+                RoundedRectangle(cornerRadius: 0).fill(theme.well(scheme))
                 Path { path in
                     for i in 1..<4 {
                         let x = w * CGFloat(i) / 4

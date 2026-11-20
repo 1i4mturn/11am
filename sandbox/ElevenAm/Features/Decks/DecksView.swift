@@ -74,15 +74,15 @@ struct DecksView: View {
             if let notice = decks.notice {
                 HStack(spacing: 10) {
                     AgentLogo(code: "cr", size: 18, color: theme.inkSecondary(scheme))
-                    Text(notice).font(.system(size: 12.5)).foregroundStyle(theme.ink(scheme)).lineLimit(2)
+                    Text(notice).font(.brand(size: 12.5)).foregroundStyle(theme.ink(scheme)).lineLimit(2)
                     Spacer()
-                    Button { decks.notice = nil } label: { Image(systemName: "xmark").font(.system(size: 10, weight: .bold)) }
+                    Button { decks.notice = nil } label: { Image(systemName: "xmark").font(.brand(size: 10, weight: .bold)) }
                         .buttonStyle(.plain)
                         .foregroundStyle(theme.inkTertiary(scheme))
                 }
                 .padding(.horizontal, 14)
                 .padding(.vertical, 8)
-                .vellum(level: 3, radius: max(theme.radius - 4, 8))
+                .vellum(level: 3, radius: theme.radius)
             }
 
             if decks.deck != nil {
@@ -92,20 +92,20 @@ struct DecksView: View {
                     VStack(spacing: 8) {
                         CanvasToolbar(controller: decks.controller, brand: studio.brand, addPicture: addPicture)
                         CanvasEditorView(controller: decks.controller, backdrop: .clear, accent: NSColor(theme.ink(scheme)))
-                            .background { RoundedRectangle(cornerRadius: max(theme.radius - 4, 8), style: .continuous).fill(theme.well(scheme)) }
-                            .clipShape(RoundedRectangle(cornerRadius: max(theme.radius - 4, 8), style: .continuous))
+                            .background { RoundedRectangle(cornerRadius: theme.radius, style: .continuous).fill(theme.well(scheme)) }
+                            .clipShape(RoundedRectangle(cornerRadius: theme.radius, style: .continuous))
                         NotesField()
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     SlidePanel(controller: decks.controller)
                         .frame(width: 236)
-                        .vellum(level: 3, radius: max(theme.radius - 4, 8))
+                        .vellum(level: 3, radius: theme.radius)
                 }
             } else {
                 VStack(spacing: 10) {
                     AgentLogo(code: "cr", size: 44, color: theme.inkTertiary(scheme))
                     Text("No deck yet. Start one, or ask Conner for a draft.")
-                        .font(.system(size: 12.5))
+                        .font(.brand(size: 12.5))
                         .foregroundStyle(theme.inkTertiary(scheme))
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -219,19 +219,19 @@ private struct SlideSorter: View {
         } label: {
             HStack(alignment: .top, spacing: 6) {
                 Text("\(index + 1)")
-                    .font(.system(size: 10.5, weight: .medium).monospacedDigit())
+                    .font(.brand(size: 10.5, weight: .medium).monospacedDigit())
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .frame(width: 18, alignment: .trailing)
                 CanvasThumbnail(document: canvas, images: images, height: 72)
-                    .clipShape(RoundedRectangle(cornerRadius: 4))
+                    .clipShape(RoundedRectangle(cornerRadius: 0))
                     .overlay {
-                        RoundedRectangle(cornerRadius: 4)
+                        RoundedRectangle(cornerRadius: 0)
                             .strokeBorder(selected ? theme.ink(scheme) : theme.edge(scheme), lineWidth: selected ? 2 : 0.5)
                     }
                     .opacity(slide.hidden ? 0.35 : 1)
                     .overlay(alignment: .bottomTrailing) {
                         if slide.hidden {
-                            Image(systemName: "eye.slash.fill").font(.system(size: 10)).padding(4).foregroundStyle(theme.ink(scheme))
+                            Image(systemName: "eye.slash.fill").font(.brand(size: 10)).padding(4).foregroundStyle(theme.ink(scheme))
                         }
                     }
             }
@@ -263,7 +263,7 @@ private struct NotesField: View {
                 .padding(.top, 2)
             TextField("Speaker notes for this slide", text: $notes, axis: .vertical)
                 .textFieldStyle(.plain)
-                .font(.system(size: 12.5))
+                .font(.brand(size: 12.5))
                 .lineLimit(2...4)
                 .onChange(of: notes) { _, value in
                     if value != decks.slide?.notes { decks.setNotes(value) }
@@ -273,7 +273,7 @@ private struct NotesField: View {
                 .help("Conner writes notes from what the slide says")
         }
         .padding(10)
-        .background { RoundedRectangle(cornerRadius: 9, style: .continuous).fill(theme.well(scheme)) }
+        .background { RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.well(scheme)) }
         .onAppear { notes = decks.slide?.notes ?? "" }
         .onChange(of: decks.slideIndex) { _, _ in notes = decks.slide?.notes ?? "" }
         .onChange(of: decks.slide?.notes) { _, value in if value != notes { notes = value ?? "" } }
@@ -336,12 +336,12 @@ private struct SlideContentEditor: View {
                             withAnimation(theme.spring) { decks.setLayout(item) }
                         } label: {
                             VStack(spacing: 3) {
-                                Image(systemName: item.symbol).font(.system(size: 13))
-                                Text(item.title).font(.system(size: 9)).lineLimit(1).minimumScaleFactor(0.7)
+                                Image(systemName: item.symbol).font(.brand(size: 13))
+                                Text(item.title).font(.brand(size: 9)).lineLimit(1).minimumScaleFactor(0.7)
                             }
                             .foregroundStyle(item == layout ? theme.paper(scheme) : theme.inkSecondary(scheme))
                             .frame(maxWidth: .infinity, minHeight: 42)
-                            .background { RoundedRectangle(cornerRadius: 7, style: .continuous).fill(item == layout ? theme.ink(scheme) : theme.well(scheme)) }
+                            .background { RoundedRectangle(cornerRadius: 0, style: .continuous).fill(item == layout ? theme.ink(scheme) : theme.well(scheme)) }
                         }
                         .buttonStyle(.plain)
                         .help(item.title)
@@ -349,7 +349,7 @@ private struct SlideContentEditor: View {
                 }
                 if decks.slide?.customised == true {
                     HStack {
-                        Text("Edited by hand").font(.system(size: 11)).foregroundStyle(theme.inkTertiary(scheme))
+                        Text("Edited by hand").font(.brand(size: 11)).foregroundStyle(theme.inkTertiary(scheme))
                         Spacer()
                         Button("Reset layout") { withAnimation(theme.spring) { decks.resetLayout() } }
                             .buttonStyle(.vellumSecondary)
@@ -452,12 +452,12 @@ private struct SlideContentEditor: View {
         VStack(alignment: .leading, spacing: 4) {
             SectionLabel(text: label)
             TextEditor(text: text)
-                .font(.system(size: 12))
+                .font(.brand(size: 12))
                 .frame(minHeight: 90, maxHeight: 160)
                 .scrollContentBackground(.hidden)
                 .padding(4)
-                .background { RoundedRectangle(cornerRadius: 6, style: .continuous).fill(theme.well(scheme)) }
-                .overlay { RoundedRectangle(cornerRadius: 6, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5) }
+                .background { RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.well(scheme)) }
+                .overlay { RoundedRectangle(cornerRadius: 0, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5) }
                 .onChange(of: text.wrappedValue) { _, value in if ready { apply(value) } }
         }
     }
@@ -476,17 +476,17 @@ private struct OutlineSheet: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("A deck from an outline").font(theme.display(24)).foregroundStyle(theme.ink(scheme))
             Text("# for the title, ## for each slide, - for points. A heading that's a number makes a big number; \"- Label: 12\" lines make a chart; | rows make a table; > makes a quote; Notes: lines become speaker notes.")
-                .font(.system(size: 12))
+                .font(.brand(size: 12))
                 .foregroundStyle(theme.inkSecondary(scheme))
                 .fixedSize(horizontal: false, vertical: true)
             TextEditor(text: $outline)
-                .font(.system(size: 12.5, design: .monospaced))
+                .font(.brand(size: 12.5, design: .monospaced))
                 .frame(minHeight: 320)
                 .scrollContentBackground(.hidden)
                 .padding(6)
-                .background { RoundedRectangle(cornerRadius: 8, style: .continuous).fill(theme.well(scheme)) }
+                .background { RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.well(scheme)) }
             HStack {
-                Text("\(DeckOutline.slides(from: outline, theme: .paper).count) slides").font(.system(size: 11.5)).foregroundStyle(theme.inkTertiary(scheme))
+                Text("\(DeckOutline.slides(from: outline, theme: .paper).count) slides").font(.brand(size: 11.5)).foregroundStyle(theme.inkTertiary(scheme))
                 Spacer()
                 Button("Cancel", action: done).buttonStyle(.vellumSecondary).keyboardShortcut(.cancelAction)
                 Button("Make the deck") {
@@ -513,12 +513,12 @@ private struct AskConner: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 8) {
                 AgentLogo(code: "cr", size: 20, color: theme.ink(scheme))
-                Text("What's the deck for?").font(.system(size: 13, weight: .semibold))
+                Text("What's the deck for?").font(.brand(size: 13, weight: .semibold))
             }
             AskField(placeholder: "e.g. a 10-slide seed pitch from my investor update", text: $request) { decks.ask(request) }
             if let run = decks.askRun { RunView(run: run) }
             Text("Conner drafts an outline and lays it out in your theme. He uses placeholders rather than inventing numbers.")
-                .font(.system(size: 10.5))
+                .font(.brand(size: 10.5))
                 .foregroundStyle(theme.inkTertiary(scheme))
                 .fixedSize(horizontal: false, vertical: true)
         }

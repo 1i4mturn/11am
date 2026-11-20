@@ -83,5 +83,17 @@ extension View {
             .environmentObject(model.phone)
             .environmentObject(model.languages)
             .environmentObject(model.tasks)
+            .modifier(BrandEnvironment())
+    }
+}
+
+/// Brand v2 for everything underneath: Instrument Sans as the default face, and ink in place of an accent colour.
+private struct BrandEnvironment: ViewModifier {
+    @Environment(\.colorScheme) private var scheme
+
+    func body(content: Content) -> some View {
+        content
+            .font(BrandFont.body(13))
+            .tint(BrandTokens.ink(scheme))
     }
 }

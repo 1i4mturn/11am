@@ -13,7 +13,7 @@ struct EventCard: View {
             content
             ScrollView(showsIndicators: false) { content }
         }
-        .vellum(level: 1, radius: max(theme.radius - 2, 8), blending: .withinWindow)
+        .vellum(level: 1, radius: theme.radius, blending: .withinWindow)
     }
 
     private var content: some View {
@@ -22,7 +22,7 @@ struct EventCard: View {
         let clashes = event.isAllDay ? [] : calendar.conflicts(for: event)
         return VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .top, spacing: 10) {
-                RoundedRectangle(cornerRadius: 1.5)
+                RoundedRectangle(cornerRadius: 0)
                     .fill(tint)
                     .frame(width: 3, height: 36)
                 VStack(alignment: .leading, spacing: 3) {
@@ -31,7 +31,7 @@ struct EventCard: View {
                         .foregroundStyle(theme.ink(scheme))
                         .fixedSize(horizontal: false, vertical: true)
                     Text(CalText.when(event))
-                        .font(.system(size: 12))
+                        .font(.brand(size: 12))
                         .foregroundStyle(theme.inkSecondary(scheme))
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -39,7 +39,7 @@ struct EventCard: View {
                 Button {
                     calendar.selectedID = nil
                 } label: {
-                    Image(systemName: "xmark").font(.system(size: 10, weight: .bold))
+                    Image(systemName: "xmark").font(.brand(size: 10, weight: .bold))
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(theme.inkTertiary(scheme))
@@ -57,7 +57,7 @@ struct EventCard: View {
                     Image(systemName: "lock").help("Read-only")
                 }
             }
-            .font(.system(size: 11.5))
+            .font(.brand(size: 11.5))
             .foregroundStyle(theme.inkTertiary(scheme))
 
             if let join = event.joinURL {
@@ -76,7 +76,7 @@ struct EventCard: View {
                     }
                 } label: {
                     Label(place, systemImage: "mappin.and.ellipse")
-                        .font(.system(size: 12.5))
+                        .font(.brand(size: 12.5))
                         .lineLimit(2)
                 }
                 .buttonStyle(.plain)
@@ -91,14 +91,14 @@ struct EventCard: View {
                 } icon: {
                     Image(systemName: "car")
                 }
-                .font(.system(size: 12))
+                .font(.brand(size: 12))
                 .foregroundStyle(theme.ink(scheme))
                 .help("Driving time from Apple Maps, with five minutes to spare")
             }
 
             if !event.isAllDay, let weather = calendar.weather(on: event.start) {
                 Label(weather.line, systemImage: weather.symbol)
-                    .font(.system(size: 12))
+                    .font(.brand(size: 12))
                     .foregroundStyle(theme.inkSecondary(scheme))
             }
 
@@ -110,7 +110,7 @@ struct EventCard: View {
                         .compactMap { $0 }.joined(separator: ", ").capitalisedFirst + ", with less than your \(calendar.bufferMinutes) minutes between.")
                         .fixedSize(horizontal: false, vertical: true)
                 }
-                .font(.system(size: 12))
+                .font(.brand(size: 12))
                 .foregroundStyle(theme.inkSecondary(scheme))
             }
 
@@ -120,12 +120,12 @@ struct EventCard: View {
                     Text("Clashes with \(clashes.map { "\($0.title) (\(CalText.time($0.start)))" }.joined(separator: ", "))")
                         .fixedSize(horizontal: false, vertical: true)
                 }
-                .font(.system(size: 12))
+                .font(.brand(size: 12))
                 .foregroundStyle(theme.ink(scheme))
                 .padding(8)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background {
-                    RoundedRectangle(cornerRadius: 7, style: .continuous).fill(theme.ink(scheme).opacity(0.06))
+                    RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.ink(scheme).opacity(0.06))
                 }
             }
 
@@ -135,22 +135,22 @@ struct EventCard: View {
                     ForEach(Array(event.attendees.prefix(8)), id: \.email) { person in
                         HStack(spacing: 6) {
                             Image(systemName: EventCard.symbol(person.response))
-                                .font(.system(size: 10.5))
+                                .font(.brand(size: 10.5))
                                 .foregroundStyle(theme.inkSecondary(scheme))
                                 .frame(width: 14)
                             Text(person.name)
-                                .font(.system(size: 12.5))
+                                .font(.brand(size: 12.5))
                                 .foregroundStyle(theme.ink(scheme))
                                 .lineLimit(1)
                             if person.email == event.organizer {
-                                Text("organiser").font(.system(size: 11)).foregroundStyle(theme.inkTertiary(scheme))
+                                Text("organiser").font(.brand(size: 11)).foregroundStyle(theme.inkTertiary(scheme))
                             }
                         }
                         .help(person.email)
                     }
                     if event.attendees.count > 8 {
                         Text("and \(event.attendees.count - 8) more")
-                            .font(.system(size: 11.5))
+                            .font(.brand(size: 11.5))
                             .foregroundStyle(theme.inkTertiary(scheme))
                     }
                 }
@@ -160,7 +160,7 @@ struct EventCard: View {
                 VStack(alignment: .leading, spacing: 6) {
                     HStack(spacing: 6) {
                         Text("Going?")
-                            .font(.system(size: 12, weight: .medium))
+                            .font(.brand(size: 12, weight: .medium))
                             .foregroundStyle(theme.inkSecondary(scheme))
                         ForEach([CalResponse.accepted, .tentative, .declined], id: \.self) { answer in
                             Button(EventCard.word(answer)) { calendar.respond(event, answer) }
@@ -169,7 +169,7 @@ struct EventCard: View {
                     }
                     if event.isOnThisMac {
                         Text("Opens in Calendar, which answers the organiser for you.")
-                            .font(.system(size: 11))
+                            .font(.brand(size: 11))
                             .foregroundStyle(theme.inkTertiary(scheme))
                     }
                 }
@@ -177,7 +177,7 @@ struct EventCard: View {
 
             if let notes = notes {
                 Text(notes)
-                    .font(.system(size: 12))
+                    .font(.brand(size: 12))
                     .foregroundStyle(theme.inkSecondary(scheme))
                     .lineLimit(6)
                     .textSelection(.enabled)
@@ -264,7 +264,7 @@ private struct PrepSection: View {
                 HStack(spacing: 6) {
                     AgentLogo(code: "mc", size: 13, color: theme.inkTertiary(scheme))
                     Text("\(message.fromName): \(message.subject)")
-                        .font(.system(size: 11.5))
+                        .font(.brand(size: 11.5))
                         .foregroundStyle(theme.inkSecondary(scheme))
                         .lineLimit(1)
                 }
@@ -274,17 +274,17 @@ private struct PrepSection: View {
                 RunView(run: run)
             } else if mails.isEmpty {
                 Text("No recent mail with them. Leo can still pull the details together.")
-                    .font(.system(size: 11.5))
+                    .font(.brand(size: 11.5))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
         .padding(10)
         .background {
-            RoundedRectangle(cornerRadius: 8, style: .continuous).fill(theme.well(scheme))
+            RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.well(scheme))
         }
         .overlay {
-            RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5)
+            RoundedRectangle(cornerRadius: 0, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5)
         }
     }
 }
@@ -312,12 +312,12 @@ struct EventEditor: View {
 
             TextField("Title", text: $draft.title)
                 .textFieldStyle(.roundedBorder)
-                .font(.system(size: 14))
+                .font(.brand(size: 14))
 
             Grid(alignment: .leading, horizontalSpacing: 12, verticalSpacing: 10) {
                 GridRow {
                     Text("All day").gridColumnAlignment(.trailing)
-                    Toggle("", isOn: allDay).labelsHidden().toggleStyle(.switch).controlSize(.small)
+                    Toggle("", isOn: allDay).labelsHidden().toggleStyle(.brandSwitch).controlSize(.small)
                 }
                 if draft.isAllDay {
                     GridRow {
@@ -365,7 +365,7 @@ struct EventEditor: View {
                                 Toggle("Until", isOn: Binding(get: { draft.repeatUntil != nil }, set: { on in
                                     draft.repeatUntil = on ? Calendar.current.date(byAdding: .month, value: 3, to: draft.start) : nil
                                 }))
-                                .toggleStyle(.checkbox)
+                                .toggleStyle(.brandCheck)
                                 if let until = draft.repeatUntil {
                                     DatePicker("", selection: Binding(get: { until }, set: { draft.repeatUntil = $0 }), in: draft.start...,
                                                displayedComponents: .date)
@@ -386,19 +386,19 @@ struct EventEditor: View {
                 GridRow(alignment: .top) {
                     Text("Notes").padding(.top, 4)
                     TextEditor(text: $draft.notes)
-                        .font(.system(size: 12.5))
+                        .font(.brand(size: 12.5))
                         .scrollContentBackground(.hidden)
                         .padding(4)
                         .frame(height: 74)
                         .background {
-                            RoundedRectangle(cornerRadius: 6, style: .continuous).fill(theme.well(scheme))
+                            RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.well(scheme))
                         }
                         .overlay {
-                            RoundedRectangle(cornerRadius: 6, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5)
+                            RoundedRectangle(cornerRadius: 0, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5)
                         }
                 }
             }
-            .font(.system(size: 12.5))
+            .font(.brand(size: 12.5))
             .foregroundStyle(theme.ink(scheme))
 
             HStack(spacing: 8) {

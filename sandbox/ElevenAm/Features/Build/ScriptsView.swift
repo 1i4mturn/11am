@@ -420,8 +420,8 @@ struct ScriptsPane: View {
                     ScriptEditor(text: Binding(get: { scripts.selected?.source ?? "" }, set: { value in scripts.update { $0.source = value } }),
                                  language: script.language)
                         .id(script.id)
-                        .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
-                        .overlay(RoundedRectangle(cornerRadius: 9, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5))
+                        .clipShape(RoundedRectangle(cornerRadius: 0, style: .continuous))
+                        .overlay(RoundedRectangle(cornerRadius: 0, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5))
                     if let run = scripts.johnnyRun {
                         JohnnyScriptCard(run: run)
                     }
@@ -443,7 +443,7 @@ struct ScriptsPane: View {
                         .frame(height: 150)
                 } else {
                     Text("Make a script with + or open one.")
-                        .font(.system(size: 12.5))
+                        .font(.brand(size: 12.5))
                         .foregroundStyle(theme.inkTertiary(scheme))
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
@@ -484,17 +484,17 @@ private struct ScriptLibrary: View {
                         Button { scripts.selectedID = script.id } label: {
                             VStack(alignment: .leading, spacing: 1) {
                                 Text(script.name)
-                                    .font(.system(size: 12.5, weight: script.id == scripts.selectedID ? .semibold : .regular))
+                                    .font(.brand(size: 12.5, weight: script.id == scripts.selectedID ? .semibold : .regular))
                                     .foregroundStyle(theme.ink(scheme))
                                     .lineLimit(1)
                                 Text(script.language.title)
-                                    .font(.system(size: 10.5))
+                                    .font(.brand(size: 10.5))
                                     .foregroundStyle(theme.inkTertiary(scheme))
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 5)
-                            .background(RoundedRectangle(cornerRadius: 7, style: .continuous)
+                            .background(RoundedRectangle(cornerRadius: 0, style: .continuous)
                                 .fill(script.id == scripts.selectedID ? theme.well(scheme) : Color.clear))
                             .contentShape(Rectangle())
                         }
@@ -512,7 +512,7 @@ private struct ScriptLibrary: View {
             SectionLabel(text: "Shortcuts")
             if scripts.shortcuts.isEmpty {
                 Text("Your shortcuts from the Shortcuts app show here.")
-                    .font(.system(size: 11))
+                    .font(.brand(size: 11))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .fixedSize(horizontal: false, vertical: true)
             } else {
@@ -521,11 +521,11 @@ private struct ScriptLibrary: View {
                         ForEach(scripts.shortcuts, id: \.self) { name in
                             HStack {
                                 Text(name)
-                                    .font(.system(size: 12))
+                                    .font(.brand(size: 12))
                                     .foregroundStyle(theme.ink(scheme))
                                     .lineLimit(1)
                                 Spacer()
-                                Button { scripts.runShortcut(name) } label: { Image(systemName: "play.fill").font(.system(size: 9)) }
+                                Button { scripts.runShortcut(name) } label: { Image(systemName: "play.fill").font(.brand(size: 9)) }
                                     .buttonStyle(.plain)
                                     .foregroundStyle(theme.inkSecondary(scheme))
                                     .help("Run \(name)")
@@ -540,7 +540,7 @@ private struct ScriptLibrary: View {
         }
         .padding(12)
         .frame(maxHeight: .infinity, alignment: .top)
-        .vellum(level: 3, radius: max(theme.radius - 4, 8))
+        .vellum(level: 3, radius: theme.radius)
         .onAppear { scripts.loadShortcuts() }
     }
 }
@@ -556,7 +556,7 @@ private struct ScriptToolbar: View {
         HStack(spacing: 8) {
             TextField("Name", text: Binding(get: { script.name }, set: { value in scripts.update { $0.name = value } }))
                 .textFieldStyle(.plain)
-                .font(.system(size: 15, weight: .semibold))
+                .font(.brand(size: 15, weight: .semibold))
                 .foregroundStyle(theme.ink(scheme))
                 .frame(minWidth: 120)
             Picker("", selection: Binding(get: { script.language }, set: { value in scripts.update { $0.language = value } })) {
@@ -612,14 +612,14 @@ private struct ApprovalBanner: View {
         HStack(spacing: 8) {
             Image(systemName: "hand.raised")
             Text("This script will control \(ListFormatter.localizedString(byJoining: apps)). Johnny asks once; macOS may ask too.")
-                .font(.system(size: 12))
+                .font(.brand(size: 12))
             Spacer()
             Button("Allow and run") { scripts.run(approved: true) }.buttonStyle(.vellumPrimary)
             Button("Cancel") { scripts.cancelApproval() }.buttonStyle(.vellumSecondary)
         }
         .foregroundStyle(theme.ink(scheme))
         .padding(10)
-        .background(RoundedRectangle(cornerRadius: 9, style: .continuous).fill(Color.orange.opacity(0.14)))
+        .background(RoundedRectangle(cornerRadius: 0, style: .continuous).fill(Color.orange.opacity(0.14)))
     }
 }
 
@@ -640,20 +640,20 @@ private struct ScriptOutput: View {
                 .fixedSize()
                 if scripts.isRunning { ProgressView().controlSize(.small) }
                 Text(scripts.status)
-                    .font(.system(size: 11.5))
+                    .font(.brand(size: 11.5))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .lineLimit(1)
                     .truncationMode(.tail)
             }
             ScrollView {
                 Text(text.isEmpty ? placeholder : text)
-                    .font(.system(size: 12, design: .monospaced))
+                    .font(.brand(size: 12, design: .monospaced))
                     .foregroundStyle(text.isEmpty ? theme.inkTertiary(scheme) : theme.ink(scheme))
                     .textSelection(.enabled)
                     .frame(maxWidth: .infinity, alignment: .topLeading)
                     .padding(10)
             }
-            .background(RoundedRectangle(cornerRadius: 9, style: .continuous).fill(theme.well(scheme)))
+            .background(RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.well(scheme)))
         }
     }
 
@@ -686,7 +686,7 @@ private struct JohnnyScriptCard: View {
                 .foregroundStyle(theme.inkTertiary(scheme))
         }
         .padding(10)
-        .background(RoundedRectangle(cornerRadius: 9, style: .continuous).fill(theme.well(scheme)))
+        .background(RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.well(scheme)))
     }
 }
 
@@ -715,21 +715,21 @@ private struct DictionaryPanel: View {
                         VStack(alignment: .leading, spacing: 2) {
                             HStack(spacing: 5) {
                                 Image(systemName: item.kind == .command ? "c.square" : "cube")
-                                    .font(.system(size: 10))
+                                    .font(.brand(size: 10))
                                     .foregroundStyle(theme.inkTertiary(scheme))
                                 Text(item.name)
-                                    .font(.system(size: 12, weight: .semibold, design: .monospaced))
+                                    .font(.brand(size: 12, weight: .semibold, design: .monospaced))
                                     .foregroundStyle(theme.ink(scheme))
                             }
                             if !item.summary.isEmpty {
                                 Text(item.summary)
-                                    .font(.system(size: 11))
+                                    .font(.brand(size: 11))
                                     .foregroundStyle(theme.inkSecondary(scheme))
                                     .fixedSize(horizontal: false, vertical: true)
                             }
                             if !item.details.isEmpty {
                                 Text(item.details.prefix(8).map(\.name).joined(separator: " · "))
-                                    .font(.system(size: 10.5, design: .monospaced))
+                                    .font(.brand(size: 10.5, design: .monospaced))
                                     .foregroundStyle(theme.inkTertiary(scheme))
                                     .lineLimit(2)
                             }
@@ -741,12 +741,12 @@ private struct DictionaryPanel: View {
                 }
             }
             Text("Click an entry to copy a line that uses it.")
-                .font(.system(size: 10.5))
+                .font(.brand(size: 10.5))
                 .foregroundStyle(theme.inkTertiary(scheme))
         }
         .padding(12)
         .frame(maxHeight: .infinity, alignment: .top)
-        .vellum(level: 3, radius: max(theme.radius - 4, 8))
+        .vellum(level: 3, radius: theme.radius)
         .onAppear { scripts.loadApps() }
     }
 }

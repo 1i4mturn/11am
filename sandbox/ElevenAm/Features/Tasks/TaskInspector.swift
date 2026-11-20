@@ -18,11 +18,11 @@ struct TaskInspector: View {
                 HStack(spacing: 10) {
                     TaskCheck(task: task, size: 20) { withAnimation(theme.spring) { tasks.toggle(task.id) } }
                     Text(task.isDone ? "Done " + TaskDates.inline(TaskDates.label(task.completed ?? Date(), hasTime: false, now: tasks.now, calendar: cal)) : task.status.title)
-                        .font(.system(size: 12))
+                        .font(.brand(size: 12))
                         .foregroundStyle(theme.inkTertiary(scheme))
                     Spacer()
                     Button { tasks.selectedID = nil } label: {
-                        Image(systemName: "xmark").font(.system(size: 11, weight: .semibold))
+                        Image(systemName: "xmark").font(.brand(size: 11, weight: .semibold))
                     }
                     .buttonStyle(.borderless)
                     .help("Close")
@@ -30,11 +30,11 @@ struct TaskInspector: View {
 
                 TextField("Task", text: Binding(get: { task.title }, set: { value in tasks.update(task.id) { $0.title = value } }), axis: .vertical)
                     .textFieldStyle(.plain)
-                    .font(.system(size: 18, weight: .semibold))
+                    .font(.brand(size: 18, weight: .semibold))
                     .foregroundStyle(theme.ink(scheme))
                 TextField("Notes", text: Binding(get: { task.notes }, set: { value in tasks.update(task.id) { $0.notes = value } }), axis: .vertical)
                     .textFieldStyle(.plain)
-                    .font(.system(size: 13))
+                    .font(.brand(size: 13))
                     .lineLimit(2...10)
                     .foregroundStyle(theme.inkSecondary(scheme))
 
@@ -74,7 +74,7 @@ struct TaskInspector: View {
             .padding(16)
         }
         .frame(maxHeight: .infinity, alignment: .top)
-        .vellum(level: 3, radius: max(theme.radius - 2, 8))
+        .vellum(level: 3, radius: theme.radius)
     }
 
     private func group<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
@@ -95,7 +95,7 @@ struct TaskInspector: View {
                 if on { item.someday = false }
             }
         }))
-        .toggleStyle(.switch)
+        .toggleStyle(.brandSwitch)
         .controlSize(.small)
         if let due = task.due {
             HStack(spacing: 8) {
@@ -114,7 +114,7 @@ struct TaskInspector: View {
                         item.due = on ? TaskDates.at(9, 0, on: day, cal) : cal.startOfDay(for: day)
                     }
                 }))
-                .toggleStyle(.checkbox)
+                .toggleStyle(.brandCheck)
                 if task.dueHasTime {
                     DatePicker("", selection: Binding(get: { due }, set: { value in
                         tasks.update(task.id) { item in
@@ -137,7 +137,7 @@ struct TaskInspector: View {
                 if on { item.someday = false }
             }
         }))
-        .toggleStyle(.switch)
+        .toggleStyle(.brandSwitch)
         .controlSize(.small)
         if let start = task.start {
             DatePicker("", selection: Binding(get: { start }, set: { value in tasks.update(task.id) { $0.start = value } }), displayedComponents: [.date, .hourAndMinute])
@@ -146,7 +146,7 @@ struct TaskInspector: View {
         }
         if task.due == nil && task.start == nil {
             Toggle("Someday", isOn: Binding(get: { task.someday }, set: { on in tasks.update(task.id) { $0.someday = on } }))
-                .toggleStyle(.switch)
+                .toggleStyle(.brandSwitch)
                 .controlSize(.small)
         }
     }
@@ -181,10 +181,10 @@ struct TaskInspector: View {
         .fixedSize()
         TextField("Or type it: every 3 days, every Mon and Thu", text: $repeatText)
             .textFieldStyle(.plain)
-            .font(.system(size: 12))
+            .font(.brand(size: 12))
             .padding(.horizontal, 9)
             .padding(.vertical, 6)
-            .background(RoundedRectangle(cornerRadius: 7, style: .continuous).fill(theme.well(scheme)))
+            .background(RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.well(scheme)))
             .onSubmit {
                 let words = repeatText.lowercased().hasPrefix("every") || ["daily", "weekly", "fortnightly", "monthly", "yearly"].contains(repeatText.lowercased()) ? repeatText : "every " + repeatText
                 if let rule = TaskParser.parse(words, now: Date(), calendar: cal, dayFirst: tasks.dayFirst).recurrence {
@@ -198,8 +198,8 @@ struct TaskInspector: View {
             Toggle("Count from when it's done", isOn: Binding(get: { rule.afterCompletion }, set: { on in
                 tasks.update(task.id) { $0.recurrence?.afterCompletion = on }
             }))
-            .toggleStyle(.checkbox)
-            .font(.system(size: 12))
+            .toggleStyle(.brandCheck)
+            .font(.brand(size: 12))
         }
     }
 
@@ -243,11 +243,11 @@ struct TaskInspector: View {
                         Button {
                             tasks.update(task.id) { $0.tags.removeAll { $0 == tag } }
                         } label: {
-                            Image(systemName: "xmark").font(.system(size: 8, weight: .bold))
+                            Image(systemName: "xmark").font(.brand(size: 8, weight: .bold))
                         }
                         .buttonStyle(.plain)
                     }
-                    .font(.system(size: 11.5, weight: .medium))
+                    .font(.brand(size: 11.5, weight: .medium))
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
                     .background(Capsule().fill(theme.well(scheme)))
@@ -258,10 +258,10 @@ struct TaskInspector: View {
         }
         TextField("Add a tag", text: $newTag)
             .textFieldStyle(.plain)
-            .font(.system(size: 12))
+            .font(.brand(size: 12))
             .padding(.horizontal, 9)
             .padding(.vertical, 6)
-            .background(RoundedRectangle(cornerRadius: 7, style: .continuous).fill(theme.well(scheme)))
+            .background(RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.well(scheme)))
             .onSubmit {
                 let tag = newTag.trimmingCharacters(in: CharacterSet.whitespaces.union(CharacterSet(charactersIn: "#")))
                 if !tag.isEmpty {
@@ -278,16 +278,16 @@ struct TaskInspector: View {
             HStack(spacing: 8) {
                 Button { tasks.toggleStep(step.id, in: task.id) } label: {
                     Image(systemName: step.done ? "checkmark.square.fill" : "square")
-                        .font(.system(size: 13))
+                        .font(.brand(size: 13))
                 }
                 .buttonStyle(.plain)
                 Text(step.title)
-                    .font(.system(size: 12.5))
+                    .font(.brand(size: 12.5))
                     .strikethrough(step.done)
                     .foregroundStyle(step.done ? theme.inkTertiary(scheme) : theme.ink(scheme))
                 Spacer(minLength: 4)
                 Button { tasks.removeStep(step.id, in: task.id) } label: {
-                    Image(systemName: "minus.circle").font(.system(size: 11))
+                    Image(systemName: "minus.circle").font(.brand(size: 11))
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(theme.inkTertiary(scheme))
@@ -295,10 +295,10 @@ struct TaskInspector: View {
             .foregroundStyle(theme.ink(scheme))
         }
         HStack(spacing: 8) {
-            Image(systemName: "plus").font(.system(size: 11))
+            Image(systemName: "plus").font(.brand(size: 11))
             TextField("Add a step", text: $newStep)
                 .textFieldStyle(.plain)
-                .font(.system(size: 12.5))
+                .font(.brand(size: 12.5))
                 .onSubmit {
                     tasks.addStep(newStep, to: task.id)
                     newStep = ""
@@ -344,7 +344,7 @@ struct TaskInspector: View {
                     .buttonStyle(.vellumSecondary)
             }
             Text(footnote)
-                .font(.system(size: 11))
+                .font(.brand(size: 11))
                 .foregroundStyle(theme.inkTertiary(scheme))
         }
     }
@@ -369,27 +369,27 @@ private struct OriginCard: View {
             Monogram(text: origin.monogram, size: 24)
             VStack(alignment: .leading, spacing: 4) {
                 Text("\(AgentNames.name(origin.monogram)) added this")
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.brand(size: 12, weight: .semibold))
                     .foregroundStyle(theme.ink(scheme))
                 Text(origin.label)
-                    .font(.system(size: 11.5))
+                    .font(.brand(size: 11.5))
                     .foregroundStyle(theme.inkSecondary(scheme))
                 if let quote = origin.quote, !quote.isEmpty {
                     Text("“\(quote)”")
-                        .font(.system(size: 11.5).italic())
+                        .font(.brand(size: 11.5).italic())
                         .foregroundStyle(theme.inkTertiary(scheme))
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 if origin.reference != nil, origin.kind == .mail || origin.kind == .meeting {
                     Button(origin.kind == .mail ? "Open the email" : "Open the event") { tasks.onOpenOrigin?(origin) }
                         .buttonStyle(.borderless)
-                        .font(.system(size: 11.5, weight: .medium))
+                        .font(.brand(size: 11.5, weight: .medium))
                 }
             }
             Spacer(minLength: 0)
         }
         .padding(10)
-        .background(RoundedRectangle(cornerRadius: 9, style: .continuous).fill(theme.well(scheme)))
-        .overlay(RoundedRectangle(cornerRadius: 9, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5))
+        .background(RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.well(scheme)))
+        .overlay(RoundedRectangle(cornerRadius: 0, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5))
     }
 }

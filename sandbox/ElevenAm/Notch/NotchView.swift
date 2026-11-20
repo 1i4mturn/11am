@@ -172,7 +172,7 @@ private struct IdleEars: View {
             Spacer(minLength: 0)
             if let countdown {
                 Text(countdown)
-                    .font(.system(size: 11, weight: .semibold).monospacedDigit())
+                    .font(.brand(size: 11, weight: .semibold).monospacedDigit())
                     .foregroundStyle(.white.opacity(0.9))
             }
         }
@@ -204,12 +204,12 @@ private struct PeekLine: View {
         HStack(spacing: 10) {
             AgentLogo(code: "le", size: 24, color: Color.white)
             Text(summary)
-                .font(.system(size: 13, weight: .medium))
+                .font(.brand(size: 13, weight: .medium))
                 .foregroundStyle(.white.opacity(0.92))
                 .lineLimit(1)
             Spacer(minLength: 0)
             Image(systemName: "chevron.down")
-                .font(.system(size: 10, weight: .bold))
+                .font(.brand(size: 10, weight: .bold))
                 .foregroundStyle(.white.opacity(0.5))
         }
         .padding(.horizontal, 20)
@@ -248,7 +248,7 @@ private struct OpenPanel: View {
                     state.close()
                 } label: {
                     Image(systemName: "xmark")
-                        .font(.system(size: 10, weight: .bold))
+                        .font(.brand(size: 10, weight: .bold))
                         .foregroundStyle(.white.opacity(0.6))
                         .frame(width: 22, height: 22)
                         .background(Circle().fill(Color.white.opacity(0.08)))
@@ -282,7 +282,7 @@ private struct NotchTabStyle: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.system(size: 12, weight: .semibold))
+            .font(.brand(size: 12, weight: .semibold))
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
             .foregroundStyle(selected ? Color.black : Color.white.opacity(0.85))
@@ -302,8 +302,8 @@ private struct NotchRow<Trailing: View>: View {
         HStack(spacing: 12) {
             AgentLogo(code: monogram, size: 26, color: Color.white)
             VStack(alignment: .leading, spacing: 2) {
-                Text(title).font(.system(size: 13, weight: .semibold)).foregroundStyle(.white)
-                Text(detail).font(.system(size: 11.5)).foregroundStyle(.white.opacity(0.55)).lineLimit(2)
+                Text(title).font(.brand(size: 13, weight: .semibold)).foregroundStyle(.white)
+                Text(detail).font(.brand(size: 11.5)).foregroundStyle(.white.opacity(0.55)).lineLimit(2)
             }
             Spacer(minLength: 8)
             trailing()
@@ -402,7 +402,7 @@ private struct NotchAskPage: View {
                 Image(systemName: "sparkle.magnifyingglass").foregroundStyle(.white.opacity(0.5))
                 TextField("Ask the team…", text: $state.askText)
                     .textFieldStyle(.plain)
-                    .font(.system(size: 14))
+                    .font(.brand(size: 14))
                     .foregroundStyle(.white)
                     .focused($focused)
                     .onSubmit(submit)
@@ -420,11 +420,11 @@ private struct NotchAskPage: View {
                 .frame(height: min(max(answerHeight, 20), 230))
             } else if let added {
                 Text(added)
-                    .font(.system(size: 12))
+                    .font(.brand(size: 12))
                     .foregroundStyle(.white.opacity(0.75))
             } else {
                 Text("Questions about your files go to Bolton. Everything else goes to Leo. Start with + to add a task: + Call Tom tomorrow 3pm.")
-                    .font(.system(size: 12))
+                    .font(.brand(size: 12))
                     .foregroundStyle(.white.opacity(0.5))
             }
         }
@@ -471,7 +471,7 @@ private struct NotchOvernightPage: View {
             ForEach(nightShift.log.prefix(3)) { entry in
                 NotchRow(monogram: "le", title: entry.title, detail: entry.detail) {
                     Text(entry.date.formatted(date: .omitted, time: .shortened))
-                        .font(.system(size: 11))
+                        .font(.brand(size: 11))
                         .foregroundStyle(.white.opacity(0.45))
                 }
             }

@@ -19,24 +19,24 @@ struct DesignsPanel: View {
                 if let notice = studio.notice {
                     HStack {
                         AgentLogo(code: "rt", size: 16, color: theme.inkSecondary(scheme))
-                        Text(notice).font(.system(size: 12)).foregroundStyle(theme.ink(scheme)).lineLimit(2)
+                        Text(notice).font(.brand(size: 12)).foregroundStyle(theme.ink(scheme)).lineLimit(2)
                         Spacer()
-                        Button { studio.notice = nil } label: { Image(systemName: "xmark").font(.system(size: 9, weight: .bold)) }
+                        Button { studio.notice = nil } label: { Image(systemName: "xmark").font(.brand(size: 9, weight: .bold)) }
                             .buttonStyle(.plain)
                             .foregroundStyle(theme.inkTertiary(scheme))
                     }
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
-                    .background { RoundedRectangle(cornerRadius: 8, style: .continuous).fill(theme.well(scheme)) }
+                    .background { RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.well(scheme)) }
                 }
                 CanvasEditorView(controller: studio.controller, backdrop: .clear, accent: NSColor(theme.ink(scheme)))
-                    .background { RoundedRectangle(cornerRadius: max(theme.radius - 4, 8), style: .continuous).fill(theme.well(scheme)) }
-                    .clipShape(RoundedRectangle(cornerRadius: max(theme.radius - 4, 8), style: .continuous))
+                    .background { RoundedRectangle(cornerRadius: theme.radius, style: .continuous).fill(theme.well(scheme)) }
+                    .clipShape(RoundedRectangle(cornerRadius: theme.radius, style: .continuous))
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             CanvasInspector(controller: studio.controller, brand: studio.brand, removeBackground: studio.removeBackground)
                 .frame(width: 224)
-                .vellum(level: 3, radius: max(theme.radius - 4, 8))
+                .vellum(level: 3, radius: theme.radius)
         }
         .task(id: studio.notice) {
             guard studio.notice != nil, (try? await Task.sleep(for: .seconds(8))) != nil else { return }
@@ -141,7 +141,7 @@ private struct DesignList: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 8) {
                 AgentLogo(code: "rt", size: 18, color: theme.ink(scheme))
-                Text("What's the graphic for?").font(.system(size: 13, weight: .semibold))
+                Text("What's the graphic for?").font(.brand(size: 13, weight: .semibold))
             }
             AskField(placeholder: "e.g. we hit 1,000 customers", text: $request) {
                 studio.make(from: request, preset: CanvasPreset.named(makeSize) ?? CanvasPreset.all[0])
@@ -151,7 +151,7 @@ private struct DesignList: View {
             }
             if let run = studio.makeRun { RunView(run: run) }
             Text("Robert writes the words in your voice and lays them out with your brand kit. You can change anything after.")
-                .font(.system(size: 10.5))
+                .font(.brand(size: 10.5))
                 .foregroundStyle(theme.inkTertiary(scheme))
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -168,28 +168,28 @@ private struct DesignList: View {
         } label: {
             HStack(spacing: 10) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 4).fill(theme.raised(scheme))
+                    RoundedRectangle(cornerRadius: 0).fill(theme.raised(scheme))
                     if let document {
                         CanvasThumbnail(document: document, images: { assets.image($0) }, height: min(34, 44 / CGFloat(max(document.size.aspect, 0.1))))
-                            .clipShape(RoundedRectangle(cornerRadius: 3))
+                            .clipShape(RoundedRectangle(cornerRadius: 0))
                     } else {
-                        Image(systemName: "rectangle.on.rectangle").font(.system(size: 11)).foregroundStyle(theme.inkTertiary(scheme))
+                        Image(systemName: "rectangle.on.rectangle").font(.brand(size: 11)).foregroundStyle(theme.inkTertiary(scheme))
                     }
                 }
                 .frame(width: 48, height: 40)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(selected ? (studio.controller.document.name) : entry.name)
-                        .font(.system(size: 12, weight: selected ? .semibold : .regular))
+                        .font(.brand(size: 12, weight: selected ? .semibold : .regular))
                         .foregroundStyle(theme.ink(scheme))
                         .lineLimit(2)
                     Text("\(Int(entry.size.width))×\(Int(entry.size.height))")
-                        .font(.system(size: 10.5).monospacedDigit())
+                        .font(.brand(size: 10.5).monospacedDigit())
                         .foregroundStyle(theme.inkTertiary(scheme))
                 }
                 Spacer(minLength: 0)
             }
             .padding(6)
-            .background { if selected { RoundedRectangle(cornerRadius: 8, style: .continuous).fill(theme.raised(scheme)) } }
+            .background { if selected { RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.raised(scheme)) } }
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

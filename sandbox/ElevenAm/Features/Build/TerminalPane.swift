@@ -277,9 +277,9 @@ struct TerminalPane: View {
             if let tab = terminal.currentTab {
                 PaneGroup(tab: tab)
                     .id(tab.id)
-                    .clipShape(RoundedRectangle(cornerRadius: max(theme.radius - 4, 8), style: .continuous))
+                    .clipShape(RoundedRectangle(cornerRadius: theme.radius, style: .continuous))
                     .overlay {
-                        RoundedRectangle(cornerRadius: max(theme.radius - 4, 8), style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5)
+                        RoundedRectangle(cornerRadius: theme.radius, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5)
                     }
             }
             if let session = terminal.activeSession {
@@ -424,11 +424,11 @@ private struct TabChip: View {
             .padding(.trailing, 4)
             .padding(.vertical, 5)
             .background {
-                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                RoundedRectangle(cornerRadius: 0, style: .continuous)
                     .fill(selected ? theme.well(scheme) : (hovering ? theme.well(scheme).opacity(0.5) : Color.clear))
             }
             .overlay(alignment: .trailing) {
-                Button { terminal.closeTab(tab.id) } label: { Image(systemName: "xmark").font(.system(size: 8.5, weight: .bold)) }
+                Button { terminal.closeTab(tab.id) } label: { Image(systemName: "xmark").font(.brand(size: 8.5, weight: .bold)) }
                     .buttonStyle(.plain)
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .padding(.trailing, 6)
@@ -454,12 +454,12 @@ private struct ChipLabel: View {
                 .fill(session.isRunning ? Color.green.opacity(0.75) : theme.inkTertiary(scheme))
                 .frame(width: 5, height: 5)
             Text(label)
-                .font(.system(size: 11.5, weight: selected ? .semibold : .regular))
+                .font(.brand(size: 11.5, weight: selected ? .semibold : .regular))
                 .foregroundStyle(selected ? theme.ink(scheme) : theme.inkSecondary(scheme))
                 .lineLimit(1)
             if panes > 1 {
                 Text("\(panes)")
-                    .font(.system(size: 9.5, weight: .semibold).monospacedDigit())
+                    .font(.brand(size: 9.5, weight: .semibold).monospacedDigit())
                     .foregroundStyle(theme.inkTertiary(scheme))
             }
             Color.clear.frame(width: 12, height: 1)
@@ -491,6 +491,8 @@ private struct PaneGroup: View {
 
 private struct PaneView: View {
     @EnvironmentObject private var terminal: TerminalWorkspace
+    @EnvironmentObject private var theme: Theme
+    @Environment(\.colorScheme) private var scheme
     @ObservedObject var session: TerminalSession
     var focused: Bool
     var single: Bool
@@ -509,7 +511,7 @@ private struct PaneView: View {
         )
         .overlay(alignment: .top) {
             if !single && focused {
-                Rectangle().fill(Color.accentColor.opacity(0.7)).frame(height: 2)
+                Rectangle().fill(theme.ink(scheme)).frame(height: 2)
             }
         }
         .frame(minWidth: 160, minHeight: 80)
@@ -526,10 +528,10 @@ private struct SearchBar: View {
             Image(systemName: "magnifyingglass").foregroundStyle(theme.inkTertiary(scheme))
             TextField("Find in the scrollback", text: $terminal.query)
                 .textFieldStyle(.plain)
-                .font(.system(size: 12.5))
+                .font(.brand(size: 12.5))
                 .onSubmit { terminal.nextMatch(forward: false) }
             Text(terminal.matches.isEmpty ? (terminal.query.isEmpty ? "" : "No matches") : "\((terminal.currentMatch ?? 0) + 1) of \(terminal.matches.count)")
-                .font(.system(size: 11).monospacedDigit())
+                .font(.brand(size: 11).monospacedDigit())
                 .foregroundStyle(theme.inkTertiary(scheme))
             Button { terminal.nextMatch(forward: false) } label: { Image(systemName: "chevron.up") }
                 .buttonStyle(.plain)
@@ -549,7 +551,7 @@ private struct SearchBar: View {
         .foregroundStyle(theme.inkSecondary(scheme))
         .padding(.horizontal, 10)
         .padding(.vertical, 6)
-        .background(RoundedRectangle(cornerRadius: 9, style: .continuous).fill(theme.well(scheme)))
+        .background(RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.well(scheme)))
     }
 }
 
@@ -574,7 +576,7 @@ private struct HistoryPicker: View {
                     ForEach(results, id: \.self) { command in
                         Button { pick(command) } label: {
                             Text(command)
-                                .font(.system(size: 12, design: .monospaced))
+                                .font(.brand(size: 12, design: .monospaced))
                                 .foregroundStyle(theme.ink(scheme))
                                 .lineLimit(1)
                                 .truncationMode(.middle)
@@ -589,7 +591,7 @@ private struct HistoryPicker: View {
             }
             .frame(height: 280)
             Text("Picking one types it at the prompt. Nothing runs until you press Return.")
-                .font(.system(size: 11))
+                .font(.brand(size: 11))
                 .foregroundStyle(theme.inkTertiary(scheme))
         }
         .padding(12)
@@ -613,7 +615,7 @@ private struct RiskBanner: View {
             HStack(spacing: 8) {
                 Image(systemName: "exclamationmark.triangle")
                 Text("\(risky) can change or delete things. Press Return again to run it, or edit it first.")
-                    .font(.system(size: 12))
+                    .font(.brand(size: 12))
                     .lineLimit(2)
                 Spacer()
                 Button("Don't run it") {
@@ -624,7 +626,7 @@ private struct RiskBanner: View {
             }
             .foregroundStyle(theme.ink(scheme))
             .padding(10)
-            .background(RoundedRectangle(cornerRadius: 9, style: .continuous).fill(Color.orange.opacity(0.14)))
+            .background(RoundedRectangle(cornerRadius: 0, style: .continuous).fill(Color.orange.opacity(0.14)))
         }
     }
 }
@@ -641,11 +643,11 @@ private struct CommandSuggestion: View {
             VStack(alignment: .leading, spacing: 6) {
                 if run.status == .done && !suggestion.command.isEmpty {
                     Text(suggestion.command)
-                        .font(.system(size: 12.5, design: .monospaced))
+                        .font(.brand(size: 12.5, design: .monospaced))
                         .foregroundStyle(theme.ink(scheme))
                         .textSelection(.enabled)
                     if !suggestion.why.isEmpty {
-                        Text(suggestion.why).font(.system(size: 11.5)).foregroundStyle(theme.inkSecondary(scheme))
+                        Text(suggestion.why).font(.brand(size: 11.5)).foregroundStyle(theme.inkSecondary(scheme))
                     }
                     HStack(spacing: 6) {
                         Button("Type it in") {
@@ -655,7 +657,7 @@ private struct CommandSuggestion: View {
                         .buttonStyle(.vellumPrimary)
                         if TerminalWorkspace.isRisky(suggestion.command) {
                             Label("Can change or delete things", systemImage: "exclamationmark.triangle")
-                                .font(.system(size: 11))
+                                .font(.brand(size: 11))
                                 .foregroundStyle(Color.orange)
                         }
                     }
@@ -670,7 +672,7 @@ private struct CommandSuggestion: View {
         }
         .padding(10)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(RoundedRectangle(cornerRadius: 9, style: .continuous).fill(theme.well(scheme)))
+        .background(RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.well(scheme)))
     }
 }
 
@@ -685,7 +687,7 @@ private struct Explanation: View {
         HStack(alignment: .top, spacing: 10) {
             VStack(alignment: .leading, spacing: 6) {
                 Text("$ \(terminal.explaining)")
-                    .font(.system(size: 11.5, design: .monospaced))
+                    .font(.brand(size: 11.5, design: .monospaced))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .lineLimit(1)
                 RunView(run: run)
@@ -704,6 +706,6 @@ private struct Explanation: View {
         }
         .padding(10)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(RoundedRectangle(cornerRadius: 9, style: .continuous).fill(theme.well(scheme)))
+        .background(RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.well(scheme)))
     }
 }

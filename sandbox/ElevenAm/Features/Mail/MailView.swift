@@ -217,11 +217,11 @@ private struct MailSearchField: View {
     var body: some View {
         HStack(spacing: 6) {
             Image(systemName: "magnifyingglass")
-                .font(.system(size: 11))
+                .font(.brand(size: 11))
                 .foregroundStyle(theme.inkTertiary(scheme))
             TextField("Search mail", text: $text)
                 .textFieldStyle(.plain)
-                .font(.system(size: 12.5))
+                .font(.brand(size: 12.5))
             if !text.isEmpty {
                 Button { text = "" } label: { Image(systemName: "xmark.circle.fill") }
                     .buttonStyle(.plain)
@@ -251,9 +251,9 @@ private struct LaneBar: View {
                 } label: {
                     HStack(spacing: 6) {
                         Text(lane.title)
-                            .font(.system(size: 12.5, weight: .semibold))
+                            .font(.brand(size: 12.5, weight: .semibold))
                         Text("\(mail.count(lane))")
-                            .font(.system(size: 11.5, weight: .medium).monospacedDigit())
+                            .font(.brand(size: 11.5, weight: .medium).monospacedDigit())
                             .contentTransition(.numericText())
                             .opacity(0.6)
                     }
@@ -284,7 +284,7 @@ private struct LaneBar: View {
                     }
                 } label: {
                     Label("\(mail.scheduled.count) scheduled", systemImage: "clock")
-                        .font(.system(size: 12))
+                        .font(.brand(size: 12))
                 }
                 .menuStyle(.button)
                 .buttonStyle(.borderless)
@@ -299,7 +299,7 @@ private struct LaneBar: View {
                     }
                 } label: {
                     Label("\(mail.snoozed.count) snoozed", systemImage: "moon.zzz")
-                        .font(.system(size: 12))
+                        .font(.brand(size: 12))
                 }
                 .menuStyle(.button)
                 .buttonStyle(.borderless)
@@ -337,9 +337,9 @@ private struct AccountChips: View {
         } label: {
             HStack(spacing: 5) {
                 if let initial { AccountBadge(initial: initial, size: 15) }
-                Text(title).font(.system(size: 12, weight: .medium))
+                Text(title).font(.brand(size: 12, weight: .medium))
                 if unread > 0 {
-                    Text("\(unread)").font(.system(size: 11).monospacedDigit()).opacity(0.55)
+                    Text("\(unread)").font(.brand(size: 11).monospacedDigit()).opacity(0.55)
                 }
             }
             .fixedSize()
@@ -362,7 +362,7 @@ struct AccountBadge: View {
 
     var body: some View {
         Text(initial)
-            .font(.system(size: size * 0.55, weight: .bold))
+            .font(.brand(size: size * 0.55, weight: .bold))
             .foregroundStyle(theme.paper(scheme))
             .frame(width: size, height: size)
             .background(Circle().fill(theme.ink(scheme).opacity(0.75)))
@@ -381,12 +381,12 @@ private struct MailBanner: View {
             Image(systemName: symbol)
                 .foregroundStyle(theme.inkSecondary(scheme))
             Text(text)
-                .font(.system(size: 12.5))
+                .font(.brand(size: 12.5))
                 .foregroundStyle(theme.ink(scheme))
                 .lineLimit(2)
             Spacer()
             if let dismiss {
-                Button { dismiss() } label: { Image(systemName: "xmark").font(.system(size: 10, weight: .bold)) }
+                Button { dismiss() } label: { Image(systemName: "xmark").font(.brand(size: 10, weight: .bold)) }
                     .buttonStyle(.plain)
                     .foregroundStyle(theme.inkTertiary(scheme))
             }
@@ -394,10 +394,10 @@ private struct MailBanner: View {
         .padding(.horizontal, 14)
         .padding(.vertical, 9)
         .background {
-            RoundedRectangle(cornerRadius: max(theme.radius - 4, 8), style: .continuous).fill(theme.well(scheme))
+            RoundedRectangle(cornerRadius: theme.radius, style: .continuous).fill(theme.well(scheme))
         }
         .overlay {
-            RoundedRectangle(cornerRadius: max(theme.radius - 4, 8), style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5)
+            RoundedRectangle(cornerRadius: theme.radius, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5)
         }
     }
 }
@@ -412,11 +412,11 @@ private struct MailLoadNotice: View {
         Card {
             HStack(alignment: .top, spacing: 12) {
                 Image(systemName: error == .noAccess ? "lock" : "tray")
-                    .font(.system(size: 16))
+                    .font(.brand(size: 16))
                     .foregroundStyle(theme.inkSecondary(scheme))
                 VStack(alignment: .leading, spacing: 8) {
                     Text(error.message)
-                        .font(.system(size: 12.5))
+                        .font(.brand(size: 12.5))
                         .foregroundStyle(theme.ink(scheme))
                         .fixedSize(horizontal: false, vertical: true)
                     HStack(spacing: 8) {
@@ -447,7 +447,7 @@ private struct SendingToast: View {
         HStack(spacing: 12) {
             ProgressView().controlSize(.small)
             Text(pending.secondsLeft > 0 ? "Sending to \(pending.draft.to) in \(pending.secondsLeft)s" : "Sending to \(pending.draft.to)…")
-                .font(.system(size: 12.5, weight: .medium))
+                .font(.brand(size: 12.5, weight: .medium))
                 .monospacedDigit()
             Button("Undo") { mail.undoSend() }
                 .buttonStyle(.vellumSecondary)
@@ -482,7 +482,7 @@ private struct MessageList: View {
                 }
                 if mail.inLane.isEmpty {
                     Text(mail.search.isEmpty ? "Nothing here. New mail lands in the right lane, with a reason." : "No mail matches that.")
-                        .font(.system(size: 12.5))
+                        .font(.brand(size: 12.5))
                         .foregroundStyle(theme.inkTertiary(scheme))
                         .padding(12)
                 }
@@ -511,27 +511,27 @@ private struct MessageRow: View {
                         Circle().fill(theme.ink(scheme)).frame(width: 6, height: 6)
                     }
                     Text(message.fromName)
-                        .font(.system(size: 13, weight: message.seen ? .medium : .semibold))
+                        .font(.brand(size: 13, weight: message.seen ? .medium : .semibold))
                         .lineLimit(1)
-                    if message.flagged { Image(systemName: "flag.fill").font(.system(size: 9)) }
-                    if message.answered { Image(systemName: "arrowshape.turn.up.left.fill").font(.system(size: 9)).opacity(0.5) }
+                    if message.flagged { Image(systemName: "flag.fill").font(.brand(size: 9)) }
+                    if message.answered { Image(systemName: "arrowshape.turn.up.left.fill").font(.brand(size: 9)).opacity(0.5) }
                     Spacer(minLength: 6)
                     if mail.accounts.count > 1, mail.accountFilter == nil, let account = mail.account(for: message) {
                         AccountBadge(initial: account.initial, size: 14)
                     }
                     Text(MailDates.short(message.date))
-                        .font(.system(size: 11).monospacedDigit())
+                        .font(.brand(size: 11).monospacedDigit())
                         .foregroundStyle(theme.inkTertiary(scheme))
                 }
                 Text(message.subject)
-                    .font(.system(size: 12.5))
+                    .font(.brand(size: 12.5))
                     .lineLimit(1)
                 HStack(spacing: 4) {
                     if mail.verdicts[message.id]?.learned == true {
                         AgentLogo(code: "mc", size: 11, color: theme.inkTertiary(scheme))
                     }
                     Text(mail.search.isEmpty ? message.reason : "\(message.lane.title) · \(message.reason)")
-                        .font(.system(size: 11))
+                        .font(.brand(size: 11))
                         .foregroundStyle(theme.inkTertiary(scheme))
                         .lineLimit(1)
                 }
@@ -541,11 +541,11 @@ private struct MessageRow: View {
             .padding(.vertical, 9)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background {
-                RoundedRectangle(cornerRadius: max(theme.radius - 3, 7), style: .continuous)
+                RoundedRectangle(cornerRadius: theme.radius, style: .continuous)
                     .fill(selected ? theme.raised(scheme) : (hovering ? theme.well(scheme).opacity(0.7) : Color.clear))
             }
             .overlay {
-                RoundedRectangle(cornerRadius: max(theme.radius - 3, 7), style: .continuous)
+                RoundedRectangle(cornerRadius: theme.radius, style: .continuous)
                     .strokeBorder(selected ? theme.edge(scheme) : Color.clear, lineWidth: 0.5)
             }
             .contentShape(Rectangle())
@@ -592,9 +592,9 @@ private struct MessageReader: View {
                                 .fixedSize(horizontal: false, vertical: true)
                             HStack(alignment: .firstTextBaseline, spacing: 6) {
                                 Text(message.fromName)
-                                    .font(.system(size: 13, weight: .semibold))
+                                    .font(.brand(size: 13, weight: .semibold))
                                 Text(message.fromAddress)
-                                    .font(.system(size: 12))
+                                    .font(.brand(size: 12))
                                     .foregroundStyle(theme.inkTertiary(scheme))
                                     .lineLimit(1)
                                 PersonCardButton(address: message.fromAddress, name: message.fromName)
@@ -602,11 +602,11 @@ private struct MessageReader: View {
                                 if let account = mail.account(for: message), mail.accounts.count > 1 {
                                     AccountBadge(initial: account.initial, size: 15)
                                     Text(account.name)
-                                        .font(.system(size: 11.5))
+                                        .font(.brand(size: 11.5))
                                         .foregroundStyle(theme.inkTertiary(scheme))
                                 }
                                 Text(message.date.formatted(.dateTime.day().month(.abbreviated).hour().minute()))
-                                    .font(.system(size: 11.5))
+                                    .font(.brand(size: 11.5))
                                     .foregroundStyle(theme.inkTertiary(scheme))
                                     .fixedSize()
                             }
@@ -622,7 +622,7 @@ private struct MessageReader: View {
                             }
 
                             Text(message.body.isEmpty ? "The full text downloads on the next sync." : message.body)
-                                .font(.system(size: 13.5))
+                                .font(.brand(size: 13.5))
                                 .lineSpacing(3.5)
                                 .foregroundStyle(theme.ink(scheme).opacity(message.body.isEmpty ? 0.5 : 1))
                                 .textSelection(.enabled)
@@ -641,14 +641,14 @@ private struct MessageReader: View {
                 VStack(spacing: 10) {
                     AgentLogo(code: "mc", size: 44, color: theme.inkTertiary(scheme))
                     Text("Pick an email to read it here. j and k move, e archives.")
-                        .font(.system(size: 12.5))
+                        .font(.brand(size: 12.5))
                         .foregroundStyle(theme.inkTertiary(scheme))
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .vellum(level: 3, radius: max(theme.radius - 2, 8))
+        .vellum(level: 3, radius: theme.radius)
         .animation(theme.spring, value: mail.selectedID)
         .animation(theme.spring, value: mail.selected.map { mail.summaries[$0.id] != nil } ?? false)
     }
@@ -738,7 +738,7 @@ private struct ReaderActions: View {
     private func icon(_ symbol: String, _ help: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: symbol)
-                .font(.system(size: 13))
+                .font(.brand(size: 13))
                 .frame(width: 28, height: 24)
                 .contentShape(Rectangle())
         }
@@ -760,12 +760,12 @@ private struct ReasonLine: View {
         HStack(spacing: 6) {
             AgentLogo(code: "mc", size: 20, color: theme.inkSecondary(scheme))
             Text("\(message.lane.title) · \(message.reason)")
-                .font(.system(size: 11.5, weight: .medium))
+                .font(.brand(size: 11.5, weight: .medium))
                 .foregroundStyle(theme.inkSecondary(scheme))
                 .lineLimit(2)
             Button("Why?") { showingWhy = true }
                 .buttonStyle(.plain)
-                .font(.system(size: 11.5, weight: .semibold))
+                .font(.brand(size: 11.5, weight: .semibold))
                 .foregroundStyle(theme.ink(scheme))
                 .popover(isPresented: $showingWhy, arrowEdge: .bottom) {
                     WhyPopover(message: message)
@@ -791,11 +791,11 @@ private struct WhyPopover: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
                 Text("Why it's in \(message.lane.title)")
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.brand(size: 13, weight: .semibold))
                 Spacer()
                 if let confidence = verdict?.confidence {
                     Text("\(Int(confidence * 100))% sure")
-                        .font(.system(size: 11).monospacedDigit())
+                        .font(.brand(size: 11).monospacedDigit())
                         .foregroundStyle(theme.inkTertiary(scheme))
                 }
             }
@@ -803,21 +803,21 @@ private struct WhyPopover: View {
                 let top = factors.map(\.weight).max() ?? 1
                 ForEach(factors.prefix(5)) { factor in
                     VStack(alignment: .leading, spacing: 3) {
-                        Text(factor.text).font(.system(size: 12))
+                        Text(factor.text).font(.brand(size: 12))
                         Capsule()
                             .fill(theme.ink(scheme).opacity(MailLearner.behaviourFactors.contains(factor.id) ? 0.7 : 0.3))
                             .frame(width: max(6, 220 * factor.weight / max(top, 0.01)), height: 4)
                     }
                 }
                 Text("Dark bars are what you've done; light bars are what the email is like.")
-                    .font(.system(size: 10.5))
+                    .font(.brand(size: 10.5))
                     .foregroundStyle(theme.inkTertiary(scheme))
             } else {
-                Text(message.reason).font(.system(size: 12))
+                Text(message.reason).font(.brand(size: 12))
             }
             Divider()
             Text("Wrong lane? Move it and Marc learns.")
-                .font(.system(size: 11.5))
+                .font(.brand(size: 11.5))
                 .foregroundStyle(theme.inkSecondary(scheme))
             HStack(spacing: 6) {
                 ForEach(MailLane.allCases.filter { $0 != message.lane }) { lane in
@@ -858,7 +858,7 @@ private struct DraftCard: View {
                 Text(message.lane == .needsYou
                      ? "Marc writes the first draft in your voice, so you only review."
                      : "No reply needed, by Marc's reading. You can still draft one.")
-                    .font(.system(size: 12.5))
+                    .font(.brand(size: 12.5))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -873,10 +873,10 @@ private struct DraftCard: View {
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background {
-            RoundedRectangle(cornerRadius: max(theme.radius - 4, 8), style: .continuous).fill(theme.well(scheme))
+            RoundedRectangle(cornerRadius: theme.radius, style: .continuous).fill(theme.well(scheme))
         }
         .overlay {
-            RoundedRectangle(cornerRadius: max(theme.radius - 4, 8), style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5)
+            RoundedRectangle(cornerRadius: theme.radius, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5)
         }
     }
 }

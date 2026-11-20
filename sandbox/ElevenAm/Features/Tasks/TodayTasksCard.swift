@@ -19,11 +19,11 @@ struct TodayTasksCard: View {
                         model.go(to: .tasks)
                     }
                     .buttonStyle(.borderless)
-                    .font(.system(size: 12, weight: .medium))
+                    .font(.brand(size: 12, weight: .medium))
                 }
                 if today.isEmpty {
                     Text("Nothing due today.")
-                        .font(.system(size: 13))
+                        .font(.brand(size: 13))
                         .foregroundStyle(theme.inkTertiary(scheme))
                 }
                 ForEach(today.prefix(6)) { task in
@@ -32,21 +32,21 @@ struct TodayTasksCard: View {
                             withAnimation(theme.spring) { tasks.toggle(task.id) }
                         }
                         Text(task.title)
-                            .font(.system(size: 13, weight: tasks.isOverdue(task) ? .semibold : .regular))
+                            .font(.brand(size: 13, weight: tasks.isOverdue(task) ? .semibold : .regular))
                             .foregroundStyle(theme.ink(scheme))
                             .lineLimit(1)
                         if tasks.isOverdue(task) {
                             Text("overdue")
-                                .font(.system(size: 11.5))
+                                .font(.brand(size: 11.5))
                                 .foregroundStyle(theme.inkTertiary(scheme))
                         } else if task.dueHasTime, let due = task.due {
                             Text(TaskDates.time(due, calendar: tasks.calendar))
-                                .font(.system(size: 11.5))
+                                .font(.brand(size: 11.5))
                                 .foregroundStyle(theme.inkTertiary(scheme))
                         }
                         Spacer(minLength: 6)
                         if task.priority != TaskPriority.none {
-                            Text(task.priority.marks).font(.system(size: 11, weight: .heavy))
+                            Text(task.priority.marks).font(.brand(size: 11, weight: .heavy))
                         }
                         if let origin = task.origin, origin.kind != .reminders {
                             Monogram(text: origin.monogram, size: 16)
@@ -56,7 +56,7 @@ struct TodayTasksCard: View {
                 }
                 if today.count > 6 {
                     Text("and \(today.count - 6) more")
-                        .font(.system(size: 12))
+                        .font(.brand(size: 12))
                         .foregroundStyle(theme.inkTertiary(scheme))
                 }
             }

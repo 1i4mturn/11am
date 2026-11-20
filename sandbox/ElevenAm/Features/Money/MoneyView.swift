@@ -52,20 +52,20 @@ struct MoneyView: View {
             if let notice = ledger.notice ?? money.notice {
                 HStack(spacing: 10) {
                     AgentLogo(code: "ge", size: 18, color: theme.inkSecondary(scheme))
-                    Text(notice).font(.system(size: 12.5)).foregroundStyle(theme.ink(scheme)).lineLimit(2)
+                    Text(notice).font(.brand(size: 12.5)).foregroundStyle(theme.ink(scheme)).lineLimit(2)
                     Spacer()
                     Button {
                         ledger.notice = nil
                         money.notice = nil
                     } label: {
-                        Image(systemName: "xmark").font(.system(size: 10, weight: .bold))
+                        Image(systemName: "xmark").font(.brand(size: 10, weight: .bold))
                     }
                     .buttonStyle(.plain)
                     .foregroundStyle(theme.inkTertiary(scheme))
                 }
                 .padding(.horizontal, 14)
                 .padding(.vertical, 8)
-                .vellum(level: 3, radius: max(theme.radius - 4, 8))
+                .vellum(level: 3, radius: theme.radius)
                 .transition(.rise(theme.rise))
             }
 
@@ -220,13 +220,13 @@ private struct StatTile: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
             Text(detail)
-                .font(.system(size: 11.5))
+                .font(.brand(size: 11.5))
                 .foregroundStyle(theme.inkTertiary(scheme))
                 .lineLimit(2)
         }
         .padding(16)
         .frame(maxWidth: .infinity, minHeight: 110, alignment: .topLeading)
-        .vellum(level: 3, radius: max(theme.radius - 4, 8))
+        .vellum(level: 3, radius: theme.radius)
     }
 }
 
@@ -244,11 +244,11 @@ private struct CashTile: View {
                 Spacer()
                 Button("Edit") { editing.toggle() }
                     .buttonStyle(.plain)
-                    .font(.system(size: 11, weight: .medium))
+                    .font(.brand(size: 11, weight: .medium))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .popover(isPresented: $editing, arrowEdge: .bottom) {
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Cash in the bank").font(.system(size: 12.5, weight: .semibold))
+                            Text("Cash in the bank").font(.brand(size: 12.5, weight: .semibold))
                             TextField("Cash", value: $money.cash, format: .currency(code: Money.currencyCode).precision(.fractionLength(0)))
                                 .textFieldStyle(.roundedBorder)
                                 .frame(width: 180)
@@ -261,12 +261,12 @@ private struct CashTile: View {
                 .foregroundStyle(theme.ink(scheme))
                 .contentTransition(.numericText())
             Text("In the bank today")
-                .font(.system(size: 11.5))
+                .font(.brand(size: 11.5))
                 .foregroundStyle(theme.inkTertiary(scheme))
         }
         .padding(16)
         .frame(maxWidth: .infinity, minHeight: 110, alignment: .topLeading)
-        .vellum(level: 3, radius: max(theme.radius - 4, 8))
+        .vellum(level: 3, radius: theme.radius)
     }
 }
 
@@ -311,7 +311,7 @@ private struct MonthChart: View {
             .frame(height: 190)
         }
         .padding(16)
-        .vellum(level: 3, radius: max(theme.radius - 4, 8))
+        .vellum(level: 3, radius: theme.radius)
     }
 }
 
@@ -323,8 +323,8 @@ private struct LegendDot: View {
 
     var body: some View {
         HStack(spacing: 4) {
-            RoundedRectangle(cornerRadius: 2).fill(color).frame(width: 9, height: 9)
-            Text(label).font(.system(size: 11)).foregroundStyle(theme.inkTertiary(scheme))
+            RoundedRectangle(cornerRadius: 0).fill(color).frame(width: 9, height: 9)
+            Text(label).font(.brand(size: 11)).foregroundStyle(theme.inkTertiary(scheme))
         }
     }
 }
@@ -342,9 +342,9 @@ private struct CategoryBreakdown: View {
             ForEach(rows, id: \.category) { row in
                 VStack(alignment: .leading, spacing: 3) {
                     HStack {
-                        Text(row.category).font(.system(size: 12, weight: .medium))
+                        Text(row.category).font(.brand(size: 12, weight: .medium))
                         Spacer()
-                        Text(Money.short(row.amount)).font(.system(size: 11.5).monospacedDigit())
+                        Text(Money.short(row.amount)).font(.brand(size: 11.5).monospacedDigit())
                             .foregroundStyle(theme.inkSecondary(scheme))
                     }
                     .foregroundStyle(theme.ink(scheme))
@@ -357,12 +357,12 @@ private struct CategoryBreakdown: View {
                 }
             }
             if rows.isEmpty {
-                Text("No spending yet.").font(.system(size: 12)).foregroundStyle(theme.inkTertiary(scheme))
+                Text("No spending yet.").font(.brand(size: 12)).foregroundStyle(theme.inkTertiary(scheme))
             }
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .topLeading)
-        .vellum(level: 3, radius: max(theme.radius - 4, 8))
+        .vellum(level: 3, radius: theme.radius)
     }
 }
 
@@ -398,7 +398,7 @@ private struct AskGeorge: View {
             }
         }
         .padding(16)
-        .vellum(level: 3, radius: max(theme.radius - 4, 8))
+        .vellum(level: 3, radius: theme.radius)
         .animation(theme.spring, value: money.askRun?.id)
     }
 }
@@ -414,7 +414,7 @@ private struct TransactionList: View {
                 SectionLabel(text: "Transactions")
                 Spacer()
                 Text("Change a category and George remembers that payee")
-                    .font(.system(size: 11))
+                    .font(.brand(size: 11))
                     .foregroundStyle(theme.inkTertiary(scheme))
             }
             .padding(.bottom, 8)
@@ -422,11 +422,11 @@ private struct TransactionList: View {
                 ForEach(money.recent) { item in
                     HStack(spacing: 12) {
                         Text(item.date.formatted(.dateTime.day().month(.abbreviated)))
-                            .font(.system(size: 12).monospacedDigit())
+                            .font(.brand(size: 12).monospacedDigit())
                             .foregroundStyle(theme.inkTertiary(scheme))
                             .frame(width: 52, alignment: .leading)
                         Text(item.description)
-                            .font(.system(size: 12.5))
+                            .font(.brand(size: 12.5))
                             .foregroundStyle(theme.ink(scheme))
                             .lineLimit(1)
                         Spacer(minLength: 8)
@@ -435,14 +435,14 @@ private struct TransactionList: View {
                                 Button(category) { withAnimation(theme.spring) { money.setCategory(category, for: item) } }
                             }
                         } label: {
-                            Text(item.category).font(.system(size: 11, weight: .medium))
+                            Text(item.category).font(.brand(size: 11, weight: .medium))
                         }
                         .menuStyle(.button)
                         .buttonStyle(.borderless)
                         .fixedSize()
                         .foregroundStyle(theme.inkSecondary(scheme))
                         Text(Money.format(item.amount, cents: true))
-                            .font(.system(size: 12.5, weight: item.amount > 0 ? .semibold : .regular).monospacedDigit())
+                            .font(.brand(size: 12.5, weight: item.amount > 0 ? .semibold : .regular).monospacedDigit())
                             .foregroundStyle(theme.ink(scheme))
                             .frame(width: 110, alignment: .trailing)
                     }
@@ -454,6 +454,6 @@ private struct TransactionList: View {
             }
         }
         .padding(16)
-        .vellum(level: 3, radius: max(theme.radius - 4, 8))
+        .vellum(level: 3, radius: theme.radius)
     }
 }

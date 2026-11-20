@@ -135,73 +135,41 @@ final class Theme: ObservableObject {
     }
 
     // MARK: Colour
+    //
+    // Brand v2: ink and paper at full strength, both ways round. Dark mode is the ink theme. The old tunables
+    // (paper tone, ink softness, frost, corners) are fixed by the brand now and no longer change the look.
 
-    /// The vellum itself: white to warm, or smoked graphite in dark mode.
-    func paper(_ scheme: ColorScheme) -> Color {
-        let t = values.paperTone
-        if scheme == .dark {
-            return Color(red: lerp(0.11, 0.14, t), green: lerp(0.11, 0.13, t), blue: lerp(0.12, 0.115, t))
-        }
-        return Color(red: lerp(1.0, 0.968, t), green: lerp(1.0, 0.95, t), blue: lerp(1.0, 0.915, t))
-    }
+    /// The ground: paper (#ffffff), or ink (#0a0a0a) in the ink theme.
+    func paper(_ scheme: ColorScheme) -> Color { BrandTokens.paper(scheme) }
 
-    func ink(_ scheme: ColorScheme) -> Color {
-        let soft = values.inkSoftness
-        if scheme == .dark {
-            let v = 0.97 - soft * 0.17
-            return Color(red: v, green: v, blue: v)
-        }
-        let v = 0.04 + soft * 0.16
-        return Color(red: v, green: v, blue: v)
-    }
+    /// Text and fills, always full strength.
+    func ink(_ scheme: ColorScheme) -> Color { BrandTokens.ink(scheme) }
 
-    func inkSecondary(_ scheme: ColorScheme) -> Color { ink(scheme).opacity(0.68) }
-    func inkTertiary(_ scheme: ColorScheme) -> Color { ink(scheme).opacity(0.46) }
+    /// Text is never faded in brand v2: hierarchy comes from size, weight and Courier labels, and anything that should
+    /// sit back goes under a sheet. These stay as names so every screen moves at once.
+    func inkSecondary(_ scheme: ColorScheme) -> Color { ink(scheme) }
+    func inkTertiary(_ scheme: ColorScheme) -> Color { ink(scheme) }
 
-    /// Hairline edge of a vellum sheet.
-    func edge(_ scheme: ColorScheme) -> Color {
-        scheme == .dark ? Color.white.opacity(0.10) : Color.black.opacity(0.08)
-    }
+    /// Structural hairlines only (hour lines, sheet grids). Cards, fields and buttons don't get outlines.
+    func edge(_ scheme: ColorScheme) -> Color { ink(scheme).opacity(scheme == .dark ? 0.16 : 0.1) }
 
-    /// The light catching the top edge of a sheet.
-    func highlight(_ scheme: ColorScheme) -> Color {
-        scheme == .dark ? Color.white.opacity(0.10) : Color.white.opacity(0.75)
-    }
+    /// No lit top edge any more.
+    func highlight(_ scheme: ColorScheme) -> Color { .clear }
 
-    /// Wells, inputs and badges. In light mode they're a brighter sheet laid on the paper, never a grey dip.
-    func well(_ scheme: ColorScheme) -> Color {
-        scheme == .dark ? Color.white.opacity(0.07) : Color.white.opacity(0.62)
-    }
+    /// Fields and wells: white paper lifted off paper, or sheet-ink on ink.
+    func well(_ scheme: ColorScheme) -> Color { scheme == .dark ? BrandTokens.sheetInk : BrandTokens.paperHex }
 
-    /// A raised tab: the selected row, a hovered tile.
-    func raised(_ scheme: ColorScheme) -> Color {
-        scheme == .dark ? Color.white.opacity(0.11) : Color.white.opacity(0.92)
-    }
+    /// A raised tab: the selected row lifts rather than changing colour.
+    func raised(_ scheme: ColorScheme) -> Color { scheme == .dark ? Color.white.opacity(0.18) : BrandTokens.paperHex }
 
-    /// How much of the blurred backdrop is drawn behind the window and sidebar.
-    /// The rest shows the desktop exactly as it is, so windows and wallpaper read through.
-    var backdropOpacity: Double { 1 - values.clarity * 0.8 }
+    var backdropOpacity: Double { 1 }
+    var sheetBackdropOpacity: Double { 1 }
+    func frostOpacity(level: Int) -> Double { 1 }
 
-    /// Sheets keep more frost than the window so text stays easy to read.
-    var sheetBackdropOpacity: Double { 1 - values.clarity * 0.25 }
+    func shadowOpacity(_ scheme: ColorScheme) -> Double { scheme == .dark ? 0.4 : 0.08 }
 
-    /// Opacity of the vellum wash for a level: 0 = window and sidebar, 1 = side sheet, 2 = main sheet, 3 = card.
-    /// Sheets carry their own frosted backdrop, so these don't stack on the window wash.
-    func frostOpacity(level: Int) -> Double {
-        let f = values.frost
-        switch level {
-        case 0: return min(0.08 + f * 0.46, 0.94)
-        case 1: return min(0.16 + f * 0.48, 0.95)
-        case 2: return min(0.22 + f * 0.5, 0.96)
-        default: return min(0.10 + f * 0.34, 0.9)
-        }
-    }
-
-    func shadowOpacity(_ scheme: ColorScheme) -> Double {
-        (scheme == .dark ? 0.35 : 0.08) * (0.4 + values.depth)
-    }
-
-    var radius: CGFloat { CGFloat(values.cornerRadius) }
+    /// The system is square.
+    var radius: CGFloat { BrandTokens.radius }
 
     // MARK: Motion
 
@@ -224,17 +192,10 @@ final class Theme: ObservableObject {
 
     // MARK: Type
 
-    func display(_ size: CGFloat) -> Font {
-        switch values.displayFace {
-        case .alteHaas: return .custom("AlteHaasGrotesk_Bold", size: size)
-        case .sfPro: return .system(size: size, weight: .bold, design: .default)
-        case .newYork: return .system(size: size, weight: .semibold, design: .serif)
-        }
-    }
+    /// Headings: Schibsted Grotesk, pushed hard in weight.
+    func display(_ size: CGFloat) -> Font { BrandFont.heading(size, weight: size >= 30 ? .black : .heavy) }
 
-    func monogramFont(_ size: CGFloat) -> Font {
-        .custom("AlteHaasGrotesk_Bold", size: size)
-    }
+    func monogramFont(_ size: CGFloat) -> Font { BrandFont.heading(size, weight: .black) }
 
     private func lerp(_ a: Double, _ b: Double, _ t: Double) -> Double {
         a + (b - a) * max(0, min(1, t))

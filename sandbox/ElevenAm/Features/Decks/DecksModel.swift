@@ -757,7 +757,7 @@ private struct RehearsalClock: View {
                 Text(RehearsalReport.clock(context.date.timeIntervalSince(presenter.started)))
                     .foregroundStyle(.white.opacity(0.7))
             }
-            .font(.system(size: 22, weight: .semibold).monospacedDigit())
+            .font(.brand(size: 22, weight: .semibold).monospacedDigit())
             .foregroundStyle(.white)
             .padding(.horizontal, 18)
             .padding(.vertical, 10)
@@ -778,7 +778,7 @@ private struct PresenterStage: View {
                         CanvasThumbnail(document: slide.canvas, images: presenter.images, height: 380)
                         ScrollView {
                             Text(slide.notes.isEmpty ? "No notes for this slide." : slide.notes)
-                                .font(.system(size: 26))
+                                .font(.brand(size: 26))
                                 .foregroundStyle(.white.opacity(slide.notes.isEmpty ? 0.4 : 0.92))
                                 .frame(maxWidth: .infinity, alignment: .leading)
                         }
@@ -786,17 +786,17 @@ private struct PresenterStage: View {
                 }
                 VStack(alignment: .leading, spacing: 14) {
                     Text(elapsed(context.date))
-                        .font(.system(size: 54, weight: .semibold).monospacedDigit())
+                        .font(.brand(size: 54, weight: .semibold).monospacedDigit())
                         .foregroundStyle(.white)
                     Text("Slide \(presenter.index + 1) of \(presenter.slides.count)")
-                        .font(.system(size: 20))
+                        .font(.brand(size: 20))
                         .foregroundStyle(.white.opacity(0.6))
                     if presenter.slides.indices.contains(presenter.index + 1) {
-                        Text("Next").font(.system(size: 16, weight: .semibold)).foregroundStyle(.white.opacity(0.5))
+                        Text("Next").font(.brand(size: 16, weight: .semibold)).foregroundStyle(.white.opacity(0.5))
                         CanvasThumbnail(document: presenter.slides[presenter.index + 1].canvas, images: presenter.images, height: 200)
                     }
                     Spacer()
-                    Text("← → to move · esc to stop").font(.system(size: 15)).foregroundStyle(.white.opacity(0.4))
+                    Text("← → to move · esc to stop").font(.brand(size: 15)).foregroundStyle(.white.opacity(0.4))
                 }
                 .frame(width: 380, alignment: .leading)
             }

@@ -68,12 +68,12 @@ struct QuotesPanel: View {
                 }
                 Text("Waiting on \(waiting.count) \(waiting.count == 1 ? "answer" : "answers") worth \(LedgerMoney.text(waiting.reduce(0) { $0 + $1.total }))"
                      + (accepted.isEmpty ? "" : " · \(accepted.count) accepted, still to invoice in full"))
-                    .font(.system(size: 12))
+                    .font(.brand(size: 12))
                     .foregroundStyle(theme.inkSecondary(scheme))
                 LedgerCard {
                     if shown.isEmpty {
                         Text("No quotes here. Write one, and when they say yes it becomes an invoice in a click.")
-                            .font(.system(size: 12.5))
+                            .font(.brand(size: 12.5))
                             .foregroundStyle(theme.inkTertiary(scheme))
                             .frame(maxWidth: .infinity, minHeight: 80)
                     } else {
@@ -118,16 +118,16 @@ struct QuotesPanel: View {
                 VStack(alignment: .leading, spacing: 2) {
                     HStack(spacing: 8) {
                         Text(quote.number)
-                            .font(.system(size: 12.5, weight: .medium).monospacedDigit())
+                            .font(.brand(size: 12.5, weight: .medium).monospacedDigit())
                             .foregroundStyle(theme.ink(scheme))
                             .fixedSize()
                         Text(ledger.book.contact(quote.contact)?.name ?? "")
-                            .font(.system(size: 12.5))
+                            .font(.brand(size: 12.5))
                             .foregroundStyle(theme.ink(scheme))
                             .lineLimit(1)
                     }
                     Text([quote.title, "\(status) · \(when)"].filter { !$0.isEmpty }.joined(separator: " · "))
-                        .font(.system(size: 11, weight: quote.status == .accepted ? .semibold : .regular))
+                        .font(.brand(size: 11, weight: quote.status == .accepted ? .semibold : .regular))
                         .foregroundStyle(quote.status == .accepted ? theme.ink(scheme) : theme.inkTertiary(scheme))
                         .lineLimit(1)
                 }
@@ -139,7 +139,7 @@ struct QuotesPanel: View {
             .padding(.horizontal, 6)
             .opacity(expired || quote.status == .declined ? 0.6 : 1)
             .background {
-                if selected { RoundedRectangle(cornerRadius: 7, style: .continuous).fill(theme.raised(scheme)) }
+                if selected { RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.raised(scheme)) }
             }
             .overlay(alignment: .bottom) { Rectangle().fill(theme.edge(scheme)).frame(height: 0.5) }
             .contentShape(Rectangle())
@@ -172,15 +172,15 @@ private struct QuoteDetail: View {
                 }
                 VStack(alignment: .leading, spacing: 3) {
                     if !quote.title.isEmpty {
-                        Text(quote.title).font(.system(size: 13, weight: .semibold)).foregroundStyle(theme.ink(scheme))
+                        Text(quote.title).font(.brand(size: 13, weight: .semibold)).foregroundStyle(theme.ink(scheme))
                     }
-                    Text(ledger.book.contact(quote.contact)?.name ?? "").font(.system(size: 12.5)).foregroundStyle(theme.ink(scheme))
+                    Text(ledger.book.contact(quote.contact)?.name ?? "").font(.brand(size: 12.5)).foregroundStyle(theme.ink(scheme))
                     Text("Written \(quote.issued.fullDay) · good until \(quote.expires.fullDay)")
-                        .font(.system(size: 11.5))
+                        .font(.brand(size: 11.5))
                         .foregroundStyle(theme.inkTertiary(scheme))
                     if let sent = quote.sentAt {
                         Text("Sent \(sent.formatted(.relative(presentation: .named)))")
-                            .font(.system(size: 11.5))
+                            .font(.brand(size: 11.5))
                             .foregroundStyle(theme.inkTertiary(scheme))
                     }
                 }
@@ -188,9 +188,9 @@ private struct QuoteDetail: View {
                     ForEach(quote.lines) { line in
                         HStack(alignment: .firstTextBaseline) {
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(line.description).font(.system(size: 12.5)).foregroundStyle(theme.ink(scheme))
+                                Text(line.description).font(.brand(size: 12.5)).foregroundStyle(theme.ink(scheme))
                                 Text("\(line.quantity == line.quantity.rounded() ? String(Int(line.quantity)) : String(format: "%.2f", line.quantity)) × \(LedgerMoney.text(line.unitPrice))")
-                                    .font(.system(size: 11).monospacedDigit())
+                                    .font(.brand(size: 11).monospacedDigit())
                                     .foregroundStyle(theme.inkTertiary(scheme))
                             }
                             Spacer()
@@ -209,10 +209,10 @@ private struct QuoteDetail: View {
                                 HStack(alignment: .firstTextBaseline) {
                                     VStack(alignment: .leading, spacing: 1) {
                                         Text(invoice.number)
-                                            .font(.system(size: 12.5, weight: .medium).monospacedDigit())
+                                            .font(.brand(size: 12.5, weight: .medium).monospacedDigit())
                                             .foregroundStyle(theme.ink(scheme))
                                         Text("\(share(index))% · \(invoice.status.title.lowercased())")
-                                            .font(.system(size: 11))
+                                            .font(.brand(size: 11))
                                             .foregroundStyle(theme.inkTertiary(scheme))
                                             .lineLimit(1)
                                     }
@@ -231,7 +231,7 @@ private struct QuoteDetail: View {
             }
             .padding(14)
         }
-        .vellum(level: 2, radius: max(theme.radius - 2, 10))
+        .vellum(level: 2, radius: theme.radius)
         .confirmationDialog("Delete \(quote.number)?", isPresented: $deleting) {
             Button("Delete", role: .destructive) { ledger.deleteQuote(quote.id) }
             Button("Cancel", role: .cancel) {}
@@ -247,7 +247,7 @@ private struct QuoteDetail: View {
         let remaining = Int((quote.remainingPart * 100).rounded())
         VStack(alignment: .leading, spacing: 8) {
             if expired {
-                Text("It lapsed on \(quote.expires.fullDay).").font(.system(size: 12)).foregroundStyle(theme.inkSecondary(scheme))
+                Text("It lapsed on \(quote.expires.fullDay).").font(.brand(size: 12)).foregroundStyle(theme.inkSecondary(scheme))
                 HStack {
                     Button("Extend \(ledger.book.settings.quoteDays) days") { ledger.extendQuote(quote.id) }.buttonStyle(.vellumPrimary)
                     Button("They said no") { ledger.markQuote(quote.id, .declined) }.buttonStyle(.vellumSecondary)
@@ -271,7 +271,7 @@ private struct QuoteDetail: View {
                     }
                     Button("Mark as sent") { ledger.markQuote(quote.id, .sent) }
                         .buttonStyle(.borderless)
-                        .font(.system(size: 12))
+                        .font(.brand(size: 12))
                         .foregroundStyle(theme.inkSecondary(scheme))
                 case .sent:
                     HStack {
@@ -312,13 +312,13 @@ private struct QuoteDetail: View {
                         .popover(isPresented: $parting, arrowEdge: .bottom) { partForm(remaining: remaining) }
                     }
                     Text("The invoice is a draft with the quote's lines, for you to check before it goes.")
-                        .font(.system(size: 10.5))
+                        .font(.brand(size: 10.5))
                         .foregroundStyle(theme.inkTertiary(scheme))
                 case .invoiced:
-                    Text("Invoiced in full.").font(.system(size: 12)).foregroundStyle(theme.inkSecondary(scheme))
+                    Text("Invoiced in full.").font(.brand(size: 12)).foregroundStyle(theme.inkSecondary(scheme))
                 case .declined:
                     HStack {
-                        Text("They said no.").font(.system(size: 12)).foregroundStyle(theme.inkSecondary(scheme))
+                        Text("They said no.").font(.brand(size: 12)).foregroundStyle(theme.inkSecondary(scheme))
                         Spacer()
                         Button("Reopen") { ledger.extendQuote(quote.id) }.buttonStyle(.vellumSecondary)
                     }
@@ -330,13 +330,13 @@ private struct QuoteDetail: View {
     private func partForm(remaining: Int) -> some View {
         let upper = quote.parts.isEmpty ? 90.0 : Double(max(10, remaining - 5))
         return VStack(alignment: .leading, spacing: 10) {
-            Text(quote.parts.isEmpty ? "A deposit first" : "Another part").font(.system(size: 13, weight: .semibold))
+            Text(quote.parts.isEmpty ? "A deposit first" : "Another part").font(.brand(size: 13, weight: .semibold))
             Slider(value: $percent, in: 5...max(10, upper), step: 5)
             Text("\(Int(percent))% of \(quote.number): \(LedgerMoney.text(Int((Double(quote.total) * percent / 100).rounded())))")
-                .font(.system(size: 12).monospacedDigit())
+                .font(.brand(size: 12).monospacedDigit())
             Text("Each line is invoiced in the same share. The balance makes it up to the cent.")
-                .font(.system(size: 10.5))
-                .foregroundStyle(.secondary)
+                .font(.brand(size: 10.5))
+                .foregroundStyle(.primary)
                 .fixedSize(horizontal: false, vertical: true)
             HStack {
                 Spacer()
@@ -404,7 +404,7 @@ struct QuoteEditor: View {
             }
             HStack {
                 Text("When they say yes, it becomes an invoice in a click, all at once or a deposit first.")
-                    .font(.system(size: 11))
+                    .font(.brand(size: 11))
                     .foregroundStyle(theme.inkTertiary(scheme))
                 Spacer()
                 Button("Cancel") { ledger.editingQuote = nil }
@@ -441,12 +441,12 @@ struct RepeatingList: View {
         let monthly = active.reduce(0.0) { $0 + perMonth($1) }
         VStack(alignment: .leading, spacing: 10) {
             Text("\(active.count) repeating · about \(LedgerMoney.text(Int(monthly.rounded()))) a month · George makes each one on its day")
-                .font(.system(size: 12))
+                .font(.brand(size: 12))
                 .foregroundStyle(theme.inkSecondary(scheme))
             LedgerCard {
                 if schedules.isEmpty {
                     Text("Nothing repeats yet. Set up a retainer or a care plan, or choose Repeat on any invoice.")
-                        .font(.system(size: 12.5))
+                        .font(.brand(size: 12.5))
                         .foregroundStyle(theme.inkTertiary(scheme))
                         .frame(maxWidth: .infinity, minHeight: 80)
                 } else {
@@ -479,22 +479,22 @@ struct RepeatingList: View {
         } label: {
             HStack(spacing: 12) {
                 Image(systemName: schedule.paused ? "pause.circle" : "repeat")
-                    .font(.system(size: 13))
+                    .font(.brand(size: 13))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .frame(width: 18)
                 VStack(alignment: .leading, spacing: 2) {
                     HStack(spacing: 8) {
                         Text(ledger.book.contact(schedule.contact)?.name ?? "")
-                            .font(.system(size: 12.5, weight: .medium))
+                            .font(.brand(size: 12.5, weight: .medium))
                             .foregroundStyle(theme.ink(scheme))
                             .lineLimit(1)
                         Text(next.map { RepeatingInvoice.fill(schedule.lines.first?.description ?? "", on: $0, calendar: calendar) } ?? schedule.lines.first?.description ?? "")
-                            .font(.system(size: 12.5))
+                            .font(.brand(size: 12.5))
                             .foregroundStyle(theme.inkSecondary(scheme))
                             .lineLimit(1)
                     }
                     Text(when)
-                        .font(.system(size: 11))
+                        .font(.brand(size: 11))
                         .foregroundStyle(theme.inkTertiary(scheme))
                         .lineLimit(1)
                 }
@@ -506,7 +506,7 @@ struct RepeatingList: View {
             .padding(.horizontal, 6)
             .opacity(schedule.paused || next == nil ? 0.6 : 1)
             .background {
-                if selected { RoundedRectangle(cornerRadius: 7, style: .continuous).fill(theme.raised(scheme)) }
+                if selected { RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.raised(scheme)) }
             }
             .overlay(alignment: .bottom) { Rectangle().fill(theme.edge(scheme)).frame(height: 0.5) }
             .contentShape(Rectangle())
@@ -539,20 +539,20 @@ struct RepeatingDetail: View {
                 }
                 VStack(alignment: .leading, spacing: 3) {
                     if let next, !schedule.paused {
-                        Text("Next on \(next.fullDay)").font(.system(size: 13, weight: .semibold)).foregroundStyle(theme.ink(scheme))
+                        Text("Next on \(next.fullDay)").font(.brand(size: 13, weight: .semibold)).foregroundStyle(theme.ink(scheme))
                         if !after.isEmpty {
                             Text("Then \(after.map(\.shortDay).joined(separator: ", "))")
-                                .font(.system(size: 11.5))
+                                .font(.brand(size: 11.5))
                                 .foregroundStyle(theme.inkTertiary(scheme))
                         }
                     }
                     Text("Due \(schedule.dueDays) days after · \(schedule.approve ? "approved straight into the books" : "left as a draft for you to check")")
-                        .font(.system(size: 11.5))
+                        .font(.brand(size: 11.5))
                         .foregroundStyle(theme.inkTertiary(scheme))
                         .fixedSize(horizontal: false, vertical: true)
                     if schedule.made > 0 {
                         Text("\(schedule.made) made so far")
-                            .font(.system(size: 11.5))
+                            .font(.brand(size: 11.5))
                             .foregroundStyle(theme.inkTertiary(scheme))
                     }
                 }
@@ -560,7 +560,7 @@ struct RepeatingDetail: View {
                     ForEach(schedule.lines) { line in
                         HStack(alignment: .firstTextBaseline) {
                             Text(next.map { RepeatingInvoice.fill(line.description, on: $0, calendar: calendar) } ?? line.description)
-                                .font(.system(size: 12.5))
+                                .font(.brand(size: 12.5))
                                 .foregroundStyle(theme.ink(scheme))
                             Spacer()
                             LedgerAmount(cents: line.net, width: 90)
@@ -583,13 +583,13 @@ struct RepeatingDetail: View {
                         Label("The last one: \(last.number), \(last.issued.shortDay)", systemImage: "arrow.right.circle")
                     }
                     .buttonStyle(.borderless)
-                    .font(.system(size: 12))
+                    .font(.brand(size: 12))
                     .foregroundStyle(theme.inkSecondary(scheme))
                 }
             }
             .padding(14)
         }
-        .vellum(level: 2, radius: max(theme.radius - 2, 10))
+        .vellum(level: 2, radius: theme.radius)
         .confirmationDialog("Stop this repeating invoice?", isPresented: $stopping) {
             Button("Stop", role: .destructive) { ledger.deleteSchedule(schedule.id) }
             Button("Cancel", role: .cancel) {}
@@ -660,7 +660,7 @@ struct ScheduleEditor: View {
             LineItemsEditor(lines: $schedule.lines, sale: true)
             HStack {
                 Text("Descriptions can say [month] and [year]: \"Retainer, [month]\" becomes \"Retainer, November\".")
-                    .font(.system(size: 11))
+                    .font(.brand(size: 11))
                     .foregroundStyle(theme.inkTertiary(scheme))
                 Spacer()
                 Button("Cancel") { ledger.editingSchedule = nil }
@@ -706,7 +706,7 @@ struct MarcRemindersCard: View {
                 HStack(spacing: 8) {
                     AgentLogo(code: "mc", size: 16, color: theme.inkSecondary(scheme))
                     Text(due.isEmpty ? "Marc isn't chasing anyone" : "Marc drafted \(due.count) \(due.count == 1 ? "reminder" : "reminders") for you to approve")
-                        .font(.system(size: 12.5, weight: .semibold))
+                        .font(.brand(size: 12.5, weight: .semibold))
                         .foregroundStyle(theme.ink(scheme))
                     Spacer()
                 }
@@ -714,11 +714,11 @@ struct MarcRemindersCard: View {
                     VStack(alignment: .leading, spacing: 6) {
                         VStack(alignment: .leading, spacing: 1) {
                             Text("\(item.number) · \(item.contact)")
-                                .font(.system(size: 12.5, weight: .medium))
+                                .font(.brand(size: 12.5, weight: .medium))
                                 .foregroundStyle(theme.ink(scheme))
                                 .lineLimit(1)
                             Text(detail(item))
-                                .font(.system(size: 11).monospacedDigit())
+                                .font(.brand(size: 11).monospacedDigit())
                                 .foregroundStyle(theme.inkTertiary(scheme))
                                 .lineLimit(2)
                                 .fixedSize(horizontal: false, vertical: true)
@@ -726,7 +726,7 @@ struct MarcRemindersCard: View {
                         HStack(spacing: 8) {
                             Spacer(minLength: 0)
                             if ledger.sending.contains(item.invoice) {
-                                Text("Sending…").font(.system(size: 11.5)).foregroundStyle(theme.inkTertiary(scheme))
+                                Text("Sending…").font(.brand(size: 11.5)).foregroundStyle(theme.inkTertiary(scheme))
                             } else {
                                 Button("Skip") { ledger.skip(item) }.buttonStyle(.vellumSecondary)
                                 Button("Read and send…") { ledger.review(item) }.buttonStyle(.vellumPrimary)
@@ -738,7 +738,7 @@ struct MarcRemindersCard: View {
                 ForEach(waiting) { pair in
                     VStack(alignment: .leading, spacing: 6) {
                         Text("\(ledger.book.contact(pair.invoice.contact)?.name ?? "Their") \(LedgerMoney.text(pair.invoice.owing)) for \(pair.invoice.number) looks like it's in the bank (\(pair.line.date.shortDay)), so Marc isn't chasing it.")
-                            .font(.system(size: 11.5))
+                            .font(.brand(size: 11.5))
                             .foregroundStyle(theme.inkSecondary(scheme))
                             .lineLimit(3)
                             .fixedSize(horizontal: false, vertical: true)
@@ -752,7 +752,7 @@ struct MarcRemindersCard: View {
                 }
             }
             .padding(12)
-            .vellum(level: 3, radius: max(theme.radius - 4, 8))
+            .vellum(level: 3, radius: theme.radius)
             .transition(.rise(theme.rise))
         }
     }
@@ -786,30 +786,30 @@ struct ReminderSheet: View {
                         .font(theme.display(22))
                         .foregroundStyle(theme.ink(scheme))
                     Text("\(reminder.contact) · \(reminder.daysLate) days late · \(LedgerMoney.text(reminder.owing)) owing")
-                        .font(.system(size: 12))
+                        .font(.brand(size: 12))
                         .foregroundStyle(theme.inkSecondary(scheme))
                 }
             }
             Grid(alignment: .leading, horizontalSpacing: 10, verticalSpacing: 8) {
                 GridRow {
-                    Text("To").font(.system(size: 12)).foregroundStyle(theme.inkSecondary(scheme))
+                    Text("To").font(.brand(size: 12)).foregroundStyle(theme.inkSecondary(scheme))
                     TextField("Their email", text: $review.to)
                 }
                 GridRow {
-                    Text("Subject").font(.system(size: 12)).foregroundStyle(theme.inkSecondary(scheme))
+                    Text("Subject").font(.brand(size: 12)).foregroundStyle(theme.inkSecondary(scheme))
                     TextField("", text: $review.subject)
                 }
             }
             TextEditor(text: $review.body)
-                .font(.system(size: 13))
+                .font(.brand(size: 13))
                 .scrollContentBackground(.hidden)
                 .padding(8)
                 .frame(minHeight: 230)
-                .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(theme.raised(scheme)))
-                .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5))
+                .background(RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.raised(scheme)))
+                .overlay(RoundedRectangle(cornerRadius: 0, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5))
             Text(ledger.reminderSender.map { "Marc sends it from \($0), with a few seconds to undo. The bank details are in the email." }
                  ?? "There's no mail account in 11am yet, so your mail app opens with it, and the invoice attached.")
-                .font(.system(size: 11))
+                .font(.brand(size: 11))
                 .foregroundStyle(theme.inkTertiary(scheme))
             HStack {
                 Button("Not now") { ledger.reviewing = nil }
@@ -858,19 +858,19 @@ struct AuditTrailView: View {
                     .textFieldStyle(.roundedBorder)
                     .frame(maxWidth: 300)
                 Text("\(events.count) \(events.count == 1 ? "change" : "changes")")
-                    .font(.system(size: 11.5))
+                    .font(.brand(size: 11.5))
                     .foregroundStyle(theme.inkTertiary(scheme))
                 Spacer(minLength: 8)
                 Label(ledger.book.settings.lockDate.map { "Locked up to \($0.fullDay)" } ?? "Not locked",
                       systemImage: ledger.book.settings.lockDate == nil ? "lock.open" : "lock.fill")
-                    .font(.system(size: 11.5))
+                    .font(.brand(size: 11.5))
                     .foregroundStyle(theme.inkSecondary(scheme))
             }
             ScrollView {
                 LedgerCard {
                     if events.isEmpty {
                         Text(search.isEmpty ? "Changes to the books show here as they happen." : "Nothing matches.")
-                            .font(.system(size: 12.5))
+                            .font(.brand(size: 12.5))
                             .foregroundStyle(theme.inkTertiary(scheme))
                             .frame(maxWidth: .infinity, minHeight: 80)
                     } else {
@@ -892,21 +892,21 @@ struct AuditTrailView: View {
     private func row(_ event: AuditEvent) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: 12) {
             Text(event.date.formatted(date: .omitted, time: .shortened))
-                .font(.system(size: 11.5).monospacedDigit())
+                .font(.brand(size: 11.5).monospacedDigit())
                 .foregroundStyle(theme.inkTertiary(scheme))
                 .frame(width: 64, alignment: .leading)
             Text(event.by)
-                .font(.system(size: 11.5, weight: .semibold))
+                .font(.brand(size: 11.5, weight: .semibold))
                 .foregroundStyle(event.by == "You" ? theme.inkSecondary(scheme) : theme.ink(scheme))
                 .frame(width: 52, alignment: .leading)
             VStack(alignment: .leading, spacing: 1) {
                 Text(event.action)
-                    .font(.system(size: 12.5))
+                    .font(.brand(size: 12.5))
                     .foregroundStyle(theme.ink(scheme))
                     .lineLimit(1)
                 if !event.detail.isEmpty {
                     Text(event.detail)
-                        .font(.system(size: 11))
+                        .font(.brand(size: 11))
                         .foregroundStyle(theme.inkTertiary(scheme))
                         .lineLimit(1)
                 }

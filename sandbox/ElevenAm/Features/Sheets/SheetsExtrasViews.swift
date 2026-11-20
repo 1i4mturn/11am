@@ -13,16 +13,16 @@ struct SheetsSidePanel: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 8) {
                 Image(systemName: panel.symbol)
-                    .font(.system(size: 12, weight: .medium))
+                    .font(.brand(size: 12, weight: .medium))
                     .foregroundStyle(theme.inkSecondary(scheme))
                 Text(panel.title)
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.brand(size: 13, weight: .semibold))
                     .foregroundStyle(theme.ink(scheme))
                 Spacer()
                 Button {
                     sheets.panel = nil
                 } label: {
-                    Image(systemName: "xmark").font(.system(size: 10, weight: .bold))
+                    Image(systemName: "xmark").font(.brand(size: 10, weight: .bold))
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(theme.inkTertiary(scheme))
@@ -42,7 +42,7 @@ struct SheetsSidePanel: View {
         }
         .padding(12)
         .frame(maxHeight: .infinity, alignment: .top)
-        .vellum(level: 2, radius: max(theme.radius - 2, 10))
+        .vellum(level: 2, radius: theme.radius)
         .textFieldStyle(.roundedBorder)
         .controlSize(.small)
     }
@@ -60,10 +60,10 @@ private struct PanelCard<Content: View>: View {
             .padding(9)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background {
-                RoundedRectangle(cornerRadius: 8, style: .continuous).fill(selected ? theme.raised(scheme) : theme.well(scheme))
+                RoundedRectangle(cornerRadius: 0, style: .continuous).fill(selected ? theme.raised(scheme) : theme.well(scheme))
             }
             .overlay {
-                RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5)
+                RoundedRectangle(cornerRadius: 0, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5)
             }
     }
 }
@@ -75,7 +75,7 @@ private struct PanelHint: View {
 
     var body: some View {
         Text(text)
-            .font(.system(size: 11))
+            .font(.brand(size: 11))
             .foregroundStyle(theme.inkTertiary(scheme))
             .fixedSize(horizontal: false, vertical: true)
     }
@@ -124,7 +124,7 @@ private struct RulesPanel: View {
                         sheets.select(rule.range)
                     } label: {
                         Text(rule.summary)
-                            .font(.system(size: 11.5))
+                            .font(.brand(size: 11.5))
                             .foregroundStyle(theme.ink(scheme))
                             .lineLimit(2)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -177,13 +177,13 @@ private struct RuleSwatch: View {
             } else {
                 ZStack {
                     (GridColor.swiftUI(rule.style.fill) ?? .clear)
-                    Text("A").font(.system(size: 10, weight: rule.style.bold ? .bold : .regular)).foregroundStyle(GridColor.swiftUI(rule.style.color) ?? .primary)
+                    Text("A").font(.brand(size: 10, weight: rule.style.bold ? .bold : .regular)).foregroundStyle(GridColor.swiftUI(rule.style.color) ?? .primary)
                 }
             }
         }
         .frame(width: 22, height: 16)
-        .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
-        .overlay { RoundedRectangle(cornerRadius: 4, style: .continuous).strokeBorder(Color.primary.opacity(0.15), lineWidth: 0.5) }
+        .clipShape(RoundedRectangle(cornerRadius: 0, style: .continuous))
+        .overlay { RoundedRectangle(cornerRadius: 0, style: .continuous).strokeBorder(Color.primary.opacity(0.15), lineWidth: 0.5) }
     }
 }
 
@@ -199,16 +199,16 @@ private struct RuleEditor: View {
             }
             .labelsHidden()
             HStack {
-                Text("Cells").font(.system(size: 11)).frame(width: 40, alignment: .leading)
+                Text("Cells").font(.brand(size: 11)).frame(width: 40, alignment: .leading)
                 TextField("B2:B40", text: $range).onSubmit(apply)
             }
             if rule.kind.values >= 1 {
                 HStack {
                     Text(valueLabel)
-                        .font(.system(size: 11)).frame(width: 40, alignment: .leading)
+                        .font(.brand(size: 11)).frame(width: 40, alignment: .leading)
                     TextField(placeholder, text: $rule.value1).onSubmit(apply)
                     if rule.kind.values == 2 {
-                        Text("and").font(.system(size: 11))
+                        Text("and").font(.brand(size: 11))
                         TextField("", text: $rule.value2).onSubmit(apply)
                     }
                 }
@@ -223,7 +223,7 @@ private struct RuleEditor: View {
                         ColorPicker("Bar", selection: colour(\.high))
                     }
                 }
-                .font(.system(size: 11))
+                .font(.brand(size: 11))
             } else {
                 HStack(spacing: 4) {
                     ForEach(RuleStyle.presets.indices, id: \.self) { position in
@@ -233,12 +233,12 @@ private struct RuleEditor: View {
                             apply()
                         } label: {
                             Text(preset.name == "Bold" ? "B" : "A")
-                                .font(.system(size: 10.5, weight: preset.style.bold ? .bold : .medium))
+                                .font(.brand(size: 10.5, weight: preset.style.bold ? .bold : .medium))
                                 .foregroundStyle(GridColor.swiftUI(preset.style.color) ?? .primary)
                                 .frame(width: 24, height: 18)
-                                .background(GridColor.swiftUI(preset.style.fill) ?? .clear, in: RoundedRectangle(cornerRadius: 4, style: .continuous))
+                                .background(GridColor.swiftUI(preset.style.fill) ?? .clear, in: RoundedRectangle(cornerRadius: 0, style: .continuous))
                                 .overlay {
-                                    RoundedRectangle(cornerRadius: 4, style: .continuous)
+                                    RoundedRectangle(cornerRadius: 0, style: .continuous)
                                         .strokeBorder(rule.style == preset.style ? Color.primary : Color.primary.opacity(0.15), lineWidth: rule.style == preset.style ? 1.5 : 0.5)
                                 }
                         }
@@ -249,8 +249,8 @@ private struct RuleEditor: View {
             }
             if rule.kind == .formula {
                 Text("Write it for the first cell, like =$C2=\"Overdue\". The $ keeps a column fixed as it moves down.")
-                    .font(.system(size: 10.5))
-                    .foregroundStyle(.secondary)
+                    .font(.brand(size: 10.5))
+                    .foregroundStyle(.primary)
                     .fixedSize(horizontal: false, vertical: true)
             }
             HStack {
@@ -329,7 +329,7 @@ private struct ValidationPanel: View {
             PanelCard(selected: open == rule.id) {
                 HStack(spacing: 6) {
                     Image(systemName: icon(rule.kind))
-                        .font(.system(size: 11))
+                        .font(.brand(size: 11))
                         .foregroundStyle(theme.inkSecondary(scheme))
                         .frame(width: 18)
                     Button {
@@ -337,7 +337,7 @@ private struct ValidationPanel: View {
                         sheets.select(rule.range)
                     } label: {
                         Text(rule.summary)
-                            .font(.system(size: 11.5))
+                            .font(.brand(size: 11.5))
                             .foregroundStyle(theme.ink(scheme))
                             .lineLimit(2)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -346,7 +346,7 @@ private struct ValidationPanel: View {
                     Button {
                         sheets.deleteValidation(rule.id)
                     } label: {
-                        Image(systemName: "trash").font(.system(size: 10.5))
+                        Image(systemName: "trash").font(.brand(size: 10.5))
                     }
                     .buttonStyle(.plain)
                     .foregroundStyle(theme.inkTertiary(scheme))
@@ -385,36 +385,36 @@ private struct ValidationEditor: View {
             }
             .labelsHidden()
             HStack {
-                Text("Cells").font(.system(size: 11)).frame(width: 52, alignment: .leading)
+                Text("Cells").font(.brand(size: 11)).frame(width: 52, alignment: .leading)
                 TextField("C2:C40", text: $range)
             }
             switch rule.kind {
             case .list:
                 HStack(alignment: .top) {
-                    Text("Choices").font(.system(size: 11)).frame(width: 52, alignment: .leading)
+                    Text("Choices").font(.brand(size: 11)).frame(width: 52, alignment: .leading)
                     TextField("Todo, Doing, Done", text: $choices, axis: .vertical).lineLimit(1...4)
                 }
                 HStack {
-                    Text("Or from").font(.system(size: 11)).frame(width: 52, alignment: .leading)
+                    Text("Or from").font(.brand(size: 11)).frame(width: 52, alignment: .leading)
                     TextField("Lists!A2:A9", text: $rule.source)
                 }
             case .checkbox:
                 Text("Ticked is TRUE, empty is FALSE, so =COUNTIF(range,TRUE) counts the ticks.")
-                    .font(.system(size: 10.5))
-                    .foregroundStyle(.secondary)
+                    .font(.brand(size: 10.5))
+                    .foregroundStyle(.primary)
                     .fixedSize(horizontal: false, vertical: true)
             default:
                 HStack {
-                    Text(rule.kind == .textLength ? "Length" : "From").font(.system(size: 11)).frame(width: 52, alignment: .leading)
+                    Text(rule.kind == .textLength ? "Length" : "From").font(.brand(size: 11)).frame(width: 52, alignment: .leading)
                     TextField(rule.kind == .date ? "1/7/2026" : "0", text: $rule.minimum)
-                    Text("to").font(.system(size: 11))
+                    Text("to").font(.brand(size: 11))
                     TextField(rule.kind == .date ? "30/6/2027" : "", text: $rule.maximum)
                 }
             }
             if rule.kind != .checkbox {
-                Toggle("Refuse anything else (otherwise it's marked)", isOn: $rule.reject).font(.system(size: 11))
+                Toggle("Refuse anything else (otherwise it's marked)", isOn: $rule.reject).font(.brand(size: 11))
                 HStack {
-                    Text("Note").font(.system(size: 11)).frame(width: 52, alignment: .leading)
+                    Text("Note").font(.brand(size: 11)).frame(width: 52, alignment: .leading)
                     TextField("Shown when the cell's selected", text: $rule.help)
                 }
             }
@@ -448,25 +448,25 @@ private struct CleanPanel: View {
     var body: some View {
         let issues = sheets.columnIssues
         Text(sheets.cleaningTitle)
-            .font(.system(size: 12.5, weight: .semibold))
+            .font(.brand(size: 12.5, weight: .semibold))
             .foregroundStyle(theme.ink(scheme))
         PanelHint(text: "George checks the column you're in. Click another column to check that one.")
         if issues.isEmpty {
             PanelCard {
                 Label("Nothing to clean here.", systemImage: "checkmark")
-                    .font(.system(size: 11.5))
+                    .font(.brand(size: 11.5))
                     .foregroundStyle(theme.inkSecondary(scheme))
             }
         }
         ForEach(issues) { issue in
             PanelCard {
                 Text(issue.title)
-                    .font(.system(size: 11.5, weight: .medium))
+                    .font(.brand(size: 11.5, weight: .medium))
                     .foregroundStyle(theme.ink(scheme))
                     .fixedSize(horizontal: false, vertical: true)
                 if !issue.example.isEmpty {
                     Text("Like \(issue.example)")
-                        .font(.system(size: 11))
+                        .font(.brand(size: 11))
                         .foregroundStyle(theme.inkTertiary(scheme))
                         .lineLimit(1)
                 }
@@ -481,7 +481,7 @@ private struct CleanPanel: View {
         SectionLabel(text: "Tidy")
             .padding(.top, 4)
         HStack {
-            Text("Capitals").font(.system(size: 11.5))
+            Text("Capitals").font(.brand(size: 11.5))
             Spacer()
             Menu("Change…") {
                 ForEach(ColumnDoctor.CaseStyle.allCases) { style in
@@ -492,7 +492,7 @@ private struct CleanPanel: View {
             .fixedSize()
         }
         HStack {
-            Text("Split at").font(.system(size: 11.5))
+            Text("Split at").font(.brand(size: 11.5))
             Picker("", selection: $separator) {
                 Text("Spaces").tag(" ")
                 Text("Commas").tag(",")
@@ -534,14 +534,14 @@ private struct CommentsPanel: View {
         let threads = sheets.threads
         PanelCard(selected: true) {
             Text("Comment on \(sheets.active.a1)")
-                .font(.system(size: 11.5, weight: .medium))
+                .font(.brand(size: 11.5, weight: .medium))
                 .foregroundStyle(theme.ink(scheme))
             TextField("Say something, or ask @George", text: $draft, axis: .vertical)
                 .lineLimit(2...5)
             HStack {
                 if sheets.commentRun != nil {
                     ProgressView().controlSize(.small)
-                    Text("George is reading the sheet…").font(.system(size: 11)).foregroundStyle(theme.inkTertiary(scheme))
+                    Text("George is reading the sheet…").font(.brand(size: 11)).foregroundStyle(theme.inkTertiary(scheme))
                 }
                 Spacer()
                 Button("Comment") {
@@ -560,15 +560,15 @@ private struct CommentsPanel: View {
                 HStack {
                     Button(thread.address.a1) { sheets.select(thread.address) }
                         .buttonStyle(.plain)
-                        .font(.system(size: 11.5, weight: .semibold).monospacedDigit())
+                        .font(.brand(size: 11.5, weight: .semibold).monospacedDigit())
                     Text(sheets.display(thread.address))
-                        .font(.system(size: 11).monospacedDigit())
+                        .font(.brand(size: 11).monospacedDigit())
                         .foregroundStyle(theme.inkTertiary(scheme))
                         .lineLimit(1)
                     Spacer()
                     Button("Resolve") { sheets.resolveThread(thread.address) }
                         .buttonStyle(.borderless)
-                        .font(.system(size: 11))
+                        .font(.brand(size: 11))
                 }
                 ForEach(thread.comments) { comment in
                     VStack(alignment: .leading, spacing: 2) {
@@ -576,13 +576,13 @@ private struct CommentsPanel: View {
                             if comment.author == "George" {
                                 AgentLogo(code: "ge", size: 12, color: theme.inkSecondary(scheme))
                             }
-                            Text(comment.author).font(.system(size: 11, weight: .semibold)).foregroundStyle(theme.ink(scheme))
+                            Text(comment.author).font(.brand(size: 11, weight: .semibold)).foregroundStyle(theme.ink(scheme))
                             Text(comment.date.formatted(.relative(presentation: .named)))
-                                .font(.system(size: 10.5))
+                                .font(.brand(size: 10.5))
                                 .foregroundStyle(theme.inkTertiary(scheme))
                         }
                         Text(comment.text)
-                            .font(.system(size: 11.5))
+                            .font(.brand(size: 11.5))
                             .foregroundStyle(theme.ink(scheme))
                             .fixedSize(horizontal: false, vertical: true)
                             .textSelection(.enabled)
@@ -626,12 +626,12 @@ struct SheetsVersionsView: View {
                 .font(theme.display(22))
                 .foregroundStyle(theme.ink(scheme))
             Text("Sheets keeps a copy every ten minutes while you work: everything from the last day, then one a day for a month.")
-                .font(.system(size: 12))
+                .font(.brand(size: 12))
                 .foregroundStyle(theme.inkSecondary(scheme))
                 .fixedSize(horizontal: false, vertical: true)
             if versions.isEmpty {
                 Text("No earlier versions yet. The first is kept as soon as you make a change.")
-                    .font(.system(size: 12))
+                    .font(.brand(size: 12))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .frame(maxWidth: .infinity, minHeight: 80)
             } else {
@@ -641,10 +641,10 @@ struct SheetsVersionsView: View {
                             HStack {
                                 VStack(alignment: .leading, spacing: 1) {
                                     Text(version.date.formatted(date: .abbreviated, time: .shortened))
-                                        .font(.system(size: 12.5, weight: .medium))
+                                        .font(.brand(size: 12.5, weight: .medium))
                                         .foregroundStyle(theme.ink(scheme))
                                     Text(version.date.formatted(.relative(presentation: .named)))
-                                        .font(.system(size: 11))
+                                        .font(.brand(size: 11))
                                         .foregroundStyle(theme.inkTertiary(scheme))
                                 }
                                 Spacer()

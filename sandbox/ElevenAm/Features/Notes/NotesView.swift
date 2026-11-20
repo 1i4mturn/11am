@@ -76,7 +76,7 @@ struct NotesView: View {
                         VStack(spacing: 10) {
                             AgentLogo(code: "bn", size: 44, color: theme.inkTertiary(scheme))
                             Text(notes.search.isEmpty ? "No note open. ⇧⌘N starts one." : "Nothing matches that.")
-                                .font(.system(size: 12.5))
+                                .font(.brand(size: 12.5))
                                 .foregroundStyle(theme.inkTertiary(scheme))
                         }
                     }
@@ -154,11 +154,11 @@ private struct NotesSearchField: View {
     var body: some View {
         HStack(spacing: 6) {
             Image(systemName: "magnifyingglass")
-                .font(.system(size: 11))
+                .font(.brand(size: 11))
                 .foregroundStyle(theme.inkTertiary(scheme))
             TextField("Search notes", text: $text)
                 .textFieldStyle(.plain)
-                .font(.system(size: 12.5))
+                .font(.brand(size: 12.5))
             if !text.isEmpty {
                 Button { text = "" } label: { Image(systemName: "xmark.circle.fill") }
                     .buttonStyle(.plain)
@@ -182,21 +182,21 @@ private struct NotesBanner: View {
         HStack(spacing: 10) {
             AgentLogo(code: "bn", size: 18, color: theme.inkSecondary(scheme))
             Text(text)
-                .font(.system(size: 12.5))
+                .font(.brand(size: 12.5))
                 .foregroundStyle(theme.ink(scheme))
                 .lineLimit(2)
             Spacer()
-            Button(action: dismiss) { Image(systemName: "xmark").font(.system(size: 10, weight: .bold)) }
+            Button(action: dismiss) { Image(systemName: "xmark").font(.brand(size: 10, weight: .bold)) }
                 .buttonStyle(.plain)
                 .foregroundStyle(theme.inkTertiary(scheme))
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 8)
         .background {
-            RoundedRectangle(cornerRadius: max(theme.radius - 4, 8), style: .continuous).fill(theme.well(scheme))
+            RoundedRectangle(cornerRadius: theme.radius, style: .continuous).fill(theme.well(scheme))
         }
         .overlay {
-            RoundedRectangle(cornerRadius: max(theme.radius - 4, 8), style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5)
+            RoundedRectangle(cornerRadius: theme.radius, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5)
         }
     }
 }
@@ -224,7 +224,7 @@ private struct NotesSidebar: View {
                         smartName = notes.search
                     } label: {
                         Label("Save this search", systemImage: "plus.magnifyingglass")
-                            .font(.system(size: 12))
+                            .font(.brand(size: 12))
                             .padding(.horizontal, 8)
                             .padding(.vertical, 5)
                     }
@@ -260,7 +260,7 @@ private struct NotesSidebar: View {
                         folderName = ""
                         addingFolder = true
                     } label: {
-                        Image(systemName: "plus").font(.system(size: 10, weight: .semibold))
+                        Image(systemName: "plus").font(.brand(size: 10, weight: .semibold))
                     }
                     .buttonStyle(.plain)
                     .foregroundStyle(theme.inkTertiary(scheme))
@@ -318,23 +318,23 @@ private struct NotesSidebar: View {
             HStack(spacing: 7) {
                 if let symbol {
                     Image(systemName: symbol)
-                        .font(.system(size: 11))
+                        .font(.brand(size: 11))
                         .frame(width: 14)
                         .foregroundStyle(theme.inkSecondary(scheme))
                 }
                 Text(title)
-                    .font(.system(size: 12.5, weight: selected ? .semibold : .regular))
+                    .font(.brand(size: 12.5, weight: selected ? .semibold : .regular))
                     .lineLimit(1)
                 Spacer(minLength: 4)
                 Text("\(count)")
-                    .font(.system(size: 11).monospacedDigit())
+                    .font(.brand(size: 11).monospacedDigit())
                     .foregroundStyle(theme.inkTertiary(scheme))
             }
             .foregroundStyle(theme.ink(scheme))
             .padding(.horizontal, 8)
             .padding(.vertical, 5)
             .background {
-                RoundedRectangle(cornerRadius: 7, style: .continuous).fill(selected ? theme.raised(scheme) : Color.clear)
+                RoundedRectangle(cornerRadius: 0, style: .continuous).fill(selected ? theme.raised(scheme) : Color.clear)
             }
             .contentShape(Rectangle())
         }
@@ -357,7 +357,7 @@ private struct FolderNameField: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(title).font(.system(size: 12.5, weight: .semibold))
+            Text(title).font(.brand(size: 12.5, weight: .semibold))
             TextField("Name", text: $name)
                 .textFieldStyle(.roundedBorder)
                 .onSubmit(done)
@@ -406,7 +406,7 @@ private struct NoteList: View {
                     }
                     if visible.isEmpty {
                         Text(notes.search.isEmpty ? "No notes here yet." : "No notes match that.")
-                            .font(.system(size: 12.5))
+                            .font(.brand(size: 12.5))
                             .foregroundStyle(theme.inkTertiary(scheme))
                             .padding(10)
                     }
@@ -433,24 +433,24 @@ private struct NoteRow: View {
             VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: 5) {
                     if note.pinned {
-                        Image(systemName: "pin.fill").font(.system(size: 9)).foregroundStyle(theme.inkSecondary(scheme))
+                        Image(systemName: "pin.fill").font(.brand(size: 9)).foregroundStyle(theme.inkSecondary(scheme))
                     }
                     Text(note.title)
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(.brand(size: 13, weight: .semibold))
                         .lineLimit(1)
                 }
                 HStack(spacing: 5) {
                     Text(Self.date(note.modified))
-                        .font(.system(size: 11).monospacedDigit())
+                        .font(.brand(size: 11).monospacedDigit())
                         .foregroundStyle(theme.inkSecondary(scheme))
                     Text(note.snippet.isEmpty ? "No more text" : note.snippet)
-                        .font(.system(size: 11.5))
+                        .font(.brand(size: 11.5))
                         .foregroundStyle(theme.inkTertiary(scheme))
                         .lineLimit(1)
                 }
                 if showsFolder && !note.folder.isEmpty {
                     Label(note.folder, systemImage: "folder")
-                        .font(.system(size: 10.5))
+                        .font(.brand(size: 10.5))
                         .foregroundStyle(theme.inkTertiary(scheme))
                 }
             }
@@ -459,11 +459,11 @@ private struct NoteRow: View {
             .padding(.vertical, 8)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background {
-                RoundedRectangle(cornerRadius: max(theme.radius - 3, 7), style: .continuous)
+                RoundedRectangle(cornerRadius: theme.radius, style: .continuous)
                     .fill(selected ? theme.raised(scheme) : (hovering ? theme.well(scheme).opacity(0.7) : Color.clear))
             }
             .overlay {
-                RoundedRectangle(cornerRadius: max(theme.radius - 3, 7), style: .continuous)
+                RoundedRectangle(cornerRadius: theme.radius, style: .continuous)
                     .strokeBorder(selected ? theme.edge(scheme) : Color.clear, lineWidth: 0.5)
             }
             .contentShape(Rectangle())
@@ -555,9 +555,9 @@ private struct NoteDetail: View {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
                         AgentLogo(code: "bn", size: 18)
-                        Text("Bolton · Summary").font(.system(size: 12, weight: .semibold))
+                        Text("Bolton · Summary").font(.brand(size: 12, weight: .semibold))
                         Spacer()
-                        Button { notes.clearNoteRun() } label: { Image(systemName: "xmark").font(.system(size: 10, weight: .bold)) }
+                        Button { notes.clearNoteRun() } label: { Image(systemName: "xmark").font(.brand(size: 10, weight: .bold)) }
                             .buttonStyle(.plain)
                             .foregroundStyle(theme.inkTertiary(scheme))
                     }
@@ -565,7 +565,7 @@ private struct NoteDetail: View {
                         .frame(maxHeight: 150)
                 }
                 .padding(12)
-                .background { RoundedRectangle(cornerRadius: 8, style: .continuous).fill(theme.well(scheme)) }
+                .background { RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.well(scheme)) }
                 .padding(.horizontal, 14)
                 .padding(.bottom, 10)
                 .transition(.rise(theme.rise))
@@ -593,7 +593,7 @@ private struct NoteDetail: View {
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .fixedSize()
             }
-            .font(.system(size: 11.5))
+            .font(.brand(size: 11.5))
             .padding(.horizontal, 14)
             .padding(.vertical, 8)
         }
@@ -603,7 +603,7 @@ private struct NoteDetail: View {
                     .transition(.move(edge: .trailing).combined(with: .opacity))
             }
         }
-        .vellum(level: 3, radius: max(theme.radius - 2, 8))
+        .vellum(level: 3, radius: theme.radius)
         .animation(theme.spring, value: notes.noteRun?.id)
         .animation(theme.spring, value: notes.showsComments)
     }
@@ -649,7 +649,7 @@ private struct AskNotesView: View {
                 }
             }
             Text("Bolton reads only your notes, and answers with the brain you chose in Settings.")
-                .font(.system(size: 11))
+                .font(.brand(size: 11))
                 .foregroundStyle(theme.inkTertiary(scheme))
         }
         .padding(16)
@@ -668,13 +668,13 @@ private struct LockedNoteView: View {
     var body: some View {
         VStack(spacing: 12) {
             Image(systemName: "lock.fill")
-                .font(.system(size: 30))
+                .font(.brand(size: 30))
                 .foregroundStyle(theme.inkSecondary(scheme))
             Text(note.title)
-                .font(.system(size: 16, weight: .semibold))
+                .font(.brand(size: 16, weight: .semibold))
                 .foregroundStyle(theme.ink(scheme))
             Text("This note is locked. It's sealed on disk with a key in your Keychain.")
-                .font(.system(size: 12.5))
+                .font(.brand(size: 12.5))
                 .foregroundStyle(theme.inkTertiary(scheme))
             Button("Open with Touch ID or your password") { notes.unlock(note.id) }
                 .buttonStyle(.vellumPrimary)
@@ -710,7 +710,7 @@ private struct VoiceNoteButton: View {
         } else if !notes.transcribing.isEmpty {
             HStack(spacing: 6) {
                 ProgressView().controlSize(.small)
-                Text("Writing it out…").font(.system(size: 12))
+                Text("Writing it out…").font(.brand(size: 12))
             }
             .foregroundStyle(theme.inkSecondary(scheme))
         } else {

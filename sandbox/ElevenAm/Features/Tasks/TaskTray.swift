@@ -14,10 +14,10 @@ struct TaskTray: View {
         if !soon.isEmpty {
             HStack(spacing: 8) {
                 Image(systemName: "checklist")
-                    .font(.system(size: 11))
+                    .font(.brand(size: 11))
                     .foregroundStyle(theme.inkSecondary(scheme))
                 Text("Fit in")
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.brand(size: 12, weight: .semibold))
                     .foregroundStyle(theme.ink(scheme))
                     .help("Drag a task onto the calendar to block time for it")
                 ScrollView(.horizontal, showsIndicators: false) {
@@ -25,7 +25,7 @@ struct TaskTray: View {
                         ForEach(soon.prefix(12)) { task in
                             HStack(spacing: 5) {
                                 if tasks.isOverdue(task) {
-                                    Image(systemName: "exclamationmark.circle").font(.system(size: 9.5))
+                                    Image(systemName: "exclamationmark.circle").font(.brand(size: 9.5))
                                 }
                                 Text(task.title).lineLimit(1)
                                 if let due = task.due, !Calendar.current.isDateInToday(due) {
@@ -33,7 +33,7 @@ struct TaskTray: View {
                                         .foregroundStyle(theme.inkTertiary(scheme))
                                 }
                             }
-                            .font(.system(size: 11.5))
+                            .font(.brand(size: 11.5))
                             .foregroundStyle(theme.ink(scheme))
                             .padding(.horizontal, 9)
                             .padding(.vertical, 4)
@@ -41,16 +41,16 @@ struct TaskTray: View {
                             .overlay(Capsule().strokeBorder(theme.edge(scheme), lineWidth: 0.5))
                             .draggable(task.id.uuidString) {
                                 Text("Focus: \(task.title)")
-                                    .font(.system(size: 12, weight: .semibold))
+                                    .font(.brand(size: 12, weight: .semibold))
                                     .padding(8)
-                                    .background(RoundedRectangle(cornerRadius: 8).fill(theme.raised(scheme)))
+                                    .background(RoundedRectangle(cornerRadius: 0).fill(theme.raised(scheme)))
                             }
                             .help("Drag onto the calendar to block an hour for it")
                         }
                     }
                 }
                 Text("Drag onto the calendar")
-                    .font(.system(size: 11))
+                    .font(.brand(size: 11))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .fixedSize()
             }

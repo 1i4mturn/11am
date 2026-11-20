@@ -22,7 +22,7 @@ struct TodayView: View {
                         .buttonStyle(.vellumSecondary)
                         .help("Energy from Apple Health, captures and your brief on the 11am iPhone app")
                         Toggle("11am check-in", isOn: $today.checkInEnabled)
-                            .toggleStyle(.switch)
+                            .toggleStyle(.brandSwitch)
                             .controlSize(.small)
                             .help("A gentle notification at 11:00 every day")
                     }
@@ -43,14 +43,14 @@ struct TodayView: View {
                     Card {
                         HStack(alignment: .top, spacing: 12) {
                             Image(systemName: "calendar")
-                                .font(.system(size: 18))
+                                .font(.brand(size: 18))
                                 .foregroundStyle(theme.inkSecondary(scheme))
                             VStack(alignment: .leading, spacing: 6) {
                                 Text("Showing a sample day")
-                                    .font(.system(size: 13, weight: .semibold))
+                                    .font(.brand(size: 13, weight: .semibold))
                                     .foregroundStyle(theme.ink(scheme))
                                 Text("Connect your calendars to see your real day. 11am reads every account you've added to macOS (iCloud, Google, Exchange) without any extra logins, and Outlook or Microsoft 365 through Calendar.")
-                                    .font(.system(size: 12.5))
+                                    .font(.brand(size: 12.5))
                                     .foregroundStyle(theme.inkSecondary(scheme))
                                     .fixedSize(horizontal: false, vertical: true)
                                 Button(today.access == .denied ? "Open Privacy Settings" : "Connect Calendars") {
@@ -77,7 +77,7 @@ struct TodayView: View {
                     }
                     if today.shownEvents.isEmpty {
                         Text("Nothing scheduled. A good day for deep work.")
-                            .font(.system(size: 13))
+                            .font(.brand(size: 13))
                             .foregroundStyle(theme.inkTertiary(scheme))
                             .padding(.vertical, 12)
                     }
@@ -119,7 +119,7 @@ private struct BriefCard: View {
         }
         .padding(22)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .vellum(level: 3, radius: max(theme.radius - 4, 8))
+        .vellum(level: 3, radius: theme.radius)
     }
 }
 
@@ -158,18 +158,18 @@ private struct TimelineRow: View {
         let isPast = event.end < Date()
         HStack(alignment: .firstTextBaseline, spacing: 16) {
             Text(event.isAllDay ? "all day" : event.start.formatted(date: .omitted, time: .shortened))
-                .font(.system(size: 13).monospacedDigit())
+                .font(.brand(size: 13).monospacedDigit())
                 .foregroundStyle(theme.inkSecondary(scheme))
                 .frame(width: 74, alignment: .leading)
-            RoundedRectangle(cornerRadius: 1.5)
+            RoundedRectangle(cornerRadius: 0)
                 .fill(theme.ink(scheme).opacity(isPast ? 0.2 : 0.85))
                 .frame(width: 3, height: 30)
             VStack(alignment: .leading, spacing: 2) {
                 Text(event.title)
-                    .font(.system(size: 14, weight: .medium))
+                    .font(.brand(size: 14, weight: .medium))
                     .foregroundStyle(theme.ink(scheme).opacity(isPast ? 0.5 : 1))
                 Text([event.location, event.calendar.isEmpty ? nil : event.calendar].compactMap { $0 }.joined(separator: " · "))
-                    .font(.system(size: 11.5))
+                    .font(.brand(size: 11.5))
                     .foregroundStyle(theme.inkTertiary(scheme))
             }
             Spacer()

@@ -63,7 +63,7 @@ struct VideoView: View {
                     VideoInspector()
                         .frame(width: 300)
                         .frame(maxHeight: .infinity)
-                        .vellum(level: 3, radius: max(theme.radius - 2, 8))
+                        .vellum(level: 3, radius: theme.radius)
                 }
                 .frame(maxHeight: .infinity)
                 VideoTimeline()
@@ -88,7 +88,7 @@ private struct EmptyVideo: View {
         VStack(spacing: 14) {
             AgentLogo(code: "co", size: 56, color: theme.inkTertiary(scheme))
             Text("Put clips on the timeline, trim them by their edges, grade them, clean up the sound.")
-                .font(.system(size: 13))
+                .font(.brand(size: 13))
                 .foregroundStyle(theme.inkSecondary(scheme))
                 .multilineTextAlignment(.center)
             HStack(spacing: 8) {
@@ -99,12 +99,12 @@ private struct EmptyVideo: View {
                     .disabled(video.isWorking)
             }
             Text(video.status)
-                .font(.system(size: 11.5))
+                .font(.brand(size: 11.5))
                 .foregroundStyle(theme.inkTertiary(scheme))
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background {
-            RoundedRectangle(cornerRadius: max(theme.radius - 2, 8), style: .continuous).fill(theme.well(scheme))
+            RoundedRectangle(cornerRadius: theme.radius, style: .continuous).fill(theme.well(scheme))
         }
     }
 }
@@ -118,14 +118,14 @@ private struct PlayerStage: View {
     var body: some View {
         let ratio = video.renderSize.height > 0 ? video.renderSize.width / video.renderSize.height : 16 / 9
         ZStack {
-            RoundedRectangle(cornerRadius: max(theme.radius - 2, 8), style: .continuous)
+            RoundedRectangle(cornerRadius: theme.radius, style: .continuous)
                 .fill(Color.black)
             PlayerSurface(player: video.player)
                 .aspectRatio(ratio, contentMode: .fit)
                 .animation(theme.spring, value: ratio)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .clipShape(RoundedRectangle(cornerRadius: max(theme.radius - 2, 8), style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: theme.radius, style: .continuous))
     }
 }
 
@@ -168,7 +168,7 @@ private struct TransportBar: View {
                 .buttonStyle(.vellumSecondary)
                 .help("Forward one frame")
             Text("\(VideoModel.timecode(clock.time)) / \(VideoModel.timecode(video.totalDuration))")
-                .font(.system(size: 12).monospacedDigit())
+                .font(.brand(size: 12).monospacedDigit())
                 .foregroundStyle(theme.inkSecondary(scheme))
                 .fixedSize()
             Button { video.splitAtPlayhead() } label: { Label("Split", systemImage: "scissors") }
@@ -185,7 +185,7 @@ private struct TransportBar: View {
             }
         }
         Text(video.status)
-            .font(.system(size: 11.5))
+            .font(.brand(size: 11.5))
             .foregroundStyle(theme.inkTertiary(scheme))
             .lineLimit(1)
             .truncationMode(.tail)
@@ -239,7 +239,7 @@ private struct VideoInspector: View {
                 .scrollContentBackground(.hidden)
             } else {
                 Text("Select a clip on the timeline.")
-                    .font(.system(size: 12.5))
+                    .font(.brand(size: 12.5))
                     .foregroundStyle(theme.inkTertiary(scheme))
                 Spacer()
             }
@@ -259,11 +259,11 @@ private struct ClipPanel: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(clip.name)
-                .font(.system(size: 14, weight: .semibold))
+                .font(.brand(size: 14, weight: .semibold))
                 .foregroundStyle(theme.ink(scheme))
                 .lineLimit(1)
             Text("\(VideoModel.clock(clip.editedDuration)) on the timeline · \(VideoModel.clock(clip.duration)) source · \(Int(clip.size.width))×\(Int(clip.size.height))")
-                .font(.system(size: 11).monospacedDigit())
+                .font(.brand(size: 11).monospacedDigit())
                 .foregroundStyle(theme.inkTertiary(scheme))
         }
 
@@ -271,7 +271,7 @@ private struct ClipPanel: View {
         TimeSlider(title: "Starts at", value: clip.inPoint, range: 0...clip.duration) { video.trim(clip.id, inPoint: $0) }
         TimeSlider(title: "Ends at", value: clip.outPoint, range: 0...clip.duration) { video.trim(clip.id, outPoint: $0) }
         Text("Or drag the clip's edges on the timeline.")
-            .font(.system(size: 11))
+            .font(.brand(size: 11))
             .foregroundStyle(theme.inkTertiary(scheme))
 
         SectionLabel(text: "Speed")
@@ -292,7 +292,7 @@ private struct ClipPanel: View {
                 Spacer()
                 Text("Right or bottom")
             }
-            .font(.system(size: 9.5))
+            .font(.brand(size: 9.5))
             .foregroundStyle(theme.inkTertiary(scheme))
         }
 
@@ -330,11 +330,11 @@ private struct TimeSlider: View {
         VStack(alignment: .leading, spacing: 1) {
             HStack {
                 Text(title)
-                    .font(.system(size: 12))
+                    .font(.brand(size: 12))
                     .foregroundStyle(theme.ink(scheme))
                 Spacer()
                 Text(VideoModel.timecode(value))
-                    .font(.system(size: 11).monospacedDigit())
+                    .font(.brand(size: 11).monospacedDigit())
                     .foregroundStyle(theme.inkSecondary(scheme))
             }
             Slider(value: Binding(get: { value }, set: onChange), in: range)
@@ -366,7 +366,7 @@ private struct SoundPanel: View {
     var body: some View {
         if !clip.hasAudio {
             Text("This clip has no sound.")
-                .font(.system(size: 12.5))
+                .font(.brand(size: 12.5))
                 .foregroundStyle(theme.inkTertiary(scheme))
         }
         SectionLabel(text: "Level")
@@ -375,13 +375,13 @@ private struct SoundPanel: View {
             Slider(value: Binding(get: { clip.volume }, set: { value in video.updateSelected { $0.volume = value } }), in: 0...1)
                 .controlSize(.small)
             Text("\(Int(clip.volume * 100))%")
-                .font(.system(size: 11).monospacedDigit())
+                .font(.brand(size: 11).monospacedDigit())
                 .foregroundStyle(theme.inkSecondary(scheme))
                 .frame(width: 34, alignment: .trailing)
         }
-        .font(.system(size: 11))
+        .font(.brand(size: 11))
         Toggle("Mute", isOn: Binding(get: { clip.muted }, set: { value in video.updateSelected { $0.muted = value } }))
-            .toggleStyle(.switch)
+            .toggleStyle(.brandSwitch)
             .controlSize(.small)
 
         SectionLabel(text: "Clean up")
@@ -394,11 +394,11 @@ private struct SoundPanel: View {
         .disabled(!clip.hasAudio || video.isWorking)
         if clip.cleanAudio != nil {
             Toggle("Use the cleaned voice", isOn: Binding(get: { clip.useCleanAudio }, set: { value in video.updateSelected { $0.useCleanAudio = value } }))
-                .toggleStyle(.switch)
+                .toggleStyle(.brandSwitch)
                 .controlSize(.small)
         }
         Text("Apple's Voice Isolation takes out background noise, a high-pass removes rumble and handling, then the level is evened out. On this Mac; the original file isn't touched.")
-            .font(.system(size: 11))
+            .font(.brand(size: 11))
             .foregroundStyle(theme.inkTertiary(scheme))
             .fixedSize(horizontal: false, vertical: true)
 
@@ -424,12 +424,12 @@ private struct SoundPanel: View {
             }
             if clip.silenceCount > 0 {
                 Text("\(clip.silenceCount) \(clip.silenceCount == 1 ? "pause" : "pauses") cut · \(VideoModel.clock(clip.silenceSaved)) shorter")
-                    .font(.system(size: 11).monospacedDigit())
+                    .font(.brand(size: 11).monospacedDigit())
                     .foregroundStyle(theme.inkSecondary(scheme))
                     .contentTransition(.numericText())
             }
             Text("Gaps of more than 0.7 s below −40 dB are taken out, leaving 0.3 s of air so speech doesn't run together.")
-                .font(.system(size: 11))
+                .font(.brand(size: 11))
                 .foregroundStyle(theme.inkTertiary(scheme))
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -453,7 +453,7 @@ private struct MusicSection: View {
                     Image(systemName: "music.note")
                         .foregroundStyle(theme.inkSecondary(scheme))
                     Text(music.name)
-                        .font(.system(size: 12.5, weight: .medium))
+                        .font(.brand(size: 12.5, weight: .medium))
                         .foregroundStyle(theme.ink(scheme))
                         .lineLimit(1)
                         .truncationMode(.middle)
@@ -472,30 +472,30 @@ private struct MusicSection: View {
                     Slider(value: Binding(get: { music.volume }, set: { value in video.updateMusic { $0.volume = value } }), in: 0...1)
                         .controlSize(.small)
                     Text("\(Int(music.volume * 100))%")
-                        .font(.system(size: 11).monospacedDigit())
+                        .font(.brand(size: 11).monospacedDigit())
                         .foregroundStyle(theme.inkSecondary(scheme))
                         .frame(width: 34, alignment: .trailing)
                 }
-                .font(.system(size: 11))
+                .font(.brand(size: 11))
                 Toggle("Turn it down while people talk", isOn: Binding(get: { music.ducking }, set: { value in video.updateMusic { $0.ducking = value } }))
-                    .toggleStyle(.switch)
+                    .toggleStyle(.brandSwitch)
                     .controlSize(.small)
                 if music.ducking {
                     HStack {
                         Text("Under speech")
-                            .font(.system(size: 11))
+                            .font(.brand(size: 11))
                             .foregroundStyle(theme.inkSecondary(scheme))
                         Slider(value: Binding(get: { music.duckLevel }, set: { value in video.updateMusic { $0.duckLevel = value } }), in: 0.05...0.6)
                             .controlSize(.small)
                         Text("\(Int(music.duckLevel * 100))%")
-                            .font(.system(size: 11).monospacedDigit())
+                            .font(.brand(size: 11).monospacedDigit())
                             .foregroundStyle(theme.inkSecondary(scheme))
                             .frame(width: 34, alignment: .trailing)
                     }
                     Text(video.ducked.isEmpty
                         ? "No speech heard yet, so the music stays up. It finds the talking in clips with sound."
                         : "Ducks \(video.ducked.count) \(video.ducked.count == 1 ? "time" : "times"), easing down a quarter-second before each line.")
-                        .font(.system(size: 11))
+                        .font(.brand(size: 11))
                         .foregroundStyle(theme.inkTertiary(scheme))
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -507,7 +507,7 @@ private struct MusicSection: View {
                         .buttonStyle(.vellumSecondary)
                 }
                 Text("Loops under the whole movie, fades in and out with it, and turns down whenever someone talks.")
-                    .font(.system(size: 11))
+                    .font(.brand(size: 11))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -534,7 +534,7 @@ private struct TitlesPanel: View {
             }
         }
         Text("Drawn in your brand kit's colours and fonts (Design › Brand). End cards go at the end.")
-            .font(.system(size: 11))
+            .font(.brand(size: 11))
             .foregroundStyle(theme.inkTertiary(scheme))
             .fixedSize(horizontal: false, vertical: true)
         ForEach(video.titles) { title in
@@ -543,13 +543,13 @@ private struct TitlesPanel: View {
 
         SectionLabel(text: "Captions")
         Toggle("Burn captions into the picture", isOn: $video.burnCaptions)
-            .toggleStyle(.switch)
+            .toggleStyle(.brandSwitch)
             .controlSize(.small)
             .disabled(!video.hasTranscript && !video.burnCaptions)
         Text(video.hasTranscript
             ? "From the transcript, timed to the edit; struck lines are left out. Captions (.srt) in Export saves them as a file."
             : "Transcribe a clip in Words first; captions come from the words.")
-            .font(.system(size: 11))
+            .font(.brand(size: 11))
             .foregroundStyle(theme.inkTertiary(scheme))
             .fixedSize(horizontal: false, vertical: true)
     }
@@ -565,10 +565,10 @@ private struct TitleEditor: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 6) {
                 Text(title.kind.title)
-                    .font(.system(size: 12.5, weight: .semibold))
+                    .font(.brand(size: 12.5, weight: .semibold))
                     .foregroundStyle(theme.ink(scheme))
                 Text("\(VideoModel.clock(title.start))–\(VideoModel.clock(title.end))")
-                    .font(.system(size: 11).monospacedDigit())
+                    .font(.brand(size: 11).monospacedDigit())
                     .foregroundStyle(theme.inkTertiary(scheme))
                 Spacer(minLength: 4)
                 Button { video.seek(to: title.start + min(1, title.duration / 2)) } label: { Image(systemName: "eye") }
@@ -589,14 +589,14 @@ private struct TitleEditor: View {
             }
             Stepper(value: Binding(get: { title.duration }, set: { value in video.updateTitle(title.id) { $0.duration = value } }), in: 1...30, step: 0.5) {
                 Text(String(format: "On screen for %.1f s", title.duration))
-                    .font(.system(size: 12))
+                    .font(.brand(size: 12))
                     .foregroundStyle(theme.ink(scheme))
             }
             .controlSize(.small)
         }
         .padding(10)
         .background {
-            RoundedRectangle(cornerRadius: 8, style: .continuous).fill(theme.well(scheme))
+            RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.well(scheme))
         }
     }
 }
@@ -619,7 +619,7 @@ private struct WordsPanel: View {
         }
         if clip.cutCount > 0 {
             Text("\(clip.cutCount) cut · \(VideoModel.clock(clip.lines.filter(\.cut).reduce(0.0) { $0 + $1.end - $1.start })) shorter")
-                .font(.system(size: 11).monospacedDigit())
+                .font(.brand(size: 11).monospacedDigit())
                 .foregroundStyle(theme.inkTertiary(scheme))
                 .contentTransition(.numericText())
         }
@@ -636,7 +636,7 @@ private struct WordsPanel: View {
         Text(clip.hasAudio
             ? "Transcribed on this Mac. Click a line to jump there; strike it to cut it from the video and the captions."
             : "This clip has no sound to transcribe.")
-            .font(.system(size: 11))
+            .font(.brand(size: 11))
             .foregroundStyle(theme.inkTertiary(scheme))
             .fixedSize(horizontal: false, vertical: true)
     }
@@ -652,11 +652,11 @@ private struct TranscriptRow: View {
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
             Text(VideoModel.clock(line.start))
-                .font(.system(size: 11).monospacedDigit())
+                .font(.brand(size: 11).monospacedDigit())
                 .foregroundStyle(theme.inkTertiary(scheme))
                 .frame(width: 30, alignment: .leading)
             Text(line.text)
-                .font(.system(size: 12.5))
+                .font(.brand(size: 12.5))
                 .strikethrough(line.cut, color: theme.ink(scheme).opacity(0.5))
                 .foregroundStyle(theme.ink(scheme).opacity(line.cut ? 0.35 : 1))
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -665,7 +665,7 @@ private struct TranscriptRow: View {
                 withAnimation(theme.spring) { video.toggleCut(line) }
             } label: {
                 Image(systemName: line.cut ? "arrow.uturn.backward" : "scissors")
-                    .font(.system(size: 11))
+                    .font(.brand(size: 11))
             }
             .buttonStyle(.plain)
             .foregroundStyle(theme.inkSecondary(scheme))
@@ -675,7 +675,7 @@ private struct TranscriptRow: View {
         .padding(.horizontal, 6)
         .padding(.vertical, 5)
         .background {
-            RoundedRectangle(cornerRadius: 7, style: .continuous)
+            RoundedRectangle(cornerRadius: 0, style: .continuous)
                 .fill(hovering ? theme.well(scheme) : Color.clear)
         }
         .contentShape(Rectangle())

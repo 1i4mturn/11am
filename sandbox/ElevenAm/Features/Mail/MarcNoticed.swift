@@ -15,7 +15,7 @@ struct MarcNoticed: View {
             HStack(spacing: 10) {
                 AgentLogo(code: "mc", size: 16, color: theme.inkSecondary(scheme))
                 Text(text(for: route))
-                    .font(.system(size: 12.5))
+                    .font(.brand(size: 12.5))
                     .foregroundStyle(theme.ink(scheme))
                     .lineLimit(2)
                 Spacer(minLength: 8)
@@ -24,8 +24,8 @@ struct MarcNoticed: View {
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
-            .background(RoundedRectangle(cornerRadius: 9, style: .continuous).fill(theme.well(scheme)))
-            .overlay(RoundedRectangle(cornerRadius: 9, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5))
+            .background(RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.well(scheme)))
+            .overlay(RoundedRectangle(cornerRadius: 0, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5))
         }
     }
 

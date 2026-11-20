@@ -30,7 +30,7 @@ struct CanvasToolbar: View {
                     Button("Body text") { controller.addText("Add a little text", heading: false, brand: brand) }
                 } label: {
                     Label("Text", systemImage: "textformat")
-                        .font(.system(size: 12, weight: .medium))
+                        .font(.brand(size: 12, weight: .medium))
                         .foregroundStyle(theme.inkSecondary(scheme))
                 }
                 .menuStyle(.button)
@@ -43,7 +43,7 @@ struct CanvasToolbar: View {
                     }
                 } label: {
                     Label("Shape", systemImage: "square.on.circle")
-                        .font(.system(size: 12, weight: .medium))
+                        .font(.brand(size: 12, weight: .medium))
                         .foregroundStyle(theme.inkSecondary(scheme))
                 }
                 .menuStyle(.button)
@@ -57,7 +57,7 @@ struct CanvasToolbar: View {
                     }
                 } label: {
                     Label("Frames", systemImage: "rectangle.split.2x2")
-                        .font(.system(size: 12, weight: .medium))
+                        .font(.brand(size: 12, weight: .medium))
                         .foregroundStyle(theme.inkSecondary(scheme))
                 }
                 .menuStyle(.button)
@@ -92,7 +92,7 @@ struct CanvasToolbar: View {
                     }
                 } label: {
                     Label("Chart", systemImage: "chart.bar")
-                        .font(.system(size: 12, weight: .medium))
+                        .font(.brand(size: 12, weight: .medium))
                         .foregroundStyle(theme.inkSecondary(scheme))
                 }
                 .menuStyle(.button)
@@ -103,7 +103,7 @@ struct CanvasToolbar: View {
                 ToolButton(symbol: "qrcode", help: "Add a QR code") { askingQR = true }
                     .popover(isPresented: $askingQR, arrowEdge: .bottom) {
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("QR code for").font(.system(size: 12.5, weight: .semibold))
+                            Text("QR code for").font(.brand(size: 12.5, weight: .semibold))
                             TextField("A link or any text", text: $qrText)
                                 .textFieldStyle(.roundedBorder)
                                 .frame(width: 260)
@@ -126,7 +126,7 @@ struct CanvasToolbar: View {
                     }
                 } label: {
                     Image(systemName: "align.horizontal.center")
-                        .font(.system(size: 12, weight: .medium))
+                        .font(.brand(size: 12, weight: .medium))
                         .foregroundStyle(theme.inkSecondary(scheme))
                 }
                 .menuStyle(.button)
@@ -143,7 +143,7 @@ struct CanvasToolbar: View {
                     Button("Send to back") { controller.reorder(.back) }
                 } label: {
                     Image(systemName: "square.3.layers.3d")
-                        .font(.system(size: 12, weight: .medium))
+                        .font(.brand(size: 12, weight: .medium))
                         .foregroundStyle(theme.inkSecondary(scheme))
                 }
                 .menuStyle(.button)
@@ -167,8 +167,8 @@ struct CanvasToolbar: View {
             .padding(.vertical, 3)
         }
         .fixedSize(horizontal: false, vertical: true)
-        .background { RoundedRectangle(cornerRadius: 9, style: .continuous).fill(theme.well(scheme)) }
-        .overlay { RoundedRectangle(cornerRadius: 9, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5) }
+        .background { RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.well(scheme)) }
+        .overlay { RoundedRectangle(cornerRadius: 0, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5) }
     }
 
     private var divider: some View {
@@ -214,12 +214,12 @@ struct CanvasInspector: View {
                         appearanceSection(layer)
                     } else if let chart = controller.selectedChart {
                         Text("Chart")
-                            .font(.system(size: 13, weight: .semibold))
+                            .font(.brand(size: 13, weight: .semibold))
                             .foregroundStyle(theme.ink(scheme))
                         chartSection(chart)
                     } else {
                         Text("\(controller.selection.count) layers selected")
-                            .font(.system(size: 12.5, weight: .semibold))
+                            .font(.brand(size: 12.5, weight: .semibold))
                             .foregroundStyle(theme.ink(scheme))
                         colourRow("Fill", current: controller.selectedLayers.first?.fill.firstColor) { color in controller.update { $0.fill = .solid(color) } }
                     }
@@ -272,11 +272,11 @@ struct CanvasInspector: View {
     private var pageSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(controller.document.name)
-                .font(.system(size: 13, weight: .semibold))
+                .font(.brand(size: 13, weight: .semibold))
                 .foregroundStyle(theme.ink(scheme))
                 .lineLimit(2)
             Text("\(Int(controller.document.size.width)) × \(Int(controller.document.size.height))")
-                .font(.system(size: 11.5).monospacedDigit())
+                .font(.brand(size: 11.5).monospacedDigit())
                 .foregroundStyle(theme.inkTertiary(scheme))
             colourRow("Background", current: controller.document.background.firstColor) { color in controller.setBackground(.solid(color)) }
             HStack {
@@ -293,17 +293,17 @@ struct CanvasInspector: View {
 
     private func number(_ title: String, _ value: Double, _ apply: @escaping (Double) -> Void) -> some View {
         HStack(spacing: 4) {
-            Text(title).font(.system(size: 10.5, weight: .semibold)).foregroundStyle(theme.inkTertiary(scheme)).frame(width: 14, alignment: .leading)
+            Text(title).font(.brand(size: 10.5, weight: .semibold)).foregroundStyle(theme.inkTertiary(scheme)).frame(width: 14, alignment: .leading)
             TextField("", value: Binding(get: { (value * 10).rounded() / 10 }, set: apply), format: .number.precision(.fractionLength(0...1)))
                 .textFieldStyle(.roundedBorder)
-                .font(.system(size: 11.5).monospacedDigit())
+                .font(.brand(size: 11.5).monospacedDigit())
         }
     }
 
     private func geometrySection(_ layer: CanvasLayer) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text(layer.kindTitle).font(.system(size: 13, weight: .semibold)).foregroundStyle(theme.ink(scheme))
+                Text(layer.kindTitle).font(.brand(size: 13, weight: .semibold)).foregroundStyle(theme.ink(scheme))
                 Spacer()
                 if layer.locked { Image(systemName: "lock.fill").foregroundStyle(theme.inkTertiary(scheme)) }
             }
@@ -319,7 +319,7 @@ struct CanvasInspector: View {
                 GridRow {
                     number("°", layer.rotation) { value in controller.update { $0.rotation = value.truncatingRemainder(dividingBy: 360) } }
                     HStack(spacing: 4) {
-                        Image(systemName: "circle.lefthalf.filled").font(.system(size: 10)).foregroundStyle(theme.inkTertiary(scheme))
+                        Image(systemName: "circle.lefthalf.filled").font(.brand(size: 10)).foregroundStyle(theme.inkTertiary(scheme))
                         Slider(value: Binding(get: { layer.opacity }, set: { value in controller.update { $0.opacity = value } }), in: 0...1)
                             .controlSize(.small)
                     }
@@ -356,11 +356,11 @@ struct CanvasInspector: View {
                 ToolButton(symbol: "text.alignright", help: "Right", on: style.alignment == .right) { controller.updateText { $0.alignment = .right } }
             }
             HStack {
-                Text("Line").font(.system(size: 11)).foregroundStyle(theme.inkTertiary(scheme))
+                Text("Line").font(.brand(size: 11)).foregroundStyle(theme.inkTertiary(scheme))
                 Slider(value: Binding(get: { style.lineHeight }, set: { value in controller.updateText { $0.lineHeight = value } }), in: 0.8...2).controlSize(.small)
             }
             HStack {
-                Text("Spacing").font(.system(size: 11)).foregroundStyle(theme.inkTertiary(scheme))
+                Text("Spacing").font(.brand(size: 11)).foregroundStyle(theme.inkTertiary(scheme))
                 Slider(value: Binding(get: { style.tracking }, set: { value in controller.updateText { $0.tracking = value } }), in: -10...30).controlSize(.small)
             }
             colourRow("Text colour", current: style.color) { color in controller.updateText { $0.color = color } }
@@ -381,12 +381,12 @@ struct CanvasInspector: View {
             if let link = chart.link {
                 VStack(alignment: .leading, spacing: 4) {
                     Label("From \(link.sheet) in \(link.workbook)", systemImage: "tablecells")
-                        .font(.system(size: 11.5))
+                        .font(.brand(size: 11.5))
                         .foregroundStyle(theme.inkSecondary(scheme))
                         .lineLimit(2)
                     if let updated = link.updated {
                         Text("Checked \(updated.formatted(.relative(presentation: .named)))")
-                            .font(.system(size: 10.5))
+                            .font(.brand(size: 10.5))
                             .foregroundStyle(theme.inkTertiary(scheme))
                     }
                 }
@@ -395,7 +395,7 @@ struct CanvasInspector: View {
                     .help("Draws the chart again if the numbers in the sheet changed")
             } else {
                 Text("\(chart.points.count) \(chart.points.count == 1 ? "point" : "points"), typed in. Make a chart from Sheets to keep it up to date.")
-                    .font(.system(size: 10.5))
+                    .font(.brand(size: 10.5))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -433,17 +433,17 @@ struct CanvasInspector: View {
             }, clear: { controller.update { $0.stroke = nil; $0.strokeWidth = 0 } })
             if layer.stroke != nil {
                 HStack {
-                    Text("Width").font(.system(size: 11)).foregroundStyle(theme.inkTertiary(scheme))
+                    Text("Width").font(.brand(size: 11)).foregroundStyle(theme.inkTertiary(scheme))
                     Slider(value: Binding(get: { layer.strokeWidth }, set: { value in controller.update { $0.strokeWidth = value } }), in: 0...40).controlSize(.small)
                 }
             }
             HStack {
-                Text("Corners").font(.system(size: 11)).foregroundStyle(theme.inkTertiary(scheme))
+                Text("Corners").font(.brand(size: 11)).foregroundStyle(theme.inkTertiary(scheme))
                 Slider(value: Binding(get: { layer.cornerRadius }, set: { value in controller.update { $0.cornerRadius = value } }),
                        in: 0...max(1, min(layer.frame.width, layer.frame.height) / 2)).controlSize(.small)
             }
             Toggle("Shadow", isOn: Binding(get: { layer.shadow }, set: { value in controller.update { $0.shadow = value } }))
-                .toggleStyle(.checkbox)
+                .toggleStyle(.brandCheck)
         }
     }
 
@@ -454,32 +454,32 @@ struct CanvasInspector: View {
                 let selected = controller.selection.contains(layer.id)
                 HStack(spacing: 8) {
                     Image(systemName: symbol(layer))
-                        .font(.system(size: 11))
+                        .font(.brand(size: 11))
                         .foregroundStyle(theme.inkTertiary(scheme))
                         .frame(width: 16)
                     Text(layer.text.map { String($0.prefix(28)) } ?? layer.name)
-                        .font(.system(size: 12, weight: selected ? .semibold : .regular))
+                        .font(.brand(size: 12, weight: selected ? .semibold : .regular))
                         .foregroundStyle(layer.hidden ? theme.inkTertiary(scheme) : theme.ink(scheme))
                         .lineLimit(1)
                     Spacer(minLength: 4)
                     Button {
                         controller.update([layer.id]) { $0.hidden.toggle() }
                     } label: {
-                        Image(systemName: layer.hidden ? "eye.slash" : "eye").font(.system(size: 10.5))
+                        Image(systemName: layer.hidden ? "eye.slash" : "eye").font(.brand(size: 10.5))
                     }
                     .buttonStyle(.plain)
                     .foregroundStyle(theme.inkTertiary(scheme))
                     Button {
                         controller.update([layer.id]) { $0.locked.toggle() }
                     } label: {
-                        Image(systemName: layer.locked ? "lock.fill" : "lock.open").font(.system(size: 10.5))
+                        Image(systemName: layer.locked ? "lock.fill" : "lock.open").font(.brand(size: 10.5))
                     }
                     .buttonStyle(.plain)
                     .foregroundStyle(theme.inkTertiary(scheme))
                 }
                 .padding(.horizontal, 8)
                 .padding(.vertical, 5)
-                .background { if selected { RoundedRectangle(cornerRadius: 6, style: .continuous).fill(theme.raised(scheme)) } }
+                .background { if selected { RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.raised(scheme)) } }
                 .contentShape(Rectangle())
                 .onTapGesture { controller.select(layer.id, adding: NSEvent.modifierFlags.contains(.shift)) }
             }

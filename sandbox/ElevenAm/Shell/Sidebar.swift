@@ -45,22 +45,23 @@ struct Sidebar: View {
 
             VStack(alignment: .leading, spacing: 6) {
                 SectionLabel(text: "This Mac")
-                Text(machine.summary)
-                    .font(.system(size: 11.5, weight: .medium))
-                    .foregroundStyle(theme.inkSecondary(scheme))
+                Text(machine.summary.lowercased())
+                    .font(BrandFont.label(12))
+                    .foregroundStyle(theme.ink(scheme))
                 HStack(spacing: 6) {
                     ModelBadge(label: brain.mode.title, isLocal: brain.mode == .onDevice || !brain.hasClaudeKey)
                 }
                 if brain.hasClaudeKey {
                     Text("Claude this month: \(Pricing.format(brain.spentThisMonthUSD)) of \(Pricing.format(brain.monthlyBudgetUSD))")
-                        .font(.system(size: 11))
+                        .font(.brand(size: 11))
                         .foregroundStyle(theme.inkTertiary(scheme))
                         .contentTransition(.numericText())
                 }
                 SettingsLink {
-                    Text("Brain & settings…")
-                        .font(.system(size: 11.5, weight: .medium))
-                        .foregroundStyle(theme.inkSecondary(scheme))
+                    Text("Brain and settings")
+                        .font(BrandFont.body(12.5, weight: .medium))
+                        .underline()
+                        .foregroundStyle(theme.ink(scheme))
                 }
                 .buttonStyle(.plain)
                 .padding(.top, 2)
@@ -82,35 +83,28 @@ private struct SidebarRow: View {
 
     var body: some View {
         let selected = model.section == section
+        let ink = theme.ink(scheme), paper = theme.paper(scheme)
         Button {
             model.go(to: section)
         } label: {
             HStack(spacing: 10) {
-                Image(systemName: section.symbol)
-                    .font(.system(size: 13, weight: .regular))
-                    .frame(width: 18)
+                AppGlyph(section: section, size: 16, color: selected ? paper : ink)
                 Text(section.title)
-                    .font(.system(size: 13, weight: selected ? .semibold : .regular))
+                    .font(BrandFont.body(13.5, weight: selected ? .semibold : nil))
                 Spacer()
-                AgentLogo(code: section.monogram, size: 20, color: theme.ink(scheme).opacity(selected ? 0.9 : 0.55))
+                AgentCircle(code: section.monogram, size: 20, style: selected ? .paper : .ring)
             }
-            .foregroundStyle(theme.ink(scheme))
+            .foregroundStyle(selected ? paper : ink)
             .padding(.horizontal, 10)
             .padding(.vertical, 5)
             .background {
                 if selected {
-                    // One highlight that slides between rows.
-                    RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .fill(theme.raised(scheme))
-                        .overlay {
-                            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                .strokeBorder(theme.edge(scheme), lineWidth: 0.5)
-                        }
-                        .shadow(color: .black.opacity(scheme == .dark ? 0.25 : 0.06), radius: 3, y: 1)
+                    // The active app is a solid ink row that slides between rows.
+                    Rectangle()
+                        .fill(ink)
                         .matchedGeometryEffect(id: "selection", in: selection)
                 } else if hovering {
-                    RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .fill(theme.well(scheme).opacity(0.6))
+                    Rectangle().fill(theme.well(scheme)).lift(row: true)
                 }
             }
             .contentShape(Rectangle())

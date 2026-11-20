@@ -15,14 +15,14 @@ struct ChartLinkBox: View {
             if let link = decks.slide?.content.link {
                 HStack(alignment: .top, spacing: 8) {
                     Image(systemName: "link")
-                        .font(.system(size: 11))
+                        .font(.brand(size: 11))
                         .foregroundStyle(theme.inkSecondary(scheme))
                     VStack(alignment: .leading, spacing: 2) {
                         Text("\(link.workbook) › \(link.sheet)")
-                            .font(.system(size: 12, weight: .semibold))
+                            .font(.brand(size: 12, weight: .semibold))
                             .foregroundStyle(theme.ink(scheme))
                         Text(link.updated.map { "Updated \($0.formatted(.relative(presentation: .named)))" } ?? "Not updated yet")
-                            .font(.system(size: 11))
+                            .font(.brand(size: 11))
                             .foregroundStyle(theme.inkTertiary(scheme))
                     }
                 }
@@ -31,7 +31,7 @@ struct ChartLinkBox: View {
                     TextField("Numbers", text: $values)
                 }
                 .textFieldStyle(.roundedBorder)
-                .font(.system(size: 11.5, design: .monospaced))
+                .font(.brand(size: 11.5, design: .monospaced))
                 .onSubmit {
                     var changed = link
                     changed.labels = labels.trimmingCharacters(in: .whitespaces)
@@ -70,7 +70,7 @@ struct ChartLinkBox: View {
                 .fixedSize()
                 .disabled(sheets.entries.isEmpty)
                 Text("Or type the bars below. A linked chart takes its numbers from the sheet each time you open or present the deck.")
-                    .font(.system(size: 11))
+                    .font(.brand(size: 11))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -100,7 +100,7 @@ struct RehearsalView: View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(spacing: 10) {
                 Image(systemName: "stopwatch")
-                    .font(.system(size: 20))
+                    .font(.brand(size: 20))
                     .foregroundStyle(theme.ink(scheme))
                 VStack(alignment: .leading, spacing: 2) {
                     Text(RehearsalReport.clock(run.total))
@@ -108,21 +108,21 @@ struct RehearsalView: View {
                         .monospacedDigit()
                         .foregroundStyle(theme.ink(scheme))
                     Text(RehearsalReport.summary(deck, run, previous: previous, targetMinutes: minutes))
-                        .font(.system(size: 12.5))
+                        .font(.brand(size: 12.5))
                         .foregroundStyle(theme.inkSecondary(scheme))
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
             HStack(spacing: 8) {
                 Text("Aiming for")
-                    .font(.system(size: 12))
+                    .font(.brand(size: 12))
                     .foregroundStyle(theme.inkSecondary(scheme))
                 TextField("minutes", text: $target)
                     .textFieldStyle(.roundedBorder)
                     .frame(width: 70)
                     .onSubmit { decks.setTarget(minutes: Double(target)) }
                 Text("minutes")
-                    .font(.system(size: 12))
+                    .font(.brand(size: 12))
                     .foregroundStyle(theme.inkSecondary(scheme))
             }
             ScrollView {
@@ -130,11 +130,11 @@ struct RehearsalView: View {
                     ForEach(rows) { row in
                         HStack(spacing: 10) {
                             Text("\(row.number)")
-                                .font(.system(size: 11, weight: .semibold).monospacedDigit())
+                                .font(.brand(size: 11, weight: .semibold).monospacedDigit())
                                 .foregroundStyle(theme.inkTertiary(scheme))
                                 .frame(width: 18, alignment: .trailing)
                             Text(row.title)
-                                .font(.system(size: 12.5, weight: row.long ? .semibold : .regular))
+                                .font(.brand(size: 12.5, weight: row.long ? .semibold : .regular))
                                 .foregroundStyle(theme.ink(scheme))
                                 .lineLimit(1)
                                 .frame(width: 200, alignment: .leading)
@@ -146,12 +146,12 @@ struct RehearsalView: View {
                             }
                             .frame(height: 16)
                             Text(RehearsalReport.clock(row.seconds))
-                                .font(.system(size: 12).monospacedDigit())
+                                .font(.brand(size: 12).monospacedDigit())
                                 .foregroundStyle(theme.ink(scheme))
                                 .frame(width: 44, alignment: .trailing)
                             if let before = row.previous {
                                 Text(before > row.seconds ? "−\(RehearsalReport.clock(before - row.seconds))" : "+\(RehearsalReport.clock(row.seconds - before))")
-                                    .font(.system(size: 11).monospacedDigit())
+                                    .font(.brand(size: 11).monospacedDigit())
                                     .foregroundStyle(theme.inkTertiary(scheme))
                                     .frame(width: 48, alignment: .trailing)
                             }
@@ -162,7 +162,7 @@ struct RehearsalView: View {
             .frame(maxHeight: 320)
             HStack {
                 Text("Orange slides took more than half again their share of the time.")
-                    .font(.system(size: 11))
+                    .font(.brand(size: 11))
                     .foregroundStyle(theme.inkTertiary(scheme))
                 Spacer()
                 Button("Rehearse again") {

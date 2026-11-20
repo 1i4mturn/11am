@@ -46,7 +46,7 @@ struct CustomSizeSheet: View {
             }
             .fixedSize()
             Text(pixels.map { "\(Int($0.0)) × \(Int($0.1)) pixels" + (unit == .pixels ? "" : ", ready to print at 300 dots an inch") } ?? "Type a width and height (up to 12,000 pixels each).")
-                .font(.system(size: 11.5))
+                .font(.brand(size: 11.5))
                 .foregroundStyle(theme.inkTertiary(scheme))
             Picker("Start from", selection: $template) {
                 ForEach(CanvasTemplate.allCases) { item in Text(item.title).tag(item) }

@@ -101,7 +101,7 @@ private struct ReviewArea: View {
                         .buttonStyle(.vellumPrimary)
                 }
                 Text("\(learn.queue.count) left in this session")
-                    .font(.system(size: 11.5).monospacedDigit())
+                    .font(.brand(size: 11.5).monospacedDigit())
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .contentTransition(.numericText())
             } else {
@@ -111,7 +111,7 @@ private struct ReviewArea: View {
                         .font(theme.display(22))
                         .foregroundStyle(theme.ink(scheme))
                     Text("Cards come back just before you'd forget them.")
-                        .font(.system(size: 12.5))
+                        .font(.brand(size: 12.5))
                         .foregroundStyle(theme.inkTertiary(scheme))
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -179,16 +179,16 @@ private struct SidePanel: View {
                         SectionLabel(text: "Make cards from your notes")
                     }
                     TextEditor(text: $notes)
-                        .font(.system(size: 12.5))
+                        .font(.brand(size: 12.5))
                         .scrollContentBackground(.hidden)
                         .padding(6)
                         .frame(height: 90)
-                        .background(RoundedRectangle(cornerRadius: 8).fill(theme.well(scheme)))
-                        .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(theme.edge(scheme), lineWidth: 0.5))
+                        .background(RoundedRectangle(cornerRadius: 0).fill(theme.well(scheme)))
+                        .overlay(RoundedRectangle(cornerRadius: 0).strokeBorder(theme.edge(scheme), lineWidth: 0.5))
                         .overlay(alignment: .topLeading) {
                             if notes.isEmpty {
                                 Text("Paste notes, an article, a chapter…")
-                                    .font(.system(size: 12.5))
+                                    .font(.brand(size: 12.5))
                                     .foregroundStyle(theme.inkTertiary(scheme))
                                     .padding(11)
                                     .allowsHitTesting(false)
@@ -198,20 +198,20 @@ private struct SidePanel: View {
                         .buttonStyle(.vellumSecondary)
                         .disabled(brain.isBusy)
                     if let notice = learn.notice {
-                        Text(notice).font(.system(size: 11.5)).foregroundStyle(theme.inkSecondary(scheme))
+                        Text(notice).font(.brand(size: 11.5)).foregroundStyle(theme.inkSecondary(scheme))
                     }
                     if let run = learn.cardsRun {
                         CardsPreview(run: run)
                     }
                 }
                 .padding(14)
-                .vellum(level: 3, radius: max(theme.radius - 2, 8))
+                .vellum(level: 3, radius: theme.radius)
 
                 VStack(alignment: .leading, spacing: 8) {
                     SectionLabel(text: "Learning path")
                     if let path = learn.path {
                         Text(path.goal)
-                            .font(.system(size: 13, weight: .semibold))
+                            .font(.brand(size: 13, weight: .semibold))
                             .foregroundStyle(theme.ink(scheme))
                         ForEach(path.steps) { step in
                             Button {
@@ -219,9 +219,9 @@ private struct SidePanel: View {
                             } label: {
                                 HStack(alignment: .firstTextBaseline, spacing: 8) {
                                     Image(systemName: step.done ? "checkmark.circle.fill" : "circle")
-                                        .font(.system(size: 12))
+                                        .font(.brand(size: 12))
                                     Text(step.title)
-                                        .font(.system(size: 12.5))
+                                        .font(.brand(size: 12.5))
                                         .strikethrough(step.done)
                                         .multilineTextAlignment(.leading)
                                         .fixedSize(horizontal: false, vertical: true)
@@ -235,19 +235,19 @@ private struct SidePanel: View {
                         }
                         Button("Start over") { withAnimation(theme.spring) { learn.clearPath() } }
                             .buttonStyle(.plain)
-                            .font(.system(size: 11.5, weight: .medium))
+                            .font(.brand(size: 11.5, weight: .medium))
                             .foregroundStyle(theme.inkTertiary(scheme))
                     } else {
                         AskField(placeholder: "What do you want to get better at?", text: $goal) {
                             learn.makePath(for: goal)
                         }
                         Text("Harris turns a goal into five ten-minute sessions.")
-                            .font(.system(size: 11.5))
+                            .font(.brand(size: 11.5))
                             .foregroundStyle(theme.inkTertiary(scheme))
                     }
                 }
                 .padding(14)
-                .vellum(level: 3, radius: max(theme.radius - 2, 8))
+                .vellum(level: 3, radius: theme.radius)
             }
         }
         .scrollContentBackground(.hidden)
@@ -266,8 +266,8 @@ private struct CardsPreview: View {
             if run.status == .done && !cards.isEmpty {
                 ForEach(cards) { card in
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(card.front).font(.system(size: 12, weight: .semibold))
-                        Text(card.back).font(.system(size: 11.5)).foregroundStyle(theme.inkSecondary(scheme))
+                        Text(card.front).font(.brand(size: 12, weight: .semibold))
+                        Text(card.back).font(.brand(size: 11.5)).foregroundStyle(theme.inkSecondary(scheme))
                     }
                     .foregroundStyle(theme.ink(scheme))
                 }

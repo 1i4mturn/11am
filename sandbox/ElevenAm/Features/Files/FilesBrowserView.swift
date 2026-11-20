@@ -76,7 +76,7 @@ private struct PlacesList: View {
                 browser.open(url)
             } label: {
                 Label("Open a folder…", systemImage: "plus")
-                    .font(.system(size: 12))
+                    .font(.brand(size: 12))
             }
             .buttonStyle(.plain)
             .foregroundStyle(theme.inkSecondary(scheme))
@@ -84,7 +84,7 @@ private struct PlacesList: View {
             if !FileManager.default.fileExists(atPath: browser.sampleFolder.path) {
                 Button("Try the sample photos") { browser.makeSampleFolder() }
                     .buttonStyle(.plain)
-                    .font(.system(size: 12))
+                    .font(.brand(size: 12))
                     .foregroundStyle(theme.inkSecondary(scheme))
                     .padding(.top, 4)
             }
@@ -98,14 +98,14 @@ private struct PlacesList: View {
             browser.open(url)
         } label: {
             Label(name, systemImage: symbol)
-                .font(.system(size: 12.5, weight: selected ? .semibold : .regular))
+                .font(.brand(size: 12.5, weight: selected ? .semibold : .regular))
                 .foregroundStyle(theme.ink(scheme))
                 .lineLimit(1)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 5)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background {
-                    if selected { RoundedRectangle(cornerRadius: 7, style: .continuous).fill(theme.raised(scheme)) }
+                    if selected { RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.raised(scheme)) }
                 }
                 .contentShape(Rectangle())
         }
@@ -135,11 +135,11 @@ private struct BrowserToolbar: View {
                 .fixedSize()
             }
             Text(browser.folder?.lastPathComponent ?? "No folder")
-                .font(.system(size: 14, weight: .semibold))
+                .font(.brand(size: 14, weight: .semibold))
                 .foregroundStyle(theme.ink(scheme))
                 .lineLimit(1)
             Text("\(browser.items.count) \(browser.items.count == 1 ? "item" : "items")")
-                .font(.system(size: 11.5))
+                .font(.brand(size: 11.5))
                 .foregroundStyle(theme.inkTertiary(scheme))
                 .lineLimit(1)
             Spacer(minLength: 8)
@@ -166,7 +166,7 @@ private struct ThumbnailGrid: View {
         ScrollView {
             if browser.items.isEmpty {
                 Text(browser.folder == nil ? "Choose a place on the left." : "This folder is empty.")
-                    .font(.system(size: 12.5))
+                    .font(.brand(size: 12.5))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .frame(maxWidth: .infinity, minHeight: 160)
             }
@@ -180,8 +180,8 @@ private struct ThumbnailGrid: View {
             }
             .padding(10)
         }
-        .background(RoundedRectangle(cornerRadius: max(theme.radius - 4, 8), style: .continuous).fill(theme.well(scheme)))
-        .overlay(RoundedRectangle(cornerRadius: max(theme.radius - 4, 8), style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5))
+        .background(RoundedRectangle(cornerRadius: theme.radius, style: .continuous).fill(theme.well(scheme)))
+        .overlay(RoundedRectangle(cornerRadius: theme.radius, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5))
     }
 
     @ViewBuilder
@@ -219,20 +219,20 @@ private struct ThumbnailCell: View {
                         .shadow(color: .black.opacity(0.12), radius: 2, y: 1)
                 } else {
                     Image(systemName: item.kind.symbol)
-                        .font(.system(size: side * 0.3, weight: .light))
+                        .font(.brand(size: side * 0.3, weight: .light))
                         .foregroundStyle(theme.inkTertiary(scheme))
                 }
             }
             .frame(width: side, height: side * 0.78)
             .padding(4)
             .background {
-                if selected { RoundedRectangle(cornerRadius: 8, style: .continuous).fill(theme.raised(scheme)) }
+                if selected { RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.raised(scheme)) }
             }
             .overlay {
-                if selected { RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(theme.ink(scheme).opacity(0.5), lineWidth: 1) }
+                if selected { RoundedRectangle(cornerRadius: 0, style: .continuous).strokeBorder(theme.ink(scheme).opacity(0.5), lineWidth: 1) }
             }
             Text(item.name)
-                .font(.system(size: 11.5, weight: selected ? .medium : .regular))
+                .font(.brand(size: 11.5, weight: selected ? .medium : .regular))
                 .foregroundStyle(theme.ink(scheme))
                 .lineLimit(2)
                 .multilineTextAlignment(.center)
@@ -283,9 +283,9 @@ private struct PreviewPane: View {
             VStack(alignment: .leading, spacing: 12) {
                 QuickLookView(url: url)
                     .frame(height: 220)
-                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    .clipShape(RoundedRectangle(cornerRadius: 0, style: .continuous))
                 Text(url.lastPathComponent)
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.brand(size: 14, weight: .semibold))
                     .foregroundStyle(theme.ink(scheme))
                     .lineLimit(2)
                 if kind == .image {
@@ -319,31 +319,31 @@ private struct PreviewPane: View {
                 if let info, info.hasLocation, let latitude = info.latitude, let longitude = info.longitude {
                     VStack(alignment: .leading, spacing: 6) {
                         HStack(spacing: 6) {
-                            Image(systemName: "location.fill").font(.system(size: 11))
+                            Image(systemName: "location.fill").font(.brand(size: 11))
                             Text(String(format: "%.4f, %.4f", latitude, longitude))
-                                .font(.system(size: 12).monospacedDigit())
+                                .font(.brand(size: 12).monospacedDigit())
                             Spacer()
                             Button("Map") {
                                 if let map = URL(string: "https://maps.apple.com/?ll=\(latitude),\(longitude)&q=Photo") { NSWorkspace.shared.open(map) }
                             }
                             .buttonStyle(.borderless)
-                            .font(.system(size: 11.5))
+                            .font(.brand(size: 11.5))
                         }
                         .foregroundStyle(theme.ink(scheme))
                         Text("This picture says where it was taken. Anyone you send it to can see that.")
-                            .font(.system(size: 11))
+                            .font(.brand(size: 11))
                             .foregroundStyle(theme.inkTertiary(scheme))
                             .fixedSize(horizontal: false, vertical: true)
                         Button("Remove location…") { confirmingLocation = true }
                             .buttonStyle(.vellumSecondary)
                     }
                     .padding(10)
-                    .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(theme.well(scheme)))
+                    .background(RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.well(scheme)))
                 }
             }
             .padding(12)
         }
-        .vellum(level: 2, radius: max(theme.radius - 2, 10))
+        .vellum(level: 2, radius: theme.radius)
         .confirmationDialog("Take the location out of \(url.lastPathComponent)?", isPresented: $confirmingLocation) {
             Button("Remove location") { browser.removeLocation(url) }
             Button("Cancel", role: .cancel) {}
@@ -355,11 +355,11 @@ private struct PreviewPane: View {
     private func row(_ label: String, _ value: String) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
             Text(label)
-                .font(.system(size: 11.5))
+                .font(.brand(size: 11.5))
                 .foregroundStyle(theme.inkTertiary(scheme))
                 .frame(width: 70, alignment: .leading)
             Text(value)
-                .font(.system(size: 12))
+                .font(.brand(size: 12))
                 .foregroundStyle(theme.ink(scheme))
                 .lineLimit(2)
                 .textSelection(.enabled)
@@ -432,7 +432,7 @@ struct ImageEditorView: View {
     private var controls: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
-                Text(url.lastPathComponent).font(.system(size: 14, weight: .semibold)).lineLimit(1)
+                Text(url.lastPathComponent).font(.brand(size: 14, weight: .semibold)).lineLimit(1)
                 HStack(spacing: 4) {
                     ToolButton(symbol: "rotate.left", help: "Turn left") { edits.turn(clockwise: false); swapSize() }
                     ToolButton(symbol: "rotate.right", help: "Turn right") { edits.turn(clockwise: true); swapSize() }
@@ -454,7 +454,7 @@ struct ImageEditorView: View {
                         Button("Reset crop") { edits.crop = nil }
                         Spacer()
                     }
-                    .font(.system(size: 12))
+                    .font(.brand(size: 12))
                 }
                 SectionLabel(text: "Light and colour")
                 slider("Exposure", value: $edits.exposure, range: -2...2)
@@ -464,15 +464,15 @@ struct ImageEditorView: View {
                 slider("Tint", value: $edits.tint, range: -1...1)
                 slider("Sharpness", value: $edits.sharpness, range: 0...1)
                 slider("Sepia", value: $edits.sepia, range: 0...1)
-                Toggle("Black and white", isOn: $edits.blackAndWhite).font(.system(size: 12))
+                Toggle("Black and white", isOn: $edits.blackAndWhite).font(.brand(size: 12))
                 SectionLabel(text: "Size")
                 HStack(spacing: 6) {
                     TextField("Width", value: Binding(get: { width }, set: { setWidth($0) }), format: .number).frame(width: 70)
                     Text("×")
                     TextField("Height", value: Binding(get: { height }, set: { setHeight($0) }), format: .number).frame(width: 70)
-                    Text("px").font(.system(size: 11)).foregroundStyle(.secondary)
+                    Text("px").font(.brand(size: 11)).foregroundStyle(.primary)
                 }
-                Toggle("Keep proportions", isOn: $keepProportions).font(.system(size: 12))
+                Toggle("Keep proportions", isOn: $keepProportions).font(.brand(size: 12))
                 SectionLabel(text: "Subject")
                 Button {
                     liftSubject()
@@ -513,8 +513,8 @@ struct ImageEditorView: View {
                 Text(cutout != nil && !(ImageFormat.of(url)?.keepsTransparency ?? false)
                      ? "A JPEG can't be see-through, so the cut-out is saved as a PNG beside it."
                      : "Camera details and the place are kept. Remove the place in the inspector before sharing.")
-                    .font(.system(size: 10.5))
-                    .foregroundStyle(.secondary)
+                    .font(.brand(size: 10.5))
+                    .foregroundStyle(.primary)
                     .fixedSize(horizontal: false, vertical: true)
         }
         .padding(16)
@@ -524,9 +524,9 @@ struct ImageEditorView: View {
     private func slider(_ title: String, value: Binding<Double>, range: ClosedRange<Double>) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             HStack {
-                Text(title).font(.system(size: 11.5))
+                Text(title).font(.brand(size: 11.5))
                 Spacer()
-                Text(String(format: "%.2f", value.wrappedValue)).font(.system(size: 10.5).monospacedDigit()).foregroundStyle(.secondary)
+                Text(String(format: "%.2f", value.wrappedValue)).font(.brand(size: 10.5).monospacedDigit()).foregroundStyle(.primary)
             }
             Slider(value: value, in: range)
         }
@@ -725,22 +725,22 @@ private struct ConvertSheet: View {
             .pickerStyle(.segmented)
             if format.hasQuality {
                 HStack {
-                    Text("Quality").font(.system(size: 12))
+                    Text("Quality").font(.brand(size: 12))
                     Slider(value: $quality, in: 0.1...1)
-                    Text("\(Int((quality * 100).rounded()))%").font(.system(size: 11.5).monospacedDigit()).frame(width: 40)
+                    Text("\(Int((quality * 100).rounded()))%").font(.brand(size: 11.5).monospacedDigit()).frame(width: 40)
                 }
             }
             HStack {
                 Toggle("Shrink to fit", isOn: $shrink)
                 TextField("", value: $longest, format: .number).frame(width: 70).disabled(!shrink)
-                Text("pixels on the longest side").font(.system(size: 11.5)).foregroundStyle(.secondary)
+                Text("pixels on the longest side").font(.brand(size: 11.5)).foregroundStyle(.primary)
             }
             Toggle("Keep where they were taken", isOn: $keepLocation)
             Text(keepLocation ? "Camera details and places go with the copies." : "Camera details go with the copies; places are left out, so they're safe to share.")
-                .font(.system(size: 11))
-                .foregroundStyle(.secondary)
+                .font(.brand(size: 11))
+                .foregroundStyle(.primary)
             HStack {
-                Text(destination.map { "Into \($0.lastPathComponent)" } ?? "Next to the originals").font(.system(size: 12))
+                Text(destination.map { "Into \($0.lastPathComponent)" } ?? "Next to the originals").font(.brand(size: 12))
                 Spacer()
                 Button("Choose a folder…") {
                     let panel = NSOpenPanel()
@@ -752,8 +752,8 @@ private struct ConvertSheet: View {
             }
             if format == .pdf {
                 Text(urls.count > 1 ? "All \(urls.count) pictures go into one PDF, a page each." : "One page, the size of the picture.")
-                    .font(.system(size: 11))
-                    .foregroundStyle(.secondary)
+                    .font(.brand(size: 11))
+                    .foregroundStyle(.primary)
             }
             HStack {
                 Spacer()
@@ -802,7 +802,7 @@ struct SlideshowView: View {
                     Button { browser.stepSlide(1) } label: { Image(systemName: "chevron.right") }
                         .keyboardShortcut(.rightArrow, modifiers: [])
                     Text(browser.slideshow.indices.contains(browser.slideIndex) ? "\(browser.slideIndex + 1) of \(browser.slideshow.count) · \(browser.slideshow[browser.slideIndex].lastPathComponent)" : "")
-                        .font(.system(size: 12))
+                        .font(.brand(size: 12))
                     Button { browser.slideshow = [] } label: { Image(systemName: "xmark") }
                         .keyboardShortcut(.cancelAction)
                 }

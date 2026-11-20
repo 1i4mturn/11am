@@ -56,7 +56,7 @@ struct CitePicker: View {
             HStack {
                 AgentLogo(code: "jm", size: 18)
                 Text("Cite")
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.brand(size: 13, weight: .semibold))
                     .foregroundStyle(theme.ink(scheme))
                 Spacer()
                 Picker("", selection: $research.style) {
@@ -68,10 +68,10 @@ struct CitePicker: View {
             }
             TextField("Find a source", text: $filter)
                 .textFieldStyle(.roundedBorder)
-                .font(.system(size: 12))
+                .font(.brand(size: 12))
             if research.library.isEmpty {
                 Text("No sources yet. In Research, open a page and choose Add to sources, or keep the sources from a look-up.")
-                    .font(.system(size: 12))
+                    .font(.brand(size: 12))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -84,23 +84,23 @@ struct CitePicker: View {
                         } label: {
                             HStack(alignment: .firstTextBaseline, spacing: 8) {
                                 Image(systemName: source.kind.symbol)
-                                    .font(.system(size: 10.5))
+                                    .font(.brand(size: 10.5))
                                     .foregroundStyle(theme.inkTertiary(scheme))
                                     .frame(width: 14)
                                 VStack(alignment: .leading, spacing: 1) {
                                     Text(source.title)
-                                        .font(.system(size: 12, weight: .medium))
+                                        .font(.brand(size: 12, weight: .medium))
                                         .foregroundStyle(theme.ink(scheme))
                                         .lineLimit(1)
                                     Text(research.citeText(source) + (source.container.isEmpty ? "" : " · \(source.container)"))
-                                        .font(.system(size: 11))
+                                        .font(.brand(size: 11))
                                         .foregroundStyle(theme.inkTertiary(scheme))
                                         .lineLimit(1)
                                 }
                                 Spacer(minLength: 4)
                                 if citedKeys.contains(source.key.lowercased()) {
                                     Image(systemName: "checkmark")
-                                        .font(.system(size: 10, weight: .semibold))
+                                        .font(.brand(size: 10, weight: .semibold))
                                         .foregroundStyle(theme.inkTertiary(scheme))
                                         .help("Already cited here")
                                 }
@@ -121,7 +121,7 @@ struct CitePicker: View {
                     done()
                 }
                 .buttonStyle(.borderless)
-                .font(.system(size: 11.5))
+                .font(.brand(size: 11.5))
                 Spacer()
                 if let update {
                     Button("Update citations") {

@@ -61,7 +61,7 @@ struct PhotoView: View {
                 .scrollContentBackground(.hidden)
                 .frame(width: 300)
                 .frame(maxHeight: .infinity)
-                .vellum(level: 3, radius: max(theme.radius - 2, 8))
+                .vellum(level: 3, radius: theme.radius)
             }
             .frame(maxHeight: .infinity)
         }
@@ -97,10 +97,10 @@ private struct PhotoToolBar: View {
                 if let notice = photo.notice {
                     HStack(spacing: 6) {
                         Text(notice)
-                            .font(.system(size: 11.5))
+                            .font(.brand(size: 11.5))
                             .foregroundStyle(theme.inkSecondary(scheme))
                             .lineLimit(2)
-                        Button { photo.notice = nil } label: { Image(systemName: "xmark").font(.system(size: 9, weight: .bold)) }
+                        Button { photo.notice = nil } label: { Image(systemName: "xmark").font(.brand(size: 9, weight: .bold)) }
                             .buttonStyle(.plain)
                             .foregroundStyle(theme.inkTertiary(scheme))
                     }
@@ -109,7 +109,7 @@ private struct PhotoToolBar: View {
             }
             // A steady row, so the canvas doesn't jump when the tool changes.
             options
-                .font(.system(size: 12))
+                .font(.brand(size: 12))
                 .lineLimit(1)
                 .frame(height: 30, alignment: .leading)
                 .transition(.opacity)
@@ -146,7 +146,7 @@ private struct PhotoToolBar: View {
                     .controlSize(.small)
                     .frame(width: 130)
                 Text(String(format: "%+.1f°", photo.geometry.straighten))
-                    .font(.system(size: 11).monospacedDigit())
+                    .font(.brand(size: 11).monospacedDigit())
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .frame(width: 42, alignment: .leading)
                 Button("Auto") { photo.autoStraighten() }
@@ -171,7 +171,7 @@ private struct PhotoToolBar: View {
         case .cutout:
             HStack(spacing: 8) {
                 Toggle("Remove background", isOn: $photo.cutout)
-                    .toggleStyle(.switch)
+                    .toggleStyle(.brandSwitch)
                     .controlSize(.small)
                 Text("Finds the subject on this Mac. Export as PNG or HEIC to keep the transparency.")
                     .foregroundStyle(theme.inkTertiary(scheme))
@@ -190,7 +190,7 @@ private struct PhotoCanvas: View {
     var body: some View {
         GeometryReader { proxy in
             ZStack {
-                RoundedRectangle(cornerRadius: max(theme.radius - 2, 8), style: .continuous)
+                RoundedRectangle(cornerRadius: theme.radius, style: .continuous)
                     .fill(theme.well(scheme))
                 if let image = photo.preview {
                     let area = CGSize(width: max(proxy.size.width - 32, 1), height: max(proxy.size.height - 32, 1))
@@ -418,7 +418,7 @@ struct HistogramView: View {
             let w = proxy.size.width
             let h = proxy.size.height
             ZStack {
-                RoundedRectangle(cornerRadius: 6).fill(theme.well(scheme))
+                RoundedRectangle(cornerRadius: 0).fill(theme.well(scheme))
                 if values.count > 1 {
                     Path { path in
                         path.move(to: CGPoint(x: 0, y: h))
@@ -432,7 +432,7 @@ struct HistogramView: View {
                     .fill(theme.ink(scheme).opacity(0.28))
                 }
             }
-            .clipShape(RoundedRectangle(cornerRadius: 6))
+            .clipShape(RoundedRectangle(cornerRadius: 0))
         }
         .accessibilityLabel("Histogram")
     }

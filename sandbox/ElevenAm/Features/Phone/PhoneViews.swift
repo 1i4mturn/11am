@@ -15,10 +15,10 @@ struct PhonePairingSheet: View {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Your iPhone")
-                        .font(.system(size: 22, weight: .bold))
+                        .font(.brand(size: 22, weight: .bold))
                         .foregroundStyle(theme.ink(scheme))
                     Text("Energy from Apple Health, things you capture, your brief on the go.")
-                        .font(.system(size: 12.5))
+                        .font(.brand(size: 12.5))
                         .foregroundStyle(theme.inkSecondary(scheme))
                 }
                 Spacer()
@@ -43,15 +43,15 @@ struct PhonePairingSheet: View {
                             .resizable()
                             .frame(width: 190, height: 190)
                             .padding(10)
-                            .background(RoundedRectangle(cornerRadius: 12).fill(Color.white))
+                            .background(RoundedRectangle(cornerRadius: 0).fill(Color.white))
                     }
                     VStack(alignment: .leading, spacing: 10) {
                         Text("On the iPhone, open 11am › Mac › Scan the code.")
-                            .font(.system(size: 13))
+                            .font(.brand(size: 13))
                             .foregroundStyle(theme.ink(scheme))
                             .fixedSize(horizontal: false, vertical: true)
                         Text("Or copy the link and paste it on the iPhone (Universal Clipboard carries it across).")
-                            .font(.system(size: 12))
+                            .font(.brand(size: 12))
                             .foregroundStyle(theme.inkSecondary(scheme))
                             .fixedSize(horizontal: false, vertical: true)
                         Button("Copy the pairing link") { phone.copyPairingLink() }
@@ -59,19 +59,19 @@ struct PhonePairingSheet: View {
                         HStack(spacing: 6) {
                             Circle().fill(phone.isConnected ? Color.green : (phone.listening ? Color.orange : Color.gray)).frame(width: 7, height: 7)
                             Text(status)
-                                .font(.system(size: 12))
+                                .font(.brand(size: 12))
                                 .foregroundStyle(theme.inkSecondary(scheme))
                         }
                         if let problem = phone.problem {
                             Text(problem)
-                                .font(.system(size: 11.5))
+                                .font(.brand(size: 11.5))
                                 .foregroundStyle(.red)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
                     }
                 }
                 Text("The code holds a key made on this Mac. Everything between the two is sealed with it, and they talk directly on your network: no server, no account. Anyone who sees the code could pair, so make a new one if you've shared a screenshot.")
-                    .font(.system(size: 11.5))
+                    .font(.brand(size: 11.5))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .fixedSize(horizontal: false, vertical: true)
                 HStack {
@@ -87,7 +87,7 @@ struct PhonePairingSheet: View {
                     VStack(alignment: .leading, spacing: 4) {
                         ForEach(phone.activity, id: \.self) { line in
                             Text(line)
-                                .font(.system(size: 11.5).monospacedDigit())
+                                .font(.brand(size: 11.5).monospacedDigit())
                                 .foregroundStyle(theme.inkSecondary(scheme))
                         }
                     }
@@ -116,12 +116,12 @@ private struct Step: View {
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 10) {
             Text("\(number)")
-                .font(.system(size: 11, weight: .bold))
+                .font(.brand(size: 11, weight: .bold))
                 .foregroundStyle(theme.paper(scheme))
                 .frame(width: 18, height: 18)
                 .background(Circle().fill(theme.ink(scheme)))
             Text(text)
-                .font(.system(size: 13))
+                .font(.brand(size: 13))
                 .foregroundStyle(theme.ink(scheme))
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -144,7 +144,7 @@ struct EnergyCard: View {
                         SectionLabel(text: "Energy")
                         if let reading {
                             Text(reading.headline)
-                                .font(.system(size: 11, weight: .semibold))
+                                .font(.brand(size: 11, weight: .semibold))
                                 .foregroundStyle(colour(reading.tone))
                                 .padding(.horizontal, 7)
                                 .padding(.vertical, 2)
@@ -153,17 +153,17 @@ struct EnergyCard: View {
                     }
                     HStack(alignment: .firstTextBaseline, spacing: 8) {
                         Text(latest.today?.sleepMinutes.map(EnergyFormat.duration) ?? "–")
-                            .font(.system(size: 26, weight: .bold).monospacedDigit())
+                            .font(.brand(size: 26, weight: .bold).monospacedDigit())
                             .foregroundStyle(theme.ink(scheme))
                         if let usual = latest.baseline.sleepMinutes {
                             Text("asleep · usual \(EnergyFormat.duration(usual))")
-                                .font(.system(size: 12))
+                                .font(.brand(size: 12))
                                 .foregroundStyle(theme.inkTertiary(scheme))
                         }
                     }
                     if let reading {
                         Text(([reading.detail] + reading.suggestions.prefix(1)).filter { !$0.isEmpty }.joined(separator: " "))
-                            .font(.system(size: 12.5))
+                            .font(.brand(size: 12.5))
                             .foregroundStyle(theme.inkSecondary(scheme))
                             .fixedSize(horizontal: false, vertical: true)
                     }
@@ -197,7 +197,7 @@ struct EnergyCard: View {
                 .frame(width: 260, height: 120)
             }
             Text("From Apple Health on your iPhone. Leo uses it to shape your day; it isn't medical advice and isn't sent to a cloud model unless you allow cloud help.")
-                .font(.system(size: 10.5))
+                .font(.brand(size: 10.5))
                 .foregroundStyle(theme.inkTertiary(scheme))
         }
     }
@@ -205,10 +205,10 @@ struct EnergyCard: View {
     private func figure(_ title: String, _ value: String?) -> some View {
         VStack(alignment: .leading, spacing: 1) {
             Text(value ?? "–")
-                .font(.system(size: 14, weight: .semibold).monospacedDigit())
+                .font(.brand(size: 14, weight: .semibold).monospacedDigit())
                 .foregroundStyle(theme.ink(scheme))
             Text(title)
-                .font(.system(size: 10.5))
+                .font(.brand(size: 10.5))
                 .foregroundStyle(theme.inkTertiary(scheme))
         }
     }

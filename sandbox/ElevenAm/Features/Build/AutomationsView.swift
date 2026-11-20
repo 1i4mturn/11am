@@ -361,7 +361,7 @@ struct AutomationsPane: View {
     private var empty: some View {
         Group {
                 Text("Make an automation with + or start from one of Johnny's.")
-                    .font(.system(size: 12.5))
+                    .font(.brand(size: 12.5))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
@@ -401,11 +401,11 @@ private struct AutomationList: View {
                                     .padding(.top, 5)
                                 VStack(alignment: .leading, spacing: 1) {
                                     Text(automation.name)
-                                        .font(.system(size: 12.5, weight: automation.id == automations.selectedID ? .semibold : .regular))
+                                        .font(.brand(size: 12.5, weight: automation.id == automations.selectedID ? .semibold : .regular))
                                         .foregroundStyle(theme.ink(scheme))
                                         .lineLimit(2)
                                     Text(automation.trigger.summary)
-                                        .font(.system(size: 10.5))
+                                        .font(.brand(size: 10.5))
                                         .foregroundStyle(theme.inkTertiary(scheme))
                                         .lineLimit(1)
                                 }
@@ -413,7 +413,7 @@ private struct AutomationList: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 6)
-                            .background(RoundedRectangle(cornerRadius: 7, style: .continuous)
+                            .background(RoundedRectangle(cornerRadius: 0, style: .continuous)
                                 .fill(automation.id == automations.selectedID ? theme.well(scheme) : Color.clear))
                             .contentShape(Rectangle())
                         }
@@ -428,7 +428,7 @@ private struct AutomationList: View {
         }
         .padding(12)
         .frame(maxHeight: .infinity, alignment: .top)
-        .vellum(level: 3, radius: max(theme.radius - 4, 8))
+        .vellum(level: 3, radius: theme.radius)
     }
 }
 
@@ -446,11 +446,11 @@ private struct AutomationEditor: View {
             HStack(spacing: 8) {
                 TextField("Name", text: Binding(get: { automation.name }, set: { value in edit { $0.name = value } }))
                     .textFieldStyle(.plain)
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.brand(size: 16, weight: .semibold))
                     .foregroundStyle(theme.ink(scheme))
                 Spacer()
                 Toggle("On", isOn: Binding(get: { automation.enabled }, set: { value in edit { $0.enabled = value } }))
-                    .toggleStyle(.switch)
+                    .toggleStyle(.brandSwitch)
                     .controlSize(.small)
                     .help(automation.enabled ? "It runs by itself when its trigger happens" : "It only runs when you press Run")
                 Button { automations.runNow(automation) } label: { Label("Run", systemImage: "play.fill") }
@@ -494,12 +494,12 @@ private struct AutomationEditor: View {
             .fixedSize()
 
             Text("Each step gets the one before's result as {{input}}. {{trigger}} is what set it off (a file, an email, a meeting), {{item}} is each line in For each, and {{date}} and {{time}} are now. In shell commands they go in quoted, so a file name can't change the command.")
-                .font(.system(size: 11))
+                .font(.brand(size: 11))
                 .foregroundStyle(theme.inkTertiary(scheme))
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding(14)
-        .vellum(level: 3, radius: max(theme.radius - 4, 8))
+        .vellum(level: 3, radius: theme.radius)
         .onAppear { if scripts.shortcuts.isEmpty { scripts.loadShortcuts() } }
     }
 }
@@ -577,11 +577,11 @@ private struct TriggerEditor: View {
                         .fixedSize()
                     }
                 }
-                .font(.system(size: 12))
+                .font(.brand(size: 12))
             case .folder(let path, let pattern):
                 HStack(spacing: 8) {
                     Text((path as NSString).abbreviatingWithTildeInPath)
-                        .font(.system(size: 12, design: .monospaced))
+                        .font(.brand(size: 12, design: .monospaced))
                         .foregroundStyle(theme.ink(scheme))
                         .lineLimit(1)
                         .truncationMode(.middle)
@@ -612,7 +612,7 @@ private struct TriggerEditor: View {
                     }))
                     .textFieldStyle(.roundedBorder)
                 }
-                .font(.system(size: 12))
+                .font(.brand(size: 12))
             }
         }
     }
@@ -633,13 +633,13 @@ private struct StepRow: View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 6) {
                 Text("\(index + 1)")
-                    .font(.system(size: 10.5, weight: .bold).monospacedDigit())
+                    .font(.brand(size: 10.5, weight: .bold).monospacedDigit())
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .frame(width: 14)
                 Image(systemName: step.symbol)
                     .foregroundStyle(theme.inkSecondary(scheme))
                 Text(step.title)
-                    .font(.system(size: 12.5, weight: .semibold))
+                    .font(.brand(size: 12.5, weight: .semibold))
                     .foregroundStyle(theme.ink(scheme))
                 Spacer()
                 Button { onMove(-1) } label: { Image(systemName: "chevron.up") }.buttonStyle(.plain).disabled(index == 0)
@@ -650,7 +650,7 @@ private struct StepRow: View {
             fields
         }
         .padding(10)
-        .background(RoundedRectangle(cornerRadius: 9, style: .continuous).fill(theme.well(scheme)))
+        .background(RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.well(scheme)))
     }
 
     @ViewBuilder
@@ -704,16 +704,16 @@ private struct StepRow: View {
     private func code(_ value: String, _ set: @escaping (String) -> Void) -> some View {
         TextField("command", text: Binding(get: { value }, set: set), axis: .vertical)
             .textFieldStyle(.plain)
-            .font(.system(size: 12, design: .monospaced))
+            .font(.brand(size: 12, design: .monospaced))
             .padding(6)
-            .background(RoundedRectangle(cornerRadius: 6, style: .continuous).fill(Color.black.opacity(0.05)))
+            .background(RoundedRectangle(cornerRadius: 0, style: .continuous).fill(Color.black.opacity(0.05)))
             .lineLimit(1...6)
     }
 
     private func field(_ label: String, _ value: String, _ set: @escaping (String) -> Void) -> some View {
         TextField(label, text: Binding(get: { value }, set: set), axis: .vertical)
             .textFieldStyle(.roundedBorder)
-            .font(.system(size: 12))
+            .font(.brand(size: 12))
             .lineLimit(1...5)
     }
 }
@@ -733,7 +733,7 @@ private struct RunHistory: View {
             let runs = automations.runs(for: automation.id)
             if runs.isEmpty {
                 Text("Nothing yet. Press Run, or switch it on and wait for its trigger.")
-                    .font(.system(size: 11.5))
+                    .font(.brand(size: 11.5))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -745,7 +745,7 @@ private struct RunHistory: View {
         }
         .padding(12)
         .frame(maxHeight: scrolls ? CGFloat.infinity : nil, alignment: .top)
-        .vellum(level: 3, radius: max(theme.radius - 4, 8))
+        .vellum(level: 3, radius: theme.radius)
     }
 
     private func list(_ runs: [AutomationRun]) -> some View {
@@ -756,20 +756,20 @@ private struct RunHistory: View {
                                 Image(systemName: symbol(run.status))
                                     .foregroundStyle(color(run.status))
                                 Text(run.status.title)
-                                    .font(.system(size: 12, weight: .semibold))
+                                    .font(.brand(size: 12, weight: .semibold))
                                     .foregroundStyle(theme.ink(scheme))
                                 Spacer()
                                 Text(run.started.formatted(date: .abbreviated, time: .shortened))
-                                    .font(.system(size: 10.5))
+                                    .font(.brand(size: 10.5))
                                     .foregroundStyle(theme.inkTertiary(scheme))
                             }
                             Text(run.trigger)
-                                .font(.system(size: 11))
+                                .font(.brand(size: 11))
                                 .foregroundStyle(theme.inkSecondary(scheme))
                                 .lineLimit(2)
                             if let question = automations.approvals[run.id] {
                                 Text(question)
-                                    .font(.system(size: 11.5))
+                                    .font(.brand(size: 11.5))
                                     .foregroundStyle(theme.ink(scheme))
                                     .fixedSize(horizontal: false, vertical: true)
                                 HStack {
@@ -779,7 +779,7 @@ private struct RunHistory: View {
                             }
                             if expanded == run.id {
                                 Text(run.log.joined(separator: "\n"))
-                                    .font(.system(size: 10.5, design: .monospaced))
+                                    .font(.brand(size: 10.5, design: .monospaced))
                                     .foregroundStyle(theme.inkSecondary(scheme))
                                     .textSelection(.enabled)
                                     .fixedSize(horizontal: false, vertical: true)
@@ -790,11 +790,11 @@ private struct RunHistory: View {
                                 if run.status == .running || run.status == .waiting { Button("Stop") { automations.stop(run) } }
                             }
                             .buttonStyle(.plain)
-                            .font(.system(size: 11, weight: .medium))
+                            .font(.brand(size: 11, weight: .medium))
                             .foregroundStyle(theme.inkSecondary(scheme))
                         }
                         .padding(9)
-                        .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(theme.well(scheme)))
+                        .background(RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.well(scheme)))
                     }
                 }
     }

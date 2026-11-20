@@ -21,16 +21,16 @@ struct MailPersonCard: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 10) {
                 Text(initials(known?.name ?? name))
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.brand(size: 13, weight: .semibold))
                     .frame(width: 36, height: 36)
                     .background(Circle().fill(theme.well(scheme)))
                     .overlay(Circle().strokeBorder(theme.edge(scheme), lineWidth: 0.5))
                 VStack(alignment: .leading, spacing: 2) {
                     Text(known?.name ?? name)
-                        .font(.system(size: 14, weight: .semibold))
+                        .font(.brand(size: 14, weight: .semibold))
                     let line = [known?.title ?? "", company?.name ?? ""].filter { !$0.isEmpty }.joined(separator: " · ")
                     Text(line.isEmpty ? wanted : line)
-                        .font(.system(size: 11.5))
+                        .font(.brand(size: 11.5))
                         .foregroundStyle(theme.inkSecondary(scheme))
                 }
             }
@@ -49,7 +49,7 @@ struct MailPersonCard: View {
                             Text("\(deal.stage.title) · \(Money.format(deal.value))")
                                 .foregroundStyle(theme.inkSecondary(scheme))
                         }
-                        .font(.system(size: 12))
+                        .font(.brand(size: 12))
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
@@ -60,7 +60,7 @@ struct MailPersonCard: View {
                 SectionLabel(text: "Coming up")
                 ForEach(Array(meetings), id: \.id) { event in
                     Text(event.start.formatted(.dateTime.weekday(.abbreviated).day().hour().minute()) + " · " + event.title)
-                        .font(.system(size: 12))
+                        .font(.brand(size: 12))
                         .foregroundStyle(theme.ink(scheme))
                         .lineLimit(1)
                 }
@@ -100,9 +100,9 @@ struct PersonCardButton: View {
         } label: {
             HStack(spacing: 3) {
                 Image(systemName: business.person(forAddress: address) == nil ? "person.crop.circle.badge.plus" : "person.crop.circle")
-                if deals > 0 { Text("\(deals)").font(.system(size: 10.5, weight: .semibold)) }
+                if deals > 0 { Text("\(deals)").font(.brand(size: 10.5, weight: .semibold)) }
             }
-            .font(.system(size: 12))
+            .font(.brand(size: 12))
             .foregroundStyle(theme.inkSecondary(scheme))
         }
         .buttonStyle(.plain)

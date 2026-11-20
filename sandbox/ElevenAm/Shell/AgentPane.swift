@@ -23,7 +23,7 @@ struct AgentPane: View {
                         .font(theme.display(18))
                         .foregroundStyle(theme.ink(scheme))
                     Text(agent.role)
-                        .font(.system(size: 11.5))
+                        .font(.brand(size: 11.5))
                         .foregroundStyle(theme.inkTertiary(scheme))
                 }
             }
@@ -79,11 +79,11 @@ struct AgentPane: View {
                                 .offset(y: -3)
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(item.text)
-                                    .font(.system(size: 12))
+                                    .font(.brand(size: 12))
                                     .foregroundStyle(theme.ink(scheme))
                                     .fixedSize(horizontal: false, vertical: true)
                                 Text(item.date.formatted(date: .omitted, time: .shortened))
-                                    .font(.system(size: 10.5))
+                                    .font(.brand(size: 10.5))
                                     .foregroundStyle(theme.inkTertiary(scheme))
                             }
                         }
@@ -91,7 +91,7 @@ struct AgentPane: View {
                     }
                     if model.activity.isEmpty {
                         Text("Nothing yet. The team's work shows up here, with where it ran.")
-                            .font(.system(size: 12))
+                            .font(.brand(size: 12))
                             .foregroundStyle(theme.inkTertiary(scheme))
                     }
                 }

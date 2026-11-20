@@ -15,7 +15,7 @@ struct VideoTimeline: View {
                 SectionLabel(text: "Timeline")
                     .fixedSize()
                 Text("\(video.clips.count) \(video.clips.count == 1 ? "clip" : "clips") · \(VideoModel.clock(video.totalDuration))")
-                    .font(.system(size: 11).monospacedDigit())
+                    .font(.brand(size: 11).monospacedDigit())
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .fixedSize()
                 Spacer(minLength: 8)
@@ -31,8 +31,8 @@ struct VideoTimeline: View {
                 .labelsHidden()
                 .fixedSize()
                 Toggle("Fade in and out", isOn: $video.fades)
-                    .toggleStyle(.checkbox)
-                    .font(.system(size: 12))
+                    .toggleStyle(.brandCheck)
+                    .font(.brand(size: 12))
                     .fixedSize()
                 Image(systemName: "minus.magnifyingglass")
                     .foregroundStyle(theme.inkTertiary(scheme))
@@ -77,7 +77,7 @@ struct VideoTimeline: View {
             .frame(height: 92 + (video.titles.isEmpty ? 0 : 22) + (video.music == nil ? 0 : 24))
         }
         .padding(12)
-        .vellum(level: 3, radius: max(theme.radius - 2, 8))
+        .vellum(level: 3, radius: theme.radius)
     }
 }
 
@@ -98,7 +98,7 @@ private struct TimelineRuler: View {
                 let x = CGFloat(time) * scale
                 context.fill(Path(CGRect(x: x, y: size.height - 7, width: 0.75, height: 7)), with: .color(ink.opacity(0.4)))
                 context.draw(
-                    Text(VideoModel.clock(time)).font(.system(size: 9.5).monospacedDigit()).foregroundColor(ink.opacity(0.46)),
+                    Text(VideoModel.clock(time)).font(.brand(size: 9.5).monospacedDigit()).foregroundColor(ink.opacity(0.46)),
                     at: CGPoint(x: x + 3, y: 5), anchor: .leading
                 )
                 for minor in 1..<5 {
@@ -132,7 +132,7 @@ private struct ClipBlock: View {
     var body: some View {
         let width = max(CGFloat(clip.editedDuration) * scale, 8)
         let height: CGFloat = 64
-        let shape = RoundedRectangle(cornerRadius: 6, style: .continuous)
+        let shape = RoundedRectangle(cornerRadius: 0, style: .continuous)
         ZStack(alignment: .bottomLeading) {
             filmstrip(width: width, height: height)
             LinearGradient(colors: [.clear, .black.opacity(0.55)], startPoint: .center, endPoint: .bottom)
@@ -145,7 +145,7 @@ private struct ClipBlock: View {
                 if clip.cutCount > 0 || clip.silenceCount > 0 { Image(systemName: "scissors") }
                 if clip.grade != GradeSettings() { Image(systemName: "camera.filters") }
             }
-            .font(.system(size: 10.5, weight: .semibold))
+            .font(.brand(size: 10.5, weight: .semibold))
             .foregroundStyle(Color.white)
             .padding(.horizontal, 7)
             .padding(.bottom, 5)
@@ -161,7 +161,7 @@ private struct ClipBlock: View {
         .overlay(alignment: .leading) {
             if joined {
                 Image(systemName: "circle.lefthalf.filled")
-                    .font(.system(size: 9))
+                    .font(.brand(size: 9))
                     .foregroundStyle(theme.paper(scheme))
                     .padding(2)
                     .background(Circle().fill(theme.ink(scheme)))
@@ -213,10 +213,10 @@ private struct ClipBlock: View {
 
     /// Drag an edge to trim; the drag is measured against the window so the clip can change width underneath it.
     private func handle(leading: Bool) -> some View {
-        RoundedRectangle(cornerRadius: 3, style: .continuous)
+        RoundedRectangle(cornerRadius: 0, style: .continuous)
             .fill(theme.paper(scheme))
             .overlay {
-                RoundedRectangle(cornerRadius: 1).fill(theme.ink(scheme).opacity(0.5)).frame(width: 1.5, height: 18)
+                RoundedRectangle(cornerRadius: 0).fill(theme.ink(scheme).opacity(0.5)).frame(width: 1.5, height: 18)
             }
             .frame(width: 9, height: 40)
             .shadow(color: .black.opacity(0.25), radius: 2)
@@ -260,7 +260,7 @@ private struct TitlesLane: View {
                     Text(title.text)
                         .lineLimit(1)
                 }
-                .font(.system(size: 9.5, weight: .semibold))
+                .font(.brand(size: 9.5, weight: .semibold))
                 .foregroundStyle(theme.paper(scheme))
                 .padding(.horizontal, 6)
                 .frame(width: max(CGFloat(title.duration) * scale - 2, 12), height: 16, alignment: .leading)
@@ -302,7 +302,7 @@ private struct MusicLane: View {
         }
         .overlay(alignment: .leading) {
             Label(music.name, systemImage: "music.note")
-                .font(.system(size: 9.5, weight: .semibold))
+                .font(.brand(size: 9.5, weight: .semibold))
                 .foregroundStyle(ink.opacity(0.7))
                 .lineLimit(1)
                 .padding(.leading, 6)
@@ -320,7 +320,7 @@ private struct PlayheadLine: View {
     var body: some View {
         VStack(spacing: 0) {
             Image(systemName: "arrowtriangle.down.fill")
-                .font(.system(size: 9))
+                .font(.brand(size: 9))
             Rectangle()
                 .frame(width: 1.5)
         }

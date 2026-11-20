@@ -66,7 +66,7 @@ struct WriteView: View {
                             VStack(spacing: 10) {
                                 AgentLogo(code: "wm", size: 44, color: theme.inkTertiary(scheme))
                                 Text("Start a new document.")
-                                    .font(.system(size: 12.5))
+                                    .font(.brand(size: 12.5))
                                     .foregroundStyle(theme.inkTertiary(scheme))
                             }
                         }
@@ -79,7 +79,7 @@ struct WriteView: View {
                                 .padding(12)
                                 .frame(width: 270)
                                 .frame(maxHeight: proxy.size.height - 60)
-                                .vellum(level: 1, radius: max(theme.radius - 2, 10))
+                                .vellum(level: 1, radius: theme.radius)
                                 .shadow(color: .black.opacity(0.14), radius: 16, y: 6)
                                 .padding(.top, 44)
                                 .padding(.trailing, 10)
@@ -199,11 +199,11 @@ private struct DocumentRow: View {
         } label: {
             VStack(alignment: .leading, spacing: 2) {
                 Text(document.title)
-                    .font(.system(size: 12.5, weight: .semibold))
+                    .font(.brand(size: 12.5, weight: .semibold))
                     .lineLimit(2)
                     .foregroundStyle(theme.ink(scheme))
                 Text(document.modified.formatted(.relative(presentation: .named, unitsStyle: .abbreviated)))
-                    .font(.system(size: 11))
+                    .font(.brand(size: 11))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .lineLimit(1)
             }
@@ -211,11 +211,11 @@ private struct DocumentRow: View {
             .padding(.vertical, 8)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background {
-                RoundedRectangle(cornerRadius: max(theme.radius - 3, 7), style: .continuous)
+                RoundedRectangle(cornerRadius: theme.radius, style: .continuous)
                     .fill(selected ? theme.raised(scheme) : (hovering ? theme.well(scheme).opacity(0.7) : Color.clear))
             }
             .overlay {
-                RoundedRectangle(cornerRadius: max(theme.radius - 3, 7), style: .continuous)
+                RoundedRectangle(cornerRadius: theme.radius, style: .continuous)
                     .strokeBorder(selected ? theme.edge(scheme) : Color.clear, lineWidth: 0.5)
             }
             .contentShape(Rectangle())
@@ -241,7 +241,7 @@ struct OutlineList: View {
                 .padding(.leading, 4)
             if headings.isEmpty {
                 Text("Headings show up here. ⌥⌘1 makes one.")
-                    .font(.system(size: 11.5))
+                    .font(.brand(size: 11.5))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .padding(.leading, 4)
                     .fixedSize(horizontal: false, vertical: true)
@@ -253,7 +253,7 @@ struct OutlineList: View {
                             jump(heading.location)
                         } label: {
                             Text(heading.title)
-                                .font(.system(size: heading.level <= 1 ? 12.5 : 12, weight: heading.level <= 1 ? .semibold : .regular))
+                                .font(.brand(size: heading.level <= 1 ? 12.5 : 12, weight: heading.level <= 1 ? .semibold : .regular))
                                 .foregroundStyle(heading.level <= 2 ? theme.ink(scheme) : theme.inkSecondary(scheme))
                                 .lineLimit(2)
                                 .padding(.leading, CGFloat(max(heading.level - 1, 0)) * 10 + 4)
@@ -338,12 +338,12 @@ private struct Page: View {
             if let notice = write.notice {
                 HStack {
                     Text(notice)
-                        .font(.system(size: 11.5))
+                        .font(.brand(size: 11.5))
                         .foregroundStyle(theme.inkSecondary(scheme))
                     Spacer()
                     Button("Dismiss") { write.notice = nil }
                         .buttonStyle(.plain)
-                        .font(.system(size: 11.5, weight: .medium))
+                        .font(.brand(size: 11.5, weight: .medium))
                         .foregroundStyle(theme.inkSecondary(scheme))
                 }
                 .padding(.horizontal, 16)
@@ -353,7 +353,7 @@ private struct Page: View {
             Rectangle().fill(theme.edge(scheme)).frame(height: 0.5)
             toolbar
         }
-        .vellum(level: 3, radius: max(theme.radius - 2, 8))
+        .vellum(level: 3, radius: theme.radius)
         .overlay(alignment: .bottom) {
             if let job = write.william, job.documentID == nil || job.documentID == document.id {
                 WilliamJobCard(job: job)
@@ -378,7 +378,7 @@ private struct Page: View {
         let stats = MarkdownInfo.stats(document.text)
         return HStack(spacing: 6) {
             Text(selection.length > 0 ? "Selection" : "Whole draft")
-                .font(.system(size: 11, weight: .semibold))
+                .font(.brand(size: 11, weight: .semibold))
                 .foregroundStyle(theme.inkTertiary(scheme))
                 .frame(width: 72, alignment: .leading)
             // Full labels when there's room, icons when the page is narrow.
@@ -388,7 +388,7 @@ private struct Page: View {
             }
             Spacer(minLength: 8)
             Text("\(stats.words) words · \(stats.readingMinutes) min")
-                .font(.system(size: 11).monospacedDigit())
+                .font(.brand(size: 11).monospacedDigit())
                 .foregroundStyle(theme.inkTertiary(scheme))
                 .contentTransition(.numericText())
                 .fixedSize()
@@ -499,7 +499,7 @@ struct FormatBar: View {
             Button("Subheading") { editor.perform(.heading(3)) }
         } label: {
             Text("Aa")
-                .font(.system(size: 12.5, weight: .semibold))
+                .font(.brand(size: 12.5, weight: .semibold))
         }
         .menuStyle(.button)
         .buttonStyle(.borderless)
@@ -535,11 +535,11 @@ struct ToolButton: View {
     var body: some View {
         Button(action: action) {
             Image(systemName: symbol)
-                .font(.system(size: 12, weight: .medium))
+                .font(.brand(size: 12, weight: .medium))
                 .foregroundStyle(on ? theme.paper(scheme) : theme.inkSecondary(scheme))
                 .frame(width: 26, height: 24)
                 .background {
-                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                    RoundedRectangle(cornerRadius: 0, style: .continuous)
                         .fill(on ? theme.ink(scheme) : (hovering ? theme.well(scheme) : Color.clear))
                 }
                 .contentShape(Rectangle())
@@ -573,7 +573,7 @@ private struct VersionsView: View {
             }
             if versions.isEmpty {
                 Text("A version is kept every 15 minutes while you write, and whenever you save one here.")
-                    .font(.system(size: 11.5))
+                    .font(.brand(size: 11.5))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -583,10 +583,10 @@ private struct VersionsView: View {
                         HStack {
                             VStack(alignment: .leading, spacing: 1) {
                                 Text(version.name ?? version.date.formatted(date: .abbreviated, time: .shortened))
-                                    .font(.system(size: 12.5, weight: .medium))
+                                    .font(.brand(size: 12.5, weight: .medium))
                                     .foregroundStyle(theme.ink(scheme))
                                 Text(version.name == nil ? version.date.formatted(.relative(presentation: .named)) : version.date.formatted(date: .abbreviated, time: .shortened))
-                                    .font(.system(size: 11))
+                                    .font(.brand(size: 11))
                                     .foregroundStyle(theme.inkTertiary(scheme))
                             }
                             Spacer()
@@ -623,7 +623,7 @@ private struct PageSetupView: View {
                 .font(theme.display(22))
                 .foregroundStyle(theme.ink(scheme))
             Text("Used when you export a PDF or a Word file.")
-                .font(.system(size: 12))
+                .font(.brand(size: 12))
                 .foregroundStyle(theme.inkTertiary(scheme))
             Grid(alignment: .leading, horizontalSpacing: 12, verticalSpacing: 10) {
                 GridRow {
@@ -662,7 +662,7 @@ private struct PageSetupView: View {
                     Toggle("Page numbers", isOn: $write.pageSetup.pageNumbers)
                 }
             }
-            .font(.system(size: 12.5))
+            .font(.brand(size: 12.5))
             HStack {
                 Spacer()
                 Button("Done") { dismiss() }
@@ -695,7 +695,7 @@ private struct SuggestionCard: View {
             HStack(spacing: 8) {
                 AgentLogo(code: "wm", size: 22)
                 Text("William · \(suggestion.action.title)")
-                    .font(.system(size: 12.5, weight: .semibold))
+                    .font(.brand(size: 12.5, weight: .semibold))
                     .foregroundStyle(theme.ink(scheme))
                 Spacer()
                 if !run.providerLabel.isEmpty {
@@ -704,7 +704,7 @@ private struct SuggestionCard: View {
             }
             if suggestion.action != .continueWriting {
                 Text(suggestion.original.trimmingCharacters(in: .whitespacesAndNewlines))
-                    .font(.system(size: 12))
+                    .font(.brand(size: 12))
                     .strikethrough(true, color: theme.inkTertiary(scheme))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .lineLimit(3)
@@ -715,7 +715,7 @@ private struct SuggestionCard: View {
                         RunView(run: run)
                     } else {
                         Text(run.text)
-                            .font(.system(size: 14, design: .serif))
+                            .font(.brand(size: 14, design: .serif))
                             .lineSpacing(4)
                             .foregroundStyle(theme.ink(scheme))
                             .textSelection(.enabled)
@@ -737,13 +737,13 @@ private struct SuggestionCard: View {
                     .disabled(run.status != .done)
                 Spacer()
                 Text("⌘↩ accept · esc reject")
-                    .font(.system(size: 11))
+                    .font(.brand(size: 11))
                     .foregroundStyle(theme.inkTertiary(scheme))
             }
         }
         .padding(16)
         .frame(maxWidth: 620)
-        .vellum(level: 2, radius: max(theme.radius - 2, 8), blending: .withinWindow)
+        .vellum(level: 2, radius: theme.radius, blending: .withinWindow)
     }
 }
 
@@ -762,7 +762,7 @@ private struct VoiceEditor: View {
                     .foregroundStyle(theme.ink(scheme))
             }
             Text("William and Marc write with these notes. The full version learns from your sent mail and documents, on this Mac.")
-                .font(.system(size: 11.5))
+                .font(.brand(size: 11.5))
                 .foregroundStyle(theme.inkTertiary(scheme))
                 .fixedSize(horizontal: false, vertical: true)
 
@@ -781,15 +781,15 @@ private struct VoiceEditor: View {
 
     private func field(_ text: Binding<String>, height: CGFloat) -> some View {
         TextEditor(text: text)
-            .font(.system(size: 12.5))
+            .font(.brand(size: 12.5))
             .scrollContentBackground(.hidden)
             .padding(6)
             .frame(height: height)
             .background {
-                RoundedRectangle(cornerRadius: 8, style: .continuous).fill(theme.well(scheme))
+                RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.well(scheme))
             }
             .overlay {
-                RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5)
+                RoundedRectangle(cornerRadius: 0, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5)
             }
     }
 }

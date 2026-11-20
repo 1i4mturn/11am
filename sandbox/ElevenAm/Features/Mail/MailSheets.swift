@@ -36,7 +36,7 @@ struct ComposeView: View {
                 Spacer()
                 if mail.sendingAccounts.isEmpty {
                     Text(mail.source == .sample ? "Sample accounts open your Mail app to send" : "Add an IMAP account to send from 11am")
-                        .font(.system(size: 11.5))
+                        .font(.brand(size: 11.5))
                         .foregroundStyle(theme.inkTertiary(scheme))
                 } else {
                     Picker("From", selection: $draft.accountID) {
@@ -51,14 +51,14 @@ struct ComposeView: View {
             field("Cc", text: $draft.cc, placeholder: "")
             field("Subject", text: $draft.subject, placeholder: "")
             TextEditor(text: $draft.body)
-                .font(.system(size: 13.5))
+                .font(.brand(size: 13.5))
                 .scrollContentBackground(.hidden)
                 .padding(10)
                 .background {
-                    RoundedRectangle(cornerRadius: 10, style: .continuous).fill(theme.well(scheme))
+                    RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.well(scheme))
                 }
                 .overlay {
-                    RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5)
+                    RoundedRectangle(cornerRadius: 0, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5)
                 }
                 .frame(minHeight: 240)
 
@@ -181,12 +181,12 @@ struct ComposeView: View {
     private func field(_ label: String, text: Binding<String>, placeholder: String) -> some View {
         HStack(spacing: 10) {
             Text(label)
-                .font(.system(size: 12, weight: .medium))
+                .font(.brand(size: 12, weight: .medium))
                 .foregroundStyle(theme.inkTertiary(scheme))
                 .frame(width: 54, alignment: .leading)
             TextField(placeholder, text: text)
                 .textFieldStyle(.plain)
-                .font(.system(size: 13))
+                .font(.brand(size: 13))
         }
         .padding(.vertical, 6)
         .overlay(alignment: .bottom) { Rectangle().fill(theme.edge(scheme)).frame(height: 0.5) }
@@ -205,12 +205,12 @@ private struct MarcDraftStrip: View {
             switch run.status {
             case .done:
                 Text("Marc's draft is ready.")
-                    .font(.system(size: 12))
+                    .font(.brand(size: 12))
                 Spacer()
                 Button("Use it") { use(run.text) }
                     .buttonStyle(.vellumSecondary)
             case .failed(let message):
-                Text(message).font(.system(size: 12)).lineLimit(2)
+                Text(message).font(.brand(size: 12)).lineLimit(2)
                 Spacer()
             default:
                 ThinkingLine(text: "Marc is drafting in your voice…")
@@ -247,7 +247,7 @@ struct AddAccountView: View {
             Text("Add an account")
                 .font(theme.display(24))
             Text("Marc reads it straight from your provider over an encrypted connection, and learns from what you've already done with it. Nothing goes through anyone else's servers.")
-                .font(.system(size: 12.5))
+                .font(.brand(size: 12.5))
                 .foregroundStyle(theme.inkSecondary(scheme))
                 .fixedSize(horizontal: false, vertical: true)
 
@@ -276,13 +276,13 @@ struct AddAccountView: View {
                 }
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text(provider.passwordHelp)
-                        .font(.system(size: 11.5))
+                        .font(.brand(size: 11.5))
                         .foregroundStyle(theme.inkTertiary(scheme))
                         .fixedSize(horizontal: false, vertical: true)
                     if let page = provider.passwordPage {
                         Button("Open") { NSWorkspace.shared.open(page) }
                             .buttonStyle(.plain)
-                            .font(.system(size: 11.5, weight: .semibold))
+                            .font(.brand(size: 11.5, weight: .semibold))
                     }
                 }
                 if provider == .other {
@@ -299,17 +299,17 @@ struct AddAccountView: View {
 
             if let error {
                 Text(error)
-                    .font(.system(size: 12))
+                    .font(.brand(size: 12))
                     .foregroundStyle(theme.ink(scheme))
                     .padding(10)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(RoundedRectangle(cornerRadius: 8).fill(theme.well(scheme)))
+                    .background(RoundedRectangle(cornerRadius: 0).fill(theme.well(scheme)))
                     .fixedSize(horizontal: false, vertical: true)
             }
 
             HStack(spacing: 8) {
                 Text(provider.needsMicrosoftSignIn ? "11am never sees your Microsoft password." : "The password is kept in your Mac's Keychain.")
-                    .font(.system(size: 11))
+                    .font(.brand(size: 11))
                     .foregroundStyle(theme.inkTertiary(scheme))
                 Spacer()
                 if checking { ProgressView().controlSize(.small) }
@@ -344,7 +344,7 @@ struct AddAccountView: View {
     private var microsoftSetup: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Microsoft only lets apps it knows sign in to mail, so 11am needs its own registration with Microsoft. It's free, takes about five minutes, and you do it once.")
-                .font(.system(size: 12.5))
+                .font(.brand(size: 12.5))
                 .foregroundStyle(theme.inkSecondary(scheme))
                 .fixedSize(horizontal: false, vertical: true)
             labelled("Name") {
@@ -354,15 +354,15 @@ struct AddAccountView: View {
             labelled("Client ID") {
                 TextField("Application (client) ID", text: $clientID)
                     .textFieldStyle(.roundedBorder)
-                    .font(.system(size: 12.5).monospaced())
+                    .font(.brand(size: 12.5).monospaced())
             }
             labelled("Directory") {
                 TextField("common", text: $tenant)
                     .textFieldStyle(.roundedBorder)
-                    .font(.system(size: 12.5).monospaced())
+                    .font(.brand(size: 12.5).monospaced())
             }
             Text("Leave Directory as common unless you registered 11am for your organisation only; then paste its Directory (tenant) ID.")
-                .font(.system(size: 11))
+                .font(.brand(size: 11))
                 .foregroundStyle(theme.inkTertiary(scheme))
                 .fixedSize(horizontal: false, vertical: true)
             DisclosureGroup("How to get a client ID", isExpanded: $showingSteps) {
@@ -380,7 +380,7 @@ struct AddAccountView: View {
                     step(4, "Redirect URI: choose Public client/native (mobile & desktop), paste this, then Register:") {
                         HStack(spacing: 6) {
                             Text(MicrosoftAuth.redirectURI)
-                                .font(.system(size: 12).monospaced())
+                                .font(.brand(size: 12).monospaced())
                                 .textSelection(.enabled)
                             Button("Copy") {
                                 NSPasteboard.general.clearContents()
@@ -391,25 +391,25 @@ struct AddAccountView: View {
                     }
                     step(5, "Copy the Application (client) ID into the box above and choose Sign in with Microsoft.") { EmptyView() }
                     Text("If your organisation needs an admin to approve apps: in the registration, API permissions › Add a permission › APIs my organisation uses › Office 365 Exchange Online › IMAP.AccessAsUser.All, and Microsoft Graph › Mail.Send, Calendars.ReadWrite and offline_access, then Grant admin consent.")
-                        .font(.system(size: 11))
+                        .font(.brand(size: 11))
                         .foregroundStyle(theme.inkTertiary(scheme))
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 .padding(.top, 6)
             }
-            .font(.system(size: 12.5, weight: .medium))
+            .font(.brand(size: 12.5, weight: .medium))
         }
     }
 
     private func step<Accessory: View>(_ number: Int, _ text: String, @ViewBuilder accessory: () -> Accessory) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
             Text("\(number)")
-                .font(.system(size: 11, weight: .bold).monospacedDigit())
+                .font(.brand(size: 11, weight: .bold).monospacedDigit())
                 .foregroundStyle(theme.inkTertiary(scheme))
                 .frame(width: 12)
             VStack(alignment: .leading, spacing: 5) {
                 Text(text)
-                    .font(.system(size: 12))
+                    .font(.brand(size: 12))
                     .foregroundStyle(theme.ink(scheme))
                     .fixedSize(horizontal: false, vertical: true)
                 accessory()
@@ -449,7 +449,7 @@ struct AddAccountView: View {
     private func labelled<Content: View>(_ label: String, @ViewBuilder content: () -> Content) -> some View {
         HStack(spacing: 10) {
             Text(label)
-                .font(.system(size: 12.5))
+                .font(.brand(size: 12.5))
                 .foregroundStyle(theme.inkSecondary(scheme))
                 .frame(width: 100, alignment: .leading)
             content()
@@ -495,11 +495,11 @@ struct LearningView: View {
                     VStack(alignment: .leading, spacing: 6) {
                         SectionLabel(text: "What Marc watches")
                         Text("Which emails you open and how soon, how long you read, what you reply to and how fast, flags and snoozes, what you archive or delete without opening, what you leave unread for days, unsubscribes and blocks, and every time you move an email to another lane, which counts most. When you add an account, he starts from the read, replied and flagged marks your provider already keeps, so the lanes are yours from day one.")
-                            .font(.system(size: 12.5))
+                            .font(.brand(size: 12.5))
                             .foregroundStyle(theme.inkSecondary(scheme))
                             .fixedSize(horizontal: false, vertical: true)
                         Text("It's a small model on this Mac that retrains in a moment, overnight and after each correction. Nothing about your reading habits leaves the Mac.")
-                            .font(.system(size: 12))
+                            .font(.brand(size: 12))
                             .foregroundStyle(theme.inkTertiary(scheme))
                             .fixedSize(horizontal: false, vertical: true)
                     }
@@ -535,17 +535,17 @@ struct LearningView: View {
                 .font(theme.display(26))
                 .foregroundStyle(theme.ink(scheme))
             Text(label)
-                .font(.system(size: 11.5))
+                .font(.brand(size: 11.5))
                 .foregroundStyle(theme.inkSecondary(scheme))
             if let detail {
                 Text(detail)
-                    .font(.system(size: 10.5))
+                    .font(.brand(size: 10.5))
                     .foregroundStyle(theme.inkTertiary(scheme))
             }
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(theme.well(scheme)))
+        .background(RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.well(scheme)))
     }
 
     private func senderList(_ title: String, _ senders: [MailLearner.Sender]) -> some View {
@@ -553,10 +553,10 @@ struct LearningView: View {
             SectionLabel(text: title)
             ForEach(senders) { sender in
                 HStack {
-                    Text(sender.name).font(.system(size: 12.5, weight: .medium))
-                    Text(sender.address).font(.system(size: 11)).foregroundStyle(theme.inkTertiary(scheme)).lineLimit(1)
+                    Text(sender.name).font(.brand(size: 12.5, weight: .medium))
+                    Text(sender.address).font(.brand(size: 11)).foregroundStyle(theme.inkTertiary(scheme)).lineLimit(1)
                     Spacer()
-                    Text(sender.detail).font(.system(size: 11.5).monospacedDigit()).foregroundStyle(theme.inkSecondary(scheme))
+                    Text(sender.detail).font(.brand(size: 11.5).monospacedDigit()).foregroundStyle(theme.inkSecondary(scheme))
                 }
             }
         }
@@ -582,17 +582,17 @@ struct LearningView: View {
             SectionLabel(text: "Your rules")
             if ruleEntries.isEmpty {
                 Text("None yet. Move an email to another lane and Marc keeps that sender there.")
-                    .font(.system(size: 12))
+                    .font(.brand(size: 12))
                     .foregroundStyle(theme.inkTertiary(scheme))
             }
             ForEach(ruleEntries) { entry in
                 HStack {
-                    Text(entry.sender).font(.system(size: 12.5))
+                    Text(entry.sender).font(.brand(size: 12.5))
                     Spacer()
-                    Text(entry.text).font(.system(size: 11.5)).foregroundStyle(theme.inkSecondary(scheme))
+                    Text(entry.text).font(.brand(size: 11.5)).foregroundStyle(theme.inkSecondary(scheme))
                     Button("Forget") { mail.forgetRule(for: entry.sender) }
                         .buttonStyle(.plain)
-                        .font(.system(size: 11.5, weight: .semibold))
+                        .font(.brand(size: 11.5, weight: .semibold))
                 }
             }
         }
@@ -612,7 +612,7 @@ struct SnippetFillView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(snippet.name).font(.system(size: 16, weight: .semibold))
+            Text(snippet.name).font(.brand(size: 16, weight: .semibold))
             ForEach(Snippets.blanks(in: snippet.body), id: \.self) { field in
                 VStack(alignment: .leading, spacing: 3) {
                     SectionLabel(text: field)
@@ -621,11 +621,11 @@ struct SnippetFillView: View {
                 }
             }
             Text(Snippets.fill(snippet.body, values: automatic.merging(values) { _, typed in typed }))
-                .font(.system(size: 12))
+                .font(.brand(size: 12))
                 .foregroundStyle(theme.inkSecondary(scheme))
                 .padding(10)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(theme.well(scheme)))
+                .background(RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.well(scheme)))
             HStack {
                 Spacer()
                 Button("Cancel") { dismiss() }
@@ -656,7 +656,7 @@ struct SnippetsEditor: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("Snippets").font(.system(size: 16, weight: .semibold))
+                Text("Snippets").font(.brand(size: 16, weight: .semibold))
                 Spacer()
                 Button("Done") { save(); dismiss() }
                     .buttonStyle(.vellumPrimary)
@@ -671,11 +671,11 @@ struct SnippetsEditor: View {
                                     pick(snippet)
                                 } label: {
                                     Text(snippet.name)
-                                        .font(.system(size: 12.5, weight: selected == snippet.id ? .semibold : .regular))
+                                        .font(.brand(size: 12.5, weight: selected == snippet.id ? .semibold : .regular))
                                         .frame(maxWidth: .infinity, alignment: .leading)
                                         .padding(.horizontal, 8)
                                         .padding(.vertical, 5)
-                                        .background(RoundedRectangle(cornerRadius: 6).fill(selected == snippet.id ? theme.raised(scheme) : Color.clear))
+                                        .background(RoundedRectangle(cornerRadius: 0).fill(selected == snippet.id ? theme.raised(scheme) : Color.clear))
                                         .contentShape(Rectangle())
                                 }
                                 .buttonStyle(.plain)
@@ -702,12 +702,12 @@ struct SnippetsEditor: View {
                     TextField("Name", text: $name)
                         .textFieldStyle(.roundedBorder)
                     TextEditor(text: $text)
-                        .font(.system(size: 12.5))
+                        .font(.brand(size: 12.5))
                         .scrollContentBackground(.hidden)
                         .padding(6)
-                        .background(RoundedRectangle(cornerRadius: 8).fill(theme.well(scheme)))
+                        .background(RoundedRectangle(cornerRadius: 0).fill(theme.well(scheme)))
                     Text("Blanks go in double braces: {{amount}}. {{first name}}, {{my name}}, {{today}} and {{free times}} fill themselves in.")
-                        .font(.system(size: 11))
+                        .font(.brand(size: 11))
                         .foregroundStyle(theme.inkTertiary(scheme))
                 }
                 .disabled(selected == nil)

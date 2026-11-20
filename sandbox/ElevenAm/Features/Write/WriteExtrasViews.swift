@@ -19,7 +19,7 @@ struct CommentButton: View {
             .popover(isPresented: $writing, arrowEdge: .bottom) {
                 VStack(alignment: .leading, spacing: 10) {
                     Text("\u{201C}\(String((document.text as NSString).substring(with: safe(selection)).prefix(80)))\u{201D}")
-                        .font(.system(size: 11.5))
+                        .font(.brand(size: 11.5))
                         .foregroundStyle(theme.inkTertiary(scheme))
                         .lineLimit(2)
                     TextField("Comment, or ask @William", text: $text, axis: .vertical)
@@ -43,7 +43,7 @@ struct CommentButton: View {
             let count = (write.comments[document.id] ?? []).filter { !$0.resolved }.count
             if count > 0 {
                 Text("\(count)")
-                    .font(.system(size: 9.5, weight: .bold).monospacedDigit())
+                    .font(.brand(size: 9.5, weight: .bold).monospacedDigit())
                     .foregroundStyle(theme.inkSecondary(scheme))
                     .offset(x: -4, y: -6)
             }
@@ -84,7 +84,7 @@ struct WilliamMenu: View {
             Button(write.showsComments ? "Hide comments" : "Show comments") { write.showsComments.toggle() }
         } label: {
             Image(systemName: "wand.and.stars")
-                .font(.system(size: 12, weight: .medium))
+                .font(.brand(size: 12, weight: .medium))
                 .foregroundStyle(theme.inkSecondary(scheme))
                 .frame(width: 26, height: 24)
         }
@@ -112,18 +112,18 @@ struct DocCommentsPanel: View {
             HStack {
                 SectionLabel(text: "Comments · \(all.filter { !$0.resolved }.count)")
                 Spacer()
-                Button { write.showsComments = false } label: { Image(systemName: "xmark").font(.system(size: 9, weight: .bold)) }
+                Button { write.showsComments = false } label: { Image(systemName: "xmark").font(.brand(size: 9, weight: .bold)) }
                     .buttonStyle(.plain)
                     .foregroundStyle(theme.inkTertiary(scheme))
             }
             if all.contains(where: \.resolved) {
                 Toggle("Show resolved", isOn: $showsResolved)
-                    .toggleStyle(.checkbox)
-                    .font(.system(size: 11))
+                    .toggleStyle(.brandCheck)
+                    .font(.brand(size: 11))
             }
             if shown.isEmpty {
                 Text("Select some words and press the speech bubble to comment. Write @William to ask him about it.")
-                    .font(.system(size: 11.5))
+                    .font(.brand(size: 11.5))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -158,7 +158,7 @@ private struct DocCommentThread: View {
                 HStack(alignment: .top, spacing: 6) {
                     Rectangle().fill(range == nil ? theme.inkTertiary(scheme) : Color.yellow.opacity(0.7)).frame(width: 3)
                     Text(range == nil ? "The words this was on have changed: \u{201C}\(DocAnchors.excerpt(comment, length: 40))\u{201D}" : DocAnchors.excerpt(comment))
-                        .font(.system(size: 11, weight: .medium))
+                        .font(.brand(size: 11, weight: .medium))
                         .foregroundStyle(theme.inkSecondary(scheme))
                         .lineLimit(2)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -175,7 +175,7 @@ private struct DocCommentThread: View {
             if !comment.resolved {
                 TextField("Reply", text: $reply)
                     .textFieldStyle(.roundedBorder)
-                    .font(.system(size: 11.5))
+                    .font(.brand(size: 11.5))
                     .onSubmit {
                         write.reply(reply, to: comment.id, in: document.id)
                         reply = ""
@@ -191,11 +191,11 @@ private struct DocCommentThread: View {
                     .help("Delete the comment")
             }
             .buttonStyle(.plain)
-            .font(.system(size: 11, weight: .medium))
+            .font(.brand(size: 11, weight: .medium))
             .foregroundStyle(theme.inkTertiary(scheme))
         }
         .padding(10)
-        .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(theme.well(scheme)))
+        .background(RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.well(scheme)))
         .opacity(comment.resolved ? 0.6 : 1)
     }
 
@@ -203,10 +203,10 @@ private struct DocCommentThread: View {
         VStack(alignment: .leading, spacing: 2) {
             HStack(spacing: 5) {
                 if author == "William" { AgentLogo(code: "wm", size: 13) }
-                Text(author).font(.system(size: 10.5, weight: .semibold)).foregroundStyle(theme.inkTertiary(scheme))
+                Text(author).font(.brand(size: 10.5, weight: .semibold)).foregroundStyle(theme.inkTertiary(scheme))
             }
             Text(body)
-                .font(.system(size: 12))
+                .font(.brand(size: 12))
                 .foregroundStyle(theme.ink(scheme))
                 .textSelection(.enabled)
                 .fixedSize(horizontal: false, vertical: true)
@@ -226,16 +226,16 @@ struct WilliamJobCard: View {
             HStack(spacing: 8) {
                 AgentLogo(code: "wm", size: 18)
                 Text(job.title)
-                    .font(.system(size: 12.5, weight: .semibold))
+                    .font(.brand(size: 12.5, weight: .semibold))
                     .foregroundStyle(theme.ink(scheme))
                 if !job.progress.isEmpty {
                     Text(job.progress)
-                        .font(.system(size: 11.5))
+                        .font(.brand(size: 11.5))
                         .foregroundStyle(theme.inkTertiary(scheme))
                         .lineLimit(1)
                 }
                 Spacer()
-                Button { write.william = nil } label: { Image(systemName: "xmark").font(.system(size: 9, weight: .bold)) }
+                Button { write.william = nil } label: { Image(systemName: "xmark").font(.brand(size: 9, weight: .bold)) }
                     .buttonStyle(.plain)
                     .foregroundStyle(theme.inkTertiary(scheme))
             }
@@ -252,8 +252,8 @@ struct WilliamJobCard: View {
         }
         .padding(14)
         .frame(maxWidth: 560)
-        .background(RoundedRectangle(cornerRadius: max(theme.radius - 2, 10), style: .continuous).fill(theme.paper(scheme)))
-        .overlay(RoundedRectangle(cornerRadius: max(theme.radius - 2, 10), style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5))
+        .background(RoundedRectangle(cornerRadius: theme.radius, style: .continuous).fill(theme.paper(scheme)))
+        .overlay(RoundedRectangle(cornerRadius: theme.radius, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5))
         .shadow(color: .black.opacity(0.14), radius: 16, y: 6)
     }
 }
@@ -304,32 +304,32 @@ struct DraftSheet: View {
                 SectionLabel(text: found.isEmpty ? "Nothing matched" : "Bolton found")
                 if found.isEmpty {
                     Text("Try the names of people, clients or projects that are in your notes.")
-                        .font(.system(size: 11.5))
+                        .font(.brand(size: 11.5))
                         .foregroundStyle(theme.inkTertiary(scheme))
                 }
                 ForEach(found) { item in
                     Toggle(isOn: Binding(get: { kept.contains(item.id) }, set: { on in if on { kept.insert(item.id) } else { kept.remove(item.id) } })) {
                         HStack(spacing: 6) {
                             Text(item.kind)
-                                .font(.system(size: 10, weight: .semibold))
+                                .font(.brand(size: 10, weight: .semibold))
                                 .foregroundStyle(theme.inkTertiary(scheme))
                                 .frame(width: 62, alignment: .leading)
                             Text(item.title)
-                                .font(.system(size: 12.5))
+                                .font(.brand(size: 12.5))
                                 .foregroundStyle(theme.ink(scheme))
                                 .lineLimit(1)
                             Spacer()
                             Text(item.date.formatted(.relative(presentation: .named)))
-                                .font(.system(size: 11))
+                                .font(.brand(size: 11))
                                 .foregroundStyle(theme.inkTertiary(scheme))
                         }
                     }
-                    .toggleStyle(.checkbox)
+                    .toggleStyle(.brandCheck)
                 }
             }
             HStack {
                 Text("In the shape of")
-                    .font(.system(size: 12))
+                    .font(.brand(size: 12))
                     .foregroundStyle(theme.inkSecondary(scheme))
                 Picker("", selection: $shape) {
                     Text("Its own shape").tag(UUID?.none)
@@ -342,7 +342,7 @@ struct DraftSheet: View {
             }
             HStack {
                 Text("William writes only from what's ticked, and leaves [gaps] for anything it doesn't say.")
-                    .font(.system(size: 11))
+                    .font(.brand(size: 11))
                     .foregroundStyle(theme.inkTertiary(scheme))
                 Spacer()
                 Button("Cancel") { dismiss() }

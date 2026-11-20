@@ -64,7 +64,7 @@ private struct TunePanel: View {
                     SectionLabel(text: "Tune 11am")
                 }
                 Text("Say how you'd like 11am to look or feel. Johnny shows exactly what would change before anything does.")
-                    .font(.system(size: 12))
+                    .font(.brand(size: 12))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .fixedSize(horizontal: false, vertical: true)
                 AskField(placeholder: "Make it warmer and a bit more see-through", text: $build.request) {
@@ -84,7 +84,7 @@ private struct TunePanel: View {
                     TuneRunView(run: run)
                 }
                 if let notice = build.tuneNotice {
-                    Text(notice).font(.system(size: 12)).foregroundStyle(theme.inkSecondary(scheme))
+                    Text(notice).font(.brand(size: 12)).foregroundStyle(theme.inkSecondary(scheme))
                 }
 
                 if build.proposal != nil {
@@ -92,11 +92,11 @@ private struct TunePanel: View {
                         SectionLabel(text: "Preview · \(build.proposalRequest)")
                         ForEach(build.proposalChanges) { change in
                             HStack {
-                                Text(change.name).font(.system(size: 12.5, weight: .medium))
+                                Text(change.name).font(.brand(size: 12.5, weight: .medium))
                                 Spacer()
-                                Text(change.from).font(.system(size: 12).monospacedDigit()).foregroundStyle(theme.inkTertiary(scheme))
-                                Image(systemName: "arrow.right").font(.system(size: 9, weight: .bold)).foregroundStyle(theme.inkTertiary(scheme))
-                                Text(change.to).font(.system(size: 12, weight: .semibold).monospacedDigit())
+                                Text(change.from).font(.brand(size: 12).monospacedDigit()).foregroundStyle(theme.inkTertiary(scheme))
+                                Image(systemName: "arrow.right").font(.brand(size: 9, weight: .bold)).foregroundStyle(theme.inkTertiary(scheme))
+                                Text(change.to).font(.brand(size: 12, weight: .semibold).monospacedDigit())
                             }
                             .foregroundStyle(theme.ink(scheme))
                         }
@@ -108,8 +108,8 @@ private struct TunePanel: View {
                         }
                     }
                     .padding(14)
-                    .background(RoundedRectangle(cornerRadius: max(theme.radius - 4, 8)).fill(theme.raised(scheme)))
-                    .overlay(RoundedRectangle(cornerRadius: max(theme.radius - 4, 8)).strokeBorder(theme.edge(scheme), lineWidth: 0.5))
+                    .background(RoundedRectangle(cornerRadius: theme.radius).fill(theme.raised(scheme)))
+                    .overlay(RoundedRectangle(cornerRadius: theme.radius).strokeBorder(theme.edge(scheme), lineWidth: 0.5))
                     .transition(.rise(theme.rise))
                 }
 
@@ -118,9 +118,9 @@ private struct TunePanel: View {
                     ForEach(build.history) { record in
                         HStack(alignment: .firstTextBaseline) {
                             VStack(alignment: .leading, spacing: 1) {
-                                Text(record.request).font(.system(size: 12.5)).foregroundStyle(theme.ink(scheme))
+                                Text(record.request).font(.brand(size: 12.5)).foregroundStyle(theme.ink(scheme))
                                 Text(record.date.formatted(date: .omitted, time: .shortened))
-                                    .font(.system(size: 10.5)).foregroundStyle(theme.inkTertiary(scheme))
+                                    .font(.brand(size: 10.5)).foregroundStyle(theme.inkTertiary(scheme))
                             }
                             Spacer()
                             Button("Revert") { withAnimation(theme.spring) { build.revert(record) } }
@@ -134,14 +134,14 @@ private struct TunePanel: View {
                     .padding(.top, 6)
 
                 Text("This is Tune-lite: the look and feel. The full version changes what each app shows and does, with the same preview, history and undo.")
-                    .font(.system(size: 11))
+                    .font(.brand(size: 11))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .fixedSize(horizontal: false, vertical: true)
             }
             .padding(16)
         }
         .scrollContentBackground(.hidden)
-        .vellum(level: 3, radius: max(theme.radius - 2, 8))
+        .vellum(level: 3, radius: theme.radius)
         .animation(theme.spring, value: build.proposal != nil)
         .animation(theme.spring, value: build.history.count)
     }
@@ -179,7 +179,7 @@ private struct LookMaker: View {
         VStack(alignment: .leading, spacing: 10) {
             SectionLabel(text: "Make a colour look")
             Text("Describe a look for Photo and Video. It's saved as a small file you can reuse, share or tweak.")
-                .font(.system(size: 12))
+                .font(.brand(size: 12))
                 .foregroundStyle(theme.inkTertiary(scheme))
                 .fixedSize(horizontal: false, vertical: true)
             AskField(placeholder: "Golden hour, faded, a little grain", text: $build.lookRequest) {
@@ -203,7 +203,7 @@ private struct LookMaker: View {
                         Image(systemName: "checkmark.circle.fill").foregroundStyle(theme.ink(scheme))
                     }
                     Text(notice)
-                        .font(.system(size: 12))
+                        .font(.brand(size: 12))
                         .foregroundStyle(theme.inkSecondary(scheme))
                         .fixedSize(horizontal: false, vertical: true)
                 }

@@ -57,7 +57,7 @@ struct SourceEditor: View {
                     HStack {
                         TextField("3 November 2026, 2026-11-03 or 2026", text: $date)
                         if !date.isEmpty && CiteDate.parse(date) == nil {
-                            Text("Not a date").font(.system(size: 11)).foregroundStyle(.red)
+                            Text("Not a date").font(.brand(size: 11)).foregroundStyle(.red)
                         }
                     }
                 }
@@ -77,31 +77,31 @@ struct SourceEditor: View {
                 row("Cited as") {
                     HStack(spacing: 6) {
                         TextField("key", text: $source.key)
-                            .font(.system(size: 12, design: .monospaced))
+                            .font(.brand(size: 12, design: .monospaced))
                             .frame(width: 150)
                         Text("Documents find this source by its key.")
-                            .font(.system(size: 11))
+                            .font(.brand(size: 11))
                             .foregroundStyle(theme.inkTertiary(scheme))
                     }
                 }
             }
             .textFieldStyle(.roundedBorder)
-            .font(.system(size: 12.5))
+            .font(.brand(size: 12.5))
 
             VStack(alignment: .leading, spacing: 6) {
                 SectionLabel(text: research.style.title)
                 Text(SourceEditor.styled(Citations.reference(edited, style: research.style)))
-                    .font(.system(size: 12))
+                    .font(.brand(size: 12))
                     .foregroundStyle(theme.ink(scheme))
                     .textSelection(.enabled)
                     .fixedSize(horizontal: false, vertical: true)
                 Text("In the text: " + Citations.unescape(Citations.inText([edited], style: research.style, numbers: [1], letters: [:])).replacingOccurrences(of: "*", with: ""))
-                    .font(.system(size: 11.5))
+                    .font(.brand(size: 11.5))
                     .foregroundStyle(theme.inkSecondary(scheme))
             }
             .padding(12)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(theme.well(scheme)))
+            .background(RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.well(scheme)))
 
             HStack {
                 Spacer()
@@ -129,7 +129,7 @@ struct SourceEditor: View {
     private func row<Content: View>(_ label: String, @ViewBuilder _ content: () -> Content) -> some View {
         GridRow {
             Text(label)
-                .font(.system(size: 12, weight: .medium))
+                .font(.brand(size: 12, weight: .medium))
                 .foregroundStyle(theme.inkSecondary(scheme))
                 .gridColumnAlignment(.trailing)
             content()
@@ -167,7 +167,7 @@ struct BrowserButtonSheet: View {
                         Image(systemName: "scissors")
                         Text("Clip to 11am")
                     }
-                    .font(.system(size: 12.5, weight: .semibold))
+                    .font(.brand(size: 12.5, weight: .semibold))
                     .padding(.horizontal, 14)
                     .padding(.vertical, 7)
                     .background(Capsule().fill(theme.ink(scheme)))
@@ -187,7 +187,7 @@ struct BrowserButtonSheet: View {
             }
             step(2, "The Services menu", "In any app, select words and choose the app's menu › Services › Look Up with James. He searches, reads the top pages, and answers in the agent pane with each claim sourced. Clip to 11am Notes keeps the selection (or a link) instead.") {
                 Text("Give them shortcuts in System Settings › Keyboard › Keyboard Shortcuts › Services.")
-                    .font(.system(size: 11.5))
+                    .font(.brand(size: 11.5))
                     .foregroundStyle(theme.inkTertiary(scheme))
             }
             step(3, "Here in Research", "Clip keeps the page you're on; Add to sources keeps it for citing. Your sources are cited in Write with Cite, and in Decks from the Sources menu.") {
@@ -207,16 +207,16 @@ struct BrowserButtonSheet: View {
     private func step<Extra: View>(_ number: Int, _ title: String, _ text: String, @ViewBuilder extra: () -> Extra) -> some View {
         HStack(alignment: .top, spacing: 12) {
             Text("\(number)")
-                .font(.system(size: 12, weight: .bold).monospacedDigit())
+                .font(.brand(size: 12, weight: .bold).monospacedDigit())
                 .frame(width: 22, height: 22)
                 .background(Circle().fill(theme.well(scheme)))
                 .foregroundStyle(theme.ink(scheme))
             VStack(alignment: .leading, spacing: 6) {
                 Text(title)
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.brand(size: 13, weight: .semibold))
                     .foregroundStyle(theme.ink(scheme))
                 Text(text)
-                    .font(.system(size: 12))
+                    .font(.brand(size: 12))
                     .foregroundStyle(theme.inkSecondary(scheme))
                     .fixedSize(horizontal: false, vertical: true)
                 extra()
@@ -239,17 +239,17 @@ struct LookUpCard: View {
                 AgentLogo(code: "jm", size: 18, color: theme.inkSecondary(scheme))
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Look up")
-                        .font(.system(size: 10.5, weight: .semibold))
+                        .font(.brand(size: 10.5, weight: .semibold))
                         .textCase(.uppercase)
                         .foregroundStyle(theme.inkTertiary(scheme))
                     Text(lookup.question)
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(.brand(size: 13, weight: .semibold))
                         .foregroundStyle(theme.ink(scheme))
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer(minLength: 4)
                 Button { withAnimation(theme.spring) { research.lookup = nil } } label: {
-                    Image(systemName: "xmark").font(.system(size: 9, weight: .bold))
+                    Image(systemName: "xmark").font(.brand(size: 9, weight: .bold))
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(theme.inkTertiary(scheme))
@@ -265,7 +265,7 @@ struct LookUpCard: View {
                 }
             case .failed(let message):
                 Text(message)
-                    .font(.system(size: 12))
+                    .font(.brand(size: 12))
                     .foregroundStyle(theme.inkSecondary(scheme))
                     .fixedSize(horizontal: false, vertical: true)
             case .done:
@@ -283,7 +283,7 @@ struct LookUpCard: View {
                         Label("Cites \(review.unknown.map { "[\($0)]" }.joined(separator: ", ")), which isn't a page he read.", systemImage: "questionmark.circle")
                     }
                 }
-                .font(.system(size: 11))
+                .font(.brand(size: 11))
                 .foregroundStyle(theme.inkSecondary(scheme))
             }
 
@@ -296,15 +296,15 @@ struct LookUpCard: View {
                         } label: {
                             HStack(alignment: .firstTextBaseline, spacing: 6) {
                                 Text("\(index + 1)")
-                                    .font(.system(size: 10, weight: .bold).monospacedDigit())
+                                    .font(.brand(size: 10, weight: .bold).monospacedDigit())
                                     .frame(width: 16, height: 16)
                                     .background(Circle().fill(theme.well(scheme)))
                                 VStack(alignment: .leading, spacing: 0) {
                                     Text(source.title)
-                                        .font(.system(size: 11.5, weight: .medium))
+                                        .font(.brand(size: 11.5, weight: .medium))
                                         .lineLimit(1)
                                     Text(source.host)
-                                        .font(.system(size: 10.5))
+                                        .font(.brand(size: 10.5))
                                         .foregroundStyle(theme.inkTertiary(scheme))
                                 }
                             }
@@ -330,8 +330,8 @@ struct LookUpCard: View {
             }
         }
         .padding(12)
-        .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(theme.well(scheme)))
-        .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5))
+        .background(RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.well(scheme)))
+        .overlay(RoundedRectangle(cornerRadius: 0, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5))
     }
 }
 
@@ -342,7 +342,7 @@ private struct AnswerText: View {
 
     var body: some View {
         Text(run.text)
-            .font(.system(size: 12.5))
+            .font(.brand(size: 12.5))
             .lineSpacing(2.5)
             .foregroundStyle(theme.ink(scheme))
             .textSelection(.enabled)

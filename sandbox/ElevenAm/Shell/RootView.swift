@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// Layers, back to front: the desktop (partly as it is, partly blurred by the system) → a white vellum wash →
-/// the sidebar printed straight onto it → the main sheet → the agent sheet. Sheets carry their own frost.
+/// Layers, back to front: the paper ground with the sidebar printed on it, then the main sheet and the agent sheet,
+/// each lifted off the paper (brand v2).
 struct RootView: View {
     @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var research: ResearchModel
@@ -10,16 +10,11 @@ struct RootView: View {
 
     var body: some View {
         ZStack {
-            FrostedBackdrop(
-                material: theme.values.backdrop.material,
-                blending: .behindWindow,
-                opacity: theme.backdropOpacity
-            )
-            .ignoresSafeArea()
+            // Brand v2: the window is paper (ink in dark mode) carrying the tracing-paper tooth. No desktop showing
+            // through any more; depth comes from paper lifting off paper.
             theme.paper(scheme)
-                .opacity(theme.frostOpacity(level: 0))
                 .ignoresSafeArea()
-            GrainOverlay()
+            Tooth()
                 .ignoresSafeArea()
 
             GeometryReader { proxy in
@@ -48,7 +43,7 @@ struct RootView: View {
                             .frame(maxHeight: 520)
                             .fixedSize(horizontal: false, vertical: true)
                             .padding(8)
-                            .vellum(level: 1, radius: max(theme.radius, 12))
+                            .vellum(level: 1, radius: theme.radius)
                             .shadow(color: .black.opacity(0.18), radius: 18, y: 8)
                             .padding(18)
                             .transition(.move(edge: .trailing).combined(with: .opacity))
@@ -76,6 +71,8 @@ struct RootView: View {
         }
         .handlesExternalEvents(preferring: ["*"], allowing: ["*"])
         .preferredColorScheme(theme.values.appearance.colorScheme)
+        // No accent colour: system controls (progress, pickers, links) take ink.
+        .tint(theme.ink(scheme))
         .animation(theme.spring, value: model.showsPane)
         .animation(theme.spring, value: research.lookup?.id)
     }

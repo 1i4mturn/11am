@@ -94,7 +94,7 @@ private struct QuickGraphic: View {
                         HeadlineChoices(run: run)
                     }
                 }
-                .font(.system(size: 12.5))
+                .font(.brand(size: 12.5))
                 .padding(.trailing, 4)
             }
             .frame(width: 270)
@@ -107,7 +107,7 @@ private struct QuickGraphic: View {
                     .frame(width: pixels.width, height: pixels.height)
                     .scaleEffect(scale, anchor: .topLeading)
                     .frame(width: pixels.width * scale, height: pixels.height * scale, alignment: .topLeading)
-                    .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                    .clipShape(RoundedRectangle(cornerRadius: 0, style: .continuous))
                     .shadow(color: .black.opacity(0.12), radius: 14, y: 6)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .animation(theme.spring, value: design.size)
@@ -157,12 +157,12 @@ private struct HeadlineChoices: View {
                         withAnimation(theme.spring) { design.headline = line }
                     } label: {
                         Text(line)
-                            .font(.system(size: 12))
+                            .font(.brand(size: 12))
                             .foregroundStyle(theme.ink(scheme))
                             .multilineTextAlignment(.leading)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(8)
-                            .background(RoundedRectangle(cornerRadius: 7).fill(theme.well(scheme)))
+                            .background(RoundedRectangle(cornerRadius: 0).fill(theme.well(scheme)))
                     }
                     .buttonStyle(.plain)
                 }
@@ -190,59 +190,57 @@ struct GraphicCanvas: View {
         let paper = dark ? Color(white: 0.07) : Color(red: 0.985, green: 0.98, blue: 0.972)
         ZStack(alignment: .topLeading) {
             paper
-            Image(nsImage: dark ? GrainTexture.lightSpecks : GrainTexture.darkSpecks)
-                .resizable(resizingMode: .tile)
-                .opacity(0.16)
+            Tooth()
             VStack(alignment: .leading, spacing: 0) {
                 switch template {
                 case .announcement:
                     Text("ANNOUNCEMENT")
-                        .font(.system(size: 26 * unit, weight: .semibold))
+                        .font(.brand(size: 26 * unit, weight: .semibold))
                         .tracking(4 * unit)
                         .foregroundStyle(ink.opacity(0.55))
                     Spacer(minLength: 0)
                     Text(headline)
-                        .font(.custom("AlteHaasGrotesk_Bold", size: 104 * unit))
+                        .font(.custom("SchibstedGrotesk-Black", size: 104 * unit))
                         .tracking(-2 * unit)
                         .lineSpacing(-8 * unit)
                         .foregroundStyle(ink)
                         .minimumScaleFactor(0.4)
                     Text(detail)
-                        .font(.system(size: 38 * unit))
+                        .font(.brand(size: 38 * unit))
                         .foregroundStyle(ink.opacity(0.7))
                         .padding(.top, 28 * unit)
                 case .quote:
                     Text("“")
-                        .font(.custom("AlteHaasGrotesk_Bold", size: 260 * unit))
+                        .font(.custom("SchibstedGrotesk-Black", size: 260 * unit))
                         .foregroundStyle(ink)
                         .frame(height: 170 * unit, alignment: .top)
                     Spacer(minLength: 0)
                     Text(headline)
-                        .font(.custom("AlteHaasGrotesk_Bold", size: 78 * unit))
+                        .font(.custom("SchibstedGrotesk-Black", size: 78 * unit))
                         .tracking(-1.5 * unit)
                         .foregroundStyle(ink)
                         .minimumScaleFactor(0.4)
                     Text("— \(detail)")
-                        .font(.system(size: 36 * unit, weight: .medium))
+                        .font(.brand(size: 36 * unit, weight: .medium))
                         .foregroundStyle(ink.opacity(0.65))
                         .padding(.top, 30 * unit)
                 case .stat:
                     Spacer(minLength: 0)
                     Text(headline)
-                        .font(.custom("AlteHaasGrotesk_Bold", size: 230 * unit))
+                        .font(.custom("SchibstedGrotesk-Black", size: 230 * unit))
                         .tracking(-8 * unit)
                         .foregroundStyle(ink)
                         .lineLimit(2)
                         .minimumScaleFactor(0.3)
                     Text(detail)
-                        .font(.system(size: 44 * unit, weight: .medium))
+                        .font(.brand(size: 44 * unit, weight: .medium))
                         .foregroundStyle(ink.opacity(0.7))
                         .padding(.top, 10 * unit)
                 }
                 Spacer(minLength: 0)
                 HStack(alignment: .center) {
                     if showsMark {
-                        Image("logo-11am")
+                        Image("wordmark-solid")
                             .renderingMode(.template)
                             .resizable()
                             .aspectRatio(contentMode: .fit)
@@ -251,7 +249,7 @@ struct GraphicCanvas: View {
                     }
                     Spacer()
                     Text(footer)
-                        .font(.system(size: 26 * unit, weight: .medium))
+                        .font(.brand(size: 26 * unit, weight: .medium))
                         .foregroundStyle(ink.opacity(0.55))
                 }
             }
@@ -312,7 +310,7 @@ private struct ImageToolsPanel: View {
                     .disabled(design.original == nil)
             }
             if let notice = design.imageNotice {
-                Text(notice).font(.system(size: 12)).foregroundStyle(theme.inkSecondary(scheme))
+                Text(notice).font(.brand(size: 12)).foregroundStyle(theme.inkSecondary(scheme))
             }
             HStack(spacing: 12) {
                 ImageWell(title: "Original", image: design.original, emptyText: "Drop an image here, or open one. It never leaves this Mac.")
@@ -357,16 +355,16 @@ private struct ImageWell: View {
                         .transition(.opacity)
                 } else {
                     Text(emptyText)
-                        .font(.system(size: 12))
+                        .font(.brand(size: 12))
                         .foregroundStyle(theme.inkTertiary(scheme))
                         .multilineTextAlignment(.center)
                         .padding(24)
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(RoundedRectangle(cornerRadius: max(theme.radius - 4, 8)).fill(theme.well(scheme)))
-            .overlay(RoundedRectangle(cornerRadius: max(theme.radius - 4, 8)).strokeBorder(theme.edge(scheme), lineWidth: 0.5))
-            .clipShape(RoundedRectangle(cornerRadius: max(theme.radius - 4, 8)))
+            .background(RoundedRectangle(cornerRadius: theme.radius).fill(theme.well(scheme)))
+            .overlay(RoundedRectangle(cornerRadius: theme.radius).strokeBorder(theme.edge(scheme), lineWidth: 0.5))
+            .clipShape(RoundedRectangle(cornerRadius: theme.radius))
         }
     }
 }
@@ -410,7 +408,7 @@ private struct BrandKit: View {
                         SectionLabel(text: "Logo")
                         Wordmark(height: 64)
                             .frame(maxWidth: .infinity, minHeight: 120)
-                            .background(RoundedRectangle(cornerRadius: 10).fill(theme.raised(scheme)))
+                            .background(RoundedRectangle(cornerRadius: 0).fill(theme.raised(scheme)))
                         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 6), spacing: 6) {
                             ForEach(agents, id: \.self) { code in
                                 Monogram(text: code, size: 38)
@@ -420,49 +418,49 @@ private struct BrandKit: View {
                     }
                     .padding(16)
                     .frame(maxWidth: .infinity, alignment: .topLeading)
-                    .vellum(level: 3, radius: max(theme.radius - 4, 8))
+                    .vellum(level: 3, radius: theme.radius)
 
                     VStack(alignment: .leading, spacing: 10) {
                         SectionLabel(text: "Palette")
                         ForEach(swatches, id: \.name) { swatch in
                             HStack(spacing: 10) {
-                                RoundedRectangle(cornerRadius: 6)
+                                RoundedRectangle(cornerRadius: 0)
                                     .fill(swatch.color)
-                                    .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(theme.edge(scheme), lineWidth: 0.5))
+                                    .overlay(RoundedRectangle(cornerRadius: 0).strokeBorder(theme.edge(scheme), lineWidth: 0.5))
                                     .frame(width: 36, height: 28)
-                                Text(swatch.name).font(.system(size: 12.5, weight: .medium))
+                                Text(swatch.name).font(.brand(size: 12.5, weight: .medium))
                                 Spacer()
-                                Text(swatch.hex).font(.system(size: 11.5).monospaced()).foregroundStyle(theme.inkTertiary(scheme))
+                                Text(swatch.hex).font(.brand(size: 11.5).monospaced()).foregroundStyle(theme.inkTertiary(scheme))
                             }
                             .foregroundStyle(theme.ink(scheme))
                         }
                     }
                     .padding(16)
                     .frame(width: 260, alignment: .topLeading)
-                    .vellum(level: 3, radius: max(theme.radius - 4, 8))
+                    .vellum(level: 3, radius: theme.radius)
                 }
 
                 VStack(alignment: .leading, spacing: 10) {
                     SectionLabel(text: "Type")
                     HStack(alignment: .firstTextBaseline, spacing: 16) {
-                        Text("Aa").font(.custom("AlteHaasGrotesk_Bold", size: 48))
+                        Text("Aa").font(.custom("SchibstedGrotesk-Black", size: 48))
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Alte Haas Grotesk Bold").font(.system(size: 13, weight: .semibold))
-                            Text("Monograms, the wordmark, graphics").font(.system(size: 11.5)).foregroundStyle(theme.inkTertiary(scheme))
+                            Text("Schibsted Grotesk").font(.brand(size: 13, weight: .semibold))
+                            Text("The wordmark, numerals and every heading").font(.brand(size: 11.5)).foregroundStyle(theme.inkTertiary(scheme))
                         }
                     }
                     HStack(alignment: .firstTextBaseline, spacing: 16) {
-                        Text("Aa").font(theme.display(48))
+                        Text("Aa").font(BrandFont.body(48))
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("\(theme.values.displayFace.title) · display").font(.system(size: 13, weight: .semibold))
-                            Text("Titles in the apps (set in the Design Lab)").font(.system(size: 11.5)).foregroundStyle(theme.inkTertiary(scheme))
+                            Text("Instrument Sans").font(.brand(size: 13, weight: .semibold))
+                            Text("Reading and the interface; Courier Prime for labels, Hack for code").font(.brand(size: 11.5)).foregroundStyle(theme.inkTertiary(scheme))
                         }
                     }
                 }
                 .foregroundStyle(theme.ink(scheme))
                 .padding(16)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .vellum(level: 3, radius: max(theme.radius - 4, 8))
+                .vellum(level: 3, radius: theme.radius)
 
                 HStack(spacing: 8) {
                     Button(copied ? "Copied" : "Copy brand tokens") { copyTokens() }
@@ -472,7 +470,7 @@ private struct BrandKit: View {
                     Spacer()
                 }
                 Text("Every agent draws from this kit: Robert's graphics, Conner's decks, Cole's captions.")
-                    .font(.system(size: 12))
+                    .font(.brand(size: 12))
                     .foregroundStyle(theme.inkTertiary(scheme))
             }
         }
@@ -484,8 +482,8 @@ private struct BrandKit: View {
         for swatch in swatches { colours[swatch.name.lowercased()] = swatch.hex }
         let tokens: [String: Any] = [
             "colours": colours,
-            "type": ["mark": "Alte Haas Grotesk Bold", "display": theme.values.displayFace.title, "text": "SF Pro"],
-            "radius": theme.values.cornerRadius,
+            "type": ["headings": "Schibsted Grotesk", "reading": "Instrument Sans", "labels": "Courier Prime", "code": "Hack"],
+            "radius": 0,
         ]
         guard let data = try? JSONSerialization.data(withJSONObject: tokens, options: [.prettyPrinted, .sortedKeys]),
               let text = String(data: data, encoding: .utf8) else { return }

@@ -42,17 +42,17 @@ struct AudioView: View {
             if let message = audio.working ?? audio.notice {
                 HStack(spacing: 10) {
                     if audio.working != nil { ProgressView().controlSize(.small) } else { AgentLogo(code: "co", size: 18, color: theme.inkSecondary(scheme)) }
-                    Text(message).font(.system(size: 12.5)).foregroundStyle(theme.ink(scheme)).lineLimit(2)
+                    Text(message).font(.brand(size: 12.5)).foregroundStyle(theme.ink(scheme)).lineLimit(2)
                     Spacer()
                     if audio.working == nil {
-                        Button { audio.notice = nil } label: { Image(systemName: "xmark").font(.system(size: 10, weight: .bold)) }
+                        Button { audio.notice = nil } label: { Image(systemName: "xmark").font(.brand(size: 10, weight: .bold)) }
                             .buttonStyle(.plain)
                             .foregroundStyle(theme.inkTertiary(scheme))
                     }
                 }
                 .padding(.horizontal, 14)
                 .padding(.vertical, 8)
-                .vellum(level: 3, radius: max(theme.radius - 4, 8))
+                .vellum(level: 3, radius: theme.radius)
             }
 
             if audio.project != nil {
@@ -60,7 +60,7 @@ struct AudioView: View {
                     AudioToolbar()
                     AudioTimeline()
                         .frame(minHeight: 220, maxHeight: .infinity)
-                        .vellum(level: 3, radius: max(theme.radius - 4, 8))
+                        .vellum(level: 3, radius: theme.radius)
                     AudioPanel()
                         .frame(height: 200)
                 }
@@ -68,7 +68,7 @@ struct AudioView: View {
                 VStack(spacing: 10) {
                     AgentLogo(code: "co", size: 44, color: theme.inkTertiary(scheme))
                     Text("Making the sample episode…")
-                        .font(.system(size: 12.5))
+                        .font(.brand(size: 12.5))
                         .foregroundStyle(theme.inkTertiary(scheme))
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -174,7 +174,7 @@ private struct AudioToolbar: View {
                 ToolButton(symbol: audio.isPlaying ? "pause.fill" : "play.fill", help: "Play or pause (space)", on: audio.isPlaying) { audio.togglePlay() }
                     .keyboardShortcut(.space, modifiers: [])
                 Text("\(clock(audio.playhead)) / \(clock(audio.project?.duration ?? 0))")
-                    .font(.system(size: 12, weight: .medium).monospacedDigit())
+                    .font(.brand(size: 12, weight: .medium).monospacedDigit())
                     .foregroundStyle(theme.inkSecondary(scheme))
                     .padding(.horizontal, 8)
                     .fixedSize()
@@ -198,18 +198,18 @@ private struct AudioToolbar: View {
                 effectsMenu
                 cleanupMenu
                 divider
-                Image(systemName: "minus.magnifyingglass").font(.system(size: 11)).foregroundStyle(theme.inkTertiary(scheme))
+                Image(systemName: "minus.magnifyingglass").font(.brand(size: 11)).foregroundStyle(theme.inkTertiary(scheme))
                 Slider(value: $audio.zoom, in: 10...400)
                     .frame(width: 110)
                     .controlSize(.small)
-                Image(systemName: "plus.magnifyingglass").font(.system(size: 11)).foregroundStyle(theme.inkTertiary(scheme))
+                Image(systemName: "plus.magnifyingglass").font(.brand(size: 11)).foregroundStyle(theme.inkTertiary(scheme))
             }
             .padding(.horizontal, 6)
             .padding(.vertical, 3)
         }
         .fixedSize(horizontal: false, vertical: true)
-        .background { RoundedRectangle(cornerRadius: 9, style: .continuous).fill(theme.well(scheme)) }
-        .overlay { RoundedRectangle(cornerRadius: 9, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5) }
+        .background { RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.well(scheme)) }
+        .overlay { RoundedRectangle(cornerRadius: 0, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5) }
     }
 
     private func clock(_ seconds: Double) -> String {
@@ -262,7 +262,7 @@ private struct AudioToolbar: View {
             }
         } label: {
             Label("Effects", systemImage: "slider.vertical.3")
-                .font(.system(size: 12, weight: .medium))
+                .font(.brand(size: 12, weight: .medium))
                 .foregroundStyle(theme.inkSecondary(scheme))
         }
         .menuStyle(.button)
@@ -281,7 +281,7 @@ private struct AudioToolbar: View {
             Button("Remove ums and uhs") { audio.removeFillers() }
         } label: {
             Label("Clean up", systemImage: "wand.and.stars")
-                .font(.system(size: 12, weight: .medium))
+                .font(.brand(size: 12, weight: .medium))
                 .foregroundStyle(theme.inkSecondary(scheme))
         }
         .menuStyle(.button)
@@ -316,7 +316,7 @@ private struct AudioTimeline: View {
                 Button {
                     audio.addTrack()
                 } label: {
-                    Label("Add a track", systemImage: "plus").font(.system(size: 11.5))
+                    Label("Add a track", systemImage: "plus").font(.brand(size: 11.5))
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(theme.inkTertiary(scheme))
@@ -356,7 +356,7 @@ private struct AudioTimeline: View {
                 }
             }
         }
-        .clipShape(RoundedRectangle(cornerRadius: max(theme.radius - 4, 8), style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: theme.radius, style: .continuous))
     }
 }
 
@@ -373,7 +373,7 @@ private struct TrackHeader: View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 4) {
                 Text(track.name)
-                    .font(.system(size: 12, weight: selected ? .semibold : .medium))
+                    .font(.brand(size: 12, weight: selected ? .semibold : .medium))
                     .foregroundStyle(theme.ink(scheme))
                     .lineLimit(1)
                 Spacer(minLength: 2)
@@ -381,16 +381,16 @@ private struct TrackHeader: View {
                 toggle("S", on: track.solo, help: "Solo") { audio.updateTrack(track.id) { $0.solo.toggle() } }
             }
             HStack(spacing: 4) {
-                Image(systemName: "speaker.wave.2").font(.system(size: 9)).foregroundStyle(theme.inkTertiary(scheme))
+                Image(systemName: "speaker.wave.2").font(.brand(size: 9)).foregroundStyle(theme.inkTertiary(scheme))
                 Slider(value: Binding(get: { track.volume }, set: { value in audio.updateTrack(track.id) { $0.volume = value } }), in: -30...6)
                     .controlSize(.mini)
-                Text(String(format: "%+.0f", track.volume)).font(.system(size: 9.5).monospacedDigit()).foregroundStyle(theme.inkTertiary(scheme)).frame(width: 22)
+                Text(String(format: "%+.0f", track.volume)).font(.brand(size: 9.5).monospacedDigit()).foregroundStyle(theme.inkTertiary(scheme)).frame(width: 22)
             }
             HStack(spacing: 4) {
-                Text("L").font(.system(size: 9)).foregroundStyle(theme.inkTertiary(scheme))
+                Text("L").font(.brand(size: 9)).foregroundStyle(theme.inkTertiary(scheme))
                 Slider(value: Binding(get: { track.pan }, set: { value in audio.updateTrack(track.id) { $0.pan = abs(value) < 0.05 ? 0 : value } }), in: -1...1)
                     .controlSize(.mini)
-                Text("R").font(.system(size: 9)).foregroundStyle(theme.inkTertiary(scheme))
+                Text("R").font(.brand(size: 9)).foregroundStyle(theme.inkTertiary(scheme))
             }
         }
         .padding(.horizontal, 10)
@@ -417,10 +417,10 @@ private struct TrackHeader: View {
     private func toggle(_ letter: String, on: Bool, help: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(letter)
-                .font(.system(size: 9.5, weight: .bold))
+                .font(.brand(size: 9.5, weight: .bold))
                 .frame(width: 18, height: 16)
                 .foregroundStyle(on ? theme.paper(scheme) : theme.inkSecondary(scheme))
-                .background { RoundedRectangle(cornerRadius: 4).fill(on ? theme.ink(scheme) : theme.well(scheme)) }
+                .background { RoundedRectangle(cornerRadius: 0).fill(on ? theme.ink(scheme) : theme.well(scheme)) }
         }
         .buttonStyle(.plain)
         .help(help)
@@ -445,7 +445,7 @@ private struct Ruler: View {
                 while second * pps < Double(size.width) {
                     let x = CGFloat(second * pps)
                     context.fill(Path(CGRect(x: x, y: size.height - 8, width: 1, height: 8)), with: .color(ink))
-                    context.draw(Text(SoundChapters.clock(second)).font(.system(size: 9).monospacedDigit()).foregroundColor(ink),
+                    context.draw(Text(SoundChapters.clock(second)).font(.brand(size: 9).monospacedDigit()).foregroundColor(ink),
                                  at: CGPoint(x: x + 3, y: 7), anchor: .leading)
                     for minor in 1..<5 {
                         let mx = CGFloat((second + step * Double(minor) / 5) * pps)
@@ -456,12 +456,12 @@ private struct Ruler: View {
             }
             ForEach(markers) { marker in
                 HStack(spacing: 3) {
-                    Image(systemName: "flag.fill").font(.system(size: 8))
-                    Text(marker.name).font(.system(size: 9.5, weight: .medium)).lineLimit(1)
+                    Image(systemName: "flag.fill").font(.brand(size: 8))
+                    Text(marker.name).font(.brand(size: 9.5, weight: .medium)).lineLimit(1)
                 }
                 .foregroundStyle(theme.ink(scheme))
                 .padding(.horizontal, 4)
-                .background { RoundedRectangle(cornerRadius: 3).fill(theme.raised(scheme)) }
+                .background { RoundedRectangle(cornerRadius: 0).fill(theme.raised(scheme)) }
                 .offset(x: CGFloat(marker.time * pps), y: 12)
                 .onTapGesture { audio.seek(marker.time) }
             }
@@ -541,7 +541,7 @@ private struct ClipView: View {
         let peaks = audio.peaks[clip.asset] ?? []
         let ink = theme.ink(scheme)
         ZStack(alignment: .topLeading) {
-            RoundedRectangle(cornerRadius: 6, style: .continuous)
+            RoundedRectangle(cornerRadius: 0, style: .continuous)
                 .fill(ink.opacity(selected ? 0.14 : 0.07))
             Canvas { context, size in
                 guard !peaks.isEmpty else { return }
@@ -579,7 +579,7 @@ private struct ClipView: View {
                 }
             }
             Text(clip.name)
-                .font(.system(size: 10, weight: .semibold))
+                .font(.brand(size: 10, weight: .semibold))
                 .foregroundStyle(ink.opacity(0.75))
                 .lineLimit(1)
                 .padding(.horizontal, 6)
@@ -587,7 +587,7 @@ private struct ClipView: View {
         }
         .frame(width: width, height: height)
         .overlay {
-            RoundedRectangle(cornerRadius: 6, style: .continuous)
+            RoundedRectangle(cornerRadius: 0, style: .continuous)
                 .strokeBorder(selected ? ink : ink.opacity(0.2), lineWidth: selected ? 1.5 : 0.5)
         }
         .offset(x: CGFloat(clip.start * pps) + drag, y: 5)
@@ -639,7 +639,7 @@ private struct AudioPanel: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
         .padding(12)
-        .vellum(level: 3, radius: max(theme.radius - 4, 8))
+        .vellum(level: 3, radius: theme.radius)
     }
 
     @ViewBuilder
@@ -647,9 +647,9 @@ private struct AudioPanel: View {
         if let clip = audio.clip {
             HStack(alignment: .top, spacing: 24) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(clip.name).font(.system(size: 13, weight: .semibold)).foregroundStyle(theme.ink(scheme))
+                    Text(clip.name).font(.brand(size: 13, weight: .semibold)).foregroundStyle(theme.ink(scheme))
                     Text("Starts \(SoundChapters.clock(clip.start)) · \(String(format: "%.1f", clip.length)) s")
-                        .font(.system(size: 11.5).monospacedDigit()).foregroundStyle(theme.inkTertiary(scheme))
+                        .font(.brand(size: 11.5).monospacedDigit()).foregroundStyle(theme.inkTertiary(scheme))
                 }
                 .frame(width: 180, alignment: .leading)
                 VStack(alignment: .leading, spacing: 8) {
@@ -661,16 +661,16 @@ private struct AudioPanel: View {
             }
         } else {
             Text("Click a clip to change its level and fades. Drag on the ruler to select a stretch; effects then apply to just that part.")
-                .font(.system(size: 12))
+                .font(.brand(size: 12))
                 .foregroundStyle(theme.inkTertiary(scheme))
         }
     }
 
     private func slider(_ title: String, value: Double, range: ClosedRange<Double>, unit: String, apply: @escaping (Double) -> Void) -> some View {
         HStack {
-            Text(title).font(.system(size: 11.5)).foregroundStyle(theme.inkSecondary(scheme)).frame(width: 56, alignment: .leading)
+            Text(title).font(.brand(size: 11.5)).foregroundStyle(theme.inkSecondary(scheme)).frame(width: 56, alignment: .leading)
             Slider(value: Binding(get: { value }, set: apply), in: range).controlSize(.small)
-            Text(String(format: unit == "dB" ? "%+.1f dB" : "%.1f s", value)).font(.system(size: 11).monospacedDigit()).foregroundStyle(theme.inkTertiary(scheme)).frame(width: 56)
+            Text(String(format: unit == "dB" ? "%+.1f dB" : "%.1f s", value)).font(.brand(size: 11).monospacedDigit()).foregroundStyle(theme.inkTertiary(scheme)).frame(width: 56)
         }
     }
 
@@ -680,7 +680,7 @@ private struct AudioPanel: View {
         if words.isEmpty {
             HStack {
                 Text("Transcribe the selected track on this Mac to find the ums and uhs, and to write show notes.")
-                    .font(.system(size: 12)).foregroundStyle(theme.inkTertiary(scheme))
+                    .font(.brand(size: 12)).foregroundStyle(theme.inkTertiary(scheme))
                 Button("Transcribe") { audio.transcribe() }.buttonStyle(.vellumSecondary)
             }
         } else {
@@ -689,7 +689,7 @@ private struct AudioPanel: View {
                     VStack(alignment: .leading, spacing: 6) {
                         ForEach(Transcriber.lines(from: words)) { line in
                             HStack(alignment: .firstTextBaseline, spacing: 8) {
-                                Text(SoundChapters.clock(line.start)).font(.system(size: 10.5).monospacedDigit()).foregroundStyle(theme.inkTertiary(scheme))
+                                Text(SoundChapters.clock(line.start)).font(.brand(size: 10.5).monospacedDigit()).foregroundStyle(theme.inkTertiary(scheme))
                                 transcriptText(line, words: words)
                             }
                             .contentShape(Rectangle())
@@ -699,7 +699,7 @@ private struct AudioPanel: View {
                 }
                 VStack(alignment: .trailing, spacing: 6) {
                     let fillers = words.filter(\.isFiller).count
-                    Text("\(fillers) \(fillers == 1 ? "filler" : "fillers")").font(.system(size: 12, weight: .semibold)).foregroundStyle(theme.ink(scheme))
+                    Text("\(fillers) \(fillers == 1 ? "filler" : "fillers")").font(.brand(size: 12, weight: .semibold)).foregroundStyle(theme.ink(scheme))
                     Button("Remove them") { audio.removeFillers() }.buttonStyle(.vellumSecondary).disabled(fillers == 0)
                 }
             }
@@ -713,7 +713,7 @@ private struct AudioPanel: View {
             let piece = Text(word.text + " ")
             result = result + (word.isFiller ? piece.foregroundColor(.orange).bold() : piece.foregroundColor(theme.ink(scheme)))
         }
-        return result.font(.system(size: 12.5))
+        return result.font(.brand(size: 12.5))
     }
 
     @ViewBuilder
@@ -722,9 +722,9 @@ private struct AudioPanel: View {
         HStack(alignment: .top, spacing: 18) {
             VStack(alignment: .leading, spacing: 6) {
                 Text("\(audio.silences.count) long \(audio.silences.count == 1 ? "silence" : "silences") on this track")
-                    .font(.system(size: 13, weight: .semibold)).foregroundStyle(theme.ink(scheme))
+                    .font(.brand(size: 13, weight: .semibold)).foregroundStyle(theme.ink(scheme))
                 Text(String(format: "%.1f seconds in all, shaded orange on the track. Removing them keeps a quarter-second breath.", total))
-                    .font(.system(size: 11.5)).foregroundStyle(theme.inkTertiary(scheme))
+                    .font(.brand(size: 11.5)).foregroundStyle(theme.inkTertiary(scheme))
                 Button("Remove them") { audio.removeSilences() }
                     .buttonStyle(.vellumPrimary)
                     .disabled(audio.silences.isEmpty)
@@ -734,7 +734,7 @@ private struct AudioPanel: View {
                 VStack(alignment: .leading, spacing: 3) {
                     ForEach(Array(audio.silences.enumerated()), id: \.offset) { item in
                         Text("\(SoundChapters.clock(item.element.lowerBound)) · \(String(format: "%.1f", item.element.upperBound - item.element.lowerBound)) s")
-                            .font(.system(size: 11.5).monospacedDigit())
+                            .font(.brand(size: 11.5).monospacedDigit())
                             .foregroundStyle(theme.inkSecondary(scheme))
                             .onTapGesture { audio.seek(item.element.lowerBound) }
                     }
@@ -751,10 +751,10 @@ private struct AudioPanel: View {
                 VStack(alignment: .leading, spacing: 4) {
                     ForEach(markers) { marker in
                         HStack {
-                            Text(SoundChapters.clock(marker.time)).font(.system(size: 11.5).monospacedDigit()).foregroundStyle(theme.inkTertiary(scheme))
+                            Text(SoundChapters.clock(marker.time)).font(.brand(size: 11.5).monospacedDigit()).foregroundStyle(theme.inkTertiary(scheme))
                             TextField("", text: Binding(get: { marker.name }, set: { audio.renameMarker(marker.id, $0) }))
                                 .textFieldStyle(.plain)
-                                .font(.system(size: 12.5))
+                                .font(.brand(size: 12.5))
                             Button { audio.deleteMarker(marker.id) } label: { Image(systemName: "minus.circle") }
                                 .buttonStyle(.plain)
                                 .foregroundStyle(theme.inkTertiary(scheme))
@@ -762,7 +762,7 @@ private struct AudioPanel: View {
                     }
                     if markers.isEmpty {
                         Text("Press M to drop a chapter marker at the playhead. Chapters go with the export as a text file.")
-                            .font(.system(size: 12)).foregroundStyle(theme.inkTertiary(scheme))
+                            .font(.brand(size: 12)).foregroundStyle(theme.inkTertiary(scheme))
                     }
                 }
             }
@@ -784,7 +784,7 @@ private struct AudioPanel: View {
                     RunView(run: run)
                 } else {
                     Text("Cole writes a summary, chapters and the key points from the transcript.")
-                        .font(.system(size: 12)).foregroundStyle(theme.inkTertiary(scheme))
+                        .font(.brand(size: 12)).foregroundStyle(theme.inkTertiary(scheme))
                 }
             }
             Button("Write show notes") { audio.showNotes() }

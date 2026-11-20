@@ -68,9 +68,9 @@ struct SheetsView: View {
                         SheetsFormatBar()
                         FormulaBar()
                         GridCanvas(model: sheets, style: GridStyle.from(theme, scheme))
-                            .clipShape(RoundedRectangle(cornerRadius: max(theme.radius - 4, 8), style: .continuous))
+                            .clipShape(RoundedRectangle(cornerRadius: theme.radius, style: .continuous))
                             .overlay {
-                                RoundedRectangle(cornerRadius: max(theme.radius - 4, 8), style: .continuous)
+                                RoundedRectangle(cornerRadius: theme.radius, style: .continuous)
                                     .strokeBorder(theme.edge(scheme), lineWidth: 0.5)
                             }
                         SheetTabs()
@@ -89,7 +89,7 @@ struct SheetsView: View {
                     VStack(spacing: 10) {
                         AgentLogo(code: "ge", size: 44, color: theme.inkTertiary(scheme))
                         Text("No workbook open. Start one, or import an Excel file.")
-                            .font(.system(size: 12.5))
+                            .font(.brand(size: 12.5))
                             .foregroundStyle(theme.inkTertiary(scheme))
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -165,21 +165,21 @@ private struct SheetsBanner: View {
         HStack(spacing: 10) {
             AgentLogo(code: "ge", size: 18, color: theme.inkSecondary(scheme))
             Text(text)
-                .font(.system(size: 12.5))
+                .font(.brand(size: 12.5))
                 .foregroundStyle(theme.ink(scheme))
                 .lineLimit(2)
             Spacer()
-            Button(action: dismiss) { Image(systemName: "xmark").font(.system(size: 10, weight: .bold)) }
+            Button(action: dismiss) { Image(systemName: "xmark").font(.brand(size: 10, weight: .bold)) }
                 .buttonStyle(.plain)
                 .foregroundStyle(theme.inkTertiary(scheme))
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 8)
         .background {
-            RoundedRectangle(cornerRadius: max(theme.radius - 4, 8), style: .continuous).fill(theme.well(scheme))
+            RoundedRectangle(cornerRadius: theme.radius, style: .continuous).fill(theme.well(scheme))
         }
         .overlay {
-            RoundedRectangle(cornerRadius: max(theme.radius - 4, 8), style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5)
+            RoundedRectangle(cornerRadius: theme.radius, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5)
         }
     }
 }
@@ -235,11 +235,11 @@ private struct WorkbookList: View {
         } label: {
             VStack(alignment: .leading, spacing: 2) {
                 Text(name)
-                    .font(.system(size: 12.5, weight: selected ? .semibold : .regular))
+                    .font(.brand(size: 12.5, weight: selected ? .semibold : .regular))
                     .foregroundStyle(theme.ink(scheme))
                     .lineLimit(1)
                 Text("\(entry.modified.formatted(.relative(presentation: .named))) · \(entry.sheets) \(entry.sheets == 1 ? "sheet" : "sheets")")
-                    .font(.system(size: 10.5))
+                    .font(.brand(size: 10.5))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .lineLimit(1)
             }
@@ -248,7 +248,7 @@ private struct WorkbookList: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .background {
                 if selected {
-                    RoundedRectangle(cornerRadius: 8, style: .continuous).fill(theme.raised(scheme))
+                    RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.raised(scheme))
                 }
             }
             .contentShape(Rectangle())
@@ -332,10 +332,10 @@ private struct SheetsFormatBar: View {
         }
         .fixedSize(horizontal: false, vertical: true)
         .background {
-            RoundedRectangle(cornerRadius: 9, style: .continuous).fill(theme.well(scheme))
+            RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.well(scheme))
         }
         .overlay {
-            RoundedRectangle(cornerRadius: 9, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5)
+            RoundedRectangle(cornerRadius: 0, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5)
         }
     }
 
@@ -351,7 +351,7 @@ private struct SheetsFormatBar: View {
             }
         } label: {
             Text(shortTitle(sheets.activeNumberFormat))
-                .font(.system(size: 11.5, weight: .medium))
+                .font(.brand(size: 11.5, weight: .medium))
                 .foregroundStyle(theme.inkSecondary(scheme))
                 .frame(minWidth: 70, alignment: .leading)
         }
@@ -391,7 +391,7 @@ private struct SheetsFormatBar: View {
             }
         } label: {
             Image(systemName: symbol)
-                .font(.system(size: 12, weight: .medium))
+                .font(.brand(size: 12, weight: .medium))
                 .foregroundStyle(theme.inkSecondary(scheme))
         }
         .menuStyle(.button)
@@ -413,7 +413,7 @@ private struct SheetsFormatBar: View {
             Button("Delete columns") { sheets.deleteColumns() }
         } label: {
             Image(systemName: "plus.rectangle.on.rectangle")
-                .font(.system(size: 12, weight: .medium))
+                .font(.brand(size: 12, weight: .medium))
                 .foregroundStyle(theme.inkSecondary(scheme))
         }
         .menuStyle(.button)
@@ -431,7 +431,7 @@ private struct SheetsFormatBar: View {
             }
         } label: {
             Image(systemName: "chart.bar.xaxis")
-                .font(.system(size: 12, weight: .medium))
+                .font(.brand(size: 12, weight: .medium))
                 .foregroundStyle(theme.inkSecondary(scheme))
         }
         .menuStyle(.button)
@@ -466,14 +466,14 @@ struct TextToolButton: View {
     var body: some View {
         Button(action: action) {
             Text(text)
-                .font(.system(size: 11.5, weight: .semibold, design: .rounded))
+                .font(.brand(size: 11.5, weight: .semibold, design: .rounded))
                 .lineLimit(1)
                 .fixedSize()
                 .foregroundStyle(theme.inkSecondary(scheme))
                 .padding(.horizontal, 5)
                 .frame(minWidth: 24, minHeight: 24)
                 .background {
-                    RoundedRectangle(cornerRadius: 6, style: .continuous).fill(hovering ? theme.well(scheme) : Color.clear)
+                    RoundedRectangle(cornerRadius: 0, style: .continuous).fill(hovering ? theme.well(scheme) : Color.clear)
                 }
                 .contentShape(Rectangle())
         }
@@ -498,7 +498,7 @@ private struct FormulaBar: View {
         HStack(spacing: 8) {
             TextField("", text: $address)
                 .textFieldStyle(.plain)
-                .font(.system(size: 12, weight: .medium).monospacedDigit())
+                .font(.brand(size: 12, weight: .medium).monospacedDigit())
                 .foregroundStyle(theme.ink(scheme))
                 .frame(width: 74)
                 .focused($naming)
@@ -506,11 +506,11 @@ private struct FormulaBar: View {
                 .help("Type a cell or range, like B12 or A1:D20, to go there")
             Rectangle().fill(theme.edge(scheme)).frame(width: 1, height: 16)
             Text("fx")
-                .font(.system(size: 12, weight: .semibold, design: .serif).italic())
+                .font(.brand(size: 12, weight: .semibold, design: .serif).italic())
                 .foregroundStyle(theme.inkTertiary(scheme))
             TextField("", text: $text, prompt: Text("Type a value, or = for a formula"))
                 .textFieldStyle(.plain)
-                .font(.system(size: 12.5, design: text.hasPrefix("=") ? .monospaced : .default))
+                .font(.brand(size: 12.5, design: text.hasPrefix("=") ? .monospaced : .default))
                 .foregroundStyle(theme.ink(scheme))
                 .focused($editing)
                 .onSubmit {
@@ -530,7 +530,7 @@ private struct FormulaBar: View {
                         }
                     } label: {
                         Label("Pick", systemImage: "chevron.down.circle")
-                            .font(.system(size: 11.5))
+                            .font(.brand(size: 11.5))
                     }
                     .menuStyle(.button)
                     .buttonStyle(.borderless)
@@ -538,14 +538,14 @@ private struct FormulaBar: View {
                     .help("Choose from the list")
                 } else if !rule.help.isEmpty {
                     Text(rule.help)
-                        .font(.system(size: 11))
+                        .font(.brand(size: 11))
                         .foregroundStyle(theme.inkTertiary(scheme))
                         .lineLimit(1)
                 }
             }
             if let formula = sheets.input(sheets.active).nilIfEmpty, formula.hasPrefix("=") {
                 Text("= " + sheets.display(sheets.active))
-                    .font(.system(size: 11.5).monospacedDigit())
+                    .font(.brand(size: 11.5).monospacedDigit())
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .lineLimit(1)
             }
@@ -553,10 +553,10 @@ private struct FormulaBar: View {
         .padding(.horizontal, 12)
         .padding(.vertical, 7)
         .background {
-            RoundedRectangle(cornerRadius: 9, style: .continuous).fill(theme.well(scheme))
+            RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.well(scheme))
         }
         .overlay {
-            RoundedRectangle(cornerRadius: 9, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5)
+            RoundedRectangle(cornerRadius: 0, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5)
         }
         .onAppear(perform: refresh)
         .onChange(of: sheets.active) { _, _ in refresh() }
@@ -616,7 +616,7 @@ private struct SheetTabs: View {
                         withAnimation(theme.spring) { sheets.addSheet() }
                     } label: {
                         Image(systemName: "plus")
-                            .font(.system(size: 11, weight: .semibold))
+                            .font(.brand(size: 11, weight: .semibold))
                             .foregroundStyle(theme.inkSecondary(scheme))
                             .frame(width: 24, height: 22)
                             .contentShape(Rectangle())
@@ -645,7 +645,7 @@ private struct SheetTabs: View {
             Text(label).foregroundStyle(theme.inkTertiary(scheme))
             Text(value).foregroundStyle(theme.ink(scheme)).monospacedDigit()
         }
-        .font(.system(size: 11.5))
+        .font(.brand(size: 11.5))
         .textSelection(.enabled)
     }
 
@@ -655,11 +655,11 @@ private struct SheetTabs: View {
         if renaming == index {
             TextField("", text: $name)
                 .textFieldStyle(.plain)
-                .font(.system(size: 12, weight: .semibold))
+                .font(.brand(size: 12, weight: .semibold))
                 .frame(width: max(70, CGFloat(name.count) * 7.5 + 20))
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
-                .background { RoundedRectangle(cornerRadius: 7, style: .continuous).fill(theme.raised(scheme)) }
+                .background { RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.raised(scheme)) }
                 .focused($nameFocused)
                 .onAppear { nameFocused = true }
                 .onSubmit {
@@ -677,7 +677,7 @@ private struct SheetTabs: View {
                         Circle().fill(colour).frame(width: 7, height: 7)
                     }
                     Text(sheet.name)
-                        .font(.system(size: 12, weight: selected ? .semibold : .regular))
+                        .font(.brand(size: 12, weight: selected ? .semibold : .regular))
                         .foregroundStyle(selected ? theme.ink(scheme) : theme.inkSecondary(scheme))
                         .lineLimit(1)
                 }
@@ -685,8 +685,8 @@ private struct SheetTabs: View {
                 .padding(.vertical, 4)
                 .background {
                     if selected {
-                        RoundedRectangle(cornerRadius: 7, style: .continuous).fill(theme.raised(scheme))
-                            .overlay { RoundedRectangle(cornerRadius: 7, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5) }
+                        RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.raised(scheme))
+                            .overlay { RoundedRectangle(cornerRadius: 0, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5) }
                     }
                 }
                 .contentShape(Rectangle())
@@ -748,7 +748,7 @@ private struct ChartCard: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Text(chart.title)
-                    .font(.system(size: 12.5, weight: .semibold))
+                    .font(.brand(size: 12.5, weight: .semibold))
                     .foregroundStyle(theme.ink(scheme))
                     .lineLimit(1)
                 Spacer()
@@ -780,7 +780,7 @@ private struct ChartCard: View {
             }
             if data.points.isEmpty {
                 Text("No numbers in \(chart.range.a1) to chart.")
-                    .font(.system(size: 11.5))
+                    .font(.brand(size: 11.5))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .frame(maxWidth: .infinity, minHeight: 120)
             } else {
@@ -788,15 +788,15 @@ private struct ChartCard: View {
                     .frame(height: 180)
             }
             Text(chart.range.a1)
-                .font(.system(size: 10.5).monospacedDigit())
+                .font(.brand(size: 10.5).monospacedDigit())
                 .foregroundStyle(theme.inkTertiary(scheme))
         }
         .padding(12)
         .background {
-            RoundedRectangle(cornerRadius: max(theme.radius - 4, 8), style: .continuous).fill(theme.well(scheme))
+            RoundedRectangle(cornerRadius: theme.radius, style: .continuous).fill(theme.well(scheme))
         }
         .overlay {
-            RoundedRectangle(cornerRadius: max(theme.radius - 4, 8), style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5)
+            RoundedRectangle(cornerRadius: theme.radius, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5)
         }
     }
 }
@@ -846,7 +846,7 @@ struct GridChartView: View {
         }
         .chartForegroundStyleScale(domain: domain, range: palette)
         .chartLegend(domain.count > 1 ? .visible : .hidden)
-        .font(.system(size: 10))
+        .font(.brand(size: 10))
     }
 }
 
@@ -865,10 +865,10 @@ private struct SummariseView: View {
         let headers = sheets.tableHeaders
         VStack(alignment: .leading, spacing: 12) {
             Text("Summarise \u{201C}\(sheets.sheet?.name ?? "")\u{201D}")
-                .font(.system(size: 14, weight: .semibold))
+                .font(.brand(size: 14, weight: .semibold))
                 .foregroundStyle(theme.ink(scheme))
             Text("A new sheet with one row for each value, worked out with live formulas, and a chart.")
-                .font(.system(size: 12))
+                .font(.brand(size: 12))
                 .foregroundStyle(theme.inkSecondary(scheme))
                 .fixedSize(horizontal: false, vertical: true)
             Picker("For each", selection: $group) {
@@ -921,7 +921,7 @@ private struct AskSheetsView: View {
             HStack(spacing: 8) {
                 AgentLogo(code: "ge", size: 20, color: theme.ink(scheme))
                 Text("Ask George")
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.brand(size: 14, weight: .semibold))
                     .foregroundStyle(theme.ink(scheme))
             }
             Picker("", selection: $sheets.askKind) {
@@ -931,7 +931,7 @@ private struct AskSheetsView: View {
             .labelsHidden()
             if sheets.askKind == .explain {
                 Text(sheets.input(sheets.active).hasPrefix("=") ? "\(sheets.active.a1): \(sheets.input(sheets.active))" : "Select a cell with a formula first.")
-                    .font(.system(size: 12, design: .monospaced))
+                    .font(.brand(size: 12, design: .monospaced))
                     .foregroundStyle(theme.inkSecondary(scheme))
                     .lineLimit(3)
             }
@@ -949,7 +949,7 @@ private struct AskSheetsView: View {
             if let formula = sheets.suggestedFormula {
                 HStack(spacing: 8) {
                     Text(formula)
-                        .font(.system(size: 12, design: .monospaced))
+                        .font(.brand(size: 12, design: .monospaced))
                         .foregroundStyle(theme.ink(scheme))
                         .textSelection(.enabled)
                         .lineLimit(3)
@@ -958,10 +958,10 @@ private struct AskSheetsView: View {
                         .buttonStyle(.vellumPrimary)
                 }
                 .padding(10)
-                .background { RoundedRectangle(cornerRadius: 9, style: .continuous).fill(theme.well(scheme)) }
+                .background { RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.well(scheme)) }
             }
             Text("George only sees this workbook's headers and, when you ask about the numbers, this sheet.")
-                .font(.system(size: 10.5))
+                .font(.brand(size: 10.5))
                 .foregroundStyle(theme.inkTertiary(scheme))
         }
         .padding(18)

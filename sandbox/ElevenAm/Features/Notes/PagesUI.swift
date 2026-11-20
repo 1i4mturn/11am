@@ -40,7 +40,7 @@ struct PagesSidebarSection: View {
                     withAnimation(theme.spring) { notes.toggleExpanded(id) }
                 } label: {
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 8, weight: .bold))
+                        .font(.brand(size: 8, weight: .bold))
                         .rotationEffect(.degrees(notes.expanded.contains(id) ? 90 : 0))
                         .frame(width: 12, height: 14)
                         .contentShape(Rectangle())
@@ -56,7 +56,7 @@ struct PagesSidebarSection: View {
                 HStack(spacing: 6) {
                     PageIcon(id: id, size: 11.5)
                     Text(title)
-                        .font(.system(size: 12.5, weight: selected ? .semibold : .regular))
+                        .font(.brand(size: 12.5, weight: selected ? .semibold : .regular))
                         .lineLimit(1)
                     Spacer(minLength: 0)
                 }
@@ -68,7 +68,7 @@ struct PagesSidebarSection: View {
         .padding(.leading, 4 + CGFloat(depth) * 11)
         .padding(.trailing, 8)
         .padding(.vertical, 4.5)
-        .background(RoundedRectangle(cornerRadius: 7, style: .continuous).fill(selected ? theme.raised(scheme) : Color.clear))
+        .background(RoundedRectangle(cornerRadius: 0, style: .continuous).fill(selected ? theme.raised(scheme) : Color.clear))
         .draggable(id.uuidString)
         .dropDestination(for: String.self) { items, _ in
             guard let dropped = items.first.flatMap(UUID.init(uuidString:)), dropped != id else { return false }
@@ -94,10 +94,10 @@ struct PageIcon: View {
 
     var body: some View {
         if let icon = notes.icon(of: id) {
-            Text(icon).font(.system(size: size))
+            Text(icon).font(.brand(size: size))
         } else {
             Image(systemName: "doc.text")
-                .font(.system(size: size - 1))
+                .font(.brand(size: size - 1))
                 .foregroundStyle(theme.inkSecondary(scheme))
         }
     }
@@ -139,14 +139,14 @@ struct PageHeaderBar: View {
             if let parent = path.last {
                 Button(parent.title) { withAnimation(theme.spring) { notes.selectedID = parent.id } }
                     .buttonStyle(.plain)
-                    .font(.system(size: 12))
+                    .font(.brand(size: 12))
                     .foregroundStyle(theme.inkSecondary(scheme))
                     .lineLimit(1)
                     .help(path.map(\.title).joined(separator: " › "))
                 chevron
             }
             Text(note.title)
-                .font(.system(size: 12, weight: .semibold))
+                .font(.brand(size: 12, weight: .semibold))
                 .foregroundStyle(theme.ink(scheme))
                 .lineLimit(1)
                 .layoutPriority(1)
@@ -188,7 +188,7 @@ struct PageHeaderBar: View {
 extension PageHeaderBar {
     private var chevron: some View {
         Image(systemName: "chevron.right")
-            .font(.system(size: 7.5, weight: .bold))
+            .font(.brand(size: 7.5, weight: .bold))
             .foregroundStyle(theme.inkTertiary(scheme))
     }
 }
@@ -227,7 +227,7 @@ struct SubpagesRow: View {
                     }
                 }
             }
-            .font(.system(size: 11.5))
+            .font(.brand(size: 11.5))
             .padding(.horizontal, 14)
             .padding(.vertical, 6)
         }
@@ -251,10 +251,10 @@ struct PageBlocksStrip: View {
                     withAnimation(theme.spring) { collapsed.toggle() }
                 } label: {
                     HStack(spacing: 6) {
-                        Image(systemName: "dot.radiowaves.left.and.right").font(.system(size: 10))
+                        Image(systemName: "dot.radiowaves.left.and.right").font(.brand(size: 10))
                         SectionLabel(text: "Live in this page · \(blocks.count)")
                         Spacer()
-                        Image(systemName: collapsed ? "chevron.down" : "chevron.up").font(.system(size: 9, weight: .bold))
+                        Image(systemName: collapsed ? "chevron.down" : "chevron.up").font(.brand(size: 9, weight: .bold))
                     }
                     .contentShape(Rectangle())
                 }
@@ -298,13 +298,13 @@ private struct BlockFrame<Content: View>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 7) {
             HStack(spacing: 6) {
-                Image(systemName: symbol).font(.system(size: 11))
-                Text(title).font(.system(size: 12, weight: .semibold)).lineLimit(1)
+                Image(systemName: symbol).font(.brand(size: 11))
+                Text(title).font(.brand(size: 12, weight: .semibold)).lineLimit(1)
                 Spacer()
                 if let action {
                     Button(action.0, action: action.1)
                         .buttonStyle(.borderless)
-                        .font(.system(size: 11.5, weight: .medium))
+                        .font(.brand(size: 11.5, weight: .medium))
                 }
             }
             .foregroundStyle(theme.ink(scheme))
@@ -312,8 +312,8 @@ private struct BlockFrame<Content: View>: View {
         }
         .padding(10)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(RoundedRectangle(cornerRadius: 9, style: .continuous).fill(theme.well(scheme)))
-        .overlay(RoundedRectangle(cornerRadius: 9, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5))
+        .background(RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.well(scheme)))
+        .overlay(RoundedRectangle(cornerRadius: 0, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5))
     }
 }
 
@@ -345,11 +345,11 @@ private struct TasksBlock: View {
         })) {
             if list == nil {
                 Text("No project called \(scope) in Tasks yet.")
-                    .font(.system(size: 12))
+                    .font(.brand(size: 12))
                     .foregroundStyle(theme.inkTertiary(scheme))
             } else if items.isEmpty {
                 Text("Nothing open.")
-                    .font(.system(size: 12))
+                    .font(.brand(size: 12))
                     .foregroundStyle(theme.inkTertiary(scheme))
             }
             ForEach(items.prefix(8)) { task in
@@ -358,13 +358,13 @@ private struct TasksBlock: View {
                         withAnimation(theme.spring) { tasks.toggle(task.id) }
                     }
                     Text(task.title)
-                        .font(.system(size: 12.5))
+                        .font(.brand(size: 12.5))
                         .foregroundStyle(theme.ink(scheme))
                         .lineLimit(1)
                     Spacer(minLength: 6)
                     if let due = tasks.dueText(task) {
                         Text(due)
-                            .font(.system(size: 11))
+                            .font(.brand(size: 11))
                             .foregroundStyle(theme.inkTertiary(scheme))
                             .lineLimit(1)
                     }
@@ -372,7 +372,7 @@ private struct TasksBlock: View {
             }
             if items.count > 8 {
                 Text("and \(items.count - 8) more")
-                    .font(.system(size: 11.5))
+                    .font(.brand(size: 11.5))
                     .foregroundStyle(theme.inkTertiary(scheme))
             }
         }
@@ -401,7 +401,7 @@ private struct SheetBlock: View {
                             GridRow {
                                 ForEach(Array(row.enumerated()), id: \.offset) { _, cell in
                                     Text(cell)
-                                        .font(.system(size: 11.5, weight: index == 0 ? .semibold : .regular).monospacedDigit())
+                                        .font(.brand(size: 11.5, weight: index == 0 ? .semibold : .regular).monospacedDigit())
                                         .foregroundStyle(theme.ink(scheme))
                                         .lineLimit(1)
                                 }
@@ -411,12 +411,12 @@ private struct SheetBlock: View {
                 }
                 if preview.more {
                     Text("The first rows and columns. The rest is in Sheets.")
-                        .font(.system(size: 11))
+                        .font(.brand(size: 11))
                         .foregroundStyle(theme.inkTertiary(scheme))
                 }
             } else {
                 Text("No workbook called \(reference) in Sheets.")
-                    .font(.system(size: 12))
+                    .font(.brand(size: 12))
                     .foregroundStyle(theme.inkTertiary(scheme))
             }
         }
@@ -438,18 +438,18 @@ private struct EmbeddedPageBlock: View {
         }) {
             if let other, other.id == host {
                 Text("A page can't show itself.")
-                    .font(.system(size: 12))
+                    .font(.brand(size: 12))
                     .foregroundStyle(theme.inkTertiary(scheme))
             } else if let other {
                 let excerpt = MarkdownPlain.text(other.text).split(separator: "\n", omittingEmptySubsequences: true).dropFirst().joined(separator: "\n")
                 Text(String(excerpt.prefix(700)))
-                    .font(.system(size: 12.5))
+                    .font(.brand(size: 12.5))
                     .foregroundStyle(theme.inkSecondary(scheme))
                     .lineLimit(10)
                     .fixedSize(horizontal: false, vertical: true)
             } else {
                 Text("No page called \(title) yet.")
-                    .font(.system(size: 12))
+                    .font(.brand(size: 12))
                     .foregroundStyle(theme.inkTertiary(scheme))
             }
         }
@@ -474,17 +474,17 @@ private struct EventsBlock: View {
         BlockFrame(title: days == 1 ? "Calendar · today" : "Calendar · the next 7 days", symbol: "calendar", action: ("Open Calendar", { model.go(to: .calendar) })) {
             if events.isEmpty {
                 Text("Nothing on the calendar.")
-                    .font(.system(size: 12))
+                    .font(.brand(size: 12))
                     .foregroundStyle(theme.inkTertiary(scheme))
             }
             ForEach(events.prefix(10), id: \.id) { event in
                 HStack(spacing: 8) {
                     Text(event.isAllDay ? "All day" : (days == 1 ? "" : event.start.formatted(.dateTime.weekday(.abbreviated)) + " ") + TaskDates.time(event.start, calendar: cal))
-                        .font(.system(size: 11.5).monospacedDigit())
+                        .font(.brand(size: 11.5).monospacedDigit())
                         .foregroundStyle(theme.inkTertiary(scheme))
                         .frame(width: days == 1 ? 60 : 90, alignment: .leading)
                     Text(event.title)
-                        .font(.system(size: 12.5))
+                        .font(.brand(size: 12.5))
                         .foregroundStyle(theme.ink(scheme))
                         .lineLimit(1)
                 }
@@ -508,12 +508,12 @@ struct PageCommentsPanel: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
                 Text("Comments")
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.brand(size: 13, weight: .semibold))
                 Spacer()
                 Button {
                     withAnimation(theme.spring) { notes.showsComments = false }
                 } label: {
-                    Image(systemName: "xmark").font(.system(size: 10, weight: .bold))
+                    Image(systemName: "xmark").font(.brand(size: 10, weight: .bold))
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(theme.inkTertiary(scheme))
@@ -523,7 +523,7 @@ struct PageCommentsPanel: View {
                 VStack(alignment: .leading, spacing: 12) {
                     if thread.isEmpty {
                         Text("No comments yet.")
-                            .font(.system(size: 12))
+                            .font(.brand(size: 12))
                             .foregroundStyle(theme.inkTertiary(scheme))
                     }
                     ForEach(thread) { comment in
@@ -536,20 +536,20 @@ struct PageCommentsPanel: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
             Text("Mention @Leo, @Bolton or any agent and they answer from this page. \u{201C}@Leo turn these into tasks\u{201D} sends the checkboxes to Tasks.")
-                .font(.system(size: 11))
+                .font(.brand(size: 11))
                 .foregroundStyle(theme.inkTertiary(scheme))
                 .fixedSize(horizontal: false, vertical: true)
             HStack(alignment: .bottom, spacing: 6) {
                 TextField("Comment, or ask an @agent", text: $draft, axis: .vertical)
                     .textFieldStyle(.plain)
-                    .font(.system(size: 12.5))
+                    .font(.brand(size: 12.5))
                     .lineLimit(1...4)
                     .onSubmit(send)
                     .padding(.horizontal, 9)
                     .padding(.vertical, 7)
-                    .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(theme.well(scheme)))
+                    .background(RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.well(scheme)))
                 Button(action: send) {
-                    Image(systemName: "arrow.up.circle.fill").font(.system(size: 18))
+                    Image(systemName: "arrow.up.circle.fill").font(.brand(size: 18))
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(theme.ink(scheme))
@@ -578,20 +578,20 @@ private struct CommentRow: View {
         VStack(alignment: .leading, spacing: 4) {
             HStack(spacing: 6) {
                 if comment.author == "you" {
-                    Image(systemName: "person.crop.circle").font(.system(size: 14))
-                    Text("You").font(.system(size: 12, weight: .semibold))
+                    Image(systemName: "person.crop.circle").font(.brand(size: 14))
+                    Text("You").font(.brand(size: 12, weight: .semibold))
                 } else {
                     Monogram(text: comment.author, size: 18)
-                    Text(AgentNames.name(comment.author)).font(.system(size: 12, weight: .semibold))
+                    Text(AgentNames.name(comment.author)).font(.brand(size: 12, weight: .semibold))
                 }
                 Text(comment.date.formatted(date: .omitted, time: .shortened))
-                    .font(.system(size: 11))
+                    .font(.brand(size: 11))
                     .foregroundStyle(theme.inkTertiary(scheme))
                 Spacer(minLength: 0)
             }
             .foregroundStyle(theme.ink(scheme))
             Text(comment.text)
-                .font(.system(size: 12.5))
+                .font(.brand(size: 12.5))
                 .foregroundStyle(theme.ink(scheme))
                 .fixedSize(horizontal: false, vertical: true)
                 .textSelection(.enabled)
@@ -620,7 +620,7 @@ struct PageHistorySheet: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Text("Versions of \u{201C}\(note.title)\u{201D}")
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.brand(size: 16, weight: .semibold))
                 Spacer()
                 Button("Done") { dismiss() }
                     .buttonStyle(.vellumSecondary)
@@ -628,7 +628,7 @@ struct PageHistorySheet: View {
             .foregroundStyle(theme.ink(scheme))
             if versions.isEmpty {
                 Text("No earlier versions yet. One is kept every ten minutes or so while you write, for the last two months.")
-                    .font(.system(size: 13))
+                    .font(.brand(size: 13))
                     .foregroundStyle(theme.inkSecondary(scheme))
                 Spacer()
             } else {
@@ -641,15 +641,15 @@ struct PageHistorySheet: View {
                                 } label: {
                                     VStack(alignment: .leading, spacing: 2) {
                                         Text(version.date.formatted(date: .abbreviated, time: .shortened))
-                                            .font(.system(size: 12.5, weight: selected == version ? .semibold : .regular))
+                                            .font(.brand(size: 12.5, weight: selected == version ? .semibold : .regular))
                                         Text(PageHistory.change(from: notes.text(of: version), to: note.text) + " since")
-                                            .font(.system(size: 11))
+                                            .font(.brand(size: 11))
                                             .foregroundStyle(theme.inkTertiary(scheme))
                                     }
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .padding(.horizontal, 8)
                                     .padding(.vertical, 6)
-                                    .background(RoundedRectangle(cornerRadius: 7, style: .continuous).fill(selected == version ? theme.raised(scheme) : Color.clear))
+                                    .background(RoundedRectangle(cornerRadius: 0, style: .continuous).fill(selected == version ? theme.raised(scheme) : Color.clear))
                                     .contentShape(Rectangle())
                                 }
                                 .buttonStyle(.plain)
@@ -660,13 +660,13 @@ struct PageHistorySheet: View {
                     .frame(width: 200)
                     ScrollView {
                         Text(selected.map { notes.text(of: $0) } ?? "Choose a version to see it.")
-                            .font(.system(size: 12.5))
+                            .font(.brand(size: 12.5))
                             .foregroundStyle(theme.ink(scheme))
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .textSelection(.enabled)
                             .padding(10)
                     }
-                    .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(theme.well(scheme)))
+                    .background(RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.well(scheme)))
                 }
                 HStack {
                     Spacer()

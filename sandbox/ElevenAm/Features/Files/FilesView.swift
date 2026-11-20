@@ -31,19 +31,19 @@ struct FilesView: View {
             if let notice = browser.notice {
                 HStack(spacing: 10) {
                     AgentLogo(code: "bn", size: 18, color: theme.inkSecondary(scheme))
-                    Text(notice).font(.system(size: 12.5)).foregroundStyle(theme.ink(scheme)).lineLimit(2)
+                    Text(notice).font(.brand(size: 12.5)).foregroundStyle(theme.ink(scheme)).lineLimit(2)
                     Spacer()
                     Button {
                         browser.notice = nil
                     } label: {
-                        Image(systemName: "xmark").font(.system(size: 10, weight: .bold))
+                        Image(systemName: "xmark").font(.brand(size: 10, weight: .bold))
                     }
                     .buttonStyle(.plain)
                     .foregroundStyle(theme.inkTertiary(scheme))
                 }
                 .padding(.horizontal, 14)
                 .padding(.vertical, 8)
-                .vellum(level: 3, radius: max(theme.radius - 4, 8))
+                .vellum(level: 3, radius: theme.radius)
                 .transition(.rise(theme.rise))
             }
             if browser.mode == .browse {
@@ -105,7 +105,7 @@ private struct FilesSearchView: View {
                         .buttonStyle(.vellumSecondary)
                         .disabled(hits.isEmpty)
                         Text("\(hits.count) matches · searched on this Mac")
-                            .font(.system(size: 11.5))
+                            .font(.brand(size: 11.5))
                             .foregroundStyle(theme.inkTertiary(scheme))
                     }
                 }
@@ -117,10 +117,10 @@ private struct FilesSearchView: View {
                 if files.folders.isEmpty {
                     Card {
                         Text("Point Bolton at a folder")
-                            .font(.system(size: 13, weight: .semibold))
+                            .font(.brand(size: 13, weight: .semibold))
                             .foregroundStyle(theme.ink(scheme))
                         Text("Your files stay exactly where they are. 11am keeps a small local index (a few thousand characters per file) and refreshes it overnight. PDFs, Word, RTF, Markdown and text are read.")
-                            .font(.system(size: 12.5))
+                            .font(.brand(size: 12.5))
                             .foregroundStyle(theme.inkSecondary(scheme))
                             .fixedSize(horizontal: false, vertical: true)
                     }
@@ -131,11 +131,11 @@ private struct FilesSearchView: View {
                             HStack {
                                 Image(systemName: "folder")
                                 Text(folder.path.replacingOccurrences(of: NSHomeDirectory(), with: "~"))
-                                    .font(.system(size: 12.5))
+                                    .font(.brand(size: 12.5))
                                 Spacer()
                                 Button("Remove") { files.removeFolder(folder) }
                                     .buttonStyle(.plain)
-                                    .font(.system(size: 11.5))
+                                    .font(.brand(size: 11.5))
                                     .foregroundStyle(theme.inkTertiary(scheme))
                             }
                             .foregroundStyle(theme.inkSecondary(scheme))
@@ -174,23 +174,23 @@ private struct ResultRow: View {
         } label: {
             HStack(alignment: .top, spacing: 14) {
                 Text(hit.file.kind.uppercased())
-                    .font(.system(size: 9, weight: .bold))
+                    .font(.brand(size: 9, weight: .bold))
                     .foregroundStyle(theme.inkSecondary(scheme))
                     .frame(width: 38, height: 46)
                     .background {
-                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        RoundedRectangle(cornerRadius: 0, style: .continuous)
                             .strokeBorder(theme.edge(scheme).opacity(2), lineWidth: 0.75)
                     }
                 VStack(alignment: .leading, spacing: 3) {
                     Text(hit.file.name)
-                        .font(.system(size: 14, weight: .medium))
+                        .font(.brand(size: 14, weight: .medium))
                         .foregroundStyle(theme.ink(scheme))
                     Text(hit.snippet)
-                        .font(.system(size: 12))
+                        .font(.brand(size: 12))
                         .foregroundStyle(theme.inkSecondary(scheme))
                         .lineLimit(2)
                     Text(hit.reason)
-                        .font(.system(size: 10.5))
+                        .font(.brand(size: 10.5))
                         .foregroundStyle(theme.inkTertiary(scheme))
                 }
                 Spacer()

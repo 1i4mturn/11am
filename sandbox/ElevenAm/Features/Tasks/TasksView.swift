@@ -127,12 +127,12 @@ private struct TaskNotice: View {
         if let notice = tasks.notice {
             HStack(spacing: 10) {
                 Text(notice)
-                    .font(.system(size: 12.5))
+                    .font(.brand(size: 12.5))
                     .foregroundStyle(theme.ink(scheme))
                 if tasks.canUndoDelete, notice.hasPrefix("Deleted") {
                     Button("Undo") { tasks.undoDelete() }
                         .buttonStyle(.borderless)
-                        .font(.system(size: 12.5, weight: .semibold))
+                        .font(.brand(size: 12.5, weight: .semibold))
                 }
             }
             .padding(.horizontal, 14)
@@ -177,11 +177,11 @@ private struct TaskSidebar: View {
                 if addingProject {
                     TextField("Project name", text: $newProject)
                         .textFieldStyle(.plain)
-                        .font(.system(size: 13))
+                        .font(.brand(size: 13))
                         .focused($projectFocused)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 6)
-                        .background(RoundedRectangle(cornerRadius: 7, style: .continuous).fill(theme.well(scheme)))
+                        .background(RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.well(scheme)))
                         .onSubmit {
                             tasks.addProject(newProject)
                             newProject = ""
@@ -194,7 +194,7 @@ private struct TaskSidebar: View {
                         addingProject = true
                     } label: {
                         Label("New project", systemImage: "plus")
-                            .font(.system(size: 12.5))
+                            .font(.brand(size: 12.5))
                             .padding(.horizontal, 8)
                             .padding(.vertical, 6)
                             .contentShape(Rectangle())
@@ -229,7 +229,7 @@ private struct TaskSidebar: View {
                         .frame(width: 16)
                 } else {
                     Image(systemName: tasks.symbol(of: list))
-                        .font(.system(size: 12))
+                        .font(.brand(size: 12))
                         .frame(width: 16)
                 }
                 Text(tasks.title(of: list))
@@ -238,14 +238,14 @@ private struct TaskSidebar: View {
                 if count > 0 {
                     Text("\(count)")
                         .monospacedDigit()
-                        .font(.system(size: 11.5, weight: list == .today && tasks.overdueCount > 0 ? .bold : .regular))
+                        .font(.brand(size: 11.5, weight: list == .today && tasks.overdueCount > 0 ? .bold : .regular))
                         .foregroundStyle(theme.inkTertiary(scheme))
                 }
             }
-            .font(.system(size: 13, weight: selected ? .semibold : .regular))
+            .font(.brand(size: 13, weight: selected ? .semibold : .regular))
             .padding(.horizontal, 8)
             .padding(.vertical, 6)
-            .background(RoundedRectangle(cornerRadius: 7, style: .continuous).fill(selected ? theme.raised(scheme) : Color.clear))
+            .background(RoundedRectangle(cornerRadius: 0, style: .continuous).fill(selected ? theme.raised(scheme) : Color.clear))
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -379,10 +379,10 @@ private struct TaskListPane: View {
                 ForEach(shown.filter { $0.sectionID == section.id }) { task in TaskRow(task: task, showProject: false) }
             }
             HStack(spacing: 8) {
-                Image(systemName: "plus").font(.system(size: 11))
+                Image(systemName: "plus").font(.brand(size: 11))
                 TextField("New section", text: $newSection)
                     .textFieldStyle(.plain)
-                    .font(.system(size: 12.5))
+                    .font(.brand(size: 12.5))
                     .onSubmit {
                         tasks.addSection(newSection, to: id)
                         newSection = ""
@@ -411,7 +411,7 @@ private struct TaskListPane: View {
 
     private func empty(_ text: String) -> some View {
         Text(text)
-            .font(.system(size: 13))
+            .font(.brand(size: 13))
             .foregroundStyle(theme.inkTertiary(scheme))
             .padding(.horizontal, 10)
             .padding(.vertical, 18)
@@ -428,22 +428,22 @@ private struct ListTitle: View {
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 10) {
             Image(systemName: tasks.symbol(of: tasks.list))
-                .font(.system(size: 17, weight: .medium))
+                .font(.brand(size: 17, weight: .medium))
             if renaming, let id = projectID {
                 TextField("Project name", text: $name)
                     .textFieldStyle(.plain)
-                    .font(.system(size: 22, weight: .bold))
+                    .font(.brand(size: 22, weight: .bold))
                     .onSubmit {
                         tasks.updateProject(id) { $0.name = name.trimmingCharacters(in: .whitespaces).isEmpty ? $0.name : name }
                         renaming = false
                     }
             } else {
                 Text(tasks.title(of: tasks.list))
-                    .font(.system(size: 22, weight: .bold))
+                    .font(.brand(size: 22, weight: .bold))
             }
             if tasks.list == .today {
                 Text(Date().formatted(.dateTime.weekday(.wide).day().month(.abbreviated)))
-                    .font(.system(size: 13))
+                    .font(.brand(size: 13))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .lineLimit(1)
                     .fixedSize()
@@ -451,7 +451,7 @@ private struct ListTitle: View {
             if let id = projectID, let project = tasks.project(id) {
                 let progress = tasks.book.progress(of: id)
                 Text("\(progress.done) of \(progress.total) done" + (project.deadline.map { " · due " + TaskDates.inline(TaskDates.label($0, hasTime: false, now: tasks.now, calendar: tasks.calendar)) } ?? ""))
-                    .font(.system(size: 13))
+                    .font(.brand(size: 13))
                     .foregroundStyle(theme.inkTertiary(scheme))
                 Spacer()
                 Menu {
@@ -492,7 +492,7 @@ private struct Heading: View {
 
     var body: some View {
         Text(text)
-            .font(.system(size: 12, weight: .semibold))
+            .font(.brand(size: 12, weight: .semibold))
             .foregroundStyle(theme.inkSecondary(scheme))
             .padding(.horizontal, 10)
             .padding(.top, 16)
@@ -525,18 +525,18 @@ private struct QuickAddField: View {
         VStack(alignment: .leading, spacing: 7) {
             HStack(spacing: 9) {
                 Image(systemName: "plus")
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.brand(size: 12, weight: .semibold))
                     .foregroundStyle(theme.inkTertiary(scheme))
                 TextField("Add a task: \"Call Tom tomorrow 3pm\"", text: $text)
                     .textFieldStyle(.plain)
-                    .font(.system(size: 13.5))
+                    .font(.brand(size: 13.5))
                     .focused($focused)
                     .onSubmit(submit)
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 9)
-            .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(theme.well(scheme)))
-            .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5))
+            .background(RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.well(scheme)))
+            .overlay(RoundedRectangle(cornerRadius: 0, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5))
             let understood = text.isEmpty ? [] : TaskParser.parse(text, now: tasks.now, calendar: tasks.calendar, dayFirst: tasks.dayFirst).understood
             if !understood.isEmpty {
                 HStack(spacing: 6) {
@@ -581,7 +581,7 @@ struct TaskCheck: View {
                     .background(Circle().fill(task.isDone ? theme.ink(scheme) : Color.clear))
                 if task.isDone {
                     Image(systemName: "checkmark")
-                        .font(.system(size: size * 0.5, weight: .bold))
+                        .font(.brand(size: size * 0.5, weight: .bold))
                         .foregroundStyle(theme.paper(scheme))
                 }
             }
@@ -611,7 +611,7 @@ private struct TaskRow: View {
             .padding(.top, 1)
             VStack(alignment: .leading, spacing: 3) {
                 Text(task.title)
-                    .font(.system(size: 13.5))
+                    .font(.brand(size: 13.5))
                     .strikethrough(task.isDone)
                     .foregroundStyle(task.isDone ? theme.inkTertiary(scheme) : theme.ink(scheme))
                     .lineLimit(2)
@@ -623,13 +623,13 @@ private struct TaskRow: View {
             }
             if task.priority != TaskPriority.none {
                 Text(task.priority.marks)
-                    .font(.system(size: 12, weight: .heavy))
+                    .font(.brand(size: 12, weight: .heavy))
                     .foregroundStyle(theme.ink(scheme))
             }
         }
         .padding(.vertical, 7)
         .padding(.horizontal, 10)
-        .background(RoundedRectangle(cornerRadius: 9, style: .continuous).fill(selected ? theme.raised(scheme) : (hovering ? theme.well(scheme) : Color.clear)))
+        .background(RoundedRectangle(cornerRadius: 0, style: .continuous).fill(selected ? theme.raised(scheme) : (hovering ? theme.well(scheme) : Color.clear)))
         .contentShape(Rectangle())
         .onTapGesture { tasks.selectedID = selected ? nil : task.id }
         .onHover { hovering = $0 }
@@ -695,7 +695,7 @@ private struct TaskMeta: View {
                         .fontWeight(.medium)
                 }
             }
-            .font(.system(size: 11.5))
+            .font(.brand(size: 11.5))
             .foregroundStyle(theme.inkTertiary(scheme))
             .lineLimit(1)
         }
@@ -810,11 +810,11 @@ private struct TaskBoard: View {
         return VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Text(status.title)
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.brand(size: 13, weight: .semibold))
                 Spacer()
                 Text("\(items.count)")
                     .monospacedDigit()
-                    .font(.system(size: 12))
+                    .font(.brand(size: 12))
                     .foregroundStyle(theme.inkTertiary(scheme))
             }
             .foregroundStyle(theme.ink(scheme))
@@ -824,7 +824,7 @@ private struct TaskBoard: View {
                     ForEach(items) { task in BoardCard(task: task) }
                     if items.isEmpty {
                         Text(status == .waiting ? "Drag here what's waiting on someone else." : "Drag tasks here.")
-                            .font(.system(size: 12))
+                            .font(.brand(size: 12))
                             .foregroundStyle(theme.inkTertiary(scheme))
                             .frame(maxWidth: .infinity, minHeight: 60)
                     }
@@ -834,8 +834,8 @@ private struct TaskBoard: View {
         .padding(10)
         .frame(width: width)
         .frame(maxHeight: .infinity, alignment: .top)
-        .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(theme.well(scheme).opacity(0.6)))
-        .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5))
+        .background(RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.well(scheme).opacity(0.6)))
+        .overlay(RoundedRectangle(cornerRadius: 0, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5))
         .dropDestination(for: String.self) { ids, _ in
             for id in ids.compactMap(UUID.init(uuidString:)) {
                 if status != .done, tasks.book.task(id)?.isDone == true { tasks.toggle(id) }
@@ -859,21 +859,21 @@ private struct BoardCard: View {
                 TaskCheck(task: task, size: 15) { withAnimation(theme.spring) { tasks.toggle(task.id) } }
                     .padding(.top, 1)
                 Text(task.title)
-                    .font(.system(size: 13))
+                    .font(.brand(size: 13))
                     .strikethrough(task.isDone)
                     .foregroundStyle(task.isDone ? theme.inkTertiary(scheme) : theme.ink(scheme))
                     .fixedSize(horizontal: false, vertical: true)
                 Spacer(minLength: 0)
                 if task.priority != TaskPriority.none {
-                    Text(task.priority.marks).font(.system(size: 11, weight: .heavy))
+                    Text(task.priority.marks).font(.brand(size: 11, weight: .heavy))
                 }
             }
             TaskMeta(task: task, showProject: !isProjectList)
         }
         .padding(10)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(RoundedRectangle(cornerRadius: 9, style: .continuous).fill(selected ? theme.raised(scheme) : theme.paper(scheme).opacity(scheme == .dark ? 0.35 : 0.8)))
-        .overlay(RoundedRectangle(cornerRadius: 9, style: .continuous).strokeBorder(selected ? theme.ink(scheme).opacity(0.5) : theme.edge(scheme), lineWidth: selected ? 1 : 0.5))
+        .background(RoundedRectangle(cornerRadius: 0, style: .continuous).fill(selected ? theme.raised(scheme) : theme.paper(scheme).opacity(scheme == .dark ? 0.35 : 0.8)))
+        .overlay(RoundedRectangle(cornerRadius: 0, style: .continuous).strokeBorder(selected ? theme.ink(scheme).opacity(0.5) : theme.edge(scheme), lineWidth: selected ? 1 : 0.5))
         .contentShape(Rectangle())
         .onTapGesture { tasks.selectedID = selected ? nil : task.id }
         .draggable(task.id.uuidString)
@@ -903,10 +903,10 @@ private struct TaskWeek: View {
                 ListTitle()
             } else {
                 HStack(alignment: .firstTextBaseline, spacing: 10) {
-                    Image(systemName: "calendar").font(.system(size: 17, weight: .medium))
-                    Text("The week ahead").font(.system(size: 22, weight: .bold))
+                    Image(systemName: "calendar").font(.brand(size: 17, weight: .medium))
+                    Text("The week ahead").font(.brand(size: 22, weight: .bold))
                     Text("Your calendar alongside. Drag a task onto a day.")
-                        .font(.system(size: 13))
+                        .font(.brand(size: 13))
                         .foregroundStyle(theme.inkTertiary(scheme))
                         .lineLimit(1)
                 }
@@ -931,7 +931,7 @@ private struct TaskWeek: View {
                         HStack(spacing: 6) {
                             ForEach(loose.prefix(30)) { task in
                                 Text(task.title)
-                                    .font(.system(size: 12))
+                                    .font(.brand(size: 12))
                                     .lineLimit(1)
                                     .padding(.horizontal, 10)
                                     .padding(.vertical, 6)
@@ -984,14 +984,14 @@ private struct TaskWeek: View {
         return VStack(alignment: .leading, spacing: 6) {
             VStack(alignment: .leading, spacing: 0) {
                 Text(isToday ? "Today" : day.formatted(.dateTime.weekday(.abbreviated)))
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.brand(size: 12, weight: .semibold))
                 Text(day.formatted(.dateTime.day()))
-                    .font(.system(size: 20, weight: isToday ? .bold : .regular))
+                    .font(.brand(size: 20, weight: isToday ? .bold : .regular))
             }
             .foregroundStyle(theme.ink(scheme))
             ForEach(Array(events), id: \.id) { event in
                 Text(TaskDates.time(event.start, calendar: cal) + " " + event.title)
-                    .font(.system(size: 10.5))
+                    .font(.brand(size: 10.5))
                     .lineLimit(2)
                     .foregroundStyle(theme.inkTertiary(scheme))
             }
@@ -1006,11 +1006,11 @@ private struct TaskWeek: View {
                                 .padding(.top, 1)
                             VStack(alignment: .leading, spacing: 1) {
                                 Text(task.title)
-                                    .font(.system(size: 11.5, weight: tasks.isOverdue(task) ? .semibold : .regular))
+                                    .font(.brand(size: 11.5, weight: tasks.isOverdue(task) ? .semibold : .regular))
                                     .lineLimit(3)
                                 if task.dueHasTime, let due = task.due {
                                     Text(TaskDates.time(due, calendar: cal))
-                                        .font(.system(size: 10))
+                                        .font(.brand(size: 10))
                                         .foregroundStyle(theme.inkTertiary(scheme))
                                 }
                             }
@@ -1018,7 +1018,7 @@ private struct TaskWeek: View {
                         .foregroundStyle(theme.ink(scheme))
                         .padding(6)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(RoundedRectangle(cornerRadius: 7, style: .continuous).fill(tasks.selectedID == task.id ? theme.raised(scheme) : theme.well(scheme)))
+                        .background(RoundedRectangle(cornerRadius: 0, style: .continuous).fill(tasks.selectedID == task.id ? theme.raised(scheme) : theme.well(scheme)))
                         .contentShape(Rectangle())
                         .onTapGesture { tasks.selectedID = task.id }
                         .draggable(task.id.uuidString)
@@ -1028,8 +1028,8 @@ private struct TaskWeek: View {
         }
         .padding(8)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(isToday ? theme.raised(scheme).opacity(0.7) : theme.well(scheme).opacity(0.35)))
-        .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5))
+        .background(RoundedRectangle(cornerRadius: 0, style: .continuous).fill(isToday ? theme.raised(scheme).opacity(0.7) : theme.well(scheme).opacity(0.35)))
+        .overlay(RoundedRectangle(cornerRadius: 0, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5))
         .dropDestination(for: String.self) { ids, _ in
             for id in ids.compactMap(UUID.init(uuidString:)) {
                 withAnimation(theme.spring) { tasks.schedule(id, on: day) }

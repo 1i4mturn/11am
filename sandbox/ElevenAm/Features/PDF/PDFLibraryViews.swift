@@ -23,7 +23,7 @@ struct PDFCollectionsView: View {
                         .font(theme.display(22))
                         .foregroundStyle(theme.ink(scheme))
                     Text("Put the lease, the insurance and the contracts for one job together, then ask. Bolton answers from their pages and shows you each page it used.")
-                        .font(.system(size: 12.5))
+                        .font(.brand(size: 12.5))
                         .foregroundStyle(theme.inkSecondary(scheme))
                         .multilineTextAlignment(.center)
                         .frame(maxWidth: 420)
@@ -31,7 +31,7 @@ struct PDFCollectionsView: View {
                         .buttonStyle(.vellumPrimary)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .vellum(level: 2, radius: max(theme.radius - 2, 8))
+                .vellum(level: 2, radius: theme.radius)
             }
         }
     }
@@ -54,15 +54,15 @@ struct PDFCollectionsView: View {
                 } label: {
                     HStack(spacing: 8) {
                         Image(systemName: "books.vertical")
-                            .font(.system(size: 12))
+                            .font(.brand(size: 12))
                             .foregroundStyle(theme.inkTertiary(scheme))
                         VStack(alignment: .leading, spacing: 1) {
                             Text(collection.name)
-                                .font(.system(size: 12.5, weight: selected ? .semibold : .regular))
+                                .font(.brand(size: 12.5, weight: selected ? .semibold : .regular))
                                 .foregroundStyle(theme.ink(scheme))
                                 .lineLimit(1)
                             Text("\(collection.files.count) \(collection.files.count == 1 ? "PDF" : "PDFs")")
-                                .font(.system(size: 11))
+                                .font(.brand(size: 11))
                                 .foregroundStyle(theme.inkTertiary(scheme))
                         }
                         Spacer(minLength: 0)
@@ -70,7 +70,7 @@ struct PDFCollectionsView: View {
                     .padding(.horizontal, 8)
                     .padding(.vertical, 6)
                     .background {
-                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        RoundedRectangle(cornerRadius: 0, style: .continuous)
                             .fill(selected ? theme.ink(scheme).opacity(scheme == .dark ? 0.14 : 0.07) : .clear)
                     }
                     .contentShape(Rectangle())
@@ -82,18 +82,18 @@ struct PDFCollectionsView: View {
             }
             if pdf.collections.isEmpty {
                 Text("None yet.")
-                    .font(.system(size: 11.5))
+                    .font(.brand(size: 11.5))
                     .foregroundStyle(theme.inkTertiary(scheme))
             }
             Spacer(minLength: 0)
             Text("The PDFs stay where they are. Bolton reads their text on this Mac, and sends only the pages that answer to the brain you've chosen.")
-                .font(.system(size: 10.5))
+                .font(.brand(size: 10.5))
                 .foregroundStyle(theme.inkTertiary(scheme))
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding(12)
         .frame(maxHeight: .infinity, alignment: .top)
-        .vellum(level: 2, radius: max(theme.radius - 2, 8))
+        .vellum(level: 2, radius: theme.radius)
     }
 }
 
@@ -129,7 +129,7 @@ private struct PDFCollectionDetail: View {
             if !blank.isEmpty {
                 Label("No text to search in \(blank.map { PDFCollection.name(of: $0) }.joined(separator: ", ")). Open \(blank.count == 1 ? "it" : "each") and make it searchable.",
                       systemImage: "exclamationmark.triangle")
-                    .font(.system(size: 11.5))
+                    .font(.brand(size: 11.5))
                     .foregroundStyle(theme.inkSecondary(scheme))
             }
             AskField(placeholder: "Ask across these PDFs", text: $question) { pdf.askCollection(question) }
@@ -143,17 +143,17 @@ private struct PDFCollectionDetail: View {
                 Text(collection.files.isEmpty
                      ? "Drop PDFs here, or add them, then ask a question."
                      : "Try \u{201C}When does anything need renewing?\u{201D} or \u{201C}What do these say about notice?\u{201D}")
-                    .font(.system(size: 12))
+                    .font(.brand(size: 12))
                     .foregroundStyle(theme.inkTertiary(scheme))
                 Spacer(minLength: 0)
             }
         }
         .padding(16)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .vellum(level: 2, radius: max(theme.radius - 2, 8))
+        .vellum(level: 2, radius: theme.radius)
         .overlay {
             if dropTargeted {
-                RoundedRectangle(cornerRadius: max(theme.radius - 2, 8), style: .continuous)
+                RoundedRectangle(cornerRadius: theme.radius, style: .continuous)
                     .strokeBorder(theme.ink(scheme).opacity(0.4), style: StrokeStyle(lineWidth: 2, dash: [6, 4]))
             }
         }
@@ -183,12 +183,12 @@ private struct PDFCollectionDetail: View {
             ForEach(collection.files, id: \.self) { path in
                 HStack(spacing: 5) {
                     Image(systemName: "doc.richtext")
-                        .font(.system(size: 11))
+                        .font(.brand(size: 11))
                     Text(PDFCollection.name(of: path))
-                        .font(.system(size: 12))
+                        .font(.brand(size: 12))
                         .lineLimit(1)
                     Button { pdf.removeFile(path, from: collection.id) } label: {
-                        Image(systemName: "xmark").font(.system(size: 8.5, weight: .bold))
+                        Image(systemName: "xmark").font(.brand(size: 8.5, weight: .bold))
                     }
                     .buttonStyle(.plain)
                     .foregroundStyle(theme.inkTertiary(scheme))
@@ -214,7 +214,7 @@ private struct PDFCollectionAnswer: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(ask.question)
-                .font(.system(size: 13, weight: .semibold))
+                .font(.brand(size: 13, weight: .semibold))
                 .foregroundStyle(theme.ink(scheme))
             CitedText(run: ask.run, passages: ask.passages) { pdf.openPassage($0) }
             Sources(run: ask.run, passages: ask.passages)
@@ -232,19 +232,19 @@ private struct PDFCollectionAnswer: View {
             switch run.status {
             case .failed(let message):
                 Text("Bolton couldn't answer: \(message)")
-                    .font(.system(size: 12.5))
+                    .font(.brand(size: 12.5))
                     .foregroundStyle(theme.inkSecondary(scheme))
             default:
                 if run.text.isEmpty {
                     HStack(spacing: 8) {
                         ProgressView().controlSize(.small)
                         Text("Reading \(passages.count) \(passages.count == 1 ? "passage" : "passages") from \(Set(passages.map(\.file)).count) PDFs…")
-                            .font(.system(size: 12))
+                            .font(.brand(size: 12))
                             .foregroundStyle(theme.inkTertiary(scheme))
                     }
                 } else {
                     Text(attributed)
-                        .font(.system(size: 13.5))
+                        .font(.brand(size: 13.5))
                         .lineSpacing(3)
                         .foregroundStyle(theme.ink(scheme))
                         .textSelection(.enabled)
@@ -267,9 +267,9 @@ private struct PDFCollectionAnswer: View {
                 result += AttributedString(ns.substring(with: NSRange(location: last, length: marker.range.location - last)))
                 for number in marker.numbers {
                     var chip = AttributedString("\u{2009}\(number)\u{2009}")
-                    chip[AttributeScopes.SwiftUIAttributes.FontAttribute.self] = Font.system(size: 10, weight: .bold).monospacedDigit()
+                    chip[AttributeScopes.SwiftUIAttributes.FontAttribute.self] = Font.brand(size: 10, weight: .bold).monospacedDigit()
                     chip[AttributeScopes.SwiftUIAttributes.BaselineOffsetAttribute.self] = 4
-                    chip[AttributeScopes.SwiftUIAttributes.ForegroundColorAttribute.self] = Color.accentColor
+                    chip[AttributeScopes.SwiftUIAttributes.ForegroundColorAttribute.self] = theme.ink(scheme)
                     if passages.indices.contains(number - 1) { chip.link = URL(string: "bolton-cite://\(number)") }
                     result += chip
                 }
@@ -297,26 +297,26 @@ private struct PDFCollectionAnswer: View {
                         Button { pdf.openPassage(passage) } label: {
                             HStack(alignment: .top, spacing: 8) {
                                 Text("\(number)")
-                                    .font(.system(size: 10.5, weight: .bold).monospacedDigit())
-                                    .foregroundStyle(Color.accentColor)
+                                    .font(.brand(size: 10.5, weight: .bold).monospacedDigit())
+                                    .foregroundStyle(theme.paper(scheme))
                                     .frame(width: 16, height: 16)
-                                    .background(Circle().fill(Color.accentColor.opacity(0.14)))
+                                    .background(Circle().fill(theme.ink(scheme)))
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(passage.label)
-                                        .font(.system(size: 12, weight: .semibold))
+                                        .font(.brand(size: 12, weight: .semibold))
                                         .foregroundStyle(theme.ink(scheme))
                                     Text(passage.text)
-                                        .font(.system(size: 11.5))
+                                        .font(.brand(size: 11.5))
                                         .foregroundStyle(theme.inkSecondary(scheme))
                                         .lineLimit(2)
                                 }
                                 Spacer(minLength: 0)
                                 Image(systemName: "arrow.up.forward.square")
-                                    .font(.system(size: 11))
+                                    .font(.brand(size: 11))
                                     .foregroundStyle(theme.inkTertiary(scheme))
                             }
                             .padding(8)
-                            .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(theme.ink(scheme).opacity(scheme == .dark ? 0.08 : 0.035)))
+                            .background(RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.ink(scheme).opacity(scheme == .dark ? 0.08 : 0.035)))
                             .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
@@ -347,10 +347,10 @@ struct PDFPullOutView: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
                 Text(heading)
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.brand(size: 13, weight: .semibold))
                     .foregroundStyle(theme.ink(scheme))
                 Spacer()
-                Button { pdf.pullOut = nil } label: { Image(systemName: "xmark").font(.system(size: 9, weight: .bold)) }
+                Button { pdf.pullOut = nil } label: { Image(systemName: "xmark").font(.brand(size: 9, weight: .bold)) }
                     .buttonStyle(.plain)
                     .foregroundStyle(theme.inkTertiary(scheme))
             }
@@ -361,13 +361,13 @@ struct PDFPullOutView: View {
                 if let facts = card.contract { contract(facts) }
             case .other:
                 Text("This doesn't read like an invoice or an agreement. Ask Bolton about it instead.")
-                    .font(.system(size: 12))
+                    .font(.brand(size: 12))
                     .foregroundStyle(theme.inkSecondary(scheme))
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
         .padding(12)
-        .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(theme.ink(scheme).opacity(scheme == .dark ? 0.08 : 0.04)))
+        .background(RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.ink(scheme).opacity(scheme == .dark ? 0.08 : 0.04)))
     }
 
     private var heading: String {
@@ -381,11 +381,11 @@ struct PDFPullOutView: View {
     private func row(_ label: String, _ value: String?) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
             Text(label)
-                .font(.system(size: 11))
+                .font(.brand(size: 11))
                 .foregroundStyle(theme.inkTertiary(scheme))
                 .frame(width: 58, alignment: .leading)
             Text(value ?? "Not found")
-                .font(.system(size: 12, weight: value == nil ? .regular : .medium))
+                .font(.brand(size: 12, weight: value == nil ? .regular : .medium))
                 .foregroundStyle(value == nil ? theme.inkTertiary(scheme) : theme.ink(scheme))
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -407,7 +407,7 @@ struct PDFPullOutView: View {
                 .disabled(facts.total == nil || pdf.ledger == nil)
                 .padding(.top, 4)
             Text("It waits in Money › Bills for you to check and approve, with this PDF kept as its receipt.")
-                .font(.system(size: 10.5))
+                .font(.brand(size: 10.5))
                 .foregroundStyle(theme.inkTertiary(scheme))
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -429,7 +429,7 @@ struct PDFPullOutView: View {
     private func list(_ title: String, _ items: [String]) -> some View {
         VStack(alignment: .leading, spacing: 3) {
             Text(title)
-                .font(.system(size: 11))
+                .font(.brand(size: 11))
                 .foregroundStyle(theme.inkTertiary(scheme))
                 .padding(.top, 2)
             ForEach(items, id: \.self) { item in
@@ -439,7 +439,7 @@ struct PDFPullOutView: View {
                         .foregroundStyle(theme.ink(scheme))
                         .fixedSize(horizontal: false, vertical: true)
                 }
-                .font(.system(size: 11.5))
+                .font(.brand(size: 11.5))
             }
         }
     }
@@ -473,13 +473,13 @@ struct WebPagePDFSheet: View {
             Text(wholePage
                  ? "Everything on the page, cut into A4 pages between lines of text. Links don't come with it."
                  : "James's reader keeps the article and drops the menus, ads and pop-ups; William sets it like a document, with where it came from under the title.")
-                .font(.system(size: 11.5))
+                .font(.brand(size: 11.5))
                 .foregroundStyle(theme.inkTertiary(scheme))
                 .fixedSize(horizontal: false, vertical: true)
             if let making = pdf.making {
                 HStack(spacing: 8) {
                     ProgressView().controlSize(.small)
-                    Text(making).font(.system(size: 12)).foregroundStyle(theme.inkSecondary(scheme))
+                    Text(making).font(.brand(size: 12)).foregroundStyle(theme.inkSecondary(scheme))
                 }
             }
             HStack {

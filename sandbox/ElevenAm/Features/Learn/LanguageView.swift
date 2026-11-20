@@ -24,7 +24,7 @@ struct LanguagePane: View {
         .overlay(alignment: .bottom) {
             if let notice = languages.notice {
                 Text(notice)
-                    .font(.system(size: 12.5))
+                    .font(.brand(size: 12.5))
                     .foregroundStyle(theme.ink(scheme))
                     .padding(.horizontal, 14)
                     .padding(.vertical, 9)
@@ -52,10 +52,10 @@ private struct LanguagePicker: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
                 Text("Which language?")
-                    .font(.system(size: 22, weight: .bold))
+                    .font(.brand(size: 22, weight: .bold))
                     .foregroundStyle(theme.ink(scheme))
                 Text("Short lessons from beginner (A1) to upper intermediate (B2): words with pictures, listening, speaking, translating both ways, stories. Mistakes come back until they stick. No hearts, no ads, and streaks only if you want them.")
-                    .font(.system(size: 13))
+                    .font(.brand(size: 13))
                     .foregroundStyle(theme.inkSecondary(scheme))
                     .fixedSize(horizontal: false, vertical: true)
                 LazyVGrid(columns: columns, spacing: 12) {
@@ -63,21 +63,21 @@ private struct LanguagePicker: View {
                         Button { languages.choose(language) } label: {
                             VStack(alignment: .leading, spacing: 6) {
                                 Text(language.hello)
-                                    .font(.system(size: 24, weight: .bold))
+                                    .font(.brand(size: 24, weight: .bold))
                                     .foregroundStyle(theme.ink(scheme))
                                 Text(language.name)
-                                    .font(.system(size: 14, weight: .semibold))
+                                    .font(.brand(size: 14, weight: .semibold))
                                     .foregroundStyle(theme.ink(scheme))
                                 Text(language.builtIn ? "Written course to start" : "Harris writes each unit as you go")
-                                    .font(.system(size: 11.5))
+                                    .font(.brand(size: 11.5))
                                     .foregroundStyle(theme.inkTertiary(scheme))
                             }
                             .frame(maxWidth: .infinity, minHeight: 110, alignment: .topLeading)
                             .padding(14)
-                            .vellum(level: 3, radius: max(theme.radius - 4, 8))
+                            .vellum(level: 3, radius: theme.radius)
                             .overlay {
                                 if language.id == languages.language?.id {
-                                    RoundedRectangle(cornerRadius: max(theme.radius - 4, 8), style: .continuous).strokeBorder(theme.ink(scheme), lineWidth: 1.5)
+                                    RoundedRectangle(cornerRadius: theme.radius, style: .continuous).strokeBorder(theme.ink(scheme), lineWidth: 1.5)
                                 }
                             }
                         }
@@ -85,7 +85,7 @@ private struct LanguagePicker: View {
                     }
                 }
                 Text("Honest limit: the written units are checked by hand; units Harris writes are generated and checked for shape and repeats, so expect strong vocabulary and practice and a little less polish. Writing units needs Apple Intelligence or Claude (Settings › Brain).")
-                    .font(.system(size: 11.5))
+                    .font(.brand(size: 11.5))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -110,11 +110,11 @@ private struct CourseHome: View {
                 HStack(alignment: .firstTextBaseline) {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("\(languages.language?.name ?? "") · \(languages.level.title)")
-                            .font(.system(size: 20, weight: .bold))
+                            .font(.brand(size: 20, weight: .bold))
                             .foregroundStyle(theme.ink(scheme))
                         Text("\(languages.wordsKnown) words known of \(languages.wordsSeen) met · \(Int(languages.minutesThisWeek)) minutes this week"
                              + (languages.settings.streaks && languages.streak > 0 ? " · \(languages.streak)-day streak" : ""))
-                            .font(.system(size: 12))
+                            .font(.brand(size: 12))
                             .foregroundStyle(theme.inkTertiary(scheme))
                     }
                     Spacer()
@@ -146,7 +146,7 @@ private struct CourseHome: View {
                     if languages.writing != nil {
                         ProgressView().controlSize(.small)
                         Text("Harris is writing a unit…")
-                            .font(.system(size: 12))
+                            .font(.brand(size: 12))
                             .foregroundStyle(theme.inkTertiary(scheme))
                     }
                 }
@@ -160,7 +160,7 @@ private struct CourseHome: View {
                 }
                 if course.units.isEmpty {
                     Text(languages.writing == nil ? "No units yet. Harris writes them as you go." : "Harris is writing the first unit…")
-                        .font(.system(size: 13))
+                        .font(.brand(size: 13))
                         .foregroundStyle(theme.inkTertiary(scheme))
                 }
             }
@@ -185,24 +185,24 @@ private struct GoalCard: View {
                     .stroke(theme.ink(scheme), style: StrokeStyle(lineWidth: 6, lineCap: .round))
                     .rotationEffect(.degrees(-90))
                 Text("\(Int(today))")
-                    .font(.system(size: 14, weight: .bold).monospacedDigit())
+                    .font(.brand(size: 14, weight: .bold).monospacedDigit())
                     .foregroundStyle(theme.ink(scheme))
             }
             .frame(width: 46, height: 46)
             VStack(alignment: .leading, spacing: 2) {
                 Text(today >= goal ? "Today's \(Int(goal)) minutes done." : "\(Int(max(0, goal - today).rounded(.up))) minutes to today's goal")
-                    .font(.system(size: 13.5, weight: .semibold))
+                    .font(.brand(size: 13.5, weight: .semibold))
                     .foregroundStyle(theme.ink(scheme))
                 Text(languages.settings.remind
                      ? String(format: "Reminder at %d:%02d. Change it in the settings.", languages.settings.remindHour, languages.settings.remindMinute)
                      : "Set a daily reminder in the settings, if you'd like one.")
-                    .font(.system(size: 11.5))
+                    .font(.brand(size: 11.5))
                     .foregroundStyle(theme.inkTertiary(scheme))
             }
             Spacer()
         }
         .padding(12)
-        .vellum(level: 3, radius: max(theme.radius - 4, 8))
+        .vellum(level: 3, radius: theme.radius)
     }
 }
 
@@ -218,23 +218,23 @@ private struct UnitRow: View {
             ZStack {
                 Circle().fill(done >= unit.lessonCount ? theme.ink(scheme) : theme.well(scheme))
                 Image(systemName: unit.words.first?.symbol ?? "text.bubble")
-                    .font(.system(size: 14))
+                    .font(.brand(size: 14))
                     .foregroundStyle(done >= unit.lessonCount ? theme.paper(scheme) : theme.inkSecondary(scheme))
             }
             .frame(width: 36, height: 36)
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 6) {
                     Text(unit.title)
-                        .font(.system(size: 14, weight: .semibold))
+                        .font(.brand(size: 14, weight: .semibold))
                         .foregroundStyle(theme.ink(scheme))
                     if unit.generated {
                         Text("by Harris")
-                            .font(.system(size: 10))
+                            .font(.brand(size: 10))
                             .foregroundStyle(theme.inkTertiary(scheme))
                     }
                 }
                 Text(unit.words.prefix(5).map(\.term).joined(separator: " · "))
-                    .font(.system(size: 11.5))
+                    .font(.brand(size: 11.5))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .lineLimit(1)
             }
@@ -243,7 +243,7 @@ private struct UnitRow: View {
                 ForEach(0..<unit.lessonCount, id: \.self) { number in
                     Button { languages.start(unit, lesson: number) } label: {
                         Text("\(number + 1)")
-                            .font(.system(size: 11.5, weight: .semibold).monospacedDigit())
+                            .font(.brand(size: 11.5, weight: .semibold).monospacedDigit())
                             .foregroundStyle(number < done ? theme.paper(scheme) : theme.ink(scheme))
                             .frame(width: 26, height: 26)
                             .background(Circle().fill(number < done ? theme.ink(scheme) : theme.well(scheme)))
@@ -264,7 +264,7 @@ private struct UnitRow: View {
             }
         }
         .padding(10)
-        .vellum(level: 3, radius: max(theme.radius - 4, 8))
+        .vellum(level: 3, radius: theme.radius)
     }
 }
 
@@ -288,12 +288,12 @@ private struct LanguageSettingsView: View {
             }
             Toggle("Show a streak", isOn: Binding(get: { languages.settings.streaks }, set: { value in languages.update { $0.streaks = value } }))
             Text("Streaks are off unless you want them. Missing a day costs nothing.")
-                .font(.system(size: 11))
-                .foregroundStyle(.secondary)
+                .font(.brand(size: 11))
+                .foregroundStyle(.primary)
             Divider()
             Button("Take the placement test again") { languages.startPlacement() }
         }
-        .font(.system(size: 12.5))
+        .font(.brand(size: 12.5))
     }
 }
 
@@ -317,7 +317,7 @@ private struct LessonPlayer: View {
                 ProgressView(value: session.progress)
                     .tint(theme.ink(scheme))
                 Text(session.title)
-                    .font(.system(size: 12))
+                    .font(.brand(size: 12))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .lineLimit(1)
                     .fixedSize()
@@ -327,13 +327,13 @@ private struct LessonPlayer: View {
                     Image(systemName: "lightbulb")
                     Text(tip).fixedSize(horizontal: false, vertical: true)
                     Spacer()
-                    Button { tipShown = false } label: { Image(systemName: "xmark").font(.system(size: 10)) }
+                    Button { tipShown = false } label: { Image(systemName: "xmark").font(.brand(size: 10)) }
                         .buttonStyle(.plain)
                 }
-                .font(.system(size: 12.5))
+                .font(.brand(size: 12.5))
                 .foregroundStyle(theme.ink(scheme))
                 .padding(12)
-                .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(theme.well(scheme)))
+                .background(RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.well(scheme)))
             }
             if let exercise = session.current {
                 ExerciseCard(exercise: exercise)
@@ -359,13 +359,13 @@ private struct LessonDone: View {
     var body: some View {
         VStack(spacing: 14) {
             Image(systemName: "checkmark.seal")
-                .font(.system(size: 44))
+                .font(.brand(size: 44))
                 .foregroundStyle(theme.ink(scheme))
             Text("Lesson done")
-                .font(.system(size: 22, weight: .bold))
+                .font(.brand(size: 22, weight: .bold))
                 .foregroundStyle(theme.ink(scheme))
             Text("\(session.right) right of \(session.exercises.count). Anything you missed comes back in your reviews.")
-                .font(.system(size: 13))
+                .font(.brand(size: 13))
                 .foregroundStyle(theme.inkSecondary(scheme))
             HStack {
                 Button("Back to the course") { languages.closeSession() }
@@ -405,7 +405,7 @@ private struct ExerciseCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text(exercise.title.uppercased())
-                .font(.system(size: 11, weight: .semibold))
+                .font(.brand(size: 11, weight: .semibold))
                 .tracking(1)
                 .foregroundStyle(theme.inkTertiary(scheme))
             content
@@ -429,7 +429,7 @@ private struct ExerciseCard: View {
             }
         }
         .padding(22)
-        .vellum(level: 3, radius: max(theme.radius - 2, 8))
+        .vellum(level: 3, radius: theme.radius)
         .onAppear(perform: prepare)
     }
 
@@ -456,7 +456,7 @@ private struct ExerciseCard: View {
         switch exercise {
         case .pictureChoice(let item, let options):
             Text("Which one is \u{201C}\(item.term)\u{201D}?")
-                .font(.system(size: 20, weight: .semibold))
+                .font(.brand(size: 20, weight: .semibold))
                 .foregroundStyle(theme.ink(scheme))
             HStack(spacing: 10) {
                 ForEach(options) { option in
@@ -474,8 +474,8 @@ private struct ExerciseCard: View {
             HStack(spacing: 10) {
                 listenButton(sentence.target)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(sentence.target).font(.system(size: 20, weight: .semibold)).foregroundStyle(theme.ink(scheme))
-                    Text(sentence.english).font(.system(size: 13)).foregroundStyle(theme.inkTertiary(scheme))
+                    Text(sentence.target).font(.brand(size: 20, weight: .semibold)).foregroundStyle(theme.ink(scheme))
+                    Text(sentence.english).font(.brand(size: 13)).foregroundStyle(theme.inkTertiary(scheme))
                 }
             }
             SpeakButton(listener: languages.listener, expected: sentence.target) { heard in
@@ -488,7 +488,7 @@ private struct ExerciseCard: View {
                 HStack(spacing: 6) {
                     ForEach(Array(pronunciation.words.enumerated()), id: \.offset) { _, word in
                         Text(word.word)
-                            .font(.system(size: 15, weight: .medium))
+                            .font(.brand(size: 15, weight: .medium))
                             .foregroundStyle(word.heard ? Color.green : Color.orange)
                     }
                 }
@@ -496,18 +496,18 @@ private struct ExerciseCard: View {
         case .toEnglish(let sentence):
             HStack(spacing: 10) {
                 listenButton(sentence.target, small: true)
-                Text(sentence.target).font(.system(size: 22, weight: .semibold)).foregroundStyle(theme.ink(scheme))
+                Text(sentence.target).font(.brand(size: 22, weight: .semibold)).foregroundStyle(theme.ink(scheme))
             }
             answerField("Type it in English")
         case .toTarget(let sentence):
-            Text(sentence.english).font(.system(size: 22, weight: .semibold)).foregroundStyle(theme.ink(scheme))
+            Text(sentence.english).font(.brand(size: 22, weight: .semibold)).foregroundStyle(theme.ink(scheme))
             answerField("Type it in \(language?.name ?? "the language")")
         case .fillGap(let sentence, let gap, let options):
             let words = Tokens.words(sentence.target, language: language)
             Text(words.enumerated().map { $0.offset == gap ? "____" : $0.element }.joined(separator: " "))
-                .font(.system(size: 22, weight: .semibold))
+                .font(.brand(size: 22, weight: .semibold))
                 .foregroundStyle(theme.ink(scheme))
-            Text(sentence.english).font(.system(size: 13)).foregroundStyle(theme.inkTertiary(scheme))
+            Text(sentence.english).font(.brand(size: 13)).foregroundStyle(theme.inkTertiary(scheme))
             HStack(spacing: 8) {
                 ForEach(options, id: \.self) { option in
                     choiceRow(option, selected: chosen == option) { chosen = option }
@@ -522,11 +522,11 @@ private struct ExerciseCard: View {
             listenButton(exerciseSentence?.target ?? "")
             answerField("Type what you hear")
         case .build(let sentence, let pool):
-            Text(sentence.english).font(.system(size: 20, weight: .semibold)).foregroundStyle(theme.ink(scheme))
+            Text(sentence.english).font(.brand(size: 20, weight: .semibold)).foregroundStyle(theme.ink(scheme))
             FlowRow(words: tiles, filled: true) { index in tiles.remove(at: index) }
                 .frame(minHeight: 44)
                 .padding(8)
-                .background(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(theme.edge(scheme), style: StrokeStyle(lineWidth: 1, dash: [4, 3])))
+                .background(RoundedRectangle(cornerRadius: 0, style: .continuous).strokeBorder(theme.edge(scheme), style: StrokeStyle(lineWidth: 1, dash: [4, 3])))
             FlowRow(words: remaining(pool), filled: false) { index in tiles.append(remaining(pool)[index]) }
         }
     }
@@ -600,18 +600,18 @@ private struct ExerciseCard: View {
         }()
         HStack(alignment: .top, spacing: 10) {
             Image(systemName: verdict == .wrong ? "arrow.uturn.backward.circle.fill" : "checkmark.circle.fill")
-                .font(.system(size: 20))
+                .font(.brand(size: 20))
                 .foregroundStyle(colour)
             VStack(alignment: .leading, spacing: 2) {
-                Text(title).font(.system(size: 14, weight: .semibold)).foregroundStyle(theme.ink(scheme))
+                Text(title).font(.brand(size: 14, weight: .semibold)).foregroundStyle(theme.ink(scheme))
                 if let detail {
-                    Text(detail).font(.system(size: 13)).foregroundStyle(theme.inkSecondary(scheme)).textSelection(.enabled)
+                    Text(detail).font(.brand(size: 13)).foregroundStyle(theme.inkSecondary(scheme)).textSelection(.enabled)
                 }
             }
             Spacer()
         }
         .padding(12)
-        .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(colour.opacity(0.12)))
+        .background(RoundedRectangle(cornerRadius: 0, style: .continuous).fill(colour.opacity(0.12)))
         .transition(.move(edge: .bottom).combined(with: .opacity))
     }
 
@@ -628,9 +628,9 @@ private struct ExerciseCard: View {
     private func answerField(_ prompt: String) -> some View {
         TextField(prompt, text: $typed)
             .textFieldStyle(.plain)
-            .font(.system(size: 17))
+            .font(.brand(size: 17))
             .padding(12)
-            .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(theme.well(scheme)))
+            .background(RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.well(scheme)))
             .disabled(verdict != nil)
             .onSubmit { if verdict == nil && ready { check() } }
     }
@@ -641,7 +641,7 @@ private struct ExerciseCard: View {
                 if let language { languages.speaker.say(text, language: language.id) }
             } label: {
                 Image(systemName: "speaker.wave.2.fill")
-                    .font(.system(size: small ? 13 : 18))
+                    .font(.brand(size: small ? 13 : 18))
                     .frame(width: small ? 30 : 46, height: small ? 30 : 46)
                     .background(Circle().fill(theme.ink(scheme)))
                     .foregroundStyle(theme.paper(scheme))
@@ -653,7 +653,7 @@ private struct ExerciseCard: View {
                     if let language { languages.speaker.say(text, language: language.id, slow: true) }
                 } label: {
                     Image(systemName: "tortoise.fill")
-                        .font(.system(size: 13))
+                        .font(.brand(size: 13))
                         .frame(width: 32, height: 32)
                         .background(Circle().fill(theme.well(scheme)))
                 }
@@ -668,16 +668,16 @@ private struct ExerciseCard: View {
         Button(action: action) {
             VStack(spacing: 8) {
                 Image(systemName: symbol ?? "textformat")
-                    .font(.system(size: 28))
+                    .font(.brand(size: 28))
                     .frame(height: 36)
                 Text(text)
-                    .font(.system(size: 13, weight: .medium))
+                    .font(.brand(size: 13, weight: .medium))
                     .multilineTextAlignment(.center)
             }
             .foregroundStyle(theme.ink(scheme))
             .frame(maxWidth: .infinity, minHeight: 100)
-            .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(selected ? theme.ink(scheme).opacity(0.1) : theme.well(scheme)))
-            .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(selected ? theme.ink(scheme) : Color.clear, lineWidth: 1.5))
+            .background(RoundedRectangle(cornerRadius: 0, style: .continuous).fill(selected ? theme.ink(scheme).opacity(0.1) : theme.well(scheme)))
+            .overlay(RoundedRectangle(cornerRadius: 0, style: .continuous).strokeBorder(selected ? theme.ink(scheme) : Color.clear, lineWidth: 1.5))
         }
         .buttonStyle(.plain)
         .disabled(verdict != nil)
@@ -686,12 +686,12 @@ private struct ExerciseCard: View {
     private func choiceRow(_ text: String, selected: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(text)
-                .font(.system(size: 14.5, weight: .medium))
+                .font(.brand(size: 14.5, weight: .medium))
                 .foregroundStyle(theme.ink(scheme))
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(12)
-                .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(selected ? theme.ink(scheme).opacity(0.1) : theme.well(scheme)))
-                .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(selected ? theme.ink(scheme) : Color.clear, lineWidth: 1.5))
+                .background(RoundedRectangle(cornerRadius: 0, style: .continuous).fill(selected ? theme.ink(scheme).opacity(0.1) : theme.well(scheme)))
+                .overlay(RoundedRectangle(cornerRadius: 0, style: .continuous).strokeBorder(selected ? theme.ink(scheme) : Color.clear, lineWidth: 1.5))
         }
         .buttonStyle(.plain)
         .disabled(verdict != nil)
@@ -722,7 +722,7 @@ private struct SpeakButton: View {
             }
             .buttonStyle(.vellumPrimary)
             Text(listener.isListening ? (listener.heard.isEmpty ? "Listening…" : listener.heard) : "Heard on this Mac, compared word by word.")
-                .font(.system(size: 13))
+                .font(.brand(size: 13))
                 .foregroundStyle(theme.inkSecondary(scheme))
                 .lineLimit(2)
         }
@@ -768,13 +768,13 @@ private struct MatchGrid: View {
     private func tile(_ text: String, done: Bool, selected: Bool, shaking: Bool = false, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(text)
-                .font(.system(size: 14, weight: .medium))
+                .font(.brand(size: 14, weight: .medium))
                 .foregroundStyle(done ? theme.inkTertiary(scheme) : theme.ink(scheme))
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 10)
-                .background(RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .background(RoundedRectangle(cornerRadius: 0, style: .continuous)
                     .fill(shaking ? Color.orange.opacity(0.2) : (selected ? theme.ink(scheme).opacity(0.12) : theme.well(scheme))))
-                .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(selected ? theme.ink(scheme) : Color.clear, lineWidth: 1.5))
+                .overlay(RoundedRectangle(cornerRadius: 0, style: .continuous).strokeBorder(selected ? theme.ink(scheme) : Color.clear, lineWidth: 1.5))
         }
         .buttonStyle(.plain)
         .disabled(done)
@@ -794,12 +794,12 @@ private struct FlowRow: View {
             ForEach(Array(words.enumerated()), id: \.offset) { index, word in
                 Button { onTap(index) } label: {
                     Text(word)
-                        .font(.system(size: 15, weight: .medium))
+                        .font(.brand(size: 15, weight: .medium))
                         .foregroundStyle(theme.ink(scheme))
                         .padding(.horizontal, 12)
                         .padding(.vertical, 7)
-                        .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(filled ? theme.ink(scheme).opacity(0.08) : theme.well(scheme)))
-                        .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5))
+                        .background(RoundedRectangle(cornerRadius: 0, style: .continuous).fill(filled ? theme.ink(scheme).opacity(0.08) : theme.well(scheme)))
+                        .overlay(RoundedRectangle(cornerRadius: 0, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5))
                 }
                 .buttonStyle(.plain)
             }
@@ -826,7 +826,7 @@ private struct StoryReader: View {
                         .buttonStyle(.plain)
                         .keyboardShortcut(.cancelAction)
                     Text(story.title)
-                        .font(.system(size: 22, weight: .bold))
+                        .font(.brand(size: 22, weight: .bold))
                         .foregroundStyle(theme.ink(scheme))
                     Spacer()
                     Button {
@@ -843,11 +843,11 @@ private struct StoryReader: View {
                             .foregroundStyle(theme.inkSecondary(scheme))
                         VStack(alignment: .leading, spacing: 3) {
                             Text(line.target)
-                                .font(.system(size: 17))
+                                .font(.brand(size: 17))
                                 .foregroundStyle(theme.ink(scheme))
                             if revealed.contains(index) {
                                 Text(line.english)
-                                    .font(.system(size: 13))
+                                    .font(.brand(size: 13))
                                     .foregroundStyle(theme.inkTertiary(scheme))
                             }
                         }
@@ -858,13 +858,13 @@ private struct StoryReader: View {
                     }
                 }
                 Text("Click a line to see it in English.")
-                    .font(.system(size: 11.5))
+                    .font(.brand(size: 11.5))
                     .foregroundStyle(theme.inkTertiary(scheme))
                 SectionLabel(text: "Questions")
                 ForEach(Array(story.questions.enumerated()), id: \.offset) { number, question in
                     VStack(alignment: .leading, spacing: 6) {
                         Text(question.question)
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(.brand(size: 14, weight: .semibold))
                             .foregroundStyle(theme.ink(scheme))
                         HStack(spacing: 8) {
                             ForEach(Array(question.options.enumerated()), id: \.offset) { index, option in
@@ -872,7 +872,7 @@ private struct StoryReader: View {
                                 let showRight = answers[number] != nil && index == question.answer
                                 Button(option) { answers[number] = index }
                                     .buttonStyle(.vellumSecondary)
-                                    .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(showRight ? Color.green : (picked ? Color.orange : Color.clear), lineWidth: 1.5))
+                                    .overlay(RoundedRectangle(cornerRadius: 0).strokeBorder(showRight ? Color.green : (picked ? Color.orange : Color.clear), lineWidth: 1.5))
                                     .disabled(answers[number] != nil)
                             }
                         }
@@ -910,10 +910,10 @@ private struct PlacementView: View {
             if let result = languages.placedResult {
                 VStack(spacing: 12) {
                     Text("Start at \(result.title)")
-                        .font(.system(size: 22, weight: .bold))
+                        .font(.brand(size: 22, weight: .bold))
                         .foregroundStyle(theme.ink(scheme))
                     Text("Earlier units stay open if you want to brush up.")
-                        .font(.system(size: 13))
+                        .font(.brand(size: 13))
                         .foregroundStyle(theme.inkSecondary(scheme))
                     Button("Start") { languages.closePlacement() }
                         .buttonStyle(.vellumPrimary)
@@ -922,29 +922,29 @@ private struct PlacementView: View {
                 .padding(.top, 40)
             } else if let question = languages.placement?.current {
                 Text(question.level.rawValue)
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(.brand(size: 11, weight: .semibold))
                     .foregroundStyle(theme.inkTertiary(scheme))
                 Text(question.prompt)
-                    .font(.system(size: 22, weight: .semibold))
+                    .font(.brand(size: 22, weight: .semibold))
                     .foregroundStyle(theme.ink(scheme))
                 Text(question.english)
-                    .font(.system(size: 13))
+                    .font(.brand(size: 13))
                     .foregroundStyle(theme.inkTertiary(scheme))
                 VStack(spacing: 8) {
                     ForEach(Array(question.options.enumerated()), id: \.offset) { index, option in
                         Button { languages.answerPlacement(index) } label: {
                             Text(option)
-                                .font(.system(size: 15, weight: .medium))
+                                .font(.brand(size: 15, weight: .medium))
                                 .foregroundStyle(theme.ink(scheme))
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .padding(12)
-                                .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(theme.well(scheme)))
+                                .background(RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.well(scheme)))
                         }
                         .buttonStyle(.plain)
                     }
                 }
                 Text("No penalty for guessing wrong; it stops early once the level's right.")
-                    .font(.system(size: 11.5))
+                    .font(.brand(size: 11.5))
                     .foregroundStyle(theme.inkTertiary(scheme))
             }
             Spacer()

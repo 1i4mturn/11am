@@ -84,14 +84,14 @@ struct CalendarView: View {
                 grid
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .background {
-                        RoundedRectangle(cornerRadius: max(theme.radius - 4, 8), style: .continuous)
+                        RoundedRectangle(cornerRadius: theme.radius, style: .continuous)
                             .fill(theme.well(scheme).opacity(0.45))
                     }
                     .overlay {
-                        RoundedRectangle(cornerRadius: max(theme.radius - 4, 8), style: .continuous)
+                        RoundedRectangle(cornerRadius: theme.radius, style: .continuous)
                             .strokeBorder(theme.edge(scheme), lineWidth: 0.5)
                     }
-                    .clipShape(RoundedRectangle(cornerRadius: max(theme.radius - 4, 8), style: .continuous))
+                    .clipShape(RoundedRectangle(cornerRadius: theme.radius, style: .continuous))
                 if let event = calendar.selected {
                     EventCard(event: event)
                         .frame(width: 292)
@@ -294,11 +294,11 @@ private struct QuickAddField: View {
     var body: some View {
         HStack(spacing: 6) {
             Image(systemName: "calendar.badge.plus")
-                .font(.system(size: 11.5))
+                .font(.brand(size: 11.5))
                 .foregroundStyle(theme.inkTertiary(scheme))
             TextField("Lunch Fri 1pm at Lune", text: $text)
                 .textFieldStyle(.plain)
-                .font(.system(size: 12.5))
+                .font(.brand(size: 12.5))
                 .onSubmit(onSubmit)
             if !text.isEmpty {
                 Button(action: onSubmit) { Image(systemName: "return") }
@@ -342,7 +342,7 @@ private struct CalendarToolbar: View {
             if calendar.showsWeekNumbers && calendar.mode != .agenda {
                 // The middle of what's showing, so a week that starts on Sunday gets its Monday's number.
                 Text("W\(Calendar.current.isoWeek(of: calendar.visibleRange.start.addingTimeInterval(calendar.mode == .month ? 14 * 86_400 : (calendar.mode == .day ? 0 : 2.5 * 86_400))))")
-                    .font(.system(size: 11.5, weight: .semibold).monospacedDigit())
+                    .font(.brand(size: 11.5, weight: .semibold).monospacedDigit())
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .lineLimit(1)
                     .fixedSize()
@@ -354,7 +354,7 @@ private struct CalendarToolbar: View {
                     }
                 } label: {
                     Text(calendar.activeSet?.name ?? "Calendars")
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(.brand(size: 12, weight: .semibold))
                 }
                 .menuStyle(.button)
                 .buttonStyle(.borderless)
@@ -382,7 +382,7 @@ private struct ModeBar: View {
                     withAnimation(theme.spring) { calendar.mode = mode }
                 } label: {
                     Text(mode.title)
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(.brand(size: 12, weight: .semibold))
                         .fixedSize()
                         .foregroundStyle(selected ? theme.paper(scheme) : theme.ink(scheme))
                         .padding(.horizontal, 10)
@@ -431,14 +431,14 @@ struct CalendarBanner<Actions: View>: View {
             Image(systemName: symbol)
                 .foregroundStyle(theme.inkSecondary(scheme))
             Text(text)
-                .font(.system(size: 12.5))
+                .font(.brand(size: 12.5))
                 .foregroundStyle(theme.ink(scheme))
                 .lineLimit(2)
                 .fixedSize(horizontal: false, vertical: true)
             Spacer(minLength: 8)
             actions()
             if let dismiss {
-                Button { dismiss() } label: { Image(systemName: "xmark").font(.system(size: 10, weight: .bold)) }
+                Button { dismiss() } label: { Image(systemName: "xmark").font(.brand(size: 10, weight: .bold)) }
                     .buttonStyle(.plain)
                     .foregroundStyle(theme.inkTertiary(scheme))
             }
@@ -446,10 +446,10 @@ struct CalendarBanner<Actions: View>: View {
         .padding(.horizontal, 14)
         .padding(.vertical, 8)
         .background {
-            RoundedRectangle(cornerRadius: max(theme.radius - 4, 8), style: .continuous).fill(theme.well(scheme))
+            RoundedRectangle(cornerRadius: theme.radius, style: .continuous).fill(theme.well(scheme))
         }
         .overlay {
-            RoundedRectangle(cornerRadius: max(theme.radius - 4, 8), style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5)
+            RoundedRectangle(cornerRadius: theme.radius, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5)
         }
     }
 }
@@ -515,13 +515,13 @@ private struct FindTimeView: View {
             }
             .pickerStyle(.segmented)
             Text("Weekdays, 9 to 5, around everything you haven't declined.")
-                .font(.system(size: 11.5))
+                .font(.brand(size: 11.5))
                 .foregroundStyle(theme.inkTertiary(scheme))
 
             VStack(alignment: .leading, spacing: 2) {
                 if slots.isEmpty {
                     Text("No gaps that long. Try a shorter meeting or a longer window.")
-                        .font(.system(size: 12.5))
+                        .font(.brand(size: 12.5))
                         .foregroundStyle(theme.inkSecondary(scheme))
                         .padding(.vertical, 6)
                 }
@@ -533,7 +533,7 @@ private struct FindTimeView: View {
                 }
                 if slots.count > 6 {
                     Text("and \(slots.count - 6) more")
-                        .font(.system(size: 11.5))
+                        .font(.brand(size: 11.5))
                         .foregroundStyle(theme.inkTertiary(scheme))
                         .padding(.horizontal, 8)
                         .padding(.top, 2)
@@ -569,17 +569,17 @@ private struct SlotRow: View {
         Button(action: pick) {
             HStack {
                 Text(slot.start.formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated)))
-                    .font(.system(size: 12.5, weight: .medium))
+                    .font(.brand(size: 12.5, weight: .medium))
                 Spacer()
                 Text("\(CalText.time(slot.start)) – \(CalText.time(slot.end))")
-                    .font(.system(size: 12.5).monospacedDigit())
+                    .font(.brand(size: 12.5).monospacedDigit())
                     .foregroundStyle(theme.inkSecondary(scheme))
             }
             .foregroundStyle(theme.ink(scheme))
             .padding(.horizontal, 8)
             .padding(.vertical, 5)
             .background {
-                RoundedRectangle(cornerRadius: 6, style: .continuous).fill(hovering ? theme.raised(scheme) : Color.clear)
+                RoundedRectangle(cornerRadius: 0, style: .continuous).fill(hovering ? theme.raised(scheme) : Color.clear)
             }
             .contentShape(Rectangle())
         }
@@ -613,13 +613,13 @@ private struct CalendarsView: View {
                             Toggle(isOn: Binding(get: { !calendar.hidden.contains(item.id) }, set: { _ in calendar.toggle(item) })) {
                                 HStack(spacing: 6) {
                                     Circle().fill(Color(calendarHex: item.color)).frame(width: 8, height: 8)
-                                    Text(item.title).font(.system(size: 12.5))
+                                    Text(item.title).font(.brand(size: 12.5))
                                     if !item.writable {
-                                        Image(systemName: "lock").font(.system(size: 9)).foregroundStyle(theme.inkTertiary(scheme))
+                                        Image(systemName: "lock").font(.brand(size: 9)).foregroundStyle(theme.inkTertiary(scheme))
                                     }
                                 }
                             }
-                            .toggleStyle(.checkbox)
+                            .toggleStyle(.brandCheck)
                         }
                     }
                 }
@@ -629,8 +629,8 @@ private struct CalendarsView: View {
             .fixedSize(horizontal: false, vertical: true)
             Divider()
             Toggle("Australian public holidays", isOn: $calendar.showHolidays)
-                .toggleStyle(.checkbox)
-                .font(.system(size: 12.5))
+                .toggleStyle(.brandCheck)
+                .font(.brand(size: 12.5))
             if !calendar.sets.isEmpty {
                 SectionLabel(text: "Sets")
                 ForEach(calendar.sets) { set in
@@ -639,11 +639,11 @@ private struct CalendarsView: View {
                             calendar.apply(set)
                         } label: {
                             Label(set.name, systemImage: calendar.activeSet?.id == set.id ? "checkmark.circle.fill" : "circle")
-                                .font(.system(size: 12.5))
+                                .font(.brand(size: 12.5))
                         }
                         .buttonStyle(.plain)
                         Spacer()
-                        Button { calendar.deleteSet(set.id) } label: { Image(systemName: "xmark").font(.system(size: 9, weight: .bold)) }
+                        Button { calendar.deleteSet(set.id) } label: { Image(systemName: "xmark").font(.brand(size: 9, weight: .bold)) }
                             .buttonStyle(.plain)
                             .foregroundStyle(theme.inkTertiary(scheme))
                             .help("Delete this set")
@@ -659,18 +659,18 @@ private struct CalendarsView: View {
                     .buttonStyle(.vellumSecondary)
                     .disabled(setName.trimmingCharacters(in: .whitespaces).isEmpty)
             }
-            .font(.system(size: 12))
+            .font(.brand(size: 12))
             Divider()
             Toggle("Week numbers", isOn: $calendar.showsWeekNumbers)
-                .toggleStyle(.checkbox)
-                .font(.system(size: 12.5))
+                .toggleStyle(.brandCheck)
+                .font(.brand(size: 12.5))
             Toggle("Weather for \(calendar.weatherPlace?.name ?? "your city")", isOn: $calendar.showsWeather)
-                .toggleStyle(.checkbox)
-                .font(.system(size: 12.5))
+                .toggleStyle(.brandCheck)
+                .font(.brand(size: 12.5))
             if calendar.showsWeather {
                 TextField("Another town or city", text: $city)
                     .textFieldStyle(.roundedBorder)
-                    .font(.system(size: 12))
+                    .font(.brand(size: 12))
                     .onSubmit {
                         calendar.setWeatherCity(city)
                         city = ""
@@ -683,10 +683,10 @@ private struct CalendarsView: View {
                 Text("15 minutes").tag(15)
                 Text("30 minutes").tag(30)
             }
-            .font(.system(size: 12.5))
+            .font(.brand(size: 12.5))
             TextField("Home, for travel times (a suburb is enough)", text: $homeText)
                 .textFieldStyle(.roundedBorder)
-                .font(.system(size: 12))
+                .font(.brand(size: 12))
                 .onSubmit { calendar.home = homeText.trimmingCharacters(in: .whitespacesAndNewlines) }
                 .onAppear { homeText = calendar.home }
             if calendar.access == .granted && calendar.reminderAccess != .granted {
@@ -694,7 +694,7 @@ private struct CalendarsView: View {
                     .buttonStyle(.vellumSecondary)
             }
             Text("New events go to your default calendar. Outlook calendars come from accounts signed in with Microsoft in Mail. The forecast is from Open-Meteo (only the town is sent); travel times are from Apple Maps.")
-                .font(.system(size: 11))
+                .font(.brand(size: 11))
                 .foregroundStyle(theme.inkTertiary(scheme))
                 .fixedSize(horizontal: false, vertical: true)
         }

@@ -33,16 +33,16 @@ struct OvernightView: View {
                         Stepper("Window starts \(nightShift.windowStartHour):00", value: $nightShift.windowStartHour, in: 0...23)
                         Stepper("ends \(nightShift.windowEndHour):00", value: $nightShift.windowEndHour, in: 0...23)
                     }
-                    .font(.system(size: 12.5))
+                    .font(.brand(size: 12.5))
                     Toggle("Only when plugged in", isOn: $nightShift.requiresPower)
-                        .font(.system(size: 12.5))
+                        .font(.brand(size: 12.5))
                     Stepper("Or when idle for \(nightShift.idleMinutes) minutes", value: $nightShift.idleMinutes, in: 5...120, step: 5)
-                        .font(.system(size: 12.5))
+                        .font(.brand(size: 12.5))
                     Toggle("Allow Claude for overnight work", isOn: $brain.allowCloudOvernight)
-                        .font(.system(size: 12.5))
+                        .font(.brand(size: 12.5))
                         .help("Off: overnight work only uses the brain on this Mac, so it costs nothing.")
                     Text(machine.tier.guidance)
-                        .font(.system(size: 12))
+                        .font(.brand(size: 12))
                         .foregroundStyle(theme.inkTertiary(scheme))
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -55,10 +55,10 @@ struct OvernightView: View {
                             Monogram(text: job.monogram, size: 26)
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(job.title)
-                                    .font(.system(size: 13.5, weight: .semibold))
+                                    .font(.brand(size: 13.5, weight: .semibold))
                                     .foregroundStyle(theme.ink(scheme))
                                 Text(job.detail)
-                                    .font(.system(size: 12))
+                                    .font(.brand(size: 12))
                                     .foregroundStyle(theme.inkSecondary(scheme))
                             }
                         }
@@ -69,21 +69,21 @@ struct OvernightView: View {
                     SectionLabel(text: "Log").padding(.bottom, 6)
                     if nightShift.log.isEmpty {
                         Text("Nothing has run yet. Press Run Now to try tonight's jobs immediately.")
-                            .font(.system(size: 12.5))
+                            .font(.brand(size: 12.5))
                             .foregroundStyle(theme.inkTertiary(scheme))
                     }
                     ForEach(nightShift.log) { entry in
                         HStack(alignment: .firstTextBaseline, spacing: 14) {
                             Text(entry.date.formatted(date: .abbreviated, time: .shortened))
-                                .font(.system(size: 11.5).monospacedDigit())
+                                .font(.brand(size: 11.5).monospacedDigit())
                                 .foregroundStyle(theme.inkTertiary(scheme))
                                 .frame(width: 130, alignment: .leading)
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(entry.title)
-                                    .font(.system(size: 13, weight: .medium))
+                                    .font(.brand(size: 13, weight: .medium))
                                     .foregroundStyle(theme.ink(scheme))
                                 Text(entry.detail)
-                                    .font(.system(size: 12))
+                                    .font(.brand(size: 12))
                                     .foregroundStyle(theme.inkSecondary(scheme))
                                     .fixedSize(horizontal: false, vertical: true)
                             }
@@ -94,7 +94,7 @@ struct OvernightView: View {
 
                 if let last = nightShift.lastCheck {
                     Text("Last checked \(last.formatted(date: .omitted, time: .shortened)): \(nightShift.lastDecision)")
-                        .font(.system(size: 11))
+                        .font(.brand(size: 11))
                         .foregroundStyle(theme.inkTertiary(scheme))
                 }
             }
@@ -118,12 +118,12 @@ private struct StatusTile: View {
                 .font(theme.display(24))
                 .foregroundStyle(theme.ink(scheme))
             Text(detail)
-                .font(.system(size: 11.5))
+                .font(.brand(size: 11.5))
                 .foregroundStyle(theme.inkTertiary(scheme))
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .vellum(level: 3, radius: max(theme.radius - 6, 8))
+        .vellum(level: 3, radius: theme.radius)
     }
 }

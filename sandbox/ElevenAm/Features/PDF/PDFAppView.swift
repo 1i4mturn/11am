@@ -82,10 +82,10 @@ struct PDFAppView: View {
                             .frame(width: 112)
                         PDFCanvas()
                             .background {
-                                RoundedRectangle(cornerRadius: max(theme.radius - 4, 8), style: .continuous)
+                                RoundedRectangle(cornerRadius: theme.radius, style: .continuous)
                                     .fill(theme.ink(scheme).opacity(scheme == .dark ? 0.25 : 0.04))
                             }
-                            .clipShape(RoundedRectangle(cornerRadius: max(theme.radius - 4, 8), style: .continuous))
+                            .clipShape(RoundedRectangle(cornerRadius: theme.radius, style: .continuous))
                         if asking {
                             AskPDFPanel()
                                 .frame(width: 260)
@@ -152,15 +152,15 @@ struct PDFAppView: View {
     private var searchField: some View {
         HStack(spacing: 6) {
             Image(systemName: "magnifyingglass")
-                .font(.system(size: 11))
+                .font(.brand(size: 11))
                 .foregroundStyle(theme.inkTertiary(scheme))
             TextField("Find in PDF", text: $search)
                 .textFieldStyle(.plain)
-                .font(.system(size: 12.5))
+                .font(.brand(size: 12.5))
                 .onSubmit(find)
             if !results.isEmpty {
                 Text("\(resultIndex + 1)/\(results.count)")
-                    .font(.system(size: 11).monospacedDigit())
+                    .font(.brand(size: 11).monospacedDigit())
                     .foregroundStyle(theme.inkTertiary(scheme))
                 Button { step(1) } label: { Image(systemName: "chevron.down") }
                     .buttonStyle(.plain)
@@ -257,7 +257,7 @@ struct PDFAppView: View {
                     .buttonStyle(.vellumSecondary)
                 Spacer(minLength: 8)
                 Text(pdf.selectedPages.isEmpty ? "Click to pick pages, ⌘-click for more, drag to reorder" : "\(pdf.selectedPages.count) picked")
-                    .font(.system(size: 11.5))
+                    .font(.brand(size: 11.5))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .lineLimit(1)
             }
@@ -351,18 +351,18 @@ private struct PDFBanner: View {
         HStack(spacing: 10) {
             AgentLogo(code: "bn", size: 18, color: theme.inkSecondary(scheme))
             Text(text)
-                .font(.system(size: 12.5))
+                .font(.brand(size: 12.5))
                 .foregroundStyle(theme.ink(scheme))
                 .lineLimit(2)
             Spacer()
-            Button(action: dismiss) { Image(systemName: "xmark").font(.system(size: 10, weight: .bold)) }
+            Button(action: dismiss) { Image(systemName: "xmark").font(.brand(size: 10, weight: .bold)) }
                 .buttonStyle(.plain)
                 .foregroundStyle(theme.inkTertiary(scheme))
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 8)
-        .background { RoundedRectangle(cornerRadius: max(theme.radius - 4, 8), style: .continuous).fill(theme.well(scheme)) }
-        .overlay { RoundedRectangle(cornerRadius: max(theme.radius - 4, 8), style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5) }
+        .background { RoundedRectangle(cornerRadius: theme.radius, style: .continuous).fill(theme.well(scheme)) }
+        .overlay { RoundedRectangle(cornerRadius: theme.radius, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5) }
     }
 }
 
@@ -377,7 +377,7 @@ private struct RedactionBar: View {
             Text(pdf.redactionCount == 0
                  ? "Drag over anything to hide it. Nothing changes until you apply."
                  : "\(pdf.redactionCount) \(pdf.redactionCount == 1 ? "area" : "areas") marked. Applying removes what's underneath for good, in a copy, then checks it.")
-                .font(.system(size: 12.5))
+                .font(.brand(size: 12.5))
                 .foregroundStyle(theme.ink(scheme))
                 .lineLimit(2)
             Spacer()
@@ -390,8 +390,8 @@ private struct RedactionBar: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 8)
-        .background { RoundedRectangle(cornerRadius: max(theme.radius - 4, 8), style: .continuous).fill(theme.well(scheme)) }
-        .overlay { RoundedRectangle(cornerRadius: max(theme.radius - 4, 8), style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5) }
+        .background { RoundedRectangle(cornerRadius: theme.radius, style: .continuous).fill(theme.well(scheme)) }
+        .overlay { RoundedRectangle(cornerRadius: theme.radius, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5) }
     }
 }
 
@@ -408,7 +408,7 @@ private struct EmptyPDF: View {
                 .font(theme.display(24))
                 .foregroundStyle(theme.ink(scheme))
             Text("Read it, highlight and sign it, fill in its forms, move its pages around, or make it smaller, private or redacted. Nothing leaves this Mac unless you ask Bolton about it with a cloud brain.")
-                .font(.system(size: 12.5))
+                .font(.brand(size: 12.5))
                 .foregroundStyle(theme.inkSecondary(scheme))
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: 460)
@@ -428,7 +428,7 @@ private struct EmptyPDF: View {
                             pdf.open(url)
                         } label: {
                             Label(url.deletingPathExtension().lastPathComponent, systemImage: "doc.richtext")
-                                .font(.system(size: 12.5))
+                                .font(.brand(size: 12.5))
                         }
                         .buttonStyle(.plain)
                         .foregroundStyle(theme.ink(scheme))
@@ -440,7 +440,7 @@ private struct EmptyPDF: View {
         .padding(30)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background {
-            RoundedRectangle(cornerRadius: max(theme.radius - 2, 8), style: .continuous)
+            RoundedRectangle(cornerRadius: theme.radius, style: .continuous)
                 .strokeBorder(theme.ink(scheme).opacity(dropTargeted ? 0.5 : 0.15), style: StrokeStyle(lineWidth: 1.5, dash: [6, 5]))
         }
     }
@@ -709,11 +709,11 @@ private struct PageTile: View {
             .frame(height: 170)
             .shadow(color: .black.opacity(0.15), radius: 4, y: 2)
             .overlay {
-                RoundedRectangle(cornerRadius: 3).strokeBorder(selected ? theme.ink(scheme) : Color.clear, lineWidth: 2.5)
+                RoundedRectangle(cornerRadius: 0).strokeBorder(selected ? theme.ink(scheme) : Color.clear, lineWidth: 2.5)
                     .padding(-4)
             }
             Text("\(index + 1)")
-                .font(.system(size: 11.5, weight: selected ? .bold : .regular).monospacedDigit())
+                .font(.brand(size: 11.5, weight: selected ? .bold : .regular).monospacedDigit())
                 .foregroundStyle(selected ? theme.ink(scheme) : theme.inkSecondary(scheme))
         }
         .contentShape(Rectangle())
@@ -763,7 +763,7 @@ private struct AskPDFPanel: View {
                 }
             } else {
                 Text("Answers cite their pages. Bolton reads only this document's text.")
-                    .font(.system(size: 11.5))
+                    .font(.brand(size: 11.5))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -771,7 +771,7 @@ private struct AskPDFPanel: View {
         }
         .padding(14)
         .frame(maxHeight: .infinity, alignment: .top)
-        .vellum(level: 3, radius: max(theme.radius - 2, 8))
+        .vellum(level: 3, radius: theme.radius)
     }
 }
 
@@ -791,12 +791,12 @@ private struct PlacementSheet: View {
                 .font(theme.display(20))
                 .foregroundStyle(theme.ink(scheme))
             TextEditor(text: $text)
-                .font(.system(size: 13))
+                .font(.brand(size: 13))
                 .scrollContentBackground(.hidden)
                 .padding(6)
                 .frame(height: 110)
-                .background { RoundedRectangle(cornerRadius: 8, style: .continuous).fill(theme.well(scheme)) }
-                .overlay { RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5) }
+                .background { RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.well(scheme)) }
+                .overlay { RoundedRectangle(cornerRadius: 0, style: .continuous).strokeBorder(theme.edge(scheme), lineWidth: 0.5) }
             HStack {
                 Spacer()
                 Button("Cancel") { dismiss() }
@@ -862,7 +862,7 @@ private struct SignatureSheet: View {
                 .overlay(alignment: .bottom) {
                     Rectangle().fill(Color.black.opacity(0.15)).frame(height: 1).padding(.horizontal, 20).padding(.bottom, 30)
                 }
-                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                .clipShape(RoundedRectangle(cornerRadius: 0, style: .continuous))
                 .gesture(
                     DragGesture(minimumDistance: 0, coordinateSpace: .local)
                         .onChanged { value in current.append(value.location) }
@@ -872,7 +872,7 @@ private struct SignatureSheet: View {
                         }
                 )
                 Text("Sign with your trackpad or mouse.")
-                    .font(.system(size: 11.5))
+                    .font(.brand(size: 11.5))
                     .foregroundStyle(theme.inkTertiary(scheme))
             }
             HStack {
@@ -928,7 +928,7 @@ private struct ProtectSheet: View {
                 .font(theme.display(20))
                 .foregroundStyle(theme.ink(scheme))
             Text("Saves a copy that needs the password to open. Keep it somewhere safe; it can't be recovered.")
-                .font(.system(size: 12))
+                .font(.brand(size: 12))
                 .foregroundStyle(theme.inkSecondary(scheme))
                 .fixedSize(horizontal: false, vertical: true)
             SecureField("Password", text: $password).textFieldStyle(.roundedBorder)
@@ -970,7 +970,7 @@ private struct SplitSheet: View {
                 .foregroundStyle(theme.ink(scheme))
             Stepper("Every \(size) \(size == 1 ? "page" : "pages")", value: $size, in: 1...max(1, total))
             Text("Makes \(total == 0 ? 0 : (total + size - 1) / size) files.")
-                .font(.system(size: 12))
+                .font(.brand(size: 12))
                 .foregroundStyle(theme.inkTertiary(scheme))
             HStack {
                 Spacer()

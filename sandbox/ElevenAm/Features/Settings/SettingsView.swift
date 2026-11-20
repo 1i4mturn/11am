@@ -30,7 +30,7 @@ private struct BrainSettings: View {
                 }
                 Text(brain.mode.detail)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.primary)
                 LabeledContent("Apple on-device model", value: brain.appleStatus.detail)
             }
 
@@ -55,7 +55,7 @@ private struct BrainSettings: View {
                     }
                 }
                 if !testResult.isEmpty {
-                    Text(testResult).font(.caption).foregroundStyle(.secondary)
+                    Text(testResult).font(.caption).foregroundStyle(.primary)
                 }
                 Picker("Model", selection: $brain.claudeModel) {
                     ForEach(ClaudeModel.all) { model in
@@ -84,7 +84,7 @@ private struct BrainSettings: View {
                             localResult = ok ? "Reachable." : "Not reachable. Is Ollama or LM Studio running?"
                         }
                     }
-                    if !localResult.isEmpty { Text(localResult).font(.caption).foregroundStyle(.secondary) }
+                    if !localResult.isEmpty { Text(localResult).font(.caption).foregroundStyle(.primary) }
                 }
             } header: {
                 Text("Local model server (optional)")
@@ -122,7 +122,7 @@ private struct MacSettings: View {
                 LabeledContent("Mode", value: machine.tier.title)
                 Text(machine.tier.guidance)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.primary)
             }
             Section("Right now") {
                 LabeledContent("Power", value: machine.onACPower ? "Charging" : "Battery")

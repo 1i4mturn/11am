@@ -23,7 +23,7 @@ struct TimeGrid: View {
                         if calendar.showsWeekNumbers, !days.isEmpty {
                             let week = Calendar.current.isoWeek(of: days[days.count / 2])
                             Text("W\(week)")
-                                .font(.system(size: 10.5, weight: .semibold).monospacedDigit())
+                                .font(.brand(size: 10.5, weight: .semibold).monospacedDigit())
                                 .foregroundStyle(theme.inkTertiary(scheme))
                                 .help("Week \(week)")
                         } else {
@@ -91,11 +91,11 @@ private struct DayHeader: View {
         } label: {
             HStack(spacing: 5) {
                 Text(day.formatted(.dateTime.weekday(wide ? .wide : .abbreviated)))
-                    .font(.system(size: 12, weight: .medium))
+                    .font(.brand(size: 12, weight: .medium))
                     .foregroundStyle(theme.inkSecondary(scheme))
                     .layoutPriority(1)
                 Text(day.formatted(.dateTime.day()))
-                    .font(.system(size: 13, weight: .semibold).monospacedDigit())
+                    .font(.brand(size: 13, weight: .semibold).monospacedDigit())
                     .foregroundStyle(isToday ? theme.paper(scheme) : theme.ink(scheme))
                     .padding(.horizontal, 6)
                     .padding(.vertical, 2)
@@ -111,7 +111,7 @@ private struct DayHeader: View {
                                 .monospacedDigit()
                         }
                     }
-                    .font(.system(size: 10.5, weight: .medium))
+                    .font(.brand(size: 10.5, weight: .medium))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .padding(.leading, 2)
                 }
@@ -134,7 +134,7 @@ private struct HourLabels: View {
             ForEach(0..<24, id: \.self) { hour in
                 VStack(spacing: 0) {
                     Text(hour == 0 ? "" : HourLabels.label(hour))
-                        .font(.system(size: 10.5).monospacedDigit())
+                        .font(.brand(size: 10.5).monospacedDigit())
                         .foregroundStyle(theme.inkTertiary(scheme))
                         .frame(maxWidth: .infinity, alignment: .trailing)
                         .padding(.trailing, 8)
@@ -270,16 +270,16 @@ private struct CreatingPreview: View {
     var body: some View {
         let height = max(range.upperBound - range.lowerBound, 12)
         Text("\(CalText.time(top)) – \(CalText.time(max(bottom, top.addingTimeInterval(900))))")
-            .font(.system(size: 10.5, weight: .semibold).monospacedDigit())
+            .font(.brand(size: 10.5, weight: .semibold).monospacedDigit())
             .foregroundStyle(theme.ink(scheme))
             .padding(4)
             .frame(maxWidth: .infinity, alignment: .topLeading)
             .frame(height: height, alignment: .top)
             .background {
-                RoundedRectangle(cornerRadius: 5, style: .continuous).fill(theme.ink(scheme).opacity(0.08))
+                RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.ink(scheme).opacity(0.08))
             }
             .overlay {
-                RoundedRectangle(cornerRadius: 5, style: .continuous)
+                RoundedRectangle(cornerRadius: 0, style: .continuous)
                     .strokeBorder(theme.ink(scheme).opacity(0.5), style: StrokeStyle(lineWidth: 1, dash: [4, 3]))
             }
             .offset(y: range.lowerBound)
@@ -303,21 +303,21 @@ private struct EventBlock: View {
         let selected = calendar.selectedID == event.id
         let tint = Color(calendarHex: event.color)
         let shown = max(17, height + stretch)
-        let shape = RoundedRectangle(cornerRadius: 5, style: .continuous)
+        let shape = RoundedRectangle(cornerRadius: 0, style: .continuous)
         VStack(alignment: .leading, spacing: 1) {
             Text(event.title)
-                .font(.system(size: 11.5, weight: .semibold))
+                .font(.brand(size: 11.5, weight: .semibold))
                 .lineLimit(shown > 40 ? 2 : 1)
                 .strikethrough(event.response == .declined)
             if shown > 32 {
                 Text(timeText)
-                    .font(.system(size: 10.5).monospacedDigit())
+                    .font(.brand(size: 10.5).monospacedDigit())
                     .foregroundStyle(theme.inkSecondary(scheme))
                     .lineLimit(1)
             }
             if shown > 62, let detail {
                 Text(detail)
-                    .font(.system(size: 10.5))
+                    .font(.brand(size: 10.5))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .lineLimit(1)
             }
@@ -335,7 +335,7 @@ private struct EventBlock: View {
             }
         }
         .overlay(alignment: .leading) {
-            RoundedRectangle(cornerRadius: 1.5).fill(tint).frame(width: 3).padding(.vertical, 3).padding(.leading, 2.5)
+            RoundedRectangle(cornerRadius: 0).fill(tint).frame(width: 3).padding(.vertical, 3).padding(.leading, 2.5)
         }
         .overlay {
             if selected {
@@ -477,7 +477,7 @@ private struct AllDayLane: View {
         if busiest > 0 {
             HStack(alignment: .top, spacing: 0) {
                 Text("all-day")
-                    .font(.system(size: 10))
+                    .font(.brand(size: 10))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .frame(width: TimeGrid.gutter - 8, alignment: .trailing)
                     .padding(.trailing, 8)
@@ -493,7 +493,7 @@ private struct AllDayLane: View {
                         let extra = events[index].count + reminders[index].count - min(events[index].count, 3) - min(reminders[index].count, 3)
                         if extra > 0 {
                             Text("+\(extra) more")
-                                .font(.system(size: 10.5))
+                                .font(.brand(size: 10.5))
                                 .foregroundStyle(theme.inkTertiary(scheme))
                                 .padding(.leading, 4)
                         }
@@ -516,13 +516,13 @@ struct AllDayChip: View {
     var body: some View {
         let selected = calendar.selectedID == event.id
         let tint = Color(calendarHex: event.color)
-        let shape = RoundedRectangle(cornerRadius: 4, style: .continuous)
+        let shape = RoundedRectangle(cornerRadius: 0, style: .continuous)
         HStack(spacing: 4) {
             if event.isHoliday {
-                Image(systemName: "flag").font(.system(size: 8.5))
+                Image(systemName: "flag").font(.brand(size: 8.5))
             }
             Text(event.title)
-                .font(.system(size: 11, weight: event.isHoliday ? .regular : .semibold))
+                .font(.brand(size: 11, weight: event.isHoliday ? .regular : .semibold))
                 .lineLimit(1)
         }
         .foregroundStyle(event.isHoliday ? theme.inkSecondary(scheme) : theme.ink(scheme))
@@ -560,12 +560,12 @@ private struct ReminderChip: View {
             Button {
                 withAnimation(theme.spring) { calendar.complete(reminder) }
             } label: {
-                Image(systemName: "circle").font(.system(size: 10))
+                Image(systemName: "circle").font(.brand(size: 10))
             }
             .buttonStyle(.plain)
             .help("Done")
             Text(reminder.title)
-                .font(.system(size: 11))
+                .font(.brand(size: 11))
                 .lineLimit(1)
         }
         .foregroundStyle(theme.inkSecondary(scheme))
@@ -590,7 +590,7 @@ struct MonthGrid: View {
             HStack(spacing: 0) {
                 ForEach(Array(days.prefix(7)), id: \.self) { day in
                     Text(day.formatted(.dateTime.weekday(.abbreviated)))
-                        .font(.system(size: 11, weight: .semibold))
+                        .font(.brand(size: 11, weight: .semibold))
                         .foregroundStyle(theme.inkTertiary(scheme))
                         .frame(maxWidth: .infinity)
                 }
@@ -627,7 +627,7 @@ private struct MonthCell: View {
                     calendar.show(day: day, as: .day)
                 } label: {
                     Text(day.formatted(.dateTime.day()))
-                        .font(.system(size: 12, weight: .semibold).monospacedDigit())
+                        .font(.brand(size: 12, weight: .semibold).monospacedDigit())
                         .foregroundStyle(isToday ? theme.paper(scheme) : theme.ink(scheme).opacity(inMonth ? 1 : 0.35))
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
@@ -644,7 +644,7 @@ private struct MonthCell: View {
             }
             if events.count > 3 {
                 Text("+\(events.count - 3) more")
-                    .font(.system(size: 10.5))
+                    .font(.brand(size: 10.5))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .padding(.leading, 4)
             }
@@ -679,10 +679,10 @@ private struct MonthEventLine: View {
             HStack(spacing: 4) {
                 Circle().fill(Color(calendarHex: event.color)).frame(width: 6, height: 6)
                 Text(CalText.compact(event.start))
-                    .font(.system(size: 10.5).monospacedDigit())
+                    .font(.brand(size: 10.5).monospacedDigit())
                     .foregroundStyle(theme.inkTertiary(scheme))
                 Text(event.title)
-                    .font(.system(size: 11, weight: .medium))
+                    .font(.brand(size: 11, weight: .medium))
                     .foregroundStyle(theme.ink(scheme))
                     .strikethrough(event.response == .declined)
             }
@@ -691,7 +691,7 @@ private struct MonthEventLine: View {
             .padding(.vertical, 1.5)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background {
-                RoundedRectangle(cornerRadius: 4, style: .continuous).fill(selected ? theme.raised(scheme) : Color.clear)
+                RoundedRectangle(cornerRadius: 0, style: .continuous).fill(selected ? theme.raised(scheme) : Color.clear)
             }
             .contentShape(Rectangle())
             .onTapGesture(count: 2) {
@@ -732,7 +732,7 @@ struct AgendaList: View {
                         .padding(.bottom, 4)
                         if events.isEmpty {
                             Text("Nothing booked.")
-                                .font(.system(size: 12.5))
+                                .font(.brand(size: 12.5))
                                 .foregroundStyle(theme.inkTertiary(scheme))
                                 .padding(.vertical, 6)
                         }
@@ -743,7 +743,7 @@ struct AgendaList: View {
                 }
                 if days.isEmpty {
                     Text("Nothing in the next two weeks.")
-                        .font(.system(size: 13))
+                        .font(.brand(size: 13))
                         .foregroundStyle(theme.inkTertiary(scheme))
                 }
             }
@@ -765,27 +765,27 @@ private struct AgendaRow: View {
         let clashes = event.isAllDay ? [] : calendar.conflicts(for: event)
         HStack(alignment: .center, spacing: 12) {
             Text(CalText.range(event))
-                .font(.system(size: 12).monospacedDigit())
+                .font(.brand(size: 12).monospacedDigit())
                 .foregroundStyle(theme.inkSecondary(scheme))
                 .frame(width: 128, alignment: .leading)
-            RoundedRectangle(cornerRadius: 1.5)
+            RoundedRectangle(cornerRadius: 0)
                 .fill(Color(calendarHex: event.color))
                 .frame(width: 3, height: 30)
             VStack(alignment: .leading, spacing: 2) {
                 Text(event.title)
-                    .font(.system(size: 13.5, weight: .medium))
+                    .font(.brand(size: 13.5, weight: .medium))
                     .foregroundStyle(theme.ink(scheme))
                     .strikethrough(event.response == .declined)
                     .lineLimit(1)
                 Text(detail)
-                    .font(.system(size: 11.5))
+                    .font(.brand(size: 11.5))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .lineLimit(1)
             }
             Spacer(minLength: 8)
             if !clashes.isEmpty {
                 Image(systemName: "exclamationmark.triangle")
-                    .font(.system(size: 11))
+                    .font(.brand(size: 11))
                     .foregroundStyle(theme.inkSecondary(scheme))
                     .help("Clashes with \(clashes.map(\.title).joined(separator: ", "))")
             }
@@ -804,7 +804,7 @@ private struct AgendaRow: View {
         .padding(.horizontal, 10)
         .padding(.vertical, 7)
         .background {
-            RoundedRectangle(cornerRadius: 8, style: .continuous)
+            RoundedRectangle(cornerRadius: 0, style: .continuous)
                 .fill(selected ? theme.raised(scheme) : (hovering ? theme.well(scheme) : Color.clear))
         }
         .contentShape(Rectangle())

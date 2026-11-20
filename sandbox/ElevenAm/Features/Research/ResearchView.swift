@@ -12,7 +12,7 @@ struct ResearchView: View {
             HStack(alignment: .lastTextBaseline) {
                 DisplayTitle(text: "research", size: 30)
                 Text("James · browse, clip, cite, and get a sourced answer")
-                    .font(.system(size: 12.5))
+                    .font(.brand(size: 12.5))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .lineLimit(1)
                 Spacer()
@@ -28,9 +28,9 @@ struct ResearchView: View {
             BrowserBar()
             HStack(alignment: .top, spacing: 12) {
                 WebContainer(webView: research.webView)
-                    .clipShape(RoundedRectangle(cornerRadius: max(theme.radius - 2, 8), style: .continuous))
+                    .clipShape(RoundedRectangle(cornerRadius: theme.radius, style: .continuous))
                     .overlay {
-                        RoundedRectangle(cornerRadius: max(theme.radius - 2, 8), style: .continuous)
+                        RoundedRectangle(cornerRadius: theme.radius, style: .continuous)
                             .strokeBorder(theme.edge(scheme), lineWidth: 0.75)
                     }
                     .overlay(alignment: .top) {
@@ -85,11 +85,11 @@ private struct BrowserBar: View {
 
             HStack(spacing: 8) {
                 Image(systemName: research.isOnWebPage ? "lock" : "magnifyingglass")
-                    .font(.system(size: 11))
+                    .font(.brand(size: 11))
                     .foregroundStyle(theme.inkTertiary(scheme))
                 TextField("Search or enter an address", text: $research.address)
                     .textFieldStyle(.plain)
-                    .font(.system(size: 13))
+                    .font(.brand(size: 13))
                     .onSubmit { research.go() }
             }
             .padding(.horizontal, 12)
@@ -160,16 +160,16 @@ private struct JamesPanel: View {
                 HStack(alignment: .top, spacing: 8) {
                     AgentLogo(code: "jm", size: 16, color: theme.inkSecondary(scheme))
                     Text(notice)
-                        .font(.system(size: 11.5))
+                        .font(.brand(size: 11.5))
                         .foregroundStyle(theme.inkSecondary(scheme))
                         .fixedSize(horizontal: false, vertical: true)
                     Spacer(minLength: 0)
-                    Button { research.notice = nil } label: { Image(systemName: "xmark").font(.system(size: 8, weight: .bold)) }
+                    Button { research.notice = nil } label: { Image(systemName: "xmark").font(.brand(size: 8, weight: .bold)) }
                         .buttonStyle(.plain)
                         .foregroundStyle(theme.inkTertiary(scheme))
                 }
                 .padding(10)
-                .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(theme.well(scheme)))
+                .background(RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.well(scheme)))
                 .transition(.opacity)
             }
 
@@ -197,7 +197,7 @@ private struct PageTab: View {
                 HStack(spacing: 8) {
                     AgentLogo(code: "jm", size: 24)
                     Text(research.title.isEmpty || !research.isOnWebPage ? "This page" : research.title)
-                        .font(.system(size: 12.5, weight: .semibold))
+                        .font(.brand(size: 12.5, weight: .semibold))
                         .foregroundStyle(theme.ink(scheme))
                         .lineLimit(2)
                 }
@@ -222,7 +222,7 @@ private struct PageTab: View {
                 VStack(alignment: .leading, spacing: 6) {
                     SectionLabel(text: "Look this up")
                     Text("Ask anything and James searches the web, reads the top pages and answers citing them. From any other app, select words and choose Services › Look Up with James.")
-                        .font(.system(size: 11.5))
+                        .font(.brand(size: 11.5))
                         .foregroundStyle(theme.inkTertiary(scheme))
                         .fixedSize(horizontal: false, vertical: true)
                     LookUpField()
@@ -297,7 +297,7 @@ private struct SourcesTab: View {
             }
             if research.library.isEmpty {
                 Text("Add pages you trust. James cites them in your style, in Write and in Decks, and writes reports only from them.")
-                    .font(.system(size: 12))
+                    .font(.brand(size: 12))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -326,17 +326,17 @@ private struct SourceRow: View {
         VStack(alignment: .leading, spacing: 5) {
             HStack(alignment: .firstTextBaseline, spacing: 6) {
                 Image(systemName: source.kind.symbol)
-                    .font(.system(size: 10.5))
+                    .font(.brand(size: 10.5))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .frame(width: 14)
                 Text(research.citeText(source))
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.brand(size: 12, weight: .semibold))
                     .foregroundStyle(theme.ink(scheme))
                     .lineLimit(1)
                 Spacer(minLength: 4)
                 if source.authors.isEmpty || source.published == nil {
                     Image(systemName: "exclamationmark.circle")
-                        .font(.system(size: 10.5))
+                        .font(.brand(size: 10.5))
                         .foregroundStyle(theme.inkTertiary(scheme))
                         .help(source.authors.isEmpty ? "No author: add one if the page names one" : "No date: add one if you know it")
                 }
@@ -358,7 +358,7 @@ private struct SourceRow: View {
                 .foregroundStyle(theme.inkTertiary(scheme))
             }
             Text(Self.styled(research.reference(source)))
-                .font(.system(size: 11.5))
+                .font(.brand(size: 11.5))
                 .foregroundStyle(theme.inkSecondary(scheme))
                 .lineSpacing(1.5)
                 .textSelection(.enabled)
@@ -386,7 +386,7 @@ private struct ReportTab: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
                 Text("James answers from your \(research.library.count) \(research.library.count == 1 ? "source" : "sources") only, and cites each claim. In Write the citations follow \(research.style.title).")
-                    .font(.system(size: 12))
+                    .font(.brand(size: 12))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .fixedSize(horizontal: false, vertical: true)
                 AskField(placeholder: "What do you want to know?", text: $reportQuestion) {

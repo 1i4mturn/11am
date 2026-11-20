@@ -57,7 +57,7 @@ struct DesignLabView: View {
             LabSlider(title: "Motion", detail: "Still → lively (Reduce Motion always wins)", value: $theme.values.motion)
             VStack(alignment: .leading, spacing: 4) {
                 Text("Corner radius: \(Int(theme.values.cornerRadius))")
-                    .font(.system(size: 12.5, weight: .medium))
+                    .font(.brand(size: 12.5, weight: .medium))
                 Slider(value: $theme.values.cornerRadius, in: 6...30)
             }
             Picker("Display face", selection: $theme.values.displayFace) {
@@ -71,7 +71,7 @@ struct DesignLabView: View {
             }
             .pickerStyle(.segmented)
         }
-        .font(.system(size: 12.5))
+        .font(.brand(size: 12.5))
         .foregroundStyle(theme.ink(scheme))
     }
 
@@ -88,7 +88,7 @@ struct DesignLabView: View {
                     let rect = CGRect(x: x - d / 2, y: y - d / 2, width: d, height: d)
                     context.fill(Path(ellipseIn: rect), with: .color(Color(white: shades[index % shades.count])))
                 }
-                context.draw(Text("vellum").font(.system(size: 120, weight: .black)).foregroundColor(Color(white: 0.2)), at: CGPoint(x: size.width / 2, y: size.height / 2))
+                context.draw(Text("vellum").font(.brand(size: 120, weight: .black)).foregroundColor(Color(white: 0.2)), at: CGPoint(x: size.width / 2, y: size.height / 2))
             }
 
             VStack(alignment: .leading, spacing: 8) {
@@ -105,7 +105,7 @@ struct DesignLabView: View {
             VStack(alignment: .leading, spacing: 8) {
                 SectionLabel(text: "Layer 2 · main sheet")
                 Text("Marc drafted three replies in your voice. Two need a quick look.")
-                    .font(.system(size: 13))
+                    .font(.brand(size: 13))
                     .foregroundStyle(theme.ink(scheme))
                 HStack(spacing: 6) {
                     ModelBadge(label: "Apple on-device", isLocal: true)
@@ -123,7 +123,7 @@ struct DesignLabView: View {
                     .font(theme.display(34))
                     .foregroundStyle(theme.ink(scheme))
                 Text("runway")
-                    .font(.system(size: 12))
+                    .font(.brand(size: 12))
                     .foregroundStyle(theme.inkTertiary(scheme))
             }
             .padding(18)
@@ -146,15 +146,15 @@ private struct LabSlider: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
-                Text(title).font(.system(size: 12.5, weight: .medium))
+                Text(title).font(.brand(size: 12.5, weight: .medium))
                 Spacer()
                 Text(String(format: "%.2f", value))
-                    .font(.system(size: 11).monospacedDigit())
+                    .font(.brand(size: 11).monospacedDigit())
                     .foregroundStyle(theme.inkTertiary(scheme))
             }
             Slider(value: $value, in: 0...1)
             Text(detail)
-                .font(.system(size: 11))
+                .font(.brand(size: 11))
                 .foregroundStyle(theme.inkTertiary(scheme))
         }
     }

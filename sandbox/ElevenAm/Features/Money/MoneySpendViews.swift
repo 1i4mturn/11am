@@ -42,7 +42,7 @@ struct SpendPanel: View {
                     if unmatched.isEmpty {
                         Text(book.receipts.isEmpty ? "Drop receipts here: PDFs, photos or scans. George reads them on this Mac and matches them to the bank."
                              : "Every receipt is matched. Drop more here, or forward them from Mail.")
-                            .font(.system(size: 12))
+                            .font(.brand(size: 12))
                             .foregroundStyle(theme.inkTertiary(scheme))
                             .frame(maxWidth: .infinity, minHeight: 54)
                     } else {
@@ -53,7 +53,7 @@ struct SpendPanel: View {
                         }
                         HStack {
                             Text(claiming.isEmpty ? "Paid for something yourself? Tick it and put it on a claim." : "\(claiming.count) ticked · \(LedgerMoney.text(claimTotal))")
-                                .font(.system(size: 11))
+                                .font(.brand(size: 11))
                                 .foregroundStyle(theme.inkTertiary(scheme))
                             Spacer()
                             Button("Put on an expense claim") {
@@ -70,7 +70,7 @@ struct SpendPanel: View {
                             withAnimation(theme.spring) { showsMatched.toggle() }
                         } label: {
                             Label("\(matched.count) matched", systemImage: showsMatched ? "chevron.down" : "chevron.right")
-                                .font(.system(size: 11.5))
+                                .font(.brand(size: 11.5))
                         }
                         .buttonStyle(.plain)
                         .foregroundStyle(theme.inkSecondary(scheme))
@@ -81,7 +81,7 @@ struct SpendPanel: View {
                 }
                 .overlay {
                     if dropping {
-                        RoundedRectangle(cornerRadius: max(theme.radius - 4, 8), style: .continuous)
+                        RoundedRectangle(cornerRadius: theme.radius, style: .continuous)
                             .strokeBorder(theme.ink(scheme), style: StrokeStyle(lineWidth: 1.5, dash: [6, 4]))
                     }
                 }
@@ -96,13 +96,13 @@ struct SpendPanel: View {
                         SectionLabel(text: "Need their tax invoice · \(missing.count)")
                         Spacer()
                         Text("\(LedgerMoney.text(book.gstWaitingOnReceipts(from: yearStart, to: ledger.today))) of GST credits this financial year")
-                            .font(.system(size: 11))
+                            .font(.brand(size: 11))
                             .foregroundStyle(theme.inkTertiary(scheme))
                     }
                     LedgerCard {
                         ForEach(missing.prefix(40)) { line in missingRow(line) }
                         Text("The ATO asks for a tax invoice for any purchase over $82.50 (GST included) before you claim its GST. Bills you've entered already count.")
-                            .font(.system(size: 10.5))
+                            .font(.brand(size: 10.5))
                             .foregroundStyle(theme.inkTertiary(scheme))
                             .fixedSize(horizontal: false, vertical: true)
                     }
@@ -125,17 +125,17 @@ struct SpendPanel: View {
             HStack(spacing: 8) {
                 AgentLogo(code: "ge", size: 16, color: theme.inkSecondary(scheme))
                 Text(checks.count == 1 ? "George found one thing to look at" : "George found \(checks.count) things to look at")
-                    .font(.system(size: 12.5, weight: .semibold))
+                    .font(.brand(size: 12.5, weight: .semibold))
                     .foregroundStyle(theme.ink(scheme))
             }
             ForEach(checks) { check in
                 HStack(alignment: .top, spacing: 10) {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(check.title)
-                            .font(.system(size: 12.5, weight: .medium))
+                            .font(.brand(size: 12.5, weight: .medium))
                             .foregroundStyle(theme.ink(scheme))
                         Text(check.detail)
-                            .font(.system(size: 11.5))
+                            .font(.brand(size: 11.5))
                             .foregroundStyle(theme.inkSecondary(scheme))
                             .fixedSize(horizontal: false, vertical: true)
                     }
@@ -145,7 +145,7 @@ struct SpendPanel: View {
                     Button {
                         withAnimation(theme.spring) { ledger.dismiss(check) }
                     } label: {
-                        Image(systemName: "xmark").font(.system(size: 10, weight: .bold))
+                        Image(systemName: "xmark").font(.brand(size: 10, weight: .bold))
                     }
                     .buttonStyle(.plain)
                     .foregroundStyle(theme.inkTertiary(scheme))
@@ -156,7 +156,7 @@ struct SpendPanel: View {
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .vellum(level: 3, radius: max(theme.radius - 4, 8))
+        .vellum(level: 3, radius: theme.radius)
     }
 
     private func matchedRow(_ receipt: LedgerReceipt) -> some View {
@@ -164,14 +164,14 @@ struct SpendPanel: View {
         let bill = receipt.bill.flatMap { ledger.book.invoice($0) }
         return HStack(spacing: 10) {
             Image(systemName: "paperclip")
-                .font(.system(size: 11))
+                .font(.brand(size: 11))
                 .foregroundStyle(theme.inkTertiary(scheme))
             Text(receipt.vendor)
-                .font(.system(size: 12))
+                .font(.brand(size: 12))
                 .foregroundStyle(theme.ink(scheme))
                 .lineLimit(1)
             Text(line.map { "\($0.description) · \($0.date.shortDay)" } ?? bill.map { "\($0.number)" } ?? "")
-                .font(.system(size: 11))
+                .font(.brand(size: 11))
                 .foregroundStyle(theme.inkTertiary(scheme))
                 .lineLimit(1)
             Spacer(minLength: 8)
@@ -188,11 +188,11 @@ struct SpendPanel: View {
     private func missingRow(_ line: BankLine) -> some View {
         HStack(spacing: 10) {
             Text(line.date.shortDay)
-                .font(.system(size: 12).monospacedDigit())
+                .font(.brand(size: 12).monospacedDigit())
                 .foregroundStyle(theme.inkTertiary(scheme))
                 .frame(width: 52, alignment: .leading)
             Text(line.description)
-                .font(.system(size: 12.5))
+                .font(.brand(size: 12.5))
                 .foregroundStyle(theme.ink(scheme))
                 .lineLimit(1)
             Spacer(minLength: 8)
@@ -218,20 +218,20 @@ private struct ReceiptRow: View {
         let candidates = ledger.book.candidates(for: receipt)
         HStack(alignment: .center, spacing: 10) {
             Toggle("", isOn: $claiming)
-                .toggleStyle(.checkbox)
+                .toggleStyle(.brandCheck)
                 .labelsHidden()
                 .help("Paid for it yourself: tick to put it on an expense claim")
             Image(systemName: receipt.source == .mail ? "envelope" : "doc.text")
-                .font(.system(size: 12))
+                .font(.brand(size: 12))
                 .foregroundStyle(theme.inkTertiary(scheme))
                 .frame(width: 16)
             VStack(alignment: .leading, spacing: 2) {
                 Text(receipt.vendor)
-                    .font(.system(size: 12.5, weight: .medium))
+                    .font(.brand(size: 12.5, weight: .medium))
                     .foregroundStyle(theme.ink(scheme))
                     .lineLimit(1)
                 Text(detail(candidates.first?.line))
-                    .font(.system(size: 11))
+                    .font(.brand(size: 11))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .lineLimit(1)
             }
@@ -289,7 +289,7 @@ private struct ReceiptEditor: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Receipt").font(.system(size: 13, weight: .semibold))
+            Text("Receipt").font(.brand(size: 13, weight: .semibold))
             TextField("Who from", text: $receipt.vendor)
             HStack {
                 Text("Total")
@@ -325,14 +325,14 @@ private struct ClaimsCard: View {
             Spacer()
             if ledger.book.owedOnClaims > 0 {
                 Text("Owed to you \(LedgerMoney.text(ledger.book.owedOnClaims))")
-                    .font(.system(size: 11.5, weight: .medium))
+                    .font(.brand(size: 11.5, weight: .medium))
                     .foregroundStyle(theme.inkSecondary(scheme))
             }
         }
         LedgerCard {
             if claims.isEmpty {
                 Text("Paid for something for the business yourself? Tick its receipt above and put it on a claim. It's paid back like a bill.")
-                    .font(.system(size: 12))
+                    .font(.brand(size: 12))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .fixedSize(horizontal: false, vertical: true)
             } else {
@@ -343,10 +343,10 @@ private struct ClaimsCard: View {
                     } label: {
                         HStack(spacing: 10) {
                             Text(claim.number)
-                                .font(.system(size: 12.5, weight: .medium).monospacedDigit())
+                                .font(.brand(size: 12.5, weight: .medium).monospacedDigit())
                                 .foregroundStyle(theme.ink(scheme))
                             Text("\(ledger.book.contact(claim.contact)?.name ?? "") · \(claim.lines.count) \(claim.lines.count == 1 ? "item" : "items") · \(claim.issued.shortDay)")
-                                .font(.system(size: 11.5))
+                                .font(.brand(size: 11.5))
                                 .foregroundStyle(theme.inkTertiary(scheme))
                                 .lineLimit(1)
                             Spacer(minLength: 8)
@@ -380,7 +380,7 @@ struct BudgetReport: View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
                 Text("Budget to \(end.fullDay), against what happened")
-                    .font(.system(size: 11.5))
+                    .font(.brand(size: 11.5))
                     .foregroundStyle(theme.inkTertiary(scheme))
                 Spacer()
                 Button("Edit budgets…") { editing = true }
@@ -388,7 +388,7 @@ struct BudgetReport: View {
             }
             if ledger.book.budgets.isEmpty {
                 Text("No budgets yet. Set a monthly figure for the accounts that matter, or start from last year's.")
-                    .font(.system(size: 12))
+                    .font(.brand(size: 12))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .padding(.vertical, 8)
             }
@@ -423,7 +423,7 @@ struct BudgetReport: View {
             Text("Actual").frame(width: 100, alignment: .trailing)
             Text("Better or worse").frame(width: 110, alignment: .trailing)
         }
-        .font(.system(size: 10.5, weight: .semibold))
+        .font(.brand(size: 10.5, weight: .semibold))
         .foregroundStyle(theme.inkTertiary(scheme))
         .padding(.top, 8)
     }
@@ -458,14 +458,14 @@ private struct BudgetLine: View {
         VStack(spacing: 3) {
             HStack(spacing: 10) {
                 Text(label)
-                    .font(.system(size: 12.5, weight: bold ? .semibold : .regular))
+                    .font(.brand(size: 12.5, weight: bold ? .semibold : .regular))
                     .foregroundStyle(theme.ink(scheme))
                     .lineLimit(1)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 LedgerAmount(cents: budget, bold: bold, width: 100)
                 LedgerAmount(cents: actual, bold: bold, width: 100)
                 Text(varianceText)
-                    .font(.system(size: 12.5, weight: variance < 0 ? .semibold : .regular).monospacedDigit())
+                    .font(.brand(size: 12.5, weight: variance < 0 ? .semibold : .regular).monospacedDigit())
                     .foregroundStyle(variance < 0 ? theme.ink(scheme) : theme.inkSecondary(scheme))
                     .frame(width: 110, alignment: .trailing)
             }
@@ -500,14 +500,14 @@ private struct BudgetEditor: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Monthly budgets").font(theme.display(22)).foregroundStyle(theme.ink(scheme))
             Text("A figure a month for each account. Reports spread it over the days of each month, so part of a month counts in part.")
-                .font(.system(size: 12))
+                .font(.brand(size: 12))
                 .foregroundStyle(theme.inkSecondary(scheme))
                 .fixedSize(horizontal: false, vertical: true)
             ScrollView {
                 VStack(spacing: 0) {
                     ForEach(accounts) { account in
                         HStack {
-                            Text(account.label).font(.system(size: 12.5)).lineLimit(1)
+                            Text(account.label).font(.brand(size: 12.5)).lineLimit(1)
                             Spacer()
                             MoneyField(title: "0.00", cents: Binding(get: { amounts[account.code] ?? 0 }, set: { amounts[account.code] = $0 }))
                                 .frame(width: 120)
