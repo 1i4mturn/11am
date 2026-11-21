@@ -4,7 +4,11 @@ import Foundation
 enum FontRegistry {
     /// Registers the bundled brand faces for this process (no install needed): Schibsted Grotesk, Instrument Sans,
     /// Courier Prime, Hack and Reenie Beanie.
+    private static var registered = false
+
     static func registerBundledFonts() {
+        guard !registered else { return }
+        registered = true
         let urls = (Bundle.main.urls(forResourcesWithExtension: "ttf", subdirectory: nil) ?? [])
             + (Bundle.main.urls(forResourcesWithExtension: "otf", subdirectory: nil) ?? [])
         for url in urls {

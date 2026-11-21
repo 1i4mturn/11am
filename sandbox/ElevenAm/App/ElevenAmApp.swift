@@ -4,6 +4,11 @@ import SwiftUI
 struct ElevenAmApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
+    init() {
+        // Before any window is built: views drawn earlier would keep a fallback face for good.
+        FontRegistry.registerBundledFonts()
+    }
+
     var body: some Scene {
         WindowGroup("11am", id: "main") {
             RootView()

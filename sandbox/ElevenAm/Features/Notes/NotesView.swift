@@ -531,7 +531,7 @@ private struct NoteDetail: View {
             DocEditor(
                 text: Binding(get: { notes.editableText(note.id) }, set: { notes.edit(note.id, text: $0) }),
                 selection: $selection,
-                style: .from(theme, scheme, font: NSFont.systemFont(ofSize: 14)),
+                style: .from(theme, scheme, font: BrandFont.nsBody(14)),
                 controller: editor,
                 placeholder: "Title on the first line, then anything. [[Links]] and #tags work.",
                 insets: NSSize(width: 0, height: 16),

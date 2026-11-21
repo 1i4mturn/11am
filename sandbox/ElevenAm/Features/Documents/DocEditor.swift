@@ -746,7 +746,9 @@ enum MarkdownStyler {
     static func headingFont(_ level: Int, body: NSFont) -> NSFont {
         let sizes: [CGFloat] = [0, 1.75, 1.42, 1.2, 1.08, 1, 1]
         let size = (body.pointSize * sizes[min(max(level, 1), 6)]).rounded()
-        return NSFont.systemFont(ofSize: size, weight: level <= 2 ? .bold : .semibold)
+        // Schibsted Grotesk, as every heading in 11am.
+        return NSFont(name: level <= 2 ? "SchibstedGrotesk-ExtraBold" : "SchibstedGrotesk-Bold", size: size)
+            ?? NSFont.systemFont(ofSize: size, weight: level <= 2 ? .bold : .semibold)
     }
 
     static func style(_ storage: NSTextStorage, style: DocEditorStyle, focus: NSRange?, pictureSize: (String) -> CGSize? = { _ in nil }) {
@@ -755,7 +757,7 @@ enum MarkdownStyler {
         let full = NSRange(location: 0, length: ns.length)
         storage.beginEditing()
         storage.setAttributes([.font: style.body, .foregroundColor: style.ink, .paragraphStyle: bodyParagraph], range: full)
-        let mono = NSFont.monospacedSystemFont(ofSize: max(style.body.pointSize - 2.5, 10), weight: .regular)
+        let mono = NSFont(name: "Hack-Regular", size: max(style.body.pointSize - 2.5, 10)) ?? NSFont.monospacedSystemFont(ofSize: max(style.body.pointSize - 2.5, 10), weight: .regular)
 
         for line in MarkdownLines.lines(text) where line.range.length > 0 {
             switch line.kind {
@@ -888,7 +890,7 @@ enum MarkdownStyler {
                 dimMarkers(node, storage: storage, style: style)
                 apply(node.children, storage: storage, font: font, style: style)
             case .code:
-                let mono = NSFont.monospacedSystemFont(ofSize: font.pointSize * 0.88, weight: .regular)
+                let mono = NSFont(name: "Hack-Regular", size: font.pointSize * 0.88) ?? NSFont.monospacedSystemFont(ofSize: font.pointSize * 0.88, weight: .regular)
                 storage.addAttributes([.font: mono, .backgroundColor: style.shade], range: node.range)
                 dimMarkers(node, storage: storage, style: style)
             case .link:

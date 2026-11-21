@@ -2,7 +2,7 @@ import AppKit
 import SwiftUI
 
 extension DocEditorStyle {
-    /// The editor's look from the vellum theme: ink on paper, a quiet blue for links.
+    /// The editor's look in brand v2: ink on paper at full strength, links and highlights in ink too.
     @MainActor
     static func from(_ theme: Theme, _ scheme: ColorScheme, font: NSFont) -> DocEditorStyle {
         DocEditorStyle(
@@ -10,9 +10,9 @@ extension DocEditorStyle {
             ink: NSColor(theme.ink(scheme)),
             secondary: NSColor(theme.inkSecondary(scheme)),
             tertiary: NSColor(theme.inkTertiary(scheme)),
-            accent: scheme == .dark ? NSColor(srgbRed: 0.56, green: 0.71, blue: 0.96, alpha: 1) : NSColor(srgbRed: 0.15, green: 0.35, blue: 0.68, alpha: 1),
+            accent: NSColor(theme.ink(scheme)),
             shade: NSColor(theme.ink(scheme).opacity(scheme == .dark ? 0.08 : 0.05)),
-            highlight: NSColor(srgbRed: 1, green: 0.86, blue: 0.3, alpha: scheme == .dark ? 0.32 : 0.45)
+            highlight: NSColor(theme.ink(scheme).opacity(scheme == .dark ? 0.22 : 0.12))
         )
     }
 }
@@ -419,7 +419,8 @@ private struct Page: View {
     }
 
     /// New York for the writing itself: it reads like paper.
-    static let writingFont: NSFont = DocTypography.serif(15.5)
+    /// Instrument Sans, the brand's reading face.
+    static let writingFont: NSFont = BrandFont.nsBody(16)
 }
 
 /// Bold, italic, headings, lists and the rest, on the page.
