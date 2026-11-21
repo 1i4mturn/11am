@@ -309,7 +309,7 @@ private struct LessonPlayer: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack(spacing: 12) {
-                Button { languages.closeSession() } label: { Image(systemName: "xmark") }
+                Button { languages.closeSession() } label: { Icon("xmark") }
                     .buttonStyle(.plain)
                     .foregroundStyle(theme.inkSecondary(scheme))
                     .keyboardShortcut(.cancelAction)
@@ -327,7 +327,7 @@ private struct LessonPlayer: View {
                     Image(systemName: "lightbulb")
                     Text(tip).fixedSize(horizontal: false, vertical: true)
                     Spacer()
-                    Button { tipShown = false } label: { Image(systemName: "xmark").font(.brand(size: 10)) }
+                    Button { tipShown = false } label: { Icon("xmark").font(.brand(size: 10)) }
                         .buttonStyle(.plain)
                 }
                 .font(.brand(size: 12.5))
@@ -822,7 +822,7 @@ private struct StoryReader: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
                 HStack {
-                    Button { languages.storyUnit = nil } label: { Image(systemName: "chevron.left") }
+                    Button { languages.storyUnit = nil } label: { Icon("chevron.left") }
                         .buttonStyle(.plain)
                         .keyboardShortcut(.cancelAction)
                     Text(story.title)
@@ -899,7 +899,7 @@ private struct PlacementView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
-                Button { languages.closePlacement() } label: { Image(systemName: "xmark") }
+                Button { languages.closePlacement() } label: { Icon("xmark") }
                     .buttonStyle(.plain)
                     .keyboardShortcut(.cancelAction)
                 if let session = languages.placement {

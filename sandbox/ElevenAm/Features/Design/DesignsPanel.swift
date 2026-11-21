@@ -21,7 +21,7 @@ struct DesignsPanel: View {
                         AgentLogo(code: "rt", size: 16, color: theme.inkSecondary(scheme))
                         Text(notice).font(.brand(size: 12)).foregroundStyle(theme.ink(scheme)).lineLimit(2)
                         Spacer()
-                        Button { studio.notice = nil } label: { Image(systemName: "xmark").font(.brand(size: 9, weight: .bold)) }
+                        Button { studio.notice = nil } label: { Icon("xmark").font(.brand(size: 9, weight: .bold)) }
                             .buttonStyle(.plain)
                             .foregroundStyle(theme.inkTertiary(scheme))
                     }

@@ -43,7 +43,7 @@ struct DecksView: View {
                             Button(kind.title + "…") { decks.export(kind) }
                         }
                     } label: {
-                        Image(systemName: "square.and.arrow.up")
+                        Icon("square.and.arrow.up")
                     }
                     .menuStyle(.button)
                     .buttonStyle(.borderless)
@@ -76,7 +76,7 @@ struct DecksView: View {
                     AgentLogo(code: "cr", size: 18, color: theme.inkSecondary(scheme))
                     Text(notice).font(.brand(size: 12.5)).foregroundStyle(theme.ink(scheme)).lineLimit(2)
                     Spacer()
-                    Button { decks.notice = nil } label: { Image(systemName: "xmark").font(.brand(size: 10, weight: .bold)) }
+                    Button { decks.notice = nil } label: { Icon("xmark").font(.brand(size: 10, weight: .bold)) }
                         .buttonStyle(.plain)
                         .foregroundStyle(theme.inkTertiary(scheme))
                 }

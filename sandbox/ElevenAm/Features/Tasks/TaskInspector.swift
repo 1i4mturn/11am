@@ -22,7 +22,7 @@ struct TaskInspector: View {
                         .foregroundStyle(theme.inkTertiary(scheme))
                     Spacer()
                     Button { tasks.selectedID = nil } label: {
-                        Image(systemName: "xmark").font(.brand(size: 11, weight: .semibold))
+                        Icon("xmark").font(.brand(size: 11, weight: .semibold))
                     }
                     .buttonStyle(.borderless)
                     .help("Close")
@@ -243,7 +243,7 @@ struct TaskInspector: View {
                         Button {
                             tasks.update(task.id) { $0.tags.removeAll { $0 == tag } }
                         } label: {
-                            Image(systemName: "xmark").font(.brand(size: 8, weight: .bold))
+                            Icon("xmark").font(.brand(size: 8, weight: .bold))
                         }
                         .buttonStyle(.plain)
                     }
@@ -287,7 +287,7 @@ struct TaskInspector: View {
                     .foregroundStyle(step.done ? theme.inkTertiary(scheme) : theme.ink(scheme))
                 Spacer(minLength: 4)
                 Button { tasks.removeStep(step.id, in: task.id) } label: {
-                    Image(systemName: "minus.circle").font(.brand(size: 11))
+                    Icon("minus.circle").font(.brand(size: 11))
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(theme.inkTertiary(scheme))
@@ -295,7 +295,7 @@ struct TaskInspector: View {
             .foregroundStyle(theme.ink(scheme))
         }
         HStack(spacing: 8) {
-            Image(systemName: "plus").font(.brand(size: 11))
+            Icon("plus").font(.brand(size: 11))
             TextField("Add a step", text: $newStep)
                 .textFieldStyle(.plain)
                 .font(.brand(size: 12.5))
@@ -313,7 +313,7 @@ struct TaskInspector: View {
                     ProgressView().controlSize(.small)
                     Text("Leo is breaking it down…")
                 } else {
-                    Image(systemName: "sparkles")
+                    Icon("sparkles")
                     Text("Break it into steps")
                 }
             }

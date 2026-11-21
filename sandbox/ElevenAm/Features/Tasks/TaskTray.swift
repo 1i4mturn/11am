@@ -13,7 +13,7 @@ struct TaskTray: View {
             }
         if !soon.isEmpty {
             HStack(spacing: 8) {
-                Image(systemName: "checklist")
+                Icon("checklist")
                     .font(.brand(size: 11))
                     .foregroundStyle(theme.inkSecondary(scheme))
                 Text("Fit in")
@@ -25,7 +25,7 @@ struct TaskTray: View {
                         ForEach(soon.prefix(12)) { task in
                             HStack(spacing: 5) {
                                 if tasks.isOverdue(task) {
-                                    Image(systemName: "exclamationmark.circle").font(.brand(size: 9.5))
+                                    Icon("exclamationmark.circle").font(.brand(size: 9.5))
                                 }
                                 Text(task.title).lineLimit(1)
                                 if let due = task.due, !Calendar.current.isDateInToday(due) {

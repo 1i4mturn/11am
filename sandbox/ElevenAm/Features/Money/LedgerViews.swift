@@ -199,7 +199,7 @@ struct BankPanel: View {
                 if receipt {
                     Image(systemName: "paperclip").help("Receipt kept")
                 } else if needsReceipt {
-                    Image(systemName: "exclamationmark.circle").help("Over $82.50 with GST claimed: keep its tax invoice")
+                    Icon("exclamationmark.circle").help("Over $82.50 with GST claimed: keep its tax invoice")
                 } else {
                     Color.clear
                 }
@@ -629,7 +629,7 @@ private struct InvoiceDetail: View {
                         if sale { Button("Save as PDF…") { ledger.savePDF(invoice) } }
                         Button("Void…", role: .destructive) { voiding = true }
                     } label: {
-                        Image(systemName: "ellipsis.circle")
+                        Icon("ellipsis.circle")
                     }
                     .menuStyle(.button)
                     .buttonStyle(.borderless)
@@ -811,7 +811,7 @@ struct LineItemsEditor: View {
                     Button {
                         lines.removeAll { $0.id == line.id }
                     } label: {
-                        Image(systemName: "minus.circle")
+                        Icon("minus.circle")
                     }
                     .buttonStyle(.plain)
                     .foregroundStyle(theme.inkTertiary(scheme))

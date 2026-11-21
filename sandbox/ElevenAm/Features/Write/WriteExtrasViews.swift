@@ -83,7 +83,7 @@ struct WilliamMenu: View {
             Divider()
             Button(write.showsComments ? "Hide comments" : "Show comments") { write.showsComments.toggle() }
         } label: {
-            Image(systemName: "wand.and.stars")
+            Icon("wand.and.stars")
                 .font(.brand(size: 12, weight: .medium))
                 .foregroundStyle(theme.inkSecondary(scheme))
                 .frame(width: 26, height: 24)
@@ -112,7 +112,7 @@ struct DocCommentsPanel: View {
             HStack {
                 SectionLabel(text: "Comments · \(all.filter { !$0.resolved }.count)")
                 Spacer()
-                Button { write.showsComments = false } label: { Image(systemName: "xmark").font(.brand(size: 9, weight: .bold)) }
+                Button { write.showsComments = false } label: { Icon("xmark").font(.brand(size: 9, weight: .bold)) }
                     .buttonStyle(.plain)
                     .foregroundStyle(theme.inkTertiary(scheme))
             }
@@ -187,7 +187,7 @@ private struct DocCommentThread: View {
                     Button("Ask William") { write.reply("@William what do you think?", to: comment.id, in: document.id) }
                 }
                 Spacer()
-                Button { withAnimation(theme.spring) { write.deleteComment(comment.id, in: document.id) } } label: { Image(systemName: "trash") }
+                Button { withAnimation(theme.spring) { write.deleteComment(comment.id, in: document.id) } } label: { Icon("trash") }
                     .help("Delete the comment")
             }
             .buttonStyle(.plain)
@@ -235,7 +235,7 @@ struct WilliamJobCard: View {
                         .lineLimit(1)
                 }
                 Spacer()
-                Button { write.william = nil } label: { Image(systemName: "xmark").font(.brand(size: 9, weight: .bold)) }
+                Button { write.william = nil } label: { Icon("xmark").font(.brand(size: 9, weight: .bold)) }
                     .buttonStyle(.plain)
                     .foregroundStyle(theme.inkTertiary(scheme))
             }

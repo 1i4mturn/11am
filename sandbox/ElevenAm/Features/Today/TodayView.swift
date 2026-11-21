@@ -42,7 +42,7 @@ struct TodayView: View {
                 if !today.isLive {
                     Card {
                         HStack(alignment: .top, spacing: 12) {
-                            Image(systemName: "calendar")
+                            Icon("calendar")
                                 .font(.brand(size: 18))
                                 .foregroundStyle(theme.inkSecondary(scheme))
                             VStack(alignment: .leading, spacing: 6) {

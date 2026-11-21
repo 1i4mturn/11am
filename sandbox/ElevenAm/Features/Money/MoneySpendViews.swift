@@ -145,7 +145,7 @@ struct SpendPanel: View {
                     Button {
                         withAnimation(theme.spring) { ledger.dismiss(check) }
                     } label: {
-                        Image(systemName: "xmark").font(.brand(size: 10, weight: .bold))
+                        Icon("xmark").font(.brand(size: 10, weight: .bold))
                     }
                     .buttonStyle(.plain)
                     .foregroundStyle(theme.inkTertiary(scheme))
@@ -256,7 +256,7 @@ private struct ReceiptRow: View {
                 Divider()
                 Button("Delete", role: .destructive) { ledger.deleteReceipt(receipt.id) }
             } label: {
-                Image(systemName: "ellipsis.circle")
+                Icon("ellipsis.circle")
             }
             .menuStyle(.button)
             .buttonStyle(.borderless)

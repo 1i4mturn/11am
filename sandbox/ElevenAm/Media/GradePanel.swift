@@ -177,7 +177,7 @@ struct GradePanel: View {
                 HStack {
                     SectionLabel(text: title)
                     Spacer()
-                    Image(systemName: "chevron.right")
+                    Icon("chevron.right")
                         .font(.brand(size: 9, weight: .bold))
                         .rotationEffect(.degrees(isOpen ? 90 : 0))
                         .foregroundStyle(theme.inkTertiary(scheme))

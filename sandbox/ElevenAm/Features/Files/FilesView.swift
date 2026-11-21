@@ -36,7 +36,7 @@ struct FilesView: View {
                     Button {
                         browser.notice = nil
                     } label: {
-                        Image(systemName: "xmark").font(.brand(size: 10, weight: .bold))
+                        Icon("xmark").font(.brand(size: 10, weight: .bold))
                     }
                     .buttonStyle(.plain)
                     .foregroundStyle(theme.inkTertiary(scheme))
@@ -129,7 +129,7 @@ private struct FilesSearchView: View {
                         SectionLabel(text: "Folders")
                         ForEach(files.folders, id: \.self) { folder in
                             HStack {
-                                Image(systemName: "folder")
+                                Icon("folder")
                                 Text(folder.path.replacingOccurrences(of: NSHomeDirectory(), with: "~"))
                                     .font(.brand(size: 12.5))
                                 Spacer()

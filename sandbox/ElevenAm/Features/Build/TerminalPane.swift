@@ -343,7 +343,7 @@ private struct TabStrip: View {
                     }
                 }
             }
-            Button { terminal.newTab() } label: { Image(systemName: "plus") }
+            Button { terminal.newTab() } label: { Icon("plus") }
                 .buttonStyle(.vellumSecondary)
                 .keyboardShortcut("t", modifiers: .command)
                 .help("New tab (⌘T)")
@@ -364,7 +364,7 @@ private struct TabStrip: View {
                 terminal.searching.toggle()
                 if !terminal.searching { terminal.query = "" }
                 terminal.find()
-            } label: { Image(systemName: "magnifyingglass") }
+            } label: { Icon("magnifyingglass") }
                 .buttonStyle(.vellumSecondary)
                 .keyboardShortcut("f", modifiers: .command)
                 .help("Find in the scrollback (⌘F)")
@@ -428,7 +428,7 @@ private struct TabChip: View {
                     .fill(selected ? theme.well(scheme) : (hovering ? theme.well(scheme).opacity(0.5) : Color.clear))
             }
             .overlay(alignment: .trailing) {
-                Button { terminal.closeTab(tab.id) } label: { Image(systemName: "xmark").font(.brand(size: 8.5, weight: .bold)) }
+                Button { terminal.closeTab(tab.id) } label: { Icon("xmark").font(.brand(size: 8.5, weight: .bold)) }
                     .buttonStyle(.plain)
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .padding(.trailing, 6)
@@ -525,7 +525,7 @@ private struct SearchBar: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            Image(systemName: "magnifyingglass").foregroundStyle(theme.inkTertiary(scheme))
+            Icon("magnifyingglass").foregroundStyle(theme.inkTertiary(scheme))
             TextField("Find in the scrollback", text: $terminal.query)
                 .textFieldStyle(.plain)
                 .font(.brand(size: 12.5))
@@ -533,18 +533,18 @@ private struct SearchBar: View {
             Text(terminal.matches.isEmpty ? (terminal.query.isEmpty ? "" : "No matches") : "\((terminal.currentMatch ?? 0) + 1) of \(terminal.matches.count)")
                 .font(.brand(size: 11).monospacedDigit())
                 .foregroundStyle(theme.inkTertiary(scheme))
-            Button { terminal.nextMatch(forward: false) } label: { Image(systemName: "chevron.up") }
+            Button { terminal.nextMatch(forward: false) } label: { Icon("chevron.up") }
                 .buttonStyle(.plain)
                 .disabled(terminal.matches.isEmpty)
                 .help("Earlier")
-            Button { terminal.nextMatch(forward: true) } label: { Image(systemName: "chevron.down") }
+            Button { terminal.nextMatch(forward: true) } label: { Icon("chevron.down") }
                 .buttonStyle(.plain)
                 .disabled(terminal.matches.isEmpty)
                 .help("Later")
             Button {
                 terminal.searching = false
                 terminal.query = ""
-            } label: { Image(systemName: "xmark") }
+            } label: { Icon("xmark") }
                 .buttonStyle(.plain)
                 .keyboardShortcut(.escape, modifiers: [])
         }
@@ -613,7 +613,7 @@ private struct RiskBanner: View {
     var body: some View {
         if let risky = session.pendingRisk {
             HStack(spacing: 8) {
-                Image(systemName: "exclamationmark.triangle")
+                Icon("exclamationmark.triangle")
                 Text("\(risky) can change or delete things. Press Return again to run it, or edit it first.")
                     .font(.brand(size: 12))
                     .lineLimit(2)
@@ -666,7 +666,7 @@ private struct CommandSuggestion: View {
                 }
             }
             Spacer(minLength: 0)
-            Button { terminal.dismissSuggestion() } label: { Image(systemName: "xmark") }
+            Button { terminal.dismissSuggestion() } label: { Icon("xmark") }
                 .buttonStyle(.plain)
                 .foregroundStyle(theme.inkTertiary(scheme))
         }
@@ -700,7 +700,7 @@ private struct Explanation: View {
                 }
             }
             Spacer(minLength: 0)
-            Button { terminal.dismissExplanation() } label: { Image(systemName: "xmark") }
+            Button { terminal.dismissExplanation() } label: { Icon("xmark") }
                 .buttonStyle(.plain)
                 .foregroundStyle(theme.inkTertiary(scheme))
         }

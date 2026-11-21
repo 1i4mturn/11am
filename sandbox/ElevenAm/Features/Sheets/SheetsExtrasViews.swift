@@ -22,7 +22,7 @@ struct SheetsSidePanel: View {
                 Button {
                     sheets.panel = nil
                 } label: {
-                    Image(systemName: "xmark").font(.brand(size: 10, weight: .bold))
+                    Icon("xmark").font(.brand(size: 10, weight: .bold))
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(theme.inkTertiary(scheme))
@@ -141,7 +141,7 @@ private struct RulesPanel: View {
                         Divider()
                         Button("Delete", role: .destructive) { sheets.deleteRule(rule.id) }
                     } label: {
-                        Image(systemName: "ellipsis")
+                        Icon("ellipsis")
                     }
                     .menuStyle(.button)
                     .buttonStyle(.borderless)
@@ -346,7 +346,7 @@ private struct ValidationPanel: View {
                     Button {
                         sheets.deleteValidation(rule.id)
                     } label: {
-                        Image(systemName: "trash").font(.brand(size: 10.5))
+                        Icon("trash").font(.brand(size: 10.5))
                     }
                     .buttonStyle(.plain)
                     .foregroundStyle(theme.inkTertiary(scheme))

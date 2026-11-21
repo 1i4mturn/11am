@@ -13,12 +13,12 @@ struct VideoView: View {
         VStack(alignment: .leading, spacing: 14) {
             SectionHeader(title: "video", subtitle: "Cole · cut, colour and clean up") {
                 HStack(spacing: 6) {
-                    Button { video.undo() } label: { Image(systemName: "arrow.uturn.backward") }
+                    Button { video.undo() } label: { Icon("arrow.uturn.backward") }
                         .buttonStyle(.vellumSecondary)
                         .disabled(!video.canUndo)
                         .keyboardShortcut("z", modifiers: .command)
                         .help("Undo")
-                    Button { video.redo() } label: { Image(systemName: "arrow.uturn.forward") }
+                    Button { video.redo() } label: { Icon("arrow.uturn.forward") }
                         .buttonStyle(.vellumSecondary)
                         .disabled(!video.canRedo)
                         .keyboardShortcut("z", modifiers: [.command, .shift])
@@ -302,11 +302,11 @@ private struct ClipPanel: View {
                 .buttonStyle(.vellumSecondary)
             Button("Duplicate") { video.duplicateSelected() }
                 .buttonStyle(.vellumSecondary)
-            Button { video.moveSelected(by: -1) } label: { Image(systemName: "arrow.left") }
+            Button { video.moveSelected(by: -1) } label: { Icon("arrow.left") }
                 .buttonStyle(.vellumSecondary)
                 .disabled(video.selectedIndex == 0)
                 .help("Move earlier")
-            Button { video.moveSelected(by: 1) } label: { Image(systemName: "arrow.right") }
+            Button { video.moveSelected(by: 1) } label: { Icon("arrow.right") }
                 .buttonStyle(.vellumSecondary)
                 .disabled(video.selectedIndex == video.clips.count - 1)
                 .help("Move later")
@@ -450,7 +450,7 @@ private struct MusicSection: View {
             SectionLabel(text: "Music · whole movie")
             if let music = video.music {
                 HStack(spacing: 8) {
-                    Image(systemName: "music.note")
+                    Icon("music.note")
                         .foregroundStyle(theme.inkSecondary(scheme))
                     Text(music.name)
                         .font(.brand(size: 12.5, weight: .medium))
@@ -462,7 +462,7 @@ private struct MusicSection: View {
                         .buttonStyle(.plain)
                         .foregroundStyle(theme.inkSecondary(scheme))
                         .help("Use another file")
-                    Button { video.removeMusic() } label: { Image(systemName: "xmark") }
+                    Button { video.removeMusic() } label: { Icon("xmark") }
                         .buttonStyle(.plain)
                         .foregroundStyle(theme.inkSecondary(scheme))
                         .help("Take the music out")
@@ -571,11 +571,11 @@ private struct TitleEditor: View {
                     .font(.brand(size: 11).monospacedDigit())
                     .foregroundStyle(theme.inkTertiary(scheme))
                 Spacer(minLength: 4)
-                Button { video.seek(to: title.start + min(1, title.duration / 2)) } label: { Image(systemName: "eye") }
+                Button { video.seek(to: title.start + min(1, title.duration / 2)) } label: { Icon("eye") }
                     .buttonStyle(.plain)
                     .foregroundStyle(theme.inkSecondary(scheme))
                     .help("Show it")
-                Button { video.deleteTitle(title.id) } label: { Image(systemName: "trash") }
+                Button { video.deleteTitle(title.id) } label: { Icon("trash") }
                     .buttonStyle(.plain)
                     .foregroundStyle(theme.inkSecondary(scheme))
                     .help("Delete")

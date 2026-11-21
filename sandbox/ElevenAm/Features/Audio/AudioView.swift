@@ -45,7 +45,7 @@ struct AudioView: View {
                     Text(message).font(.brand(size: 12.5)).foregroundStyle(theme.ink(scheme)).lineLimit(2)
                     Spacer()
                     if audio.working == nil {
-                        Button { audio.notice = nil } label: { Image(systemName: "xmark").font(.brand(size: 10, weight: .bold)) }
+                        Button { audio.notice = nil } label: { Icon("xmark").font(.brand(size: 10, weight: .bold)) }
                             .buttonStyle(.plain)
                             .foregroundStyle(theme.inkTertiary(scheme))
                     }
@@ -198,11 +198,11 @@ private struct AudioToolbar: View {
                 effectsMenu
                 cleanupMenu
                 divider
-                Image(systemName: "minus.magnifyingglass").font(.brand(size: 11)).foregroundStyle(theme.inkTertiary(scheme))
+                Icon("minus.magnifyingglass").font(.brand(size: 11)).foregroundStyle(theme.inkTertiary(scheme))
                 Slider(value: $audio.zoom, in: 10...400)
                     .frame(width: 110)
                     .controlSize(.small)
-                Image(systemName: "plus.magnifyingglass").font(.brand(size: 11)).foregroundStyle(theme.inkTertiary(scheme))
+                Icon("plus.magnifyingglass").font(.brand(size: 11)).foregroundStyle(theme.inkTertiary(scheme))
             }
             .padding(.horizontal, 6)
             .padding(.vertical, 3)
@@ -456,7 +456,7 @@ private struct Ruler: View {
             }
             ForEach(markers) { marker in
                 HStack(spacing: 3) {
-                    Image(systemName: "flag.fill").font(.brand(size: 8))
+                    Icon("flag.fill").font(.brand(size: 8))
                     Text(marker.name).font(.brand(size: 9.5, weight: .medium)).lineLimit(1)
                 }
                 .foregroundStyle(theme.ink(scheme))
@@ -755,7 +755,7 @@ private struct AudioPanel: View {
                             TextField("", text: Binding(get: { marker.name }, set: { audio.renameMarker(marker.id, $0) }))
                                 .textFieldStyle(.plain)
                                 .font(.brand(size: 12.5))
-                            Button { audio.deleteMarker(marker.id) } label: { Image(systemName: "minus.circle") }
+                            Button { audio.deleteMarker(marker.id) } label: { Icon("minus.circle") }
                                 .buttonStyle(.plain)
                                 .foregroundStyle(theme.inkTertiary(scheme))
                         }

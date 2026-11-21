@@ -384,7 +384,7 @@ private struct AutomationList: View {
                     ForEach(AutomationTemplates.all(), id: \.name) { template in
                         Button(template.name) { automations.add(template: template) }
                     }
-                } label: { Image(systemName: "plus") }
+                } label: { Icon("plus") }
                     .menuStyle(.button)
                     .buttonStyle(.plain)
                     .fixedSize()
@@ -642,9 +642,9 @@ private struct StepRow: View {
                     .font(.brand(size: 12.5, weight: .semibold))
                     .foregroundStyle(theme.ink(scheme))
                 Spacer()
-                Button { onMove(-1) } label: { Image(systemName: "chevron.up") }.buttonStyle(.plain).disabled(index == 0)
-                Button { onMove(1) } label: { Image(systemName: "chevron.down") }.buttonStyle(.plain).disabled(index == count - 1)
-                Button(action: onDelete) { Image(systemName: "trash") }.buttonStyle(.plain)
+                Button { onMove(-1) } label: { Icon("chevron.up") }.buttonStyle(.plain).disabled(index == 0)
+                Button { onMove(1) } label: { Icon("chevron.down") }.buttonStyle(.plain).disabled(index == count - 1)
+                Button(action: onDelete) { Icon("trash") }.buttonStyle(.plain)
             }
             .foregroundStyle(theme.inkSecondary(scheme))
             fields

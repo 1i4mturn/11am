@@ -130,4 +130,6 @@ Reference: the canvas "11am suite refresh" (headless Mac, the drop, the puck, th
 
 **Shipped in 0.30.0.** Phases 0 to 2 across every app in the current window: fonts, `BrandTokens.swift`, monograms with the new codes (older codes still draw, so saved data keeps working), the 11 tile as the app icon, the tracing-paper tooth, paper and ink themes, full-strength text, square lifted surfaces, pills, Courier chips and labels, lifted fields, circle checkboxes and pill toggles, a Hack caret for loading, ink in place of the accent colour, and the Write and Notes editors in brand type.
 
-**Next.** Phase 3 (the drop, the puck, each app in its own window), line versions of the action icons, PDF print typography, then the iPhone (phase 4) and the brand lint (phase 5).
+**0.31.0.** Line versions of about 80 action icons (close, add, share, undo, search, play, lock and the rest), drawn like the app icons and sized by the font like a symbol; 158 places use them, and anything not yet drawn stays an SF Symbol in ink.
+
+**Next.** Phase 3 (the drop, the puck, each app in its own window), the remaining action icons, PDF print typography, then the iPhone (phase 4) and the brand lint (phase 5).

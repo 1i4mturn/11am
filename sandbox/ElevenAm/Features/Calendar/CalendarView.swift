@@ -326,9 +326,9 @@ private struct CalendarToolbar: View {
                 .buttonStyle(.vellumSecondary)
                 .help("Go to today · T")
             HStack(spacing: 4) {
-                Button { calendar.go(-1) } label: { Image(systemName: "chevron.left") }
+                Button { calendar.go(-1) } label: { Icon("chevron.left") }
                     .help("Back · ←")
-                Button { calendar.go(1) } label: { Image(systemName: "chevron.right") }
+                Button { calendar.go(1) } label: { Icon("chevron.right") }
                     .help("Forward · →")
             }
             .buttonStyle(.vellumSecondary)
@@ -438,7 +438,7 @@ struct CalendarBanner<Actions: View>: View {
             Spacer(minLength: 8)
             actions()
             if let dismiss {
-                Button { dismiss() } label: { Image(systemName: "xmark").font(.brand(size: 10, weight: .bold)) }
+                Button { dismiss() } label: { Icon("xmark").font(.brand(size: 10, weight: .bold)) }
                     .buttonStyle(.plain)
                     .foregroundStyle(theme.inkTertiary(scheme))
             }
@@ -615,7 +615,7 @@ private struct CalendarsView: View {
                                     Circle().fill(Color(calendarHex: item.color)).frame(width: 8, height: 8)
                                     Text(item.title).font(.brand(size: 12.5))
                                     if !item.writable {
-                                        Image(systemName: "lock").font(.brand(size: 9)).foregroundStyle(theme.inkTertiary(scheme))
+                                        Icon("lock").font(.brand(size: 9)).foregroundStyle(theme.inkTertiary(scheme))
                                     }
                                 }
                             }
@@ -643,7 +643,7 @@ private struct CalendarsView: View {
                         }
                         .buttonStyle(.plain)
                         Spacer()
-                        Button { calendar.deleteSet(set.id) } label: { Image(systemName: "xmark").font(.brand(size: 9, weight: .bold)) }
+                        Button { calendar.deleteSet(set.id) } label: { Icon("xmark").font(.brand(size: 9, weight: .bold)) }
                             .buttonStyle(.plain)
                             .foregroundStyle(theme.inkTertiary(scheme))
                             .help("Delete this set")

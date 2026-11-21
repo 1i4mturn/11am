@@ -304,7 +304,7 @@ struct AskField: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            Image(systemName: "sparkle.magnifyingglass")
+            Icon("sparkle.magnifyingglass")
                 .foregroundStyle(theme.ink(scheme))
             TextField(placeholder, text: $text)
                 .textFieldStyle(.plain)
@@ -314,7 +314,7 @@ struct AskField: View {
                 .onSubmit(onSubmit)
             if !text.isEmpty {
                 Button(action: onSubmit) {
-                    Image(systemName: "arrow.right")
+                    Icon("arrow.right")
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(theme.ink(scheme))

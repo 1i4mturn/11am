@@ -795,15 +795,15 @@ struct SlideshowView: View {
             VStack {
                 Spacer()
                 HStack(spacing: 18) {
-                    Button { browser.stepSlide(-1) } label: { Image(systemName: "chevron.left") }
+                    Button { browser.stepSlide(-1) } label: { Icon("chevron.left") }
                         .keyboardShortcut(.leftArrow, modifiers: [])
                     Button { playing.toggle() } label: { Image(systemName: playing ? "pause.fill" : "play.fill") }
                         .keyboardShortcut(.space, modifiers: [])
-                    Button { browser.stepSlide(1) } label: { Image(systemName: "chevron.right") }
+                    Button { browser.stepSlide(1) } label: { Icon("chevron.right") }
                         .keyboardShortcut(.rightArrow, modifiers: [])
                     Text(browser.slideshow.indices.contains(browser.slideIndex) ? "\(browser.slideIndex + 1) of \(browser.slideshow.count) · \(browser.slideshow[browser.slideIndex].lastPathComponent)" : "")
                         .font(.brand(size: 12))
-                    Button { browser.slideshow = [] } label: { Image(systemName: "xmark") }
+                    Button { browser.slideshow = [] } label: { Icon("xmark") }
                         .keyboardShortcut(.cancelAction)
                 }
                 .buttonStyle(.plain)

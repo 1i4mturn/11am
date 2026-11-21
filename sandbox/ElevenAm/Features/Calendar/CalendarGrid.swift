@@ -519,7 +519,7 @@ struct AllDayChip: View {
         let shape = RoundedRectangle(cornerRadius: 0, style: .continuous)
         HStack(spacing: 4) {
             if event.isHoliday {
-                Image(systemName: "flag").font(.brand(size: 8.5))
+                Icon("flag").font(.brand(size: 8.5))
             }
             Text(event.title)
                 .font(.brand(size: 11, weight: event.isHoliday ? .regular : .semibold))
@@ -560,7 +560,7 @@ private struct ReminderChip: View {
             Button {
                 withAnimation(theme.spring) { calendar.complete(reminder) }
             } label: {
-                Image(systemName: "circle").font(.brand(size: 10))
+                Icon("circle").font(.brand(size: 10))
             }
             .buttonStyle(.plain)
             .help("Done")
@@ -784,7 +784,7 @@ private struct AgendaRow: View {
             }
             Spacer(minLength: 8)
             if !clashes.isEmpty {
-                Image(systemName: "exclamationmark.triangle")
+                Icon("exclamationmark.triangle")
                     .font(.brand(size: 11))
                     .foregroundStyle(theme.inkSecondary(scheme))
                     .help("Clashes with \(clashes.map(\.title).joined(separator: ", "))")

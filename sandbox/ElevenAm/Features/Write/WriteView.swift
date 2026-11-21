@@ -468,7 +468,7 @@ struct FormatBar: View {
                 Button("Highlight") { editor.perform(.highlight) }
                 Button("Code") { editor.perform(.code) }
             } label: {
-                Image(systemName: "list.bullet")
+                Icon("list.bullet")
             }
             .menuStyle(.button)
             .buttonStyle(.borderless)
@@ -514,7 +514,7 @@ struct FormatBar: View {
             Button("Divider") { editor.perform(.divider) }
             Button("Code block") { editor.perform(.codeBlock) }
         } label: {
-            Image(systemName: "plus.square.on.square")
+            Icon("plus.square.on.square")
         }
         .menuStyle(.button)
         .buttonStyle(.borderless)

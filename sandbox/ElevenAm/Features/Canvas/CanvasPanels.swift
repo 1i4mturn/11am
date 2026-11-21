@@ -305,7 +305,7 @@ struct CanvasInspector: View {
             HStack {
                 Text(layer.kindTitle).font(.brand(size: 13, weight: .semibold)).foregroundStyle(theme.ink(scheme))
                 Spacer()
-                if layer.locked { Image(systemName: "lock.fill").foregroundStyle(theme.inkTertiary(scheme)) }
+                if layer.locked { Icon("lock.fill").foregroundStyle(theme.inkTertiary(scheme)) }
             }
             Grid(horizontalSpacing: 8, verticalSpacing: 6) {
                 GridRow {

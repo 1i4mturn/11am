@@ -34,12 +34,12 @@ struct VideoTimeline: View {
                     .toggleStyle(.brandCheck)
                     .font(.brand(size: 12))
                     .fixedSize()
-                Image(systemName: "minus.magnifyingglass")
+                Icon("minus.magnifyingglass")
                     .foregroundStyle(theme.inkTertiary(scheme))
                 Slider(value: $zoom, in: 0...1)
                     .controlSize(.mini)
                     .frame(width: 80)
-                Image(systemName: "plus.magnifyingglass")
+                Icon("plus.magnifyingglass")
                     .foregroundStyle(theme.inkTertiary(scheme))
             }
 
@@ -142,7 +142,7 @@ private struct ClipBlock: View {
                 if abs(clip.speed - 1) > 0.001 { Text(String(format: "%g×", clip.speed)) }
                 if clip.muted { Image(systemName: "speaker.slash.fill") }
                 if clip.useCleanAudio && clip.cleanAudio != nil { Image(systemName: "waveform") }
-                if clip.cutCount > 0 || clip.silenceCount > 0 { Image(systemName: "scissors") }
+                if clip.cutCount > 0 || clip.silenceCount > 0 { Icon("scissors") }
                 if clip.grade != GradeSettings() { Image(systemName: "camera.filters") }
             }
             .font(.brand(size: 10.5, weight: .semibold))

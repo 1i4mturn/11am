@@ -70,15 +70,15 @@ private struct BrowserBar: View {
     var body: some View {
         HStack(spacing: 6) {
             Group {
-                Button { research.back() } label: { Image(systemName: "chevron.left") }
+                Button { research.back() } label: { Icon("chevron.left") }
                     .disabled(!research.canGoBack)
                     .help("Back")
-                Button { research.forward() } label: { Image(systemName: "chevron.right") }
+                Button { research.forward() } label: { Icon("chevron.right") }
                     .disabled(!research.canGoForward)
                     .help("Forward")
-                Button { research.reload() } label: { Image(systemName: "arrow.clockwise") }
+                Button { research.reload() } label: { Icon("arrow.clockwise") }
                     .help("Reload")
-                Button { research.showStartPage() } label: { Image(systemName: "house") }
+                Button { research.showStartPage() } label: { Icon("house") }
                     .help("Start page")
             }
             .buttonStyle(.vellumSecondary)
@@ -164,7 +164,7 @@ private struct JamesPanel: View {
                         .foregroundStyle(theme.inkSecondary(scheme))
                         .fixedSize(horizontal: false, vertical: true)
                     Spacer(minLength: 0)
-                    Button { research.notice = nil } label: { Image(systemName: "xmark").font(.brand(size: 8, weight: .bold)) }
+                    Button { research.notice = nil } label: { Icon("xmark").font(.brand(size: 8, weight: .bold)) }
                         .buttonStyle(.plain)
                         .foregroundStyle(theme.inkTertiary(scheme))
                 }
@@ -287,7 +287,7 @@ private struct SourcesTab: View {
                     Button("Remove all sources", role: .destructive) { withAnimation(theme.spring) { research.clearSources() } }
                         .disabled(research.library.isEmpty)
                 } label: {
-                    Image(systemName: "ellipsis.circle")
+                    Icon("ellipsis.circle")
                 }
                 .menuStyle(.button)
                 .buttonStyle(.borderless)
@@ -335,7 +335,7 @@ private struct SourceRow: View {
                     .lineLimit(1)
                 Spacer(minLength: 4)
                 if source.authors.isEmpty || source.published == nil {
-                    Image(systemName: "exclamationmark.circle")
+                    Icon("exclamationmark.circle")
                         .font(.brand(size: 10.5))
                         .foregroundStyle(theme.inkTertiary(scheme))
                         .help(source.authors.isEmpty ? "No author: add one if the page names one" : "No date: add one if you know it")
@@ -349,7 +349,7 @@ private struct SourceRow: View {
                     Divider()
                     Button("Remove", role: .destructive) { withAnimation(theme.spring) { research.remove(source) } }
                 } label: {
-                    Image(systemName: "ellipsis")
+                    Icon("ellipsis")
                 }
                 .menuStyle(.button)
                 .buttonStyle(.borderless)

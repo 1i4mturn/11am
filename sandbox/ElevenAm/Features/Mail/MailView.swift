@@ -26,7 +26,7 @@ struct MailView: View {
                     Button {
                         Task { await mail.syncAll() }
                     } label: {
-                        Image(systemName: "arrow.clockwise")
+                        Icon("arrow.clockwise")
                     }
                     .buttonStyle(.vellumSecondary)
                     .disabled(mail.source == .sample || !mail.syncing.isEmpty)
@@ -216,14 +216,14 @@ private struct MailSearchField: View {
 
     var body: some View {
         HStack(spacing: 6) {
-            Image(systemName: "magnifyingglass")
+            Icon("magnifyingglass")
                 .font(.brand(size: 11))
                 .foregroundStyle(theme.inkTertiary(scheme))
             TextField("Search mail", text: $text)
                 .textFieldStyle(.plain)
                 .font(.brand(size: 12.5))
             if !text.isEmpty {
-                Button { text = "" } label: { Image(systemName: "xmark.circle.fill") }
+                Button { text = "" } label: { Icon("xmark.circle.fill") }
                     .buttonStyle(.plain)
                     .foregroundStyle(theme.inkTertiary(scheme))
             }
@@ -386,7 +386,7 @@ private struct MailBanner: View {
                 .lineLimit(2)
             Spacer()
             if let dismiss {
-                Button { dismiss() } label: { Image(systemName: "xmark").font(.brand(size: 10, weight: .bold)) }
+                Button { dismiss() } label: { Icon("xmark").font(.brand(size: 10, weight: .bold)) }
                     .buttonStyle(.plain)
                     .foregroundStyle(theme.inkTertiary(scheme))
             }
@@ -513,7 +513,7 @@ private struct MessageRow: View {
                     Text(message.fromName)
                         .font(.brand(size: 13, weight: message.seen ? .medium : .semibold))
                         .lineLimit(1)
-                    if message.flagged { Image(systemName: "flag.fill").font(.brand(size: 9)) }
+                    if message.flagged { Icon("flag.fill").font(.brand(size: 9)) }
                     if message.answered { Image(systemName: "arrowshape.turn.up.left.fill").font(.brand(size: 9)).opacity(0.5) }
                     Spacer(minLength: 6)
                     if mail.accounts.count > 1, mail.accountFilter == nil, let account = mail.account(for: message) {
@@ -690,7 +690,7 @@ private struct ReaderActions: View {
                 Button("Tomorrow morning") { mail.snooze(message, until: MailDates.tomorrowMorning()) }
                 Button("Next week") { mail.snooze(message, until: MailDates.nextWeek()) }
             } label: {
-                Image(systemName: "moon.zzz")
+                Icon("moon.zzz")
             }
             .menuStyle(.button)
             .buttonStyle(.borderless)

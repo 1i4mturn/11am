@@ -747,7 +747,7 @@ private struct RehearsalClock: View {
             let here = context.date.timeIntervalSince(presenter.slideStarted)
             let over = presenter.target.map { here > $0 } ?? false
             HStack(spacing: 14) {
-                Image(systemName: "stopwatch")
+                Icon("stopwatch")
                 Text(RehearsalReport.clock(here))
                     .foregroundStyle(over ? Color.orange : .white)
                 if let target = presenter.target {

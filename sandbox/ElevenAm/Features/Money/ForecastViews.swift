@@ -92,7 +92,7 @@ private struct ForecastTile: View {
                 .font(.brand(size: 11, weight: .medium))
                 .foregroundStyle(theme.inkTertiary(scheme))
             HStack(spacing: 6) {
-                if warning { Image(systemName: "exclamationmark.triangle.fill").font(.brand(size: 13)) }
+                if warning { Icon("exclamationmark.triangle.fill").font(.brand(size: 13)) }
                 Text(value)
                     .font(theme.display(24))
                     .monospacedDigit()
@@ -137,7 +137,7 @@ private struct FlowChips: View {
                         .strikethrough(!change.on, color: theme.inkTertiary(scheme))
                     Spacer()
                     Button { withAnimation(theme.spring) { ledger.remove(change) } } label: {
-                        Image(systemName: "xmark").font(.brand(size: 9, weight: .bold))
+                        Icon("xmark").font(.brand(size: 9, weight: .bold))
                     }
                     .buttonStyle(.plain)
                     .foregroundStyle(theme.inkTertiary(scheme))

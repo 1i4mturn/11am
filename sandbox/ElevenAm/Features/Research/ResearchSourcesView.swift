@@ -164,7 +164,7 @@ struct BrowserButtonSheet: View {
             step(1, "The browser button", "Drag this to the bookmarks bar in Safari, Chrome or Firefox. On any page, click it: James reads the page and keeps it in Notes › Clippings, with whatever you'd selected on top.") {
                 HStack(spacing: 10) {
                     HStack(spacing: 6) {
-                        Image(systemName: "scissors")
+                        Icon("scissors")
                         Text("Clip to 11am")
                     }
                     .font(.brand(size: 12.5, weight: .semibold))
@@ -249,7 +249,7 @@ struct LookUpCard: View {
                 }
                 Spacer(minLength: 4)
                 Button { withAnimation(theme.spring) { research.lookup = nil } } label: {
-                    Image(systemName: "xmark").font(.brand(size: 9, weight: .bold))
+                    Icon("xmark").font(.brand(size: 9, weight: .bold))
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(theme.inkTertiary(scheme))

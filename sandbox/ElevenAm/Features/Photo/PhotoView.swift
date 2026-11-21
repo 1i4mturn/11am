@@ -12,12 +12,12 @@ struct PhotoView: View {
         VStack(alignment: .leading, spacing: 14) {
             SectionHeader(title: "photo", subtitle: "Robert · \(photo.name)") {
                 HStack(spacing: 6) {
-                    Button { photo.undo() } label: { Image(systemName: "arrow.uturn.backward") }
+                    Button { photo.undo() } label: { Icon("arrow.uturn.backward") }
                         .buttonStyle(.vellumSecondary)
                         .disabled(!photo.canUndo)
                         .keyboardShortcut("z", modifiers: .command)
                         .help("Undo")
-                    Button { photo.redo() } label: { Image(systemName: "arrow.uturn.forward") }
+                    Button { photo.redo() } label: { Icon("arrow.uturn.forward") }
                         .buttonStyle(.vellumSecondary)
                         .disabled(!photo.canRedo)
                         .keyboardShortcut("z", modifiers: [.command, .shift])
@@ -100,7 +100,7 @@ private struct PhotoToolBar: View {
                             .font(.brand(size: 11.5))
                             .foregroundStyle(theme.inkSecondary(scheme))
                             .lineLimit(2)
-                        Button { photo.notice = nil } label: { Image(systemName: "xmark").font(.brand(size: 9, weight: .bold)) }
+                        Button { photo.notice = nil } label: { Icon("xmark").font(.brand(size: 9, weight: .bold)) }
                             .buttonStyle(.plain)
                             .foregroundStyle(theme.inkTertiary(scheme))
                     }

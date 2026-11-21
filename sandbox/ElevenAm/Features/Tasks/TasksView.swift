@@ -109,7 +109,7 @@ private struct TasksMenu: View {
                 Button("Try the sample tasks") { tasks.loadSample() }
             }
         } label: {
-            Image(systemName: "ellipsis.circle")
+            Icon("ellipsis.circle")
         }
         .menuStyle(.button)
         .buttonStyle(.borderless)
@@ -379,7 +379,7 @@ private struct TaskListPane: View {
                 ForEach(shown.filter { $0.sectionID == section.id }) { task in TaskRow(task: task, showProject: false) }
             }
             HStack(spacing: 8) {
-                Image(systemName: "plus").font(.brand(size: 11))
+                Icon("plus").font(.brand(size: 11))
                 TextField("New section", text: $newSection)
                     .textFieldStyle(.plain)
                     .font(.brand(size: 12.5))
@@ -467,7 +467,7 @@ private struct ListTitle: View {
                     Divider()
                     Button("Delete project (its tasks move to the Inbox)", role: .destructive) { tasks.deleteProject(id) }
                 } label: {
-                    Image(systemName: "ellipsis")
+                    Icon("ellipsis")
                 }
                 .menuStyle(.button)
                 .buttonStyle(.borderless)
@@ -524,7 +524,7 @@ private struct QuickAddField: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 7) {
             HStack(spacing: 9) {
-                Image(systemName: "plus")
+                Icon("plus")
                     .font(.brand(size: 12, weight: .semibold))
                     .foregroundStyle(theme.inkTertiary(scheme))
                 TextField("Add a task: \"Call Tom tomorrow 3pm\"", text: $text)
@@ -580,7 +580,7 @@ struct TaskCheck: View {
                     .strokeBorder(theme.ink(scheme).opacity(task.isDone ? 0 : 0.7), lineWidth: task.priority == .high ? 2 : 1.3)
                     .background(Circle().fill(task.isDone ? theme.ink(scheme) : Color.clear))
                 if task.isDone {
-                    Image(systemName: "checkmark")
+                    Icon("checkmark")
                         .font(.brand(size: size * 0.5, weight: .bold))
                         .foregroundStyle(theme.paper(scheme))
                 }
@@ -669,7 +669,7 @@ private struct TaskMeta: View {
                     Label("From " + TaskDates.inline(TaskDates.label(start, hasTime: false, now: tasks.now, calendar: tasks.calendar)), systemImage: "moon.zzz")
                 }
                 if task.recurrence != nil {
-                    Image(systemName: "repeat")
+                    Icon("repeat")
                 }
                 if !task.checklist.isEmpty {
                     let progress = task.checklistProgress
@@ -719,7 +719,7 @@ private struct SnoozeMenu: View {
                 }
             }
         } label: {
-            Image(systemName: "moon.zzz")
+            Icon("moon.zzz")
         }
         .menuStyle(.button)
         .buttonStyle(.borderless)
@@ -903,7 +903,7 @@ private struct TaskWeek: View {
                 ListTitle()
             } else {
                 HStack(alignment: .firstTextBaseline, spacing: 10) {
-                    Image(systemName: "calendar").font(.brand(size: 17, weight: .medium))
+                    Icon("calendar").font(.brand(size: 17, weight: .medium))
                     Text("The week ahead").font(.brand(size: 22, weight: .bold))
                     Text("Your calendar alongside. Drag a task onto a day.")
                         .font(.brand(size: 13))

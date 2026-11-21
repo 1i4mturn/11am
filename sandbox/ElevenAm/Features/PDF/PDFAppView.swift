@@ -151,7 +151,7 @@ struct PDFAppView: View {
 
     private var searchField: some View {
         HStack(spacing: 6) {
-            Image(systemName: "magnifyingglass")
+            Icon("magnifyingglass")
                 .font(.brand(size: 11))
                 .foregroundStyle(theme.inkTertiary(scheme))
             TextField("Find in PDF", text: $search)
@@ -162,7 +162,7 @@ struct PDFAppView: View {
                 Text("\(resultIndex + 1)/\(results.count)")
                     .font(.brand(size: 11).monospacedDigit())
                     .foregroundStyle(theme.inkTertiary(scheme))
-                Button { step(1) } label: { Image(systemName: "chevron.down") }
+                Button { step(1) } label: { Icon("chevron.down") }
                     .buttonStyle(.plain)
                     .foregroundStyle(theme.inkSecondary(scheme))
             }
@@ -306,7 +306,7 @@ struct PDFAppView: View {
             Button("Show in Finder") { if let url = pdf.url { NSWorkspace.shared.activateFileViewerSelecting([url]) } }
                 .disabled(pdf.url == nil)
         } label: {
-            Image(systemName: "ellipsis.circle")
+            Icon("ellipsis.circle")
         }
         .menuStyle(.button)
         .buttonStyle(.borderless)
@@ -355,7 +355,7 @@ private struct PDFBanner: View {
                 .foregroundStyle(theme.ink(scheme))
                 .lineLimit(2)
             Spacer()
-            Button(action: dismiss) { Image(systemName: "xmark").font(.brand(size: 10, weight: .bold)) }
+            Button(action: dismiss) { Icon("xmark").font(.brand(size: 10, weight: .bold)) }
                 .buttonStyle(.plain)
                 .foregroundStyle(theme.inkTertiary(scheme))
         }

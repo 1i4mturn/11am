@@ -14,7 +14,7 @@ struct ChartLinkBox: View {
             SectionLabel(text: "Numbers from Sheets")
             if let link = decks.slide?.content.link {
                 HStack(alignment: .top, spacing: 8) {
-                    Image(systemName: "link")
+                    Icon("link")
                         .font(.brand(size: 11))
                         .foregroundStyle(theme.inkSecondary(scheme))
                     VStack(alignment: .leading, spacing: 2) {
@@ -99,7 +99,7 @@ struct RehearsalView: View {
         let longest = max(rows.map(\.seconds).max() ?? 1, 1)
         VStack(alignment: .leading, spacing: 14) {
             HStack(spacing: 10) {
-                Image(systemName: "stopwatch")
+                Icon("stopwatch")
                     .font(.brand(size: 20))
                     .foregroundStyle(theme.ink(scheme))
                 VStack(alignment: .leading, spacing: 2) {

@@ -22,7 +22,7 @@ struct NotesView: View {
                     Button {
                         asking = true
                     } label: {
-                        Image(systemName: "sparkle.magnifyingglass")
+                        Icon("sparkle.magnifyingglass")
                     }
                     .buttonStyle(.vellumSecondary)
                     .help("Ask Bolton about your notes")
@@ -135,7 +135,7 @@ struct NotesView: View {
             Button("Try the sample pages (a small company wiki)") { withAnimation(theme.spring) { notes.loadPageSample() } }
             Button("Show the notes folder in Finder") { NSWorkspace.shared.activateFileViewerSelecting([notes.root]) }
         } label: {
-            Image(systemName: "ellipsis.circle")
+            Icon("ellipsis.circle")
         }
         .menuStyle(.button)
         .buttonStyle(.borderless)
@@ -153,14 +153,14 @@ private struct NotesSearchField: View {
 
     var body: some View {
         HStack(spacing: 6) {
-            Image(systemName: "magnifyingglass")
+            Icon("magnifyingglass")
                 .font(.brand(size: 11))
                 .foregroundStyle(theme.inkTertiary(scheme))
             TextField("Search notes", text: $text)
                 .textFieldStyle(.plain)
                 .font(.brand(size: 12.5))
             if !text.isEmpty {
-                Button { text = "" } label: { Image(systemName: "xmark.circle.fill") }
+                Button { text = "" } label: { Icon("xmark.circle.fill") }
                     .buttonStyle(.plain)
                     .foregroundStyle(theme.inkTertiary(scheme))
             }
@@ -186,7 +186,7 @@ private struct NotesBanner: View {
                 .foregroundStyle(theme.ink(scheme))
                 .lineLimit(2)
             Spacer()
-            Button(action: dismiss) { Image(systemName: "xmark").font(.brand(size: 10, weight: .bold)) }
+            Button(action: dismiss) { Icon("xmark").font(.brand(size: 10, weight: .bold)) }
                 .buttonStyle(.plain)
                 .foregroundStyle(theme.inkTertiary(scheme))
         }
@@ -260,7 +260,7 @@ private struct NotesSidebar: View {
                         folderName = ""
                         addingFolder = true
                     } label: {
-                        Image(systemName: "plus").font(.brand(size: 10, weight: .semibold))
+                        Icon("plus").font(.brand(size: 10, weight: .semibold))
                     }
                     .buttonStyle(.plain)
                     .foregroundStyle(theme.inkTertiary(scheme))
@@ -557,7 +557,7 @@ private struct NoteDetail: View {
                         AgentLogo(code: "bn", size: 18)
                         Text("Bolton · Summary").font(.brand(size: 12, weight: .semibold))
                         Spacer()
-                        Button { notes.clearNoteRun() } label: { Image(systemName: "xmark").font(.brand(size: 10, weight: .bold)) }
+                        Button { notes.clearNoteRun() } label: { Icon("xmark").font(.brand(size: 10, weight: .bold)) }
                             .buttonStyle(.plain)
                             .foregroundStyle(theme.inkTertiary(scheme))
                     }
@@ -667,7 +667,7 @@ private struct LockedNoteView: View {
 
     var body: some View {
         VStack(spacing: 12) {
-            Image(systemName: "lock.fill")
+            Icon("lock.fill")
                 .font(.brand(size: 30))
                 .foregroundStyle(theme.inkSecondary(scheme))
             Text(note.title)
@@ -717,7 +717,7 @@ private struct VoiceNoteButton: View {
             Button {
                 notes.startVoiceNote()
             } label: {
-                Image(systemName: "mic")
+                Icon("mic")
             }
             .buttonStyle(.vellumSecondary)
             .help("Record a voice note into this note. It's written out on this Mac.")

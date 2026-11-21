@@ -208,7 +208,7 @@ private struct PeekLine: View {
                 .foregroundStyle(.white.opacity(0.92))
                 .lineLimit(1)
             Spacer(minLength: 0)
-            Image(systemName: "chevron.down")
+            Icon("chevron.down")
                 .font(.brand(size: 10, weight: .bold))
                 .foregroundStyle(.white.opacity(0.5))
         }
@@ -247,7 +247,7 @@ private struct OpenPanel: View {
                 Button {
                     state.close()
                 } label: {
-                    Image(systemName: "xmark")
+                    Icon("xmark")
                         .font(.brand(size: 10, weight: .bold))
                         .foregroundStyle(.white.opacity(0.6))
                         .frame(width: 22, height: 22)
@@ -399,7 +399,7 @@ private struct NotchAskPage: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 8) {
-                Image(systemName: "sparkle.magnifyingglass").foregroundStyle(.white.opacity(0.5))
+                Icon("sparkle.magnifyingglass").foregroundStyle(.white.opacity(0.5))
                 TextField("Ask the team…", text: $state.askText)
                     .textFieldStyle(.plain)
                     .font(.brand(size: 14))

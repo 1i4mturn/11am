@@ -95,7 +95,7 @@ private struct TunePanel: View {
                                 Text(change.name).font(.brand(size: 12.5, weight: .medium))
                                 Spacer()
                                 Text(change.from).font(.brand(size: 12).monospacedDigit()).foregroundStyle(theme.inkTertiary(scheme))
-                                Image(systemName: "arrow.right").font(.brand(size: 9, weight: .bold)).foregroundStyle(theme.inkTertiary(scheme))
+                                Icon("arrow.right").font(.brand(size: 9, weight: .bold)).foregroundStyle(theme.inkTertiary(scheme))
                                 Text(change.to).font(.brand(size: 12, weight: .semibold).monospacedDigit())
                             }
                             .foregroundStyle(theme.ink(scheme))
@@ -200,7 +200,7 @@ private struct LookMaker: View {
             if let notice = build.lookNotice {
                 HStack(alignment: .firstTextBaseline, spacing: 8) {
                     if build.madeLook != nil {
-                        Image(systemName: "checkmark.circle.fill").foregroundStyle(theme.ink(scheme))
+                        Icon("checkmark.circle.fill").foregroundStyle(theme.ink(scheme))
                     }
                     Text(notice)
                         .font(.brand(size: 12))

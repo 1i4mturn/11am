@@ -39,7 +39,7 @@ struct PagesSidebarSection: View {
                 Button {
                     withAnimation(theme.spring) { notes.toggleExpanded(id) }
                 } label: {
-                    Image(systemName: "chevron.right")
+                    Icon("chevron.right")
                         .font(.brand(size: 8, weight: .bold))
                         .rotationEffect(.degrees(notes.expanded.contains(id) ? 90 : 0))
                         .frame(width: 12, height: 14)
@@ -96,7 +96,7 @@ struct PageIcon: View {
         if let icon = notes.icon(of: id) {
             Text(icon).font(.brand(size: size))
         } else {
-            Image(systemName: "doc.text")
+            Icon("doc.text")
                 .font(.brand(size: size - 1))
                 .foregroundStyle(theme.inkSecondary(scheme))
         }
@@ -161,7 +161,7 @@ struct PageHeaderBar: View {
                 }
                 .disabled(open == 0)
             } label: {
-                Image(systemName: "plus.square.on.square")
+                Icon("plus.square.on.square")
             }
             .menuStyle(.button)
             .buttonStyle(.borderless)
@@ -187,7 +187,7 @@ struct PageHeaderBar: View {
 
 extension PageHeaderBar {
     private var chevron: some View {
-        Image(systemName: "chevron.right")
+        Icon("chevron.right")
             .font(.brand(size: 7.5, weight: .bold))
             .foregroundStyle(theme.inkTertiary(scheme))
     }
@@ -513,7 +513,7 @@ struct PageCommentsPanel: View {
                 Button {
                     withAnimation(theme.spring) { notes.showsComments = false }
                 } label: {
-                    Image(systemName: "xmark").font(.brand(size: 10, weight: .bold))
+                    Icon("xmark").font(.brand(size: 10, weight: .bold))
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(theme.inkTertiary(scheme))

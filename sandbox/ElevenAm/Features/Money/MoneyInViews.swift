@@ -263,7 +263,7 @@ private struct QuoteDetail: View {
                             Button("Save as PDF…") { ledger.saveQuotePDF(quote) }
                             Button("Delete…", role: .destructive) { deleting = true }
                         } label: {
-                            Image(systemName: "ellipsis.circle")
+                            Icon("ellipsis.circle")
                         }
                         .menuStyle(.button)
                         .buttonStyle(.borderless)
@@ -283,7 +283,7 @@ private struct QuoteDetail: View {
                             Button("Save as PDF…") { ledger.saveQuotePDF(quote) }
                             if quote.invoices.isEmpty { Button("Edit") { ledger.editQuote(quote.id) } }
                         } label: {
-                            Image(systemName: "ellipsis.circle")
+                            Icon("ellipsis.circle")
                         }
                         .menuStyle(.button)
                         .buttonStyle(.borderless)
@@ -297,7 +297,7 @@ private struct QuoteDetail: View {
                         Menu {
                             Button("Save as PDF…") { ledger.saveQuotePDF(quote) }
                         } label: {
-                            Image(systemName: "ellipsis.circle")
+                            Icon("ellipsis.circle")
                         }
                         .menuStyle(.button)
                         .buttonStyle(.borderless)

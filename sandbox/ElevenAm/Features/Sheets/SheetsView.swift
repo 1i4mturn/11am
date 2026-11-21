@@ -144,7 +144,7 @@ struct SheetsView: View {
                 NSWorkspace.shared.activateFileViewerSelecting([sheets.root])
             }
         } label: {
-            Image(systemName: "ellipsis.circle")
+            Icon("ellipsis.circle")
         }
         .menuStyle(.button)
         .buttonStyle(.borderless)
@@ -169,7 +169,7 @@ private struct SheetsBanner: View {
                 .foregroundStyle(theme.ink(scheme))
                 .lineLimit(2)
             Spacer()
-            Button(action: dismiss) { Image(systemName: "xmark").font(.brand(size: 10, weight: .bold)) }
+            Button(action: dismiss) { Icon("xmark").font(.brand(size: 10, weight: .bold)) }
                 .buttonStyle(.plain)
                 .foregroundStyle(theme.inkTertiary(scheme))
         }
@@ -383,7 +383,7 @@ private struct SheetsFormatBar: View {
                     apply(option.hex)
                 } label: {
                     if let color = GridColor.swiftUI(option.hex) {
-                        Label { Text(option.name) } icon: { Image(systemName: "circle.fill").foregroundStyle(color) }
+                        Label { Text(option.name) } icon: { Icon("circle.fill").foregroundStyle(color) }
                     } else {
                         Text(option.name)
                     }
@@ -615,7 +615,7 @@ private struct SheetTabs: View {
                     Button {
                         withAnimation(theme.spring) { sheets.addSheet() }
                     } label: {
-                        Image(systemName: "plus")
+                        Icon("plus")
                             .font(.brand(size: 11, weight: .semibold))
                             .foregroundStyle(theme.inkSecondary(scheme))
                             .frame(width: 24, height: 22)
@@ -770,7 +770,7 @@ private struct ChartCard: View {
                     Divider()
                     Button("Remove chart", role: .destructive) { sheets.removeChart(chart.id) }
                 } label: {
-                    Image(systemName: "ellipsis")
+                    Icon("ellipsis")
                         .foregroundStyle(theme.inkTertiary(scheme))
                 }
                 .menuStyle(.button)

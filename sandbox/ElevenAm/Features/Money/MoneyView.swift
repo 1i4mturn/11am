@@ -58,7 +58,7 @@ struct MoneyView: View {
                         ledger.notice = nil
                         money.notice = nil
                     } label: {
-                        Image(systemName: "xmark").font(.brand(size: 10, weight: .bold))
+                        Icon("xmark").font(.brand(size: 10, weight: .bold))
                     }
                     .buttonStyle(.plain)
                     .foregroundStyle(theme.inkTertiary(scheme))

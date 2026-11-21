@@ -39,7 +39,7 @@ struct EventCard: View {
                 Button {
                     calendar.selectedID = nil
                 } label: {
-                    Image(systemName: "xmark").font(.brand(size: 10, weight: .bold))
+                    Icon("xmark").font(.brand(size: 10, weight: .bold))
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(theme.inkTertiary(scheme))
@@ -51,10 +51,10 @@ struct EventCard: View {
                 Text([owner?.title, owner?.account].compactMap { $0 }.joined(separator: " · "))
                     .lineLimit(1)
                 if event.isRecurring {
-                    Image(systemName: "repeat").help("Repeats")
+                    Icon("repeat").help("Repeats")
                 }
                 if !event.writable && !event.isHoliday {
-                    Image(systemName: "lock").help("Read-only")
+                    Icon("lock").help("Read-only")
                 }
             }
             .font(.brand(size: 11.5))
@@ -116,7 +116,7 @@ struct EventCard: View {
 
             if !clashes.isEmpty {
                 HStack(alignment: .top, spacing: 6) {
-                    Image(systemName: "exclamationmark.triangle")
+                    Icon("exclamationmark.triangle")
                     Text("Clashes with \(clashes.map { "\($0.title) (\(CalText.time($0.start)))" }.joined(separator: ", "))")
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -196,7 +196,7 @@ struct EventCard: View {
                     Button {
                         calendar.pendingDelete = event
                     } label: {
-                        Image(systemName: "trash")
+                        Icon("trash")
                     }
                     .buttonStyle(.vellumSecondary)
                     .help("Delete · ⌫")

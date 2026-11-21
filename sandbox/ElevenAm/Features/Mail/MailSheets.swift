@@ -688,11 +688,11 @@ struct SnippetsEditor: View {
                             let snippet = MailSnippet(name: "New snippet", body: "Hi {{first name}},\n\n\n\n{{my name}}")
                             mail.saveSnippet(snippet)
                             pick(snippet)
-                        } label: { Image(systemName: "plus") }
+                        } label: { Icon("plus") }
                         Button {
                             if let selected { mail.deleteSnippet(selected) }
                             selected = nil
-                        } label: { Image(systemName: "minus") }
+                        } label: { Icon("minus") }
                         .disabled(selected == nil)
                     }
                     .buttonStyle(.borderless)

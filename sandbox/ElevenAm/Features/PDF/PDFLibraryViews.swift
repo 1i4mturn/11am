@@ -41,7 +41,7 @@ struct PDFCollectionsView: View {
             HStack {
                 SectionLabel(text: "Collections")
                 Spacer()
-                Button { pdf.newCollection() } label: { Image(systemName: "plus") }
+                Button { pdf.newCollection() } label: { Icon("plus") }
                     .buttonStyle(.borderless)
                     .help("New collection")
             }
@@ -188,7 +188,7 @@ private struct PDFCollectionDetail: View {
                         .font(.brand(size: 12))
                         .lineLimit(1)
                     Button { pdf.removeFile(path, from: collection.id) } label: {
-                        Image(systemName: "xmark").font(.brand(size: 8.5, weight: .bold))
+                        Icon("xmark").font(.brand(size: 8.5, weight: .bold))
                     }
                     .buttonStyle(.plain)
                     .foregroundStyle(theme.inkTertiary(scheme))
@@ -350,7 +350,7 @@ struct PDFPullOutView: View {
                     .font(.brand(size: 13, weight: .semibold))
                     .foregroundStyle(theme.ink(scheme))
                 Spacer()
-                Button { pdf.pullOut = nil } label: { Image(systemName: "xmark").font(.brand(size: 9, weight: .bold)) }
+                Button { pdf.pullOut = nil } label: { Icon("xmark").font(.brand(size: 9, weight: .bold)) }
                     .buttonStyle(.plain)
                     .foregroundStyle(theme.inkTertiary(scheme))
             }

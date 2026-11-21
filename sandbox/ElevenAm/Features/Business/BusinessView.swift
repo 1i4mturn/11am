@@ -315,7 +315,7 @@ private struct DealDetail: View {
                     AgentLogo(code: "cr", size: 24)
                     Spacer()
                     Button { withAnimation(theme.spring) { business.selectedID = nil } } label: {
-                        Image(systemName: "xmark").font(.brand(size: 10, weight: .bold))
+                        Icon("xmark").font(.brand(size: 10, weight: .bold))
                     }
                     .buttonStyle(.plain)
                     .foregroundStyle(theme.inkTertiary(scheme))
@@ -672,7 +672,7 @@ private struct PersonDetail: View {
                     Text(draft.name).font(.brand(size: 16, weight: .semibold))
                     Spacer()
                     Button { withAnimation(theme.spring) { business.selectedPersonID = nil } } label: {
-                        Image(systemName: "xmark").font(.brand(size: 10, weight: .bold))
+                        Icon("xmark").font(.brand(size: 10, weight: .bold))
                     }
                     .buttonStyle(.plain)
                     .foregroundStyle(theme.inkTertiary(scheme))
@@ -788,7 +788,7 @@ private struct CompanyDetail: View {
                     Text(draft.name).font(.brand(size: 16, weight: .semibold))
                     Spacer()
                     Button { withAnimation(theme.spring) { business.selectedOrganisationID = nil } } label: {
-                        Image(systemName: "xmark").font(.brand(size: 10, weight: .bold))
+                        Icon("xmark").font(.brand(size: 10, weight: .bold))
                     }
                     .buttonStyle(.plain)
                     .foregroundStyle(theme.inkTertiary(scheme))

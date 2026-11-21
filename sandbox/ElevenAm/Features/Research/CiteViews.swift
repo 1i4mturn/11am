@@ -99,7 +99,7 @@ struct CitePicker: View {
                                 }
                                 Spacer(minLength: 4)
                                 if citedKeys.contains(source.key.lowercased()) {
-                                    Image(systemName: "checkmark")
+                                    Icon("checkmark")
                                         .font(.brand(size: 10, weight: .semibold))
                                         .foregroundStyle(theme.inkTertiary(scheme))
                                         .help("Already cited here")

@@ -472,7 +472,7 @@ private struct ScriptLibrary: View {
                     ForEach(ScriptLanguage.allCases) { language in
                         Button(language.title) { scripts.newScript(language) }
                     }
-                } label: { Image(systemName: "plus") }
+                } label: { Icon("plus") }
                     .menuStyle(.button)
                     .buttonStyle(.plain)
                     .fixedSize()
@@ -525,7 +525,7 @@ private struct ScriptLibrary: View {
                                     .foregroundStyle(theme.ink(scheme))
                                     .lineLimit(1)
                                 Spacer()
-                                Button { scripts.runShortcut(name) } label: { Image(systemName: "play.fill").font(.brand(size: 9)) }
+                                Button { scripts.runShortcut(name) } label: { Icon("play.fill").font(.brand(size: 9)) }
                                     .buttonStyle(.plain)
                                     .foregroundStyle(theme.inkSecondary(scheme))
                                     .help("Run \(name)")
@@ -591,7 +591,7 @@ private struct ScriptToolbar: View {
                 Divider()
                 Button("Duplicate") { scripts.duplicate() }
                 Button("Delete", role: .destructive) { scripts.delete(script.id) }
-            } label: { Image(systemName: "square.and.arrow.up") }
+            } label: { Icon("square.and.arrow.up") }
                 .menuStyle(.button)
                 .buttonStyle(.vellumSecondary)
                 .fixedSize()
@@ -681,7 +681,7 @@ private struct JohnnyScriptCard: View {
                 }
             }
             Spacer(minLength: 0)
-            Button { scripts.dismissJohnny() } label: { Image(systemName: "xmark") }
+            Button { scripts.dismissJohnny() } label: { Icon("xmark") }
                 .buttonStyle(.plain)
                 .foregroundStyle(theme.inkTertiary(scheme))
         }
