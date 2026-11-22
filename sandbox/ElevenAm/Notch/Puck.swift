@@ -359,6 +359,13 @@ struct PuckView: View {
                                          startRadius: 0, endRadius: PuckController.disc))
                     .blur(radius: BrandTokens.blurHalo)
                     .transition(.opacity.combined(with: .scale(scale: 0.6)))
+                // The white halo vanishes over a white window, so two faint ink rings mark it there too.
+                ZStack {
+                    Circle().stroke(BrandTokens.inkHex.opacity(0.16), lineWidth: 6).padding(-3)
+                    Circle().stroke(BrandTokens.inkHex.opacity(0.07), lineWidth: 7).padding(-9.5)
+                }
+                .frame(width: PuckController.disc, height: PuckController.disc)
+                .transition(.opacity.combined(with: .scale(scale: 0.8)))
             }
             disc
         }
