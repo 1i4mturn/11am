@@ -19,6 +19,8 @@ final class PuckState: ObservableObject {
     @Published var focusField = false
     /// True when the puck sits on the left of the screen, so the note opens to its right.
     @Published var onLeft = false
+    /// True when the puck is in the lower half, so the note lines up with its bottom edge.
+    @Published var alignBottom = true
     let listener = Listener()
 }
 
@@ -201,9 +203,12 @@ final class PuckController {
         guard let panel, let note = notePanel, let visible = (panel.screen ?? screen)?.visibleFrame else { return }
         let disc = panel.frame.insetBy(dx: Self.margin, dy: Self.margin)
         let onLeft = disc.midX < visible.midX
+        let low = disc.midY < visible.midY
         state.onLeft = onLeft
+        state.alignBottom = low
         let x = onLeft ? disc.maxX + 12 : disc.minX - 12 - Self.noteSize.width
-        var y = disc.maxY - Self.noteSize.height
+        // Low on the screen the note sits on the disc's bottom edge; high up it hangs from its top edge.
+        var y = low ? disc.minY : disc.maxY - Self.noteSize.height
         y = min(max(y, visible.minY + 8), visible.maxY - Self.noteSize.height - 8)
         note.setFrameOrigin(NSPoint(x: x, y: y))
     }
@@ -433,6 +438,7 @@ struct PuckNoteView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            if state.alignBottom { Spacer(minLength: 0) }
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
                     Text("\(Date().formatted(.dateTime.hour(.twoDigits(amPM: .omitted)).minute())) · \(state.listening ? "listening" : "you")")
@@ -492,9 +498,9 @@ struct PuckNoteView: View {
             .noteSurface()
             .lift(hi: true)
             .environment(\.colorScheme, .light)
-            Spacer(minLength: 0)
+            if !state.alignBottom { Spacer(minLength: 0) }
         }
-        .frame(width: PuckController.noteSize.width, height: PuckController.noteSize.height, alignment: .top)
+        .frame(width: PuckController.noteSize.width, height: PuckController.noteSize.height, alignment: state.alignBottom ? .bottom : .top)
         .onAppear { focused = state.focusField }
         .onChange(of: state.focusField) { _, value in focused = value }
     }

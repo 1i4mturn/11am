@@ -394,7 +394,7 @@ private struct DropPanel: View {
                 ListeningCircle(size: 48)
             }
             .buttonStyle(.plain)
-            .help("Talk to the team · ⌥Space")
+            .help("Talk to the team · hold ⌥Space")
             .accessibilityLabel("Talk to the team")
         }
         .padding(.vertical, 6)
@@ -584,7 +584,8 @@ private struct DropAskBar: View {
                 .foregroundStyle(.white)
                 .focused($focused)
                 .onSubmit(submit)
-            Text("⌥space to talk")
+            // Courier Prime has no ⌥, so it's spelled out.
+            Text("hold option space to talk")
                 .font(BrandFont.label(12))
                 .foregroundStyle(.white)
         }
