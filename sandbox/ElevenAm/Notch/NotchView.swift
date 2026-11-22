@@ -1,27 +1,29 @@
+import AppKit
 import SwiftUI
 
-/// The island that hangs from the notch: idle (matches the hardware), peek (one line), open (pages).
-/// One black shape grows and shrinks between sizes; content fades in just behind it and leaves first.
+/// The drop: true black, one piece with the notch, hanging from the top of the screen. Idle it's the notch with the
+/// active agent and a countdown; peeking it's one line; open it's the drop itself: the eleven agents and the 11 as
+/// circles, notices on white cards, what's running, the apps, and the ask bar. Asking stretches it to listen.
 struct NotchView: View {
     @EnvironmentObject private var state: NotchState
     @EnvironmentObject private var brain: Brain
     @EnvironmentObject private var files: FileIndex
     @EnvironmentObject private var today: TodayModel
     @EnvironmentObject private var nightShift: NightShift
-    @State private var openHeight: CGFloat = 300
+    @State private var openHeight: CGFloat = 320
 
     var body: some View {
         VStack(spacing: 0) {
             ZStack(alignment: .top) {
                 NotchShape(topRadius: shape.top, bottomRadius: shape.bottom)
-                    .fill(Color.black)
+                    .fill(BrandTokens.drop)
                 island
                     .padding(.horizontal, shape.top)
             }
             .frame(width: size.width, height: size.height, alignment: .top)
             .clipShape(NotchShape(topRadius: shape.top, bottomRadius: shape.bottom))
             .contentShape(NotchShape(topRadius: shape.top, bottomRadius: shape.bottom))
-            .shadow(color: .black.opacity(state.mode == .open ? 0.4 : 0), radius: 22, y: 10)
+            .shadow(color: .black.opacity(state.mode == .open ? 0.35 : 0), radius: 24, y: 12)
             .onHover { inside in
                 if inside { state.pointerEntered() } else { state.pointerLeft() }
             }
@@ -48,23 +50,23 @@ struct NotchView: View {
 
     private var showsEars: Bool { isLive || countdown != nil || !state.geometry.hasNotch }
 
-    /// Top corners flare outward into the menu bar, like the island is pouring out of the notch.
+    /// Flared top corners meet the menu bar; the open drop's lower corners are the brand's 36.
     private var shape: (top: CGFloat, bottom: CGFloat) {
         switch state.mode {
         case .idle: return (6, 10)
-        case .peek: return (10, 18)
-        case .open: return (14, 28)
+        case .peek: return (10, 20)
+        case .open: return (14, BrandTokens.radiusDrop)
         }
     }
 
     private var size: CGSize {
         switch state.mode {
         case .idle:
-            return CGSize(width: notch.width + (showsEars ? 96 : 0) + shape.top * 2, height: notch.height)
+            return CGSize(width: notch.width + (showsEars ? 104 : 0) + shape.top * 2, height: notch.height)
         case .peek:
-            return CGSize(width: max(notch.width + 240, 460) + shape.top * 2, height: notch.height + 42)
+            return CGSize(width: max(notch.width + 260, 480) + shape.top * 2, height: notch.height + 44)
         case .open:
-            return CGSize(width: 660 + shape.top * 2, height: min(openHeight, 440))
+            return CGSize(width: 640 + shape.top * 2, height: min(openHeight, NotchController.maxOpenHeight))
         }
     }
 
@@ -83,17 +85,18 @@ struct NotchView: View {
                     Spacer().frame(height: notch.height)
                     PeekLine()
                         .frame(maxWidth: .infinity)
-                        .frame(height: 42)
+                        .frame(height: 44)
                 }
             }
             .buttonStyle(.plain)
             .transition(.notchContent)
         case .open:
             VStack(spacing: 0) {
-                Spacer().frame(height: max(notch.height - 6, 8))
-                OpenPanel()
-                    .padding(.horizontal, 22)
-                    .padding(.bottom, 18)
+                Spacer().frame(height: max(notch.height - 4, 10))
+                DropPanel()
+                    .padding(.horizontal, 24)
+                    .padding(.top, 6)
+                    .padding(.bottom, 26)
             }
             .fixedSize(horizontal: false, vertical: true)
             .readHeight { height in
@@ -126,7 +129,7 @@ private extension AnyTransition {
     }
 }
 
-/// Hangs flush from the top edge: flared top corners that meet the menu bar, rounded bottom corners like the hardware.
+/// Hangs flush from the top edge: flared top corners that meet the menu bar, rounded bottom corners.
 struct NotchShape: Shape {
     var topRadius: CGFloat
     var bottomRadius: CGFloat
@@ -156,8 +159,10 @@ struct NotchShape: Shape {
     }
 }
 
+// MARK: - Idle and peek
+
 private struct IdleEars: View {
-    @EnvironmentObject private var theme: Theme
+    @EnvironmentObject private var brain: Brain
     var isLive: Bool
     var countdown: String?
     var hasNotch: Bool
@@ -165,29 +170,30 @@ private struct IdleEars: View {
     var body: some View {
         HStack {
             if isLive {
-                PulsingMonogram()
+                PulsingCircle(code: brain.isBusy ? "11" : "le")
             } else if !hasNotch {
-                Wordmark(height: 11, color: Color.white.opacity(0.85))
+                Wordmark(height: 11, color: .white)
             }
             Spacer(minLength: 0)
             if let countdown {
                 Text(countdown)
-                    .font(.brand(size: 11, weight: .semibold).monospacedDigit())
-                    .foregroundStyle(.white.opacity(0.9))
+                    .font(BrandFont.label(12))
+                    .foregroundStyle(.white)
             }
         }
-        .padding(.horizontal, 14)
+        .padding(.horizontal, 12)
     }
 }
 
-private struct PulsingMonogram: View {
-    @EnvironmentObject private var theme: Theme
+/// The active agent resting in the ear: a sheet-ink circle that breathes while it works.
+private struct PulsingCircle: View {
+    var code: String
     @State private var dim = false
 
     var body: some View {
-        AgentLogo(code: "le", size: 22, color: Color.white)
-            .opacity(dim ? 0.35 : 1)
+        DropCircle(code: code, size: 20, lit: !dim)
             .onAppear {
+                guard !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion else { return }
                 withAnimation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true)) { dim = true }
             }
             .accessibilityLabel("11am is working")
@@ -195,29 +201,28 @@ private struct PulsingMonogram: View {
 }
 
 private struct PeekLine: View {
-    @EnvironmentObject private var theme: Theme
     @EnvironmentObject private var brain: Brain
     @EnvironmentObject private var today: TodayModel
     @EnvironmentObject private var nightShift: NightShift
 
     var body: some View {
         HStack(spacing: 10) {
-            AgentLogo(code: "le", size: 24, color: Color.white)
+            DropCircle(code: "le", size: 26, lit: true)
             Text(summary)
-                .font(.brand(size: 13, weight: .medium))
-                .foregroundStyle(.white.opacity(0.92))
+                .font(BrandFont.body(13.5, weight: .medium))
+                .foregroundStyle(.white)
                 .lineLimit(1)
             Spacer(minLength: 0)
             Icon("chevron.down")
-                .font(.brand(size: 10, weight: .bold))
-                .foregroundStyle(.white.opacity(0.5))
+                .font(.brand(size: 11))
+                .foregroundStyle(.white)
         }
         .padding(.horizontal, 20)
     }
 
     private var summary: String {
-        if brain.isBusy { return "Thinking…" }
-        if nightShift.isRunning { return "Working overnight jobs…" }
+        if brain.isBusy { return "Thinking" }
+        if nightShift.isRunning { return "Working through tonight's jobs" }
         var parts: [String] = []
         if let next = today.nextEvent {
             if let leave = next.leaveBy, Travel.nudge(now: Date(), leaveBy: leave, start: next.start) {
@@ -229,208 +234,366 @@ private struct PeekLine: View {
         if let run = today.briefRun, run.status == .done {
             parts.append(today.briefWasPreparedOvernight ? "brief prepared overnight" : "brief ready")
         }
-        return parts.isEmpty ? "Click to open · ⌥Space to ask" : parts.joined(separator: " · ")
+        return parts.isEmpty ? "Click to open · ⌥Space to talk" : parts.joined(separator: " · ")
     }
 }
 
-private struct OpenPanel: View {
+// MARK: - Circles
+
+/// An agent in the drop: sheet-ink at rest, white when it has something new (or is the one working).
+struct DropCircle: View {
+    var code: String
+    var size: CGFloat = 48
+    var lit = false
+
+    var body: some View {
+        AgentLogo(code: code, size: size, color: lit ? BrandTokens.inkHex : .white, scale: 1)
+            .background { Circle().fill(lit ? Color.white : BrandTokens.sheetInk) }
+            .clipShape(Circle())
+    }
+}
+
+/// The twelfth spot: the 11 in a white circle with two soft rings. Tap it to talk.
+struct ListeningCircle: View {
+    var size: CGFloat = 48
+    var halo = false
+
+    var body: some View {
+        AgentLogo(code: "11", size: size, color: BrandTokens.inkHex, scale: 1)
+            .background { Circle().fill(Color.white) }
+            .clipShape(Circle())
+            .background {
+                Circle().stroke(Color.white.opacity(0.28), lineWidth: 6).padding(-3)
+                Circle().stroke(Color.white.opacity(0.12), lineWidth: 7).padding(-9.5)
+            }
+            .background {
+                if halo {
+                    Circle()
+                        .fill(RadialGradient(colors: [BrandTokens.halo, Color.white.opacity(0.5), .clear], center: .center,
+                                             startRadius: 0, endRadius: size * 1.2))
+                        .frame(width: size * 2.6, height: size * 2.6)
+                        .blur(radius: BrandTokens.blurHalo)
+                }
+            }
+    }
+}
+
+// MARK: - The drop, open
+
+/// Which agent works in which app, for a tap on its circle.
+enum DropAgents {
+    static let order = ["le", "mr", "wi", "jm", "ge", "cr", "rb", "jo", "hr", "ce", "bn"]
+
+    static func section(for code: String) -> AppSection {
+        switch code {
+        case "le": return .today
+        case "mr": return .mail
+        case "wi": return .write
+        case "jm": return .research
+        case "ge": return .money
+        case "cr": return .business
+        case "rb": return .design
+        case "jo": return .build
+        case "hr": return .learn
+        case "ce": return .video
+        default: return .notes
+        }
+    }
+
+    static func role(_ code: String) -> String {
+        switch code {
+        case "le": return "chief of staff"
+        case "mr": return "mail"
+        case "wi": return "writing"
+        case "jm": return "research"
+        case "ge": return "money"
+        case "cr": return "business"
+        case "rb": return "design"
+        case "jo": return "build"
+        case "hr": return "learning"
+        case "ce": return "video and audio"
+        default: return "notes and files"
+        }
+    }
+}
+
+private struct DropPanel: View {
     @EnvironmentObject private var state: NotchState
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack(spacing: 6) {
-                ForEach(NotchPage.allCases) { page in
-                    Button(page.title) { withAnimation(.smooth(duration: 0.3)) { state.page = page } }
-                        .buttonStyle(NotchTabStyle(selected: state.page == page))
-                }
-                Spacer()
-                Button {
-                    state.close()
-                } label: {
-                    Icon("xmark")
-                        .font(.brand(size: 10, weight: .bold))
-                        .foregroundStyle(.white.opacity(0.6))
-                        .frame(width: 22, height: 22)
-                        .background(Circle().fill(Color.white.opacity(0.08)))
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("Close")
-            }
-
-            // Pages cross-fade in place; the island's height follows the new page.
-            ZStack(alignment: .topLeading) {
-                page(state.page)
-                    .id(state.page)
-                    .transition(.opacity.animation(.easeInOut(duration: 0.2)))
-            }
-            .frame(maxWidth: .infinity, alignment: .topLeading)
-        }
-    }
-
-    @ViewBuilder
-    private func page(_ page: NotchPage) -> some View {
-        switch page {
-        case .now: NotchNowPage()
-        case .ask: NotchAskPage()
-        case .overnight: NotchOvernightPage()
-        }
-    }
-}
-
-private struct NotchTabStyle: ButtonStyle {
-    var selected: Bool
-
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .font(.brand(size: 12, weight: .semibold))
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
-            .foregroundStyle(selected ? Color.black : Color.white.opacity(0.85))
-            .background(Capsule().fill(selected ? Color.white : Color.white.opacity(0.08)))
-            .opacity(configuration.isPressed ? 0.75 : 1)
-    }
-}
-
-private struct NotchRow<Trailing: View>: View {
-    @EnvironmentObject private var theme: Theme
-    var monogram: String
-    var title: String
-    var detail: String
-    @ViewBuilder var trailing: () -> Trailing
-
-    var body: some View {
-        HStack(spacing: 12) {
-            AgentLogo(code: monogram, size: 26, color: Color.white)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title).font(.brand(size: 13, weight: .semibold)).foregroundStyle(.white)
-                Text(detail).font(.brand(size: 11.5)).foregroundStyle(.white.opacity(0.55)).lineLimit(2)
-            }
-            Spacer(minLength: 8)
-            trailing()
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
-        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Color.white.opacity(0.06)))
-    }
-}
-
-private struct NotchNowPage: View {
+    @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var brain: Brain
     @EnvironmentObject private var files: FileIndex
     @EnvironmentObject private var today: TodayModel
     @EnvironmentObject private var nightShift: NightShift
-    @EnvironmentObject private var machine: MachineProfile
     @EnvironmentObject private var mail: MailModel
 
-    private var mailDetail: String {
-        let needs = mail.count(.needsYou)
-        var parts = [needs == 1 ? "1 needs you" : "\(needs) need you"]
-        if mail.draftsReady > 0 { parts.append("\(mail.draftsReady) drafted") }
-        parts.append("\(mail.count(.noise)) noise held back")
-        return parts.joined(separator: " · ")
-    }
+    private var listening: Bool { state.focusAsk || state.askRun != nil || !state.askText.isEmpty }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            if let next = today.nextEvent ?? (today.isLive ? nil : today.sampleEvents.first) {
-                NotchRow(
-                    monogram: "le",
-                    title: "\(next.start.formatted(date: .omitted, time: .shortened))  \(next.title)",
-                    detail: today.isLive ? (next.location ?? next.calendar) : "Sample event. Connect your calendars in Calendar."
-                ) { EmptyView() }
-            }
-
-            if let run = today.briefRun {
-                NotchBriefRow(run: run)
+        VStack(alignment: .leading, spacing: 16) {
+            header
+            if listening {
+                DropListening()
             } else {
-                NotchRow(monogram: "le", title: "Brief", detail: "Not written yet. It will be ready after tonight's run.") {
-                    Button("Write") { Task { await today.prepareBrief(overnight: false) } }
-                        .buttonStyle(NotchTabStyle(selected: true))
-                        .disabled(brain.isBusy)
+                agents
+                notices
+                if let live { live }
+                openRow
+            }
+            DropAskBar()
+        }
+        .foregroundStyle(.white)
+    }
+
+    private var header: some View {
+        HStack {
+            Text("the drop · \(Date().formatted(.dateTime.hour(.twoDigits(amPM: .omitted)).minute()))")
+                .font(BrandFont.label(12))
+            Spacer()
+            Wordmark(height: 16, color: .white)
+            Button {
+                state.close()
+            } label: {
+                Text("×")
+                    .font(BrandFont.body(18))
+                    .frame(width: 26, height: 26)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Close")
+            .padding(.leading, 8)
+        }
+    }
+
+    // MARK: Agents
+
+    /// Agents with something waiting: Leo with a brief or a meeting soon, Marc with mail that needs you, Bolton indexing.
+    private var newAgents: Set<String> {
+        var lit: Set<String> = []
+        if today.briefRun?.status == .done { lit.insert("le") }
+        if let next = today.nextEvent, next.start.timeIntervalSinceNow < 3_600 { lit.insert("le") }
+        if mail.count(.needsYou) > 0 { lit.insert("mr") }
+        if files.isIndexing { lit.insert("bn") }
+        return lit
+    }
+
+    private var agents: some View {
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 14), count: 6), spacing: 14) {
+            ForEach(DropAgents.order, id: \.self) { code in
+                Button {
+                    open(DropAgents.section(for: code))
+                } label: {
+                    DropCircle(code: code, size: 48, lit: newAgents.contains(code))
+                }
+                .buttonStyle(.plain)
+                .help("\(AgentCode.name(code)) · \(DropAgents.role(code))")
+                .accessibilityLabel(AgentCode.name(code))
+            }
+            Button {
+                state.focusAsk = true
+            } label: {
+                ListeningCircle(size: 48)
+            }
+            .buttonStyle(.plain)
+            .help("Talk to the team · ⌥Space")
+            .accessibilityLabel("Talk to the team")
+        }
+        .padding(.vertical, 6)
+    }
+
+    // MARK: Notices
+
+    private struct Notice: Identifiable {
+        var id: String
+        var agent: String
+        var text: String
+        var action: String
+        var run: () -> Void
+    }
+
+    private var noticeList: [Notice] {
+        var list: [Notice] = []
+        if let next = today.nextEvent ?? (today.isLive ? nil : today.sampleEvents.first) {
+            var text = "\(next.title) at \(next.start.formatted(date: .omitted, time: .shortened))"
+            if let leave = next.leaveBy { text += ", leave by \(leave.formatted(date: .omitted, time: .shortened))" }
+            if !today.isLive { text += " (sample)" }
+            list.append(Notice(id: "event", agent: "le", text: text, action: "Open") { open(.calendar) })
+        }
+        if let run = today.briefRun {
+            switch run.status {
+            case .done:
+                list.append(Notice(id: "brief", agent: "le", text: today.briefWasPreparedOvernight ? "morning brief is ready, written overnight" : "morning brief is ready",
+                                   action: "Open") { open(.today) })
+            case .failed:
+                list.append(Notice(id: "brief", agent: "le", text: "the brief didn't finish", action: "Try again") {
+                    Task { await today.prepareBrief(overnight: false) }
+                })
+            default:
+                break
+            }
+        } else {
+            list.append(Notice(id: "brief", agent: "le", text: "no brief yet; it's written overnight", action: "Write now") {
+                Task { await today.prepareBrief(overnight: false) }
+            })
+        }
+        let needs = mail.count(.needsYou)
+        if needs > 0 {
+            var text = needs == 1 ? "1 email needs you" : "\(needs) emails need you"
+            if mail.draftsReady > 0 { text += ", \(mail.draftsReady) drafted" }
+            list.append(Notice(id: "mail", agent: "mr", text: text, action: "Open") { open(.mail) })
+        }
+        return Array(list.prefix(3))
+    }
+
+    private var notices: some View {
+        VStack(spacing: 8) {
+            ForEach(noticeList) { notice in
+                HStack(spacing: 12) {
+                    (Text(AgentCode.name(notice.agent)).font(BrandFont.body(14, weight: .semibold))
+                        + Text(" · \(notice.text)").font(BrandFont.body(14)))
+                        .lineLimit(2)
+                    Spacer(minLength: 8)
+                    Button(notice.action, action: notice.run)
+                        .buttonStyle(DropPillStyle(kind: .ink))
+                        .disabled(brain.isBusy && notice.id == "brief")
+                }
+                .foregroundStyle(BrandTokens.inkHex)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .background(RoundedRectangle(cornerRadius: BrandTokens.radiusNotice, style: .continuous).fill(Color.white))
+            }
+        }
+    }
+
+    // MARK: Live
+
+    private var live: AnyView? {
+        let code: String, text: String
+        if nightShift.isRunning {
+            code = "le"; text = "leo · working through tonight's jobs"
+        } else if files.isIndexing {
+            code = "bn"; text = "bolton · indexing your files"
+        } else if brain.isBusy {
+            code = "11"; text = "thinking"
+        } else {
+            return nil
+        }
+        return AnyView(
+            HStack(spacing: 12) {
+                DropCircle(code: code, size: 30, lit: true)
+                Text(text).font(BrandFont.label(12))
+                Spacer(minLength: 8)
+                ProgressDots()
+            }
+        )
+    }
+
+    // MARK: Apps
+
+    private var openRow: some View {
+        let apps: [AppSection] = [.today, .calendar, .tasks, .mail, .notes, .write]
+        return HStack(spacing: 8) {
+            ForEach(apps) { section in
+                Button(section.title) { open(section) }
+                    .buttonStyle(DropPillStyle(kind: model.section == section && mainWindowVisible ? .paper : .sheet))
+            }
+            Spacer(minLength: 0)
+        }
+    }
+
+    private var mainWindowVisible: Bool {
+        NSApp.windows.contains { $0.canBecomeMain && $0.isVisible }
+    }
+
+    private func open(_ section: AppSection) {
+        NSApp.activate()
+        NSApp.windows.first { $0.canBecomeMain }?.makeKeyAndOrderFront(nil)
+        model.go(to: section)
+        state.close()
+    }
+}
+
+/// Five dots that fill in turn while something runs: progress is counted in dots, never a smooth bar.
+struct ProgressDots: View {
+    var count = 5
+    @State private var filled = 0
+
+    var body: some View {
+        HStack(spacing: 4) {
+            ForEach(0..<count, id: \.self) { index in
+                Circle()
+                    .fill(index < filled ? Color.white : Color.clear)
+                    .overlay { Circle().strokeBorder(Color.white, lineWidth: BrandTokens.ruleOpen) }
+                    .frame(width: 10, height: 10)
+            }
+        }
+        .task {
+            guard !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion else {
+                filled = 2
+                return
+            }
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: 380_000_000)
+                filled = (filled + 1) % (count + 1)
+            }
+        }
+        .accessibilityLabel("Working")
+    }
+}
+
+/// Pills inside the drop: ink on the white notices, paper for the app whose window is showing, sheet-ink for the rest.
+struct DropPillStyle: ButtonStyle {
+    enum Kind { case ink, paper, sheet, open }
+    var kind: Kind
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(BrandFont.body(13.5, weight: .semibold))
+            .lineLimit(1)
+            .fixedSize()
+            .padding(.horizontal, 16)
+            .frame(minHeight: 34)
+            .foregroundStyle(kind == .paper ? BrandTokens.inkHex : (kind == .open ? BrandTokens.inkHex : .white))
+            .background {
+                switch kind {
+                case .ink: Capsule().fill(BrandTokens.inkHex)
+                case .paper: Capsule().fill(Color.white)
+                case .sheet: Capsule().fill(BrandTokens.sheetInk)
+                case .open: Capsule().strokeBorder(BrandTokens.inkHex, lineWidth: BrandTokens.ruleOpen)
                 }
             }
-
-            NotchRow(monogram: "mc", title: "Mail", detail: mailDetail) { EmptyView() }
-
-            NotchRow(monogram: "bn", title: "Files", detail: files.isIndexing ? "Indexing…" : files.status) { EmptyView() }
-
-            NotchRow(
-                monogram: "11",
-                title: "This Mac",
-                detail: "\(machine.summary) · \(brain.mode.title) · Claude this month \(Pricing.format(brain.spentThisMonthUSD))"
-            ) { EmptyView() }
-        }
-    }
-
-}
-
-/// Observes the brief run directly so the row updates while it streams.
-private struct NotchBriefRow: View {
-    @EnvironmentObject private var brain: Brain
-    @EnvironmentObject private var today: TodayModel
-    @ObservedObject var run: BrainRun
-
-    var body: some View {
-        NotchRow(monogram: "le", title: today.briefWasPreparedOvernight ? "Brief · prepared overnight" : "Brief", detail: detail) {
-            Button("Rewrite") { Task { await today.prepareBrief(overnight: false) } }
-                .buttonStyle(NotchTabStyle(selected: false))
-                .disabled(brain.isBusy)
-        }
-    }
-
-    private var detail: String {
-        switch run.status {
-        case .routing, .working: return run.text.isEmpty ? "Writing…" : run.text.replacingOccurrences(of: "\n", with: " ")
-        case .failed(let message): return message
-        case .done: return run.text.replacingOccurrences(of: "\n", with: " ")
-        }
+            .opacity(configuration.isPressed ? 0.8 : 1)
+            .contentShape(Capsule())
     }
 }
 
-private struct NotchAskPage: View {
+// MARK: - Asking
+
+/// The ask bar: a sheet-ink pill along the bottom of the drop.
+private struct DropAskBar: View {
     @EnvironmentObject private var state: NotchState
     @EnvironmentObject private var brain: Brain
     @EnvironmentObject private var files: FileIndex
     @EnvironmentObject private var tasks: TasksModel
-    @State private var added: String?
     @FocusState private var focused: Bool
-    @State private var answerHeight: CGFloat = 24
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 8) {
-                Icon("sparkle.magnifyingglass").foregroundStyle(.white.opacity(0.5))
-                TextField("Ask the team…", text: $state.askText)
-                    .textFieldStyle(.plain)
-                    .font(.brand(size: 14))
-                    .foregroundStyle(.white)
-                    .focused($focused)
-                    .onSubmit(submit)
-            }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 11)
-            .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Color.white.opacity(0.08)))
-
-            if let run = state.askRun {
-                ScrollView {
-                    RunView(run: run)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .readHeight { answerHeight = $0 }
-                }
-                .frame(height: min(max(answerHeight, 20), 230))
-            } else if let added {
-                Text(added)
-                    .font(.brand(size: 12))
-                    .foregroundStyle(.white.opacity(0.75))
-            } else {
-                Text("Questions about your files go to Bolton. Everything else goes to Leo. Start with + to add a task: + Call Tom tomorrow 3pm.")
-                    .font(.brand(size: 12))
-                    .foregroundStyle(.white.opacity(0.5))
-            }
+        HStack(spacing: 10) {
+            TextField("", text: $state.askText, prompt: Text("Ask the team, or + to add a task").foregroundStyle(.white.opacity(0.7)))
+                .textFieldStyle(.plain)
+                .font(BrandFont.body(14))
+                .foregroundStyle(.white)
+                .focused($focused)
+                .onSubmit(submit)
+            Text("⌥space to talk")
+                .font(BrandFont.label(12))
+                .foregroundStyle(.white)
         }
+        .padding(.horizontal, 18)
+        .frame(minHeight: 40)
+        .background(Capsule().fill(BrandTokens.sheetInk))
         .onAppear { focused = state.focusAsk }
         .onChange(of: state.focusAsk) { _, newValue in focused = newValue }
-        .onChange(of: focused) { _, newValue in state.focusAsk = newValue }
+        .onChange(of: focused) { _, newValue in if newValue { state.focusAsk = true } }
     }
 
     private func submit() {
@@ -440,41 +603,76 @@ private struct NotchAskPage: View {
         if text.hasPrefix("+") {
             if let task = tasks.add(String(text.dropFirst()), in: .inbox, select: false) {
                 let when = tasks.dueText(task).map { " · \($0)" } ?? ""
-                added = "Added to Tasks: \(task.title)\(when)"
+                state.added = "Added to Tasks: \(task.title)\(when)"
                 state.askText = ""
                 state.askRun = nil
             }
             return
         }
-        added = nil
+        state.added = nil
+        state.askedText = text
         state.askRun = brain.run(AskRouter.request(for: text, files: files))
     }
 }
 
-private struct NotchOvernightPage: View {
-    @EnvironmentObject private var nightShift: NightShift
+/// Listening: the 11 with its halo, the sentence in Schibsted, where it's going, and the answer on a white card.
+private struct DropListening: View {
+    @EnvironmentObject private var state: NotchState
+
+    private var sentence: String {
+        let typed = state.askText.trimmingCharacters(in: .whitespacesAndNewlines)
+        return typed.isEmpty ? (state.askedText.isEmpty ? "Ask the team anything." : state.askedText) : typed
+    }
 
     var body: some View {
-        let decision = nightShift.conditions()
-        VStack(alignment: .leading, spacing: 8) {
-            NotchRow(
-                monogram: "le",
-                title: "Tonight \(nightShift.windowStartHour):00–\(nightShift.windowEndHour):00",
-                detail: decision.ok ? "Good moment to run: \(decision.reason.lowercased())." : decision.reason
-            ) {
-                Button(nightShift.isRunning ? "Running…" : "Run now") {
-                    Task { await nightShift.runNow() }
-                }
-                .buttonStyle(NotchTabStyle(selected: true))
-                .disabled(nightShift.isRunning)
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(alignment: .center, spacing: 20) {
+                ListeningCircle(size: 56, halo: state.askRun.map { !$0.isFinished } ?? true)
+                    .padding(10)
+                Text(sentence)
+                    .font(BrandFont.heading(24, weight: .heavy))
+                    .tracking(-0.6)
+                    .lineLimit(3)
+                    .fixedSize(horizontal: false, vertical: true)
             }
-            ForEach(nightShift.log.prefix(3)) { entry in
-                NotchRow(monogram: "le", title: entry.title, detail: entry.detail) {
-                    Text(entry.date.formatted(date: .omitted, time: .shortened))
-                        .font(.brand(size: 11))
-                        .foregroundStyle(.white.opacity(0.45))
+            HStack(spacing: 6) {
+                ForEach(routes, id: \.self) { route in
+                    Text(route)
+                        .font(BrandFont.label(12))
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 3)
+                        .overlay { Capsule().strokeBorder(Color.white, lineWidth: BrandTokens.ruleOpen) }
                 }
+            }
+            if let run = state.askRun {
+                DropAnswer(run: run)
+            } else if let added = state.added {
+                Text(added).font(BrandFont.body(14))
             }
         }
+    }
+
+    private var routes: [String] {
+        let text = state.askText.isEmpty ? state.askedText : state.askText
+        if text.trimmingCharacters(in: .whitespaces).hasPrefix("+") { return ["leo", "a task"] }
+        let agent = AskRouter.agent(for: text)
+        return [agent.name.lowercased(), agent.monogram == "bn" ? "your files" : "chief of staff"]
+    }
+}
+
+private struct DropAnswer: View {
+    @ObservedObject var run: BrainRun
+    @State private var height: CGFloat = 24
+
+    var body: some View {
+        ScrollView {
+            RunView(run: run)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .readHeight { height = $0 }
+        }
+        .frame(height: min(max(height, 22), 200))
+        .padding(16)
+        .background(RoundedRectangle(cornerRadius: BrandTokens.radiusNotice, style: .continuous).fill(Color.white))
+        .environment(\.colorScheme, .light)
     }
 }

@@ -53,6 +53,10 @@ final class NotchState: ObservableObject {
     @Published var askText = ""
     @Published var askRun: BrainRun?
     @Published var focusAsk = false
+    /// The last thing asked, shown while the answer comes.
+    @Published var askedText = ""
+    /// What a "+ task" did.
+    @Published var added: String?
 
     private var collapseTask: Task<Void, Never>?
 
@@ -113,6 +117,13 @@ final class NotchState: ObservableObject {
     func close() {
         cancelCollapse()
         focusAsk = false
+        // The drop opens fresh next time, not on the last question.
+        if askRun?.isFinished ?? true {
+            askRun = nil
+            askedText = ""
+            added = nil
+            askText = ""
+        }
         set(.idle)
     }
 
@@ -141,7 +152,9 @@ final class NotchController {
     private var monitors: [Any] = []
     private var screenObserver: NSObjectProtocol?
     private var cancellables: Set<AnyCancellable> = []
-    private let panelSize = NSSize(width: 760, height: 460)
+    private let panelSize = NSSize(width: 760, height: 660)
+    /// The tallest the open drop grows.
+    static let maxOpenHeight: CGFloat = 640
 
     init(model: AppModel) {
         self.model = model
@@ -191,6 +204,17 @@ final class NotchController {
     /// Opens the Now page and keeps it open (used for screenshots).
     func openPreview() {
         state.open(.now)
+    }
+
+    /// For screenshots: the drop listening, with a question and its answer.
+    func openListeningPreview() {
+        state.askedText = "Where's the Acme pilot agreement?"
+        let run = BrainRun(prompt: state.askedText)
+        run.text = "It's in Documents › Clients › Acme, saved as \u{201C}Acme pilot agreement.pdf\u{201D}. Either side can end the pilot with 7 days' notice."
+        run.providerLabel = "On this Mac"
+        run.status = .done
+        state.askRun = run
+        state.open(.ask)
     }
 
     func openAsk() {

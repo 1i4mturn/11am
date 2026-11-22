@@ -5,6 +5,7 @@ import Carbon.HIToolbox
 final class AppDelegate: NSObject, NSApplicationDelegate {
     let model = AppModel()
     private var notch: NotchController?
+    private(set) var puck: PuckController?
     private var askHotKey: HotKey?
     private var noteHotKey: HotKey?
     private var taskHotKey: HotKey?
@@ -18,9 +19,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         self.notch = notch
 
         // ⌥Space opens Ask in the notch from anywhere.
-        askHotKey = HotKey(keyCode: UInt32(kVK_Space), modifiers: UInt32(optionKey)) { [weak self] in
-            self?.openAsk()
-        }
+        // Hold ⌥Space to talk to the puck; let go to send. A quick tap opens its note to type.
+        let puck = PuckController(model: model)
+        if !UserDefaults.standard.bool(forKey: "puck.hidden") && !UserDefaults.standard.bool(forKey: "puckHidden") { puck.show() }
+        self.puck = puck
+        askHotKey = HotKey(keyCode: UInt32(kVK_Space), modifiers: UInt32(optionKey), action: { [weak self] in
+            self?.puck?.hotKeyDown()
+        }, onRelease: { [weak self] in
+            self?.puck?.hotKeyUp()
+        })
         // ⌥⇧N jots a note from anywhere.
         noteHotKey = HotKey(keyCode: UInt32(kVK_ANSI_N), modifiers: UInt32(optionKey | shiftKey)) { [weak self] in
             self?.quickNote()
@@ -52,6 +59,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         if arguments.bool(forKey: "openNotch") {
             notch.openPreview()
+        }
+        // -dropAsk YES opens the drop listening, with a sample question; -puckListening / -puckAnswer show the puck's note.
+        if arguments.bool(forKey: "dropAsk") {
+            notch.openListeningPreview()
+        }
+        if arguments.bool(forKey: "puckListening") {
+            puck?.previewListening()
+        }
+        if arguments.bool(forKey: "puckAnswer") {
+            puck?.previewAnswer()
         }
         if let tool = arguments.string(forKey: "photoTool"), let value = PhotoTool(rawValue: tool) {
             model.photo.tool = value
@@ -353,8 +370,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         false
     }
 
+    /// Opens the puck's note to type (the menu item and the drop's 11 use this).
     func openAsk() {
-        notch?.openAsk()
+        guard let puck else {
+            notch?.openAsk()
+            return
+        }
+        if !puck.isShown { puck.show() }
+        puck.openNote(typing: true)
+    }
+
+    func togglePuck() {
+        puck?.toggle()
     }
 
     /// A new note, ready to type into, from anywhere.

@@ -132,4 +132,6 @@ Reference: the canvas "11am suite refresh" (headless Mac, the drop, the puck, th
 
 **0.31.0.** Line versions of about 80 action icons (close, add, share, undo, search, play, lock and the rest), drawn like the app icons and sized by the font like a symbol; 158 places use them, and anything not yet drawn stays an SF Symbol in ink.
 
-**Next.** Phase 3 (the drop, the puck, each app in its own window), the remaining action icons, PDF print typography, then the iPhone (phase 4) and the brand lint (phase 5).
+**0.32.0.** Phase 3, the drop and the puck. The drop: true black with 36pt lower corners, `the drop · 09:18` and the solid wordmark, the eleven agents and the 11 as circles (sheet-ink at rest, white with something new), white notices (12pt corners) with an ink pill, a live row counted in dots, an open row of app pills, and the sheet-ink ask bar; asking stretches it to listen (the 11 with its halo, the sentence in Schibsted, routing chips, the answer on white). The puck: a round, draggable, edge-snapping, remembered panel with the 11 on ink and a count chip; hold it or ⌥Space to talk (on-device speech), click to type; a vellum note with the transcript, routing chips and Send, Edit, Copy and Undo. The shelf (files dropped on an agent's ring) is still to come.
+
+**Next.** Each app in its own window, the remaining action icons, PDF print typography, then the iPhone (phase 4) and the brand lint (phase 5).

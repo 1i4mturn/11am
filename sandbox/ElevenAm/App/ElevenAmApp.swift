@@ -20,7 +20,8 @@ struct ElevenAmApp: App {
         .commands {
             CommandMenu("Team") {
                 // ⌥Space is registered system-wide by AppDelegate, so the menu item carries no shortcut.
-                Button("Ask the Team (⌥Space)") { appDelegate.openAsk() }
+                Button("Talk to the Team (hold ⌥Space)") { appDelegate.openAsk() }
+                Button("Show or Hide the Puck") { appDelegate.togglePuck() }
                 Button("New Quick Note (⌥⇧N)") { appDelegate.quickNote() }
                 Button("Run Tonight's Work Now") {
                     Task { await appDelegate.model.nightShift.runNow() }
