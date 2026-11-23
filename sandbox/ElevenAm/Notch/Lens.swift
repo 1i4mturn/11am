@@ -27,7 +27,7 @@ final class LensPanel: NSPanel {
 @MainActor
 final class LensController {
     static let diameter: CGFloat = 220
-    static let noteSize = NSSize(width: 360, height: 400)
+    static let noteSize = NSSize(width: 380, height: 400)
 
     private let model: AppModel
     let state = LensState()
@@ -339,14 +339,20 @@ struct LensNoteView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 .frame(maxHeight: 170)
-                HStack(spacing: 6) {
-                    Button("Ask") { controller.ask() }.buttonStyle(.vellumPrimary)
-                    Button("Copy") { controller.copy() }.buttonStyle(.vellumSecondary)
-                    Button("Task") { controller.makeTask() }.buttonStyle(.vellumSecondary)
-                    Button("Note") { controller.keepInNotes() }.buttonStyle(.vellumSecondary)
-                    Button("Look up") { controller.lookUp() }.buttonStyle(.vellumSecondary)
+                // Two rows, so the pills fit the note: asking first, then keeping it somewhere.
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(spacing: 6) {
+                        Button("Ask") { controller.ask() }.buttonStyle(.vellumPrimary)
+                        Button("Look up") { controller.lookUp() }.buttonStyle(.vellumSecondary)
+                    }
+                    HStack(spacing: 6) {
+                        Button("Copy") { controller.copy() }.buttonStyle(.vellumSecondary)
+                        Button("Task") { controller.makeTask() }.buttonStyle(.vellumSecondary)
+                        Button("Note") { controller.keepInNotes() }.buttonStyle(.vellumSecondary)
+                    }
                 }
-                .help("Ask the team about it, copy it, make it a task, keep it in Notes, or have James look it up")
+                .fixedSize()
+                .help("Ask the team about it, have James look it up, copy it, make it a task, or keep it in Notes")
             }
             if let done = state.done {
                 Text(done).font(BrandFont.body(13.5))
