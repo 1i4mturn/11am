@@ -7,13 +7,37 @@ struct TodayView: View {
     @EnvironmentObject private var today: TodayModel
     @EnvironmentObject private var brain: Brain
     @EnvironmentObject private var phone: PhoneLinkModel
+    @EnvironmentObject private var tasks: TasksModel
     @Environment(\.colorScheme) private var scheme
+    @State private var width: CGFloat = 900
+    @State private var scrolled: CGFloat = 0
+
+    /// One square of the opener's grid: as large as the window allows, up to the size that keeps the day in view.
+    private var square: CGFloat {
+        min(112, max(64, (width - 230 - Opener.gap * 5) / 6))
+    }
+
+    private var openerText: TodayOpenerText {
+        let events = today.shownEvents.map { TodayOpenerText.Event(title: $0.title, start: $0.start, end: $0.end, isAllDay: $0.isAllDay) }
+        return TodayOpenerText.make(now: Date(), events: events, tasksDue: tasks.tasks(in: .today).count,
+                                    overdue: tasks.overdueCount, briefReady: today.briefRun?.status == .done)
+    }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 22) {
-                SectionHeader(title: "today", subtitle: Date().formatted(date: .complete, time: .omitted)) {
-                    HStack(spacing: 12) {
+                // The overprint: the day's number, its word behind, and a note about the day, stepped across both.
+                HStack(alignment: .top, spacing: 16) {
+                    let text = openerText
+                    Opener(numeral: text.numeral, word: text.word.rawValue, label: text.label, heading: text.heading, line: text.line,
+                           square: square, scrolled: scrolled)
+                        .background {
+                            GeometryReader { proxy in
+                                Color.clear.preference(key: OpenerScrollKey.self, value: proxy.frame(in: .named("today")).minY)
+                            }
+                        }
+                    Spacer(minLength: 0)
+                    VStack(alignment: .trailing, spacing: 12) {
                         Button {
                             phone.showsPairing = true
                         } label: {
@@ -26,6 +50,10 @@ struct TodayView: View {
                             .controlSize(.small)
                             .help("A gentle notification at 11:00 every day")
                     }
+                    .padding(.top, square + Opener.gap)
+                }
+                .onPreferenceChange(OpenerScrollKey.self) { minY in
+                    scrolled = max(0, 24 - minY)
                 }
 
                 BriefCard()
@@ -84,11 +112,25 @@ struct TodayView: View {
                 }
             }
             .padding(24)
+            .background {
+                GeometryReader { proxy in
+                    Color.clear
+                        .onAppear { width = proxy.size.width - 48 }
+                        .onChange(of: proxy.size.width) { _, value in width = value - 48 }
+                }
+            }
         }
+        .coordinateSpace(name: "today")
         .scrollContentBackground(.hidden)
         .onAppear { today.loadEvents() }
         .sheet(isPresented: $phone.showsPairing) { PhonePairingSheet() }
     }
+}
+
+/// Where the opener sits in Today's scroll, for its drift.
+private struct OpenerScrollKey: PreferenceKey {
+    static let defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = nextValue() }
 }
 
 private struct BriefCard: View {

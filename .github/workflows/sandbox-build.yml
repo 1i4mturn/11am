@@ -316,6 +316,17 @@ jobs:
           test -x shelftests
           ./shelftests
 
+      - name: Opener tests (Today's overprint)
+        working-directory: sandbox
+        run: |
+          mkdir -p openertest
+          cd openertest
+          swiftc -O -o openertests \
+            ../ElevenAm/Features/Today/OpenerKit.swift \
+            ../ci/OpenerTests/main.swift 2>&1 | grep -E "error|warning: unre" || true
+          test -x openertests
+          ./openertests
+
       - name: Build the iPhone app
         working-directory: sandbox
         run: |
