@@ -37,7 +37,7 @@ check(morning.numeral == "23", "numeral: the day of the month")
 check(morning.word == .solveIt, "word: a full day is solve it")
 check(morning.heading == "Three meetings.", "heading: counts meetings left, all-day events aside")
 check(morning.line == "Next, Investor call at 9:00. 4 tasks due, 1 overdue. Your brief is ready.", "line: next, tasks, brief")
-check(morning.label == "monday · november · solve it", "label: weekday, month and the word, lowercase")
+check(morning.label == "monday · solve it", "label: weekday and the word, lowercase")
 
 let midday = opener(at(23, 12), day, due: 1)
 check(midday.word == .ownIt && midday.heading == "One meeting.", "midday: one left is own it")

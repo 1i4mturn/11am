@@ -72,9 +72,9 @@ struct TodayOpenerText: Equatable, Sendable {
         }
         if briefReady { parts.append("Your brief is ready.") }
 
+        // The number is in the square, so the label needs only the weekday and the word, short enough for one line.
         let weekday = calendar.weekdaySymbols[calendar.component(.weekday, from: now) - 1].lowercased()
-        let month = calendar.monthSymbols[calendar.component(.month, from: now) - 1].lowercased()
-        return TodayOpenerText(numeral: String(format: "%02d", day), word: word, label: "\(weekday) · \(month) · \(word.rawValue)",
+        return TodayOpenerText(numeral: String(format: "%02d", day), word: word, label: "\(weekday) · \(word.rawValue)",
                                heading: heading, line: parts.joined(separator: " "))
     }
 
