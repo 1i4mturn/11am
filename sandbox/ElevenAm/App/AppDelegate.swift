@@ -10,6 +10,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var askHotKey: HotKey?
     private var noteHotKey: HotKey?
     private var taskHotKey: HotKey?
+    private var lensHotKey: HotKey?
+    private(set) var lens: LensController?
     private var services: ResearchServices?
     private var glyphWindow: NSWindow?
 
@@ -37,6 +39,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // ⌥⇧T adds a task from anywhere.
         taskHotKey = HotKey(keyCode: UInt32(kVK_ANSI_T), modifiers: UInt32(optionKey | shiftKey)) { [weak self] in
             self?.quickTask()
+        }
+        // ⌥⇧L brings out the lens: move it over anything and it reads what's under it.
+        let lens = LensController(model: model)
+        lens.onAsk = { [weak self] url in self?.puck?.openNote(about: url) }
+        self.lens = lens
+        lensHotKey = HotKey(keyCode: UInt32(kVK_ANSI_L), modifiers: UInt32(optionKey | shiftKey)) { [weak self] in
+            self?.toggleLens()
         }
 
         // Services › Look Up with James and Clip to 11am Notes, from any app.
@@ -436,6 +445,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 puck?.openNote(about: files[0])
             }
         }
+        // -lensPreview YES shows the lens with something it read (screen recording can't be granted on CI).
+        if arguments.bool(forKey: "lensPreview") {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in self?.lens?.preview() }
+        }
         if arguments.bool(forKey: "shelfHanded") {
             model.shelf.handed = ShelfModel.Handed(agent: "ge", text: "kept the receipt from Officeworks, $86.90 with $7.90 GST", section: .money)
             notch.openPreview()
@@ -472,6 +485,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func togglePuck() {
         puck?.toggle()
+    }
+
+    func toggleLens() {
+        lens?.toggle()
     }
 
     /// A new note, ready to type into, from anywhere.

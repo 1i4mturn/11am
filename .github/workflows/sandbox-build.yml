@@ -331,6 +331,17 @@ jobs:
           test -x openertests
           ./openertests
 
+      - name: Lens tests (what's under it, in reading order)
+        working-directory: sandbox
+        run: |
+          mkdir -p lenstest
+          cd lenstest
+          swiftc -O -o lenstests \
+            ../ElevenAm/Notch/LensKit.swift \
+            ../ci/LensTests/main.swift 2>&1 | grep -E "error|warning: unre" || true
+          test -x lenstests
+          ./lenstests
+
       - name: Build the iPhone app
         working-directory: sandbox
         run: |

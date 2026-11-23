@@ -58,6 +58,8 @@ jobs:
           capture today-light -startSection today -forceAppearance light
           capture today-opener-dark -startSection today -forceAppearance dark -tasksSample YES
           capture icons-light -startSection notes -forceAppearance light -glyphSheet YES
+          capture lens-light -startSection mail -forceAppearance light -lensPreview YES
+          capture lens-dark -startSection notes -forceAppearance dark -lensPreview YES
           capture icons-dark -startSection notes -forceAppearance dark -glyphSheet YES
           capture audio-recording-light -startSection audio -forceAppearance light -audioRecordPreview YES
           capture today-energy-light -startSection today -forceAppearance light -phoneEnergy YES
