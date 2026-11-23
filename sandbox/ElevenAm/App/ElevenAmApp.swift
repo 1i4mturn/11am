@@ -9,14 +9,13 @@ struct ElevenAmApp: App {
         FontRegistry.registerBundledFonts()
     }
 
+    // Each app opens in its own window, made by `AppWindows` (AppDelegate restores them at launch), so the only
+    // SwiftUI scene is Settings; the menus hang off it.
     var body: some Scene {
-        WindowGroup("11am", id: "main") {
-            RootView()
+        Settings {
+            SettingsView()
                 .withAppEnvironment(appDelegate.model)
-                .frame(minWidth: 980, minHeight: 640)
         }
-        .windowStyle(.hiddenTitleBar)
-        .defaultSize(width: 1240, height: 800)
         .commands {
             CommandMenu("Team") {
                 // ⌥Space is registered system-wide by AppDelegate, so the menu item carries no shortcut.
@@ -28,25 +27,22 @@ struct ElevenAmApp: App {
                 }
                 .keyboardShortcut("r", modifiers: [.command, .shift])
                 Divider()
-                Button("Show or Hide Agent Pane") {
-                    appDelegate.model.showsPane.toggle()
+                Button("Ask the Agent for This App") {
+                    appDelegate.toggleAgent()
                 }
                 .keyboardShortcut("\\", modifiers: .command)
             }
-            CommandGroup(after: .sidebar) {
+            // ⌘1…⌘9 open (or bring forward) the first nine apps' windows.
+            CommandMenu("Apps") {
                 ForEach(AppSection.allCases.filter { $0.shortcutNumber != nil }) { section in
                     Button(section.title) { appDelegate.model.go(to: section) }
                         .keyboardShortcut(KeyEquivalent(Character("\(section.shortcutNumber ?? 1)")), modifiers: .command)
                 }
+                Divider()
                 ForEach(AppSection.allCases.filter { $0.shortcutNumber == nil }) { section in
                     Button(section.title) { appDelegate.model.go(to: section) }
                 }
             }
-        }
-
-        Settings {
-            SettingsView()
-                .withAppEnvironment(appDelegate.model)
         }
     }
 }
@@ -89,6 +85,8 @@ extension View {
             .environmentObject(model.phone)
             .environmentObject(model.languages)
             .environmentObject(model.tasks)
+            .environmentObject(model.windows)
+            .environmentObject(model.shelf)
             .modifier(BrandEnvironment())
     }
 }

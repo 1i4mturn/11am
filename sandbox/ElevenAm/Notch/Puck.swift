@@ -21,6 +21,8 @@ final class PuckState: ObservableObject {
     @Published var onLeft = false
     /// True when the puck is in the lower half, so the note lines up with its bottom edge.
     @Published var alignBottom = true
+    /// A file dropped on the 11 to ask about.
+    @Published var attached: URL?
     let listener = Listener()
 }
 
@@ -187,7 +189,21 @@ final class PuckController {
         installEscape()
     }
 
+    /// A file dropped on the 11 in the drop: the note opens to ask about it.
+    func openNote(about url: URL) {
+        if !isShown { show() }
+        state.attached = url
+        state.run = nil
+        state.added = nil
+        state.addedTaskID = nil
+        state.sent = ""
+        state.transcript = ""
+        state.problem = nil
+        openNote(typing: true)
+    }
+
     func closeNote() {
+        state.attached = nil
         if state.listening { _ = state.listener.stop() }
         heardWatcher = nil
         state.listening = false
@@ -283,6 +299,16 @@ final class PuckController {
     /// Sends the words on: "+ …" or "remind me to …" becomes a task, the rest goes to the agent it's about.
     func submit() {
         let text = state.transcript.trimmingCharacters(in: .whitespacesAndNewlines)
+        // With a file attached, Bolton reads it and answers; sending with nothing typed asks what it is.
+        if let file = state.attached {
+            let question = text.isEmpty ? "What's this, in a few lines, and is there anything I need to do?" : text
+            state.sent = question
+            state.added = nil
+            state.addedTaskID = nil
+            state.run = model.brain.run(AskRouter.request(about: file, question: question))
+            state.transcript = ""
+            return
+        }
         guard !text.isEmpty else { return }
         state.sent = text
         state.added = nil
@@ -468,13 +494,30 @@ struct PuckNoteView: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
 
+                if let file = state.attached {
+                    HStack(spacing: 6) {
+                        Chip(text: "about")
+                        Text(ShelfList.chipName(file.lastPathComponent, max: 34))
+                            .font(BrandFont.body(13.5, weight: .semibold))
+                            .lineLimit(1)
+                        Spacer(minLength: 0)
+                        Button {
+                            state.attached = nil
+                        } label: {
+                            Text("×").font(BrandFont.body(16)).frame(width: 20, height: 20).contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .help("Ask without the file")
+                    }
+                }
+
                 if state.listening {
                     Text(state.transcript.isEmpty ? "Listening…" : state.transcript)
                         .font(BrandFont.heading(22, weight: .heavy))
                         .tracking(-0.5)
                         .fixedSize(horizontal: false, vertical: true)
                 } else if state.run == nil && state.added == nil || !state.transcript.isEmpty {
-                    TextField("", text: $state.transcript, prompt: Text("Say or type what you need").foregroundStyle(BrandTokens.inkHex.opacity(0.55)), axis: .vertical)
+                    TextField("", text: $state.transcript, prompt: Text(state.attached == nil ? "Say or type what you need" : "Ask about it, or just send").foregroundStyle(BrandTokens.inkHex.opacity(0.55)), axis: .vertical)
                         .textFieldStyle(.plain)
                         .font(BrandFont.heading(20, weight: .heavy))
                         .lineLimit(1...4)
@@ -515,7 +558,12 @@ struct PuckNoteView: View {
     @ViewBuilder
     private var routes: some View {
         let text = state.listening || !state.transcript.isEmpty ? state.transcript : state.sent
-        if !text.trimmingCharacters(in: .whitespaces).isEmpty {
+        if state.attached != nil {
+            HStack(spacing: 6) {
+                Chip(text: "bolton")
+                Chip(text: "reads the file")
+            }
+        } else if !text.trimmingCharacters(in: .whitespaces).isEmpty {
             HStack(spacing: 6) {
                 ForEach(PuckNoteView.routes(for: text), id: \.self) { route in
                     Chip(text: route)
@@ -553,7 +601,7 @@ struct PuckNoteView: View {
             }
             if state.listening {
                 Button("Send") { controller.stopTalking(send: true) }.buttonStyle(.vellumPrimary)
-            } else if !state.transcript.trimmingCharacters(in: .whitespaces).isEmpty {
+            } else if !state.transcript.trimmingCharacters(in: .whitespaces).isEmpty || state.attached != nil && state.run == nil {
                 Button("Send") { controller.submit() }.buttonStyle(.vellumPrimary)
             }
         }

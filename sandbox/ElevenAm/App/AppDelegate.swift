@@ -43,8 +43,82 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NSUpdateDynamicServices()
         self.services = services
 
+        // A file dropped on the 11 in the drop opens the puck's note to ask about it.
+        model.shelf.onAsk = { [weak self] url in self?.puck?.openNote(about: url) }
+
         model.start()
         applyLaunchArguments(notch: notch)
+        // The apps' windows: the one asked for (screenshots), or the ones open last time.
+        let start = UserDefaults.standard.string(forKey: "startSection").flatMap(AppSection.init(rawValue:))
+        model.windows.restore(start: start)
+        // -openApps calendar,notes opens more windows behind the first (screenshots).
+        if let more = UserDefaults.standard.string(forKey: "openApps") {
+            for name in more.split(separator: ",") {
+                if let section = AppSection(rawValue: String(name)) { model.windows.show(section, activate: false) }
+            }
+            if let start { model.windows.show(start, activate: false) }
+        }
+        if UserDefaults.standard.bool(forKey: "activate") { NSApp.activate() }
+        // -agentNote YES opens the agent's note from the front window's title bar; -mailAttach YES starts an email with
+        // two sample files attached.
+        if UserDefaults.standard.bool(forKey: "agentNote") {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
+                guard let self else { return }
+                self.model.agentFor = self.model.section
+            }
+        }
+        if UserDefaults.standard.bool(forKey: "mailAttach") {
+            let files = SampleShelf.make()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
+                self?.model.mail.compose(attaching: Array(files.prefix(2)))
+            }
+        }
+        ensureCloseItem()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in self?.ensureCloseItem() }
+    }
+
+    /// SwiftUI builds the menus; with no window scene of its own it might leave out File › Close, so ⌘W is added if
+    /// it's missing. The menus are logged once, which the screenshot runs keep.
+    private func ensureCloseItem() {
+        guard let menu = NSApp.mainMenu else { return }
+        let close = #selector(NSWindow.performClose(_:))
+        func has(_ menu: NSMenu) -> Bool {
+            menu.items.contains { $0.action == close || ($0.submenu.map(has) ?? false) }
+        }
+        print("Menus: \(menu.items.map(\.title).joined(separator: ", ")) · close item: \(has(menu))")
+        guard !has(menu) else { return }
+        let file: NSMenu
+        if let existing = menu.items.first(where: { $0.title == "File" })?.submenu {
+            file = existing
+        } else {
+            file = NSMenu(title: "File")
+            let item = NSMenuItem(title: "File", action: nil, keyEquivalent: "")
+            item.submenu = file
+            menu.insertItem(item, at: min(1, menu.items.count))
+        }
+        file.addItem(NSMenuItem(title: "Close Window", action: close, keyEquivalent: "w"))
+    }
+
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        // The drop and the puck are always visible, so look at the app windows themselves.
+        model.windows.reopen()
+        return false
+    }
+
+    /// elevenam://clip and elevenam://lookup from the browser button.
+    func application(_ application: NSApplication, open urls: [URL]) {
+        for url in urls {
+            if let link = ClipLink.parse(url) { model.research.handle(link) }
+        }
+    }
+
+    /// ⌘\: the agent's note for the app in front (or the agent pane, in the one window).
+    func toggleAgent() {
+        if model.windows.style == .single {
+            model.showsPane.toggle()
+        } else {
+            model.agentFor = model.agentFor == nil ? model.section : nil
+        }
     }
 
     /// Developer flags for screenshots and quick checks, e.g.
@@ -53,6 +127,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let arguments = UserDefaults.standard
         if let start = arguments.string(forKey: "startSection"), let section = AppSection(rawValue: start) {
             model.section = section
+        }
+        // -windowStyle single shows the earlier one-window layout.
+        if let style = arguments.string(forKey: "windowStyle").flatMap(WindowStyle.init(rawValue:)) {
+            UserDefaults.standard.set(style.rawValue, forKey: "windows.style")
+            model.windows.style = style
         }
         if let appearance = arguments.string(forKey: "forceAppearance"), let value = Appearance(rawValue: appearance) {
             model.theme.values.appearance = value
@@ -348,12 +427,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if arguments.bool(forKey: "pdfPullOut") {
             model.pdf.loadPullOutSample()
         }
-        if arguments.bool(forKey: "activate") {
-            NSApp.activate()
+        // -shelfSample YES puts a few sample files on the shelf; -dropDrag YES shows the drop as a PDF is dragged over
+        // George's ring; -shelfHanded YES shows a hand-off; -puckFile YES opens the puck's note about a sample PDF.
+        if arguments.bool(forKey: "shelfSample") || arguments.bool(forKey: "dropDrag") || arguments.bool(forKey: "puckFile") {
+            let files = SampleShelf.make()
+            if arguments.bool(forKey: "shelfSample") { model.shelf.add(Array(files.dropFirst())) }
+            if arguments.bool(forKey: "dropDrag") { notch.openDragPreview(files[0], over: "ge") }
+            if arguments.bool(forKey: "puckFile") {
+                puck?.openNote(about: files[0])
+            }
+        }
+        if arguments.bool(forKey: "shelfHanded") {
+            model.shelf.handed = ShelfModel.Handed(agent: "ge", text: "kept the receipt from Officeworks, $86.90 with $7.90 GST", section: .money)
+            notch.openPreview()
         }
     }
 
     func applicationWillTerminate(_ notification: Notification) {
+        model.windows.prepareToQuit()
         model.sheets.flushSave()
         model.studio.flushSave()
         model.decks.flushSave()
@@ -386,8 +477,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     /// A new note, ready to type into, from anywhere.
     func quickNote() {
-        NSApp.activate()
-        NSApp.windows.first { $0.canBecomeMain }?.makeKeyAndOrderFront(nil)
         model.go(to: .notes)
         model.notes.scope = .all
         model.notes.newNote()
@@ -396,8 +485,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     /// The quick add field in Tasks, ready to type into, from anywhere.
     func quickTask() {
-        NSApp.activate()
-        NSApp.windows.first { $0.canBecomeMain }?.makeKeyAndOrderFront(nil)
         model.go(to: .tasks)
         if model.tasks.list == .logbook { model.tasks.list = .inbox }
         model.tasks.layout = .list

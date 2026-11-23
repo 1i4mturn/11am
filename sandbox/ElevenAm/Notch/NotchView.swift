@@ -325,23 +325,32 @@ private struct DropPanel: View {
     @EnvironmentObject private var today: TodayModel
     @EnvironmentObject private var nightShift: NightShift
     @EnvironmentObject private var mail: MailModel
+    @EnvironmentObject private var shelf: ShelfModel
+    @EnvironmentObject private var windows: AppWindows
 
     private var listening: Bool { state.focusAsk || state.askRun != nil || !state.askText.isEmpty }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             header
-            if listening {
+            if state.dragging {
+                agents
+                dragHint
+                ShelfStrip()
+            } else if listening {
                 DropListening()
             } else {
                 agents
+                if let handed = shelf.handed { handedCard(handed) }
                 notices
+                if !shelf.items.isEmpty { ShelfRow() }
                 if let live { live }
                 openRow
             }
-            DropAskBar()
+            if !state.dragging { DropAskBar() }
         }
         .foregroundStyle(.white)
+        .onDisappear { shelf.handed = nil }
     }
 
     private var header: some View {
@@ -382,22 +391,93 @@ private struct DropPanel: View {
                 Button {
                     open(DropAgents.section(for: code))
                 } label: {
-                    DropCircle(code: code, size: 48, lit: newAgents.contains(code))
+                    DropCircle(code: code, size: 48, lit: newAgents.contains(code) || state.dragTarget == code)
+                        .modifier(OpenRing(open: takes(code), dragging: state.dragging))
                 }
                 .buttonStyle(.plain)
                 .help("\(AgentCode.name(code)) · \(DropAgents.role(code))")
                 .accessibilityLabel(AgentCode.name(code))
+                .onDrop(of: [.fileURL], delegate: dropTarget(code))
             }
             Button {
                 state.focusAsk = true
             } label: {
                 ListeningCircle(size: 48)
+                    .modifier(OpenRing(open: takes("11"), dragging: state.dragging))
             }
             .buttonStyle(.plain)
-            .help("Talk to the team · hold ⌥Space")
+            .help("Talk to the team · hold ⌥Space. Drop a file here to ask about it.")
             .accessibilityLabel("Talk to the team")
+            .onDrop(of: [.fileURL], delegate: dropTarget("11"))
         }
         .padding(.vertical, 6)
+    }
+
+    // MARK: The shelf
+
+    /// While a file is dragged, an agent's ring opens if it can take what's being dragged.
+    private func takes(_ code: String) -> Bool {
+        state.dragging && ShelfRouting.action(agent: code, kinds: state.dragKinds) != nil
+    }
+
+    private func dropTarget(_ code: String) -> ShelfDropDelegate {
+        ShelfDropDelegate(target: code, state: state, accepts: {
+            state.dragKinds.isEmpty || ShelfRouting.action(agent: code, kinds: state.dragKinds) != nil
+        }, perform: { urls in
+            // Anything an agent turns down waits on the shelf instead of being lost.
+            if !shelf.hand(urls, to: code) {
+                shelf.add(urls)
+                shelf.handed = ShelfModel.Handed(agent: code, text: "can't take that, so it's on the shelf", section: nil)
+            }
+        })
+    }
+
+    private var dragHint: some View {
+        let count = state.dragURLs.count
+        let name = count == 1 ? state.dragURLs[0].lastPathComponent : "\(count) files"
+        let target = state.dragTarget.flatMap { code -> (String, String)? in
+            guard code != "shelf", let action = ShelfRouting.action(agent: code, kinds: state.dragKinds) else { return nil }
+            return (code == "11" ? "11am" : AgentCode.name(code), ShelfRouting.verb(action, count: count))
+        }
+        return VStack(alignment: .leading, spacing: 4) {
+            Text(count == 0 ? "a file" : name)
+                .font(BrandFont.label(12))
+                .lineLimit(1)
+            Text(target.map { "\($0.0) · \($0.1)" } ?? "Drop it on an agent with an open ring.")
+                .font(BrandFont.heading(22, weight: .heavy))
+                .tracking(-0.5)
+                .lineLimit(1)
+                .contentTransition(.opacity)
+        }
+        .animation(.easeOut(duration: 0.15), value: state.dragTarget)
+    }
+
+    private func handedCard(_ handed: ShelfModel.Handed) -> some View {
+        HStack(spacing: 12) {
+            (Text(handed.agent == "11" ? "11am" : AgentCode.name(handed.agent)).font(BrandFont.body(14, weight: .semibold))
+                + Text(" · \(handed.text)").font(BrandFont.body(14)))
+                .lineLimit(2)
+            Spacer(minLength: 8)
+            if let section = handed.section {
+                Button("Open") {
+                    shelf.handed = nil
+                    open(section)
+                }
+                .buttonStyle(DropPillStyle(kind: .ink))
+            }
+            Button {
+                shelf.handed = nil
+            } label: {
+                Text("×").font(BrandFont.body(17)).frame(width: 22, height: 22).contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Dismiss")
+        }
+        .foregroundStyle(BrandTokens.inkHex)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .background(RoundedRectangle(cornerRadius: BrandTokens.radiusNotice, style: .continuous).fill(Color.white))
+        .transition(.opacity.combined(with: .move(edge: .top)))
     }
 
     // MARK: Notices
@@ -489,26 +569,43 @@ private struct DropPanel: View {
 
     // MARK: Apps
 
+    /// One pill per app, white when its window is open: the everyday apps, then any others you have open.
     private var openRow: some View {
-        let apps: [AppSection] = [.today, .calendar, .tasks, .mail, .notes, .write]
-        return HStack(spacing: 8) {
-            ForEach(apps) { section in
-                Button(section.title) { open(section) }
-                    .buttonStyle(DropPillStyle(kind: model.section == section && mainWindowVisible ? .paper : .sheet))
+        let everyday: [AppSection] = [.today, .calendar, .tasks, .mail, .notes, .write]
+        let apps = everyday + windows.openSections.filter { !everyday.contains($0) }
+        return ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(apps) { section in
+                    Button(section.title) { open(section) }
+                        .buttonStyle(DropPillStyle(kind: windows.isOpen(section) ? .paper : .sheet))
+                        .help(windows.isOpen(section) ? "Bring \(section.title) forward" : "Open \(section.title)")
+                }
             }
-            Spacer(minLength: 0)
         }
-    }
-
-    private var mainWindowVisible: Bool {
-        NSApp.windows.contains { $0.canBecomeMain && $0.isVisible }
+        .frame(height: 36)
     }
 
     private func open(_ section: AppSection) {
-        NSApp.activate()
-        NSApp.windows.first { $0.canBecomeMain }?.makeKeyAndOrderFront(nil)
         model.go(to: section)
         state.close()
+    }
+}
+
+/// An agent's open ring while a file is dragged: a white ring for one that can take it; the rest step back.
+private struct OpenRing: ViewModifier {
+    var open: Bool
+    var dragging: Bool
+
+    func body(content: Content) -> some View {
+        content
+            .overlay {
+                if open {
+                    Circle().strokeBorder(Color.white, lineWidth: BrandTokens.ruleOpen).padding(-6)
+                        .transition(.scale(scale: 0.8).combined(with: .opacity))
+                }
+            }
+            .opacity(dragging && !open ? 0.3 : 1)
+            .animation(.easeOut(duration: 0.18), value: open)
     }
 }
 

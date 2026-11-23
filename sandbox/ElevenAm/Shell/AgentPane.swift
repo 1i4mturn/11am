@@ -2,6 +2,8 @@ import SwiftUI
 
 /// The quiet assistant beside every app: who's working, a scoped ask, and what the team just did.
 struct AgentPane: View {
+    /// The app it's beside: the one window's current app, or the window whose title bar opened it.
+    var section: AppSection
     @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var theme: Theme
     @EnvironmentObject private var brain: Brain
@@ -29,10 +31,10 @@ struct AgentPane: View {
             }
 
             // In Research, the pane looks things up on the web; everywhere else it asks the team.
-            AskField(placeholder: model.section == .research ? "Look this up on the web…" : "Ask \(agent.name.lowercased())…", text: $askText) {
+            AskField(placeholder: section == .research ? "Look this up on the web…" : "Ask \(agent.name.lowercased())…", text: $askText) {
                 let text = askText.trimmingCharacters(in: .whitespacesAndNewlines)
                 guard !text.isEmpty else { return }
-                if model.section == .research {
+                if section == .research {
                     research.lookUp(text)
                     askText = ""
                 } else {
@@ -62,7 +64,7 @@ struct AgentPane: View {
 
         }
         .padding(18)
-        .animation(theme.spring, value: model.section)
+        .animation(theme.spring, value: section)
         .animation(theme.spring, value: research.lookup?.id)
     }
 
@@ -102,7 +104,7 @@ struct AgentPane: View {
     }
 
     private var agent: (monogram: String, name: String, role: String) {
-        switch model.section {
+        switch section {
         case .today, .overnight: return ("le", "Leo", "Chief of staff · plans your day")
         case .calendar: return ("le", "Leo", "Calendar · guards your time")
         case .tasks: return ("le", "Leo", "Tasks · keeps your promises")

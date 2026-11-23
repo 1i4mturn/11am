@@ -31,6 +31,23 @@ check(encoded.contains("Caf=C3=A9 =3D good") && encoded.contains("=2Edot") && en
 check(MailEncoding.header("Café ☕️").hasPrefix("=?utf-8?B?"), "encoded subject")
 check(MailParser.decodeWords(MailEncoding.header("Café ☕️ and a fairly long subject that needs folding")) == "Café ☕️ and a fairly long subject that needs folding", "subject round trip")
 
+// Attachments: the text first, then each file in base64, and the plain body still reads back.
+var withFiles = OutgoingMail(fromName: "You", fromAddress: "you@elevenam.app", to: ["tom@acme.co"], subject: "The agreement", body: "Here it is.\nCall me after.")
+let fileBytes = Data((0..<2_000).map { UInt8($0 % 251) })
+withFiles.attachments = [MailAttachment(name: "Acme pilot agreement.pdf", data: fileBytes), MailAttachment(name: "Café menu.txt", data: Data("soup".utf8))]
+let raw = String(decoding: withFiles.rfc5322(), as: UTF8.self)
+check(raw.contains("Content-Type: multipart/mixed; boundary="), "attachments: multipart/mixed")
+check(raw.contains("Content-Type: application/pdf; name=\"Acme pilot agreement.pdf\""), "attachments: PDF type and name")
+check(raw.contains("Content-Disposition: attachment; filename=\"=?utf-8?B?"), "attachments: non-ASCII file name as an encoded word")
+let base64Lines = fileBytes.base64EncodedString(options: [.lineLength76Characters, .endLineWithCarriageReturn, .endLineWithLineFeed])
+check(raw.contains(base64Lines), "attachments: base64 in 76-character lines")
+check(!raw.components(separatedBy: "\r\n").contains { $0.count > 998 }, "attachments: no line over 998 characters")
+let reread = MailParser.parse(raw)
+check(reread.body.contains("Here it is.") && !reread.body.contains("soup"), "attachments: the parser reads the text, skips the files")
+let plainMail = OutgoingMail(fromName: "You", fromAddress: "you@elevenam.app", to: ["tom@acme.co"], subject: "Hi", body: "Hi")
+check(String(decoding: plainMail.rfc5322(), as: UTF8.self).contains("Content-Type: text/plain; charset=utf-8"), "attachments: none stays plain text")
+check(MailAttachment.mimeType(forExtension: "XLSX").hasSuffix("spreadsheetml.sheet"), "attachments: types by extension")
+
 // MARK: Learning
 
 var learner = MailSamples.learner()

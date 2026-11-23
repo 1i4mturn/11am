@@ -305,6 +305,17 @@ jobs:
           test -x notesextrastests
           ./notesextrastests
 
+      - name: Shelf tests (file kinds, agents' rings, the shelf list)
+        working-directory: sandbox
+        run: |
+          mkdir -p shelftest
+          cd shelftest
+          swiftc -O -o shelftests \
+            ../ElevenAm/Notch/ShelfKit.swift \
+            ../ci/ShelfTests/main.swift 2>&1 | grep -E "error|warning: unre" || true
+          test -x shelftests
+          ./shelftests
+
       - name: Build the iPhone app
         working-directory: sandbox
         run: |

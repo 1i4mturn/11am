@@ -1,5 +1,44 @@
 import Foundation
 
+/// A file sent with a message.
+struct MailAttachment: Sendable, Equatable {
+    var name: String
+    var mimeType: String
+    var data: Data
+
+    init(name: String, data: Data, mimeType: String? = nil) {
+        self.name = name
+        self.data = data
+        self.mimeType = mimeType ?? MailAttachment.mimeType(forExtension: (name as NSString).pathExtension)
+    }
+
+    static func mimeType(forExtension ext: String) -> String {
+        switch ext.lowercased() {
+        case "pdf": return "application/pdf"
+        case "png": return "image/png"
+        case "jpg", "jpeg": return "image/jpeg"
+        case "gif": return "image/gif"
+        case "heic": return "image/heic"
+        case "webp": return "image/webp"
+        case "txt", "md", "markdown": return "text/plain"
+        case "csv": return "text/csv"
+        case "html", "htm": return "text/html"
+        case "ics": return "text/calendar"
+        case "zip": return "application/zip"
+        case "rtf": return "application/rtf"
+        case "docx": return "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        case "xlsx": return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        case "pptx": return "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+        case "mp3": return "audio/mpeg"
+        case "m4a": return "audio/mp4"
+        case "wav": return "audio/wav"
+        case "mp4", "m4v": return "video/mp4"
+        case "mov": return "video/quicktime"
+        default: return "application/octet-stream"
+        }
+    }
+}
+
 /// A message to send, before it becomes RFC 5322 text.
 struct OutgoingMail: Sendable {
     var fromName: String
@@ -12,6 +51,8 @@ struct OutgoingMail: Sendable {
     var references: String?
     var date = Date()
     var messageID: String
+    /// Files to send with it; with any, the message goes as multipart/mixed.
+    var attachments: [MailAttachment] = []
 
     init(fromName: String, fromAddress: String, to: [String], cc: [String] = [], subject: String, body: String,
          inReplyTo: String? = nil, references: String? = nil) {
@@ -29,7 +70,8 @@ struct OutgoingMail: Sendable {
 
     var recipients: [String] { to + cc }
 
-    /// Plain-text mail, UTF-8, quoted-printable, CRLF line endings.
+    /// Plain-text mail, UTF-8, quoted-printable, CRLF line endings. With attachments, the text comes first and each
+    /// file follows in base64.
     func rfc5322() -> Data {
         var lines: [String] = []
         lines.append("Date: \(MailEncoding.rfc2822Date(date))")
@@ -41,10 +83,36 @@ struct OutgoingMail: Sendable {
         if let inReplyTo, !inReplyTo.isEmpty { lines.append("In-Reply-To: \(inReplyTo)") }
         if let references, !references.isEmpty { lines.append("References: \(references)") }
         lines.append("MIME-Version: 1.0")
-        lines.append("Content-Type: text/plain; charset=utf-8")
-        lines.append("Content-Transfer-Encoding: quoted-printable")
+        guard !attachments.isEmpty else {
+            lines.append("Content-Type: text/plain; charset=utf-8")
+            lines.append("Content-Transfer-Encoding: quoted-printable")
+            lines.append("X-Mailer: 11am")
+            let text = lines.joined(separator: "\r\n") + "\r\n\r\n" + MailEncoding.quotedPrintable(body)
+            return Data(text.utf8)
+        }
+        let boundary = "=_11am_" + messageID.filter { $0.isLetter || $0.isNumber }.prefix(24)
+        lines.append("Content-Type: multipart/mixed; boundary=\"\(boundary)\"")
         lines.append("X-Mailer: 11am")
-        let text = lines.joined(separator: "\r\n") + "\r\n\r\n" + MailEncoding.quotedPrintable(body)
+        var parts: [String] = [
+            "--\(boundary)",
+            "Content-Type: text/plain; charset=utf-8",
+            "Content-Transfer-Encoding: quoted-printable",
+            "",
+            MailEncoding.quotedPrintable(body),
+        ]
+        for file in attachments {
+            let name = MailEncoding.parameter(file.name)
+            parts += [
+                "--\(boundary)",
+                "Content-Type: \(file.mimeType); name=\(name)",
+                "Content-Disposition: attachment; filename=\(name)",
+                "Content-Transfer-Encoding: base64",
+                "",
+                file.data.base64EncodedString(options: [.lineLength76Characters, .endLineWithCarriageReturn, .endLineWithLineFeed]),
+            ]
+        }
+        parts.append("--\(boundary)--")
+        let text = lines.joined(separator: "\r\n") + "\r\n\r\n" + parts.joined(separator: "\r\n") + "\r\n"
         return Data(text.utf8)
     }
 }
@@ -62,6 +130,13 @@ enum MailEncoding {
         guard !clean.isEmpty else { return address }
         if clean.allSatisfy({ $0.isASCII && $0 != "\"" && $0 != "\\" }) { return "\"\(clean)\" <\(address)>" }
         return "\(header(clean)) <\(address)>"
+    }
+
+    /// A quoted header parameter, such as a file name; anything beyond plain ASCII goes as one encoded word, which
+    /// Mail, Gmail and Outlook all read.
+    static func parameter(_ text: String) -> String {
+        if text.allSatisfy({ $0.isASCII && $0 != "\"" && $0 != "\\" && !$0.isNewline }) { return "\"\(text)\"" }
+        return "\"=?utf-8?B?\(Data(text.utf8).base64EncodedString())?=\""
     }
 
     /// RFC 2047 encoded words for anything that isn't plain ASCII, split so each stays short.

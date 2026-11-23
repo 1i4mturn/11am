@@ -51,7 +51,7 @@ struct RootView: View {
                     }
 
                     if model.showsPane && roomForPane {
-                        AgentPane()
+                        AgentPane(section: model.section)
                             .frame(width: 288)
                             .vellum(level: 1)
                             .transition(.move(edge: .trailing).combined(with: .opacity))
@@ -65,46 +65,10 @@ struct RootView: View {
             .ignoresSafeArea(.container, edges: .top)
         }
         .background(WindowConfigurator())
-        // elevenam://clip and elevenam://lookup from the browser button: handled in this window, not a new one.
-        .onOpenURL { url in
-            if let link = ClipLink.parse(url) { model.research.handle(link) }
-        }
-        .handlesExternalEvents(preferring: ["*"], allowing: ["*"])
         .preferredColorScheme(theme.values.appearance.colorScheme)
         // No accent colour: system controls (progress, pickers, links) take ink.
         .tint(theme.ink(scheme))
         .animation(theme.spring, value: model.showsPane)
         .animation(theme.spring, value: research.lookup?.id)
-    }
-}
-
-private struct SectionContent: View {
-    var section: AppSection
-
-    var body: some View {
-        switch section {
-        case .today: TodayView()
-        case .calendar: CalendarView()
-        case .tasks: TasksView()
-        case .mail: MailView()
-        case .notes: NotesView()
-        case .write: WriteView()
-        case .files: FilesView()
-        case .pdf: PDFAppView()
-        case .research: ResearchView()
-        case .money: MoneyView()
-        case .sheets: SheetsView()
-        case .business: BusinessView()
-        case .decks: DecksView()
-        case .design: DesignView()
-        case .photo: PhotoView()
-        case .video: VideoView()
-        case .audio: AudioView()
-        case .learn: LearnView()
-        case .build: BuildView()
-        case .overnight: OvernightView()
-        case .suite: SuiteView()
-        case .lab: DesignLabView()
-        }
     }
 }

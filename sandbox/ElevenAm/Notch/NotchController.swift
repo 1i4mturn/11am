@@ -57,6 +57,14 @@ final class NotchState: ObservableObject {
     @Published var askedText = ""
     /// What a "+ task" did.
     @Published var added: String?
+    /// A file is being dragged over the drop: agents' rings open for what they can take, and the shelf waits below.
+    @Published var dragging = false
+    @Published var dragURLs: [URL] = []
+    @Published var dragKinds: [ShelfKind] = []
+    /// The agent (by code) or "shelf" under the dragged file.
+    @Published var dragTarget: String?
+    /// The drop opened because a file came near; it folds away again when the drag ends.
+    private var openedForDrag = false
 
     private var collapseTask: Task<Void, Never>?
 
@@ -100,6 +108,7 @@ final class NotchState: ObservableObject {
     }
 
     func pointerLeft() {
+        guard !dragging else { return }
         cancelCollapse()
         // Stay open while typing or while an answer is streaming.
         if mode == .open && (focusAsk || !(askRun?.isFinished ?? true)) { return }
@@ -126,6 +135,43 @@ final class NotchState: ObservableObject {
         }
         set(.idle)
     }
+
+    /// A file has come near the notch: the drop opens with its rings and the shelf.
+    func beginDrag(_ urls: [URL]) {
+        dragURLs = urls
+        dragKinds = ShelfModel.kinds(urls)
+        dragTarget = nil
+        guard !dragging else { return }
+        if mode != .open { openedForDrag = true }
+        focusAsk = false
+        withAnimation(.smooth(duration: 0.25)) { dragging = true }
+        open()
+    }
+
+    /// The drag finished somewhere. After a hand-off the drop stays a moment to say what happened, then folds away
+    /// if it only opened for the drag.
+    func endDrag(handed: Bool, pointerInside: Bool) {
+        guard dragging else { return }
+        withAnimation(.smooth(duration: 0.25)) { dragging = false }
+        dragTarget = nil
+        let wasForDrag = openedForDrag
+        openedForDrag = false
+        guard wasForDrag, !pointerInside else { return }
+        cancelCollapse()
+        collapseTask = Task { @MainActor in
+            try? await Task.sleep(nanoseconds: handed ? 3_200_000_000 : 500_000_000)
+            guard !Task.isCancelled, !self.dragging else { return }
+            self.set(.idle)
+        }
+    }
+
+    /// Something was let go on a target in the drop.
+    func dropped() {
+        lastDrop = Date()
+    }
+
+    /// When the last file was let go in the drop, so the end of the drag knows it was handed over.
+    private(set) var lastDrop: Date?
 
     private func cancelCollapse() {
         collapseTask?.cancel()
@@ -217,6 +263,12 @@ final class NotchController {
         state.open(.ask)
     }
 
+    /// For screenshots: the drop as a file is dragged over an agent's ring.
+    func openDragPreview(_ url: URL, over code: String) {
+        state.beginDrag([url])
+        state.dragTarget = code
+    }
+
     func openAsk() {
         state.open(.ask)
         panel?.makeKeyAndOrderFront(nil)
@@ -233,13 +285,22 @@ final class NotchController {
     }
 
     private func installPointerMonitors() {
-        let handler: (NSEvent) -> Void = { [weak self] _ in
-            Task { @MainActor in self?.pointerMoved() }
+        let handler: (NSEvent) -> Void = { [weak self] event in
+            let type = event.type
+            Task { @MainActor in
+                switch type {
+                case .leftMouseDown: self?.mouseWentDown()
+                case .leftMouseUp: self?.mouseWentUp()
+                case .leftMouseDragged: self?.mouseDragged()
+                default: self?.pointerMoved()
+                }
+            }
         }
-        if let global = NSEvent.addGlobalMonitorForEvents(matching: [.mouseMoved, .leftMouseDragged], handler: handler) {
+        let events: NSEvent.EventTypeMask = [.mouseMoved, .leftMouseDragged, .leftMouseDown, .leftMouseUp]
+        if let global = NSEvent.addGlobalMonitorForEvents(matching: events, handler: handler) {
             monitors.append(global)
         }
-        if let local = NSEvent.addLocalMonitorForEvents(matching: [.mouseMoved, .leftMouseDragged], handler: { event in
+        if let local = NSEvent.addLocalMonitorForEvents(matching: events, handler: { event in
             handler(event)
             return event
         }) {
@@ -252,6 +313,49 @@ final class NotchController {
         if state.geometry.wakeZone.contains(NSEvent.mouseLocation) {
             state.peek()
         }
+    }
+
+    // MARK: Dragging files to the drop
+
+    /// The drag pasteboard's count when the button went down: a new count while it's held means a drag has started.
+    private var dragCount = NSPasteboard(name: .drag).changeCount
+    private var dragFiles: [URL]?
+
+    private func mouseWentDown() {
+        dragCount = NSPasteboard(name: .drag).changeCount
+        dragFiles = nil
+    }
+
+    private func mouseDragged() {
+        let board = NSPasteboard(name: .drag)
+        guard board.changeCount != dragCount else {
+            pointerMoved()
+            return
+        }
+        if dragFiles == nil { dragFiles = FileDrops.dragged() }
+        guard let files = dragFiles, !files.isEmpty else { return }
+        if state.dragging || dropZone.contains(NSEvent.mouseLocation) {
+            state.beginDrag(files)
+        }
+    }
+
+    private func mouseWentUp() {
+        dragFiles = nil
+        dragCount = NSPasteboard(name: .drag).changeCount
+        guard state.dragging else { return }
+        // The drop lands a moment after the button comes up; wait for it before deciding.
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 250_000_000)
+            let handed = state.lastDrop.map { Date().timeIntervalSince($0) < 2 } ?? false
+            let inside = panel.map { $0.frame.contains(NSEvent.mouseLocation) } ?? false
+            state.endDrag(handed: handed, pointerInside: inside && !handed)
+        }
+    }
+
+    /// Generous room around the notch, so a file only has to come close.
+    private var dropZone: NSRect {
+        let notch = state.geometry.notchRect
+        return NSRect(x: notch.minX - 160, y: notch.minY - 70, width: notch.width + 320, height: notch.height + 140)
     }
 
     private func reposition() {

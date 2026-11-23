@@ -18,6 +18,8 @@ struct MailDraft: Identifiable, Equatable {
     var references: String?
     /// The email this answers, so Marc can learn that you replied.
     var replyingTo: String?
+    /// Files to send with it, read when it goes.
+    var attachments: [URL] = []
 }
 
 /// An email waiting to go at a set time. Kept on disk so it survives a restart.
@@ -32,6 +34,8 @@ struct ScheduledMail: Codable, Identifiable, Equatable {
     var references: String?
     var replyingTo: String?
     var sendAt: Date
+    /// Paths of the files to send with it.
+    var attachments: [String]?
 
     init(_ draft: MailDraft, at date: Date) {
         accountID = draft.accountID
@@ -43,10 +47,12 @@ struct ScheduledMail: Codable, Identifiable, Equatable {
         references = draft.references
         replyingTo = draft.replyingTo
         sendAt = date
+        attachments = draft.attachments.isEmpty ? nil : draft.attachments.map(\.path)
     }
 
     var draft: MailDraft {
-        MailDraft(accountID: accountID, to: to, cc: cc, subject: subject, body: body, inReplyTo: inReplyTo, references: references, replyingTo: replyingTo)
+        MailDraft(accountID: accountID, to: to, cc: cc, subject: subject, body: body, inReplyTo: inReplyTo, references: references, replyingTo: replyingTo,
+                  attachments: (attachments ?? []).map { URL(fileURLWithPath: $0) })
     }
 }
 
@@ -771,6 +777,34 @@ final class MailModel: ObservableObject {
         composer = MailDraft(accountID: defaultSender(for: nil)?.id ?? "", to: "", subject: "")
     }
 
+    /// A new email with files attached (from the drop's shelf, or files dropped on Marc).
+    func compose(attaching urls: [URL]) {
+        let names = urls.map { $0.deletingPathExtension().lastPathComponent }
+        let subject = names.count == 1 ? names[0] : "\(names.count) files"
+        composer = MailDraft(accountID: defaultSender(for: nil)?.id ?? "", to: "", subject: subject, attachments: urls)
+    }
+
+    /// The most a message carries; most mail servers turn away anything much bigger.
+    static let attachmentLimit = 20 * 1_024 * 1_024
+
+    /// Reads the files to attach, saying which one is missing or what's too big.
+    static func read(_ urls: [URL]) -> Result<[MailAttachment], MailError> {
+        var files: [MailAttachment] = []
+        var total = 0
+        for url in urls {
+            guard let data = try? Data(contentsOf: url) else {
+                return .failure(MailError("Not sent: \(url.lastPathComponent) isn't there any more. Remove it or attach it again."))
+            }
+            total += data.count
+            files.append(MailAttachment(name: url.lastPathComponent, data: data))
+        }
+        guard total <= attachmentLimit else {
+            let size = ByteCountFormatter.string(fromByteCount: Int64(total), countStyle: .file)
+            return .failure(MailError("Not sent: the attachments come to \(size), over the 20 MB most mail servers take. Share a link instead."))
+        }
+        return .success(files)
+    }
+
     func reply(to message: MailMessage, all: Bool = false) {
         let to = message.replyTo ?? message.fromAddress
         var cc: [String] = []
@@ -829,8 +863,19 @@ final class MailModel: ObservableObject {
             notice = "Choose an account that can send."
             return
         }
-        let mail = OutgoingMail(fromName: NSFullUserName(), fromAddress: account.address, to: MailModel.split(draft.to), cc: MailModel.split(draft.cc),
+        var mail = OutgoingMail(fromName: NSFullUserName(), fromAddress: account.address, to: MailModel.split(draft.to), cc: MailModel.split(draft.cc),
                                 subject: draft.subject, body: draft.body, inReplyTo: draft.inReplyTo, references: draft.references)
+        if !draft.attachments.isEmpty {
+            switch MailModel.read(draft.attachments) {
+            case .success(let files):
+                mail.attachments = files
+            case .failure(let error):
+                pendingSend = nil
+                composer = draft
+                notice = error.localizedDescription
+                return
+            }
+        }
         let original = draft.replyingTo.flatMap { id in messages.first { $0.id == id } }
         let reference = original.flatMap { message in message.uid.flatMap { uid in validity(of: message).map { (uid: uid, validity: $0) } } }
         do {
@@ -873,6 +918,14 @@ final class MailModel: ObservableObject {
 
     /// For accounts that can't send from 11am (samples, Apple Mail, files): your own Mail app, with everything filled in.
     func openInMail(_ draft: MailDraft) {
+        // A mailto link can't carry files, so with attachments Mail's own compose window is asked for instead.
+        if !draft.attachments.isEmpty, let service = NSSharingService(named: .composeEmail) {
+            service.recipients = MailModel.split(draft.to) + MailModel.split(draft.cc)
+            service.subject = draft.subject
+            service.perform(withItems: [draft.body as NSString] + draft.attachments.map { $0 as NSURL })
+            composer = nil
+            return
+        }
         var components = URLComponents()
         components.scheme = "mailto"
         components.path = draft.to

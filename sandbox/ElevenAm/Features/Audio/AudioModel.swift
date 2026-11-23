@@ -389,8 +389,13 @@ final class AudioModel: ObservableObject {
         panel.allowsMultipleSelection = true
         panel.allowedContentTypes = [.audio, .movie]
         guard panel.runModal() == .OK else { return }
-        working = "Reading \(panel.urls.count == 1 ? panel.urls[0].lastPathComponent : "\(panel.urls.count) files")…"
-        let urls = panel.urls
+        importFiles(panel.urls)
+    }
+
+    /// Sound (or the sound of a video) onto the timeline at the playhead, one after another.
+    func importFiles(_ urls: [URL]) {
+        guard !urls.isEmpty else { return }
+        working = "Reading \(urls.count == 1 ? urls[0].lastPathComponent : "\(urls.count) files")…"
         Task {
             var at = playhead
             for url in urls {

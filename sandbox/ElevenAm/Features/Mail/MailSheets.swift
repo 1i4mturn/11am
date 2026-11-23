@@ -1,5 +1,6 @@
 import AppKit
 import SwiftUI
+import UniformTypeIdentifiers
 
 // MARK: Compose
 
@@ -62,6 +63,10 @@ struct ComposeView: View {
                 }
                 .frame(minHeight: 240)
 
+            if !draft.attachments.isEmpty {
+                ComposeAttachments(files: $draft.attachments)
+            }
+
             if let original, let run = mail.drafts[original.id] {
                 MarcDraftStrip(run: run) { text in
                     draft.body = text + "\n\n" + quoted(from: draft.body)
@@ -90,6 +95,13 @@ struct ComposeView: View {
                 .menuStyle(.button)
                 .fixedSize()
                 .help("Text you send often, with the blanks filled in")
+                Button {
+                    attach()
+                } label: {
+                    Label("Attach", systemImage: "paperclip")
+                }
+                .buttonStyle(.vellumSecondary)
+                .help("Send files with it. You can also drop them here.")
                 Spacer()
                 Button("Cancel") {
                     mail.composer = nil
@@ -141,6 +153,10 @@ struct ComposeView: View {
         .padding(22)
         .frame(width: 640)
         .frame(minHeight: 520)
+        .onDrop(of: [.fileURL], isTargeted: nil) { providers in
+            FileDrops.urls(from: providers) { urls in add(urls) }
+            return true
+        }
         .sheet(item: $filling) { snippet in
             SnippetFillView(snippet: snippet, automatic: mail.automaticValues(for: draft)) { text in insert(text) }
                 .environmentObject(theme)
@@ -149,6 +165,23 @@ struct ComposeView: View {
             SnippetsEditor()
                 .environmentObject(mail)
                 .environmentObject(theme)
+        }
+    }
+
+    private func attach() {
+        let panel = NSOpenPanel()
+        panel.allowsMultipleSelection = true
+        panel.canChooseDirectories = false
+        panel.prompt = "Attach"
+        guard panel.runModal() == .OK else { return }
+        add(panel.urls)
+    }
+
+    private func add(_ urls: [URL]) {
+        for url in urls where !draft.attachments.contains(url) {
+            var isFolder: ObjCBool = false
+            guard FileManager.default.fileExists(atPath: url.path, isDirectory: &isFolder), !isFolder.boolValue else { continue }
+            draft.attachments.append(url)
         }
     }
 
@@ -190,6 +223,57 @@ struct ComposeView: View {
         }
         .padding(.vertical, 6)
         .overlay(alignment: .bottom) { Rectangle().fill(theme.edge(scheme)).frame(height: 0.5) }
+    }
+}
+
+/// The files going with an email: a chip each, with its size and a way to take it off.
+private struct ComposeAttachments: View {
+    @EnvironmentObject private var theme: Theme
+    @Environment(\.colorScheme) private var scheme
+    @Binding var files: [URL]
+
+    private var total: Int {
+        files.reduce(0) { $0 + ((try? $1.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0) }
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 6) {
+                SectionLabel(text: files.count == 1 ? "1 attachment" : "\(files.count) attachments")
+                Text(ByteCountFormatter.string(fromByteCount: Int64(total), countStyle: .file).lowercased())
+                    .font(BrandFont.label(12))
+                    .foregroundStyle(total > MailModel.attachmentLimit ? theme.ink(scheme) : theme.inkTertiary(scheme))
+                if total > MailModel.attachmentLimit {
+                    Text("over 20 mb, too big for most mail servers")
+                        .font(BrandFont.label(12))
+                }
+            }
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 6) {
+                    ForEach(files, id: \.self) { url in
+                        HStack(spacing: 6) {
+                            Icon("paperclip")
+                                .font(.brand(size: 11))
+                            Text(url.lastPathComponent)
+                                .font(BrandFont.body(12.5, weight: .medium))
+                                .lineLimit(1)
+                            Button {
+                                files.removeAll { $0 == url }
+                            } label: {
+                                Icon("xmark").font(.brand(size: 9, weight: .bold))
+                            }
+                            .buttonStyle(.plain)
+                            .help("Don't send this one")
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .overlay { Capsule().strokeBorder(theme.ink(scheme), lineWidth: BrandTokens.ruleOpen) }
+                        .onTapGesture(count: 2) { NSWorkspace.shared.open(url) }
+                    }
+                }
+                .padding(1)
+            }
+        }
     }
 }
 

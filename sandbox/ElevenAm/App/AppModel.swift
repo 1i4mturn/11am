@@ -131,8 +131,13 @@ struct ActivityItem: Identifiable, Codable {
 
 @MainActor
 final class AppModel: ObservableObject {
+    /// The app in front: the key app window, or the one window's current app.
     @Published var section: AppSection = .today
     @Published var showsPane = true
+    /// The app whose agent note is open from its title bar (⌘\).
+    @Published var agentFor: AppSection?
+    let windows = AppWindows()
+    let shelf = ShelfModel()
     @Published private(set) var activity: [ActivityItem] = []
 
     let theme: Theme
@@ -289,6 +294,8 @@ final class AppModel: ObservableObject {
                 }
             })
         }
+        windows.model = self
+        shelf.model = self
     }
 
     func start() {
@@ -301,6 +308,7 @@ final class AppModel: ObservableObject {
         decks.load()
         audio.load()
         tasks.load()
+        shelf.load()
         automations.start()
         tasks.onLog = { [weak self] monogram, text in self?.log(monogram, text) }
         tasks.onOpenOrigin = { [weak self] origin in self?.open(origin) }
@@ -322,10 +330,9 @@ final class AppModel: ObservableObject {
         log("le", "11am started on \(machine.chip) with \(machine.memoryGB) GB. Running in \(machine.tier.title) mode.")
     }
 
-    /// Switches app with the theme's spring, so the content rises in rather than snapping.
+    /// Brings an app forward: its own window (opened if need be), or the one window switched to it.
     func go(to section: AppSection) {
-        guard section != self.section else { return }
-        withAnimation(theme.spring) { self.section = section }
+        windows.show(section)
     }
 
     /// Goes to where a task came from.
@@ -344,7 +351,10 @@ final class AppModel: ObservableObject {
                 ledger.selectedInvoice = id
             }
         default:
-            break
+            // A task made from a file on the shelf opens the file.
+            if let reference = origin.reference, reference.hasPrefix("file:") {
+                NSWorkspace.shared.open(URL(fileURLWithPath: String(reference.dropFirst(5))))
+            }
         }
     }
 

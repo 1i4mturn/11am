@@ -113,9 +113,18 @@ private struct BrainSettings: View {
 
 private struct MacSettings: View {
     @EnvironmentObject private var machine: MachineProfile
+    @EnvironmentObject private var windows: AppWindows
 
     var body: some View {
         Form {
+            Section("Windows") {
+                Picker("Apps open in", selection: $windows.style) {
+                    ForEach(WindowStyle.allCases) { style in Text(style.title).tag(style) }
+                }
+                Text("Each app in its own window is the new 11am: the drop and the puck are always there, ⌘1 to ⌘9 open apps, and every window remembers where you left it. One window with a sidebar is the earlier layout.")
+                    .font(.caption)
+                    .foregroundStyle(.primary)
+            }
             Section("This Mac") {
                 LabeledContent("Chip", value: machine.chip)
                 LabeledContent("Memory", value: "\(machine.memoryGB) GB")

@@ -172,6 +172,14 @@ jobs:
           capture drop-ask-dark -startSection today -forceAppearance dark -dropAsk YES
           capture puck-listening-light -startSection mail -forceAppearance light -puckListening YES
           capture puck-answer-dark -startSection today -forceAppearance dark -puckAnswer YES
+          capture drop-drag-light -startSection mail -forceAppearance light -dropDrag YES
+          capture drop-shelf-dark -startSection today -forceAppearance dark -shelfSample YES -shelfHanded YES
+          capture puck-file-light -startSection notes -forceAppearance light -puckFile YES
+          capture windows-light -startSection mail -forceAppearance light -openApps calendar,notes
+          capture windows-dark -startSection calendar -forceAppearance dark -openApps today,tasks
+          capture window-agent-light -startSection write -forceAppearance light -agentNote YES
+          capture window-single-light -startSection mail -forceAppearance light -windowStyle single
+          capture mail-attach-light -startSection mail -forceAppearance light -mailAttach YES
           # Last, because pairing makes every later launch listen for the iPhone (and macOS asks about the local network).
           WAIT=12 capture today-iphone-dark -startSection today -forceAppearance dark -phonePairing YES -phoneEnergy YES
           ls -la shots

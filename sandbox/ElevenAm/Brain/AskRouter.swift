@@ -40,6 +40,24 @@ enum AskRouter {
         return BrainRequest(system: boltonSystem, prompt: prompt, weight: .quick)
     }
 
+    /// A question about one file: Bolton reads it first (the text of a PDF or a document, up to a few pages).
+    static func request(about url: URL, question: String) -> BrainRequest {
+        let excerpt = FileExcerpt.text(of: url)
+        let prompt = """
+        File: \(url.lastPathComponent)
+        Kind: \(ShelfKind.of(extension: url.pathExtension).rawValue)
+        \(excerpt.isEmpty ? "Its text couldn't be read; answer from the name and kind, and say that you couldn't read it." : "Text:\n\(excerpt)")
+
+        Question: \(question)
+        """
+        return BrainRequest(system: boltonFileSystem, prompt: prompt, weight: .quick)
+    }
+
+    static let boltonFileSystem = """
+    You are Bolton, the memory and files agent inside 11am. You've been handed one file. Answer from its text only, \
+    in plain, short sentences. If it asks for something (a payment, a signature, a reply, a date), say what and by when.
+    """
+
     private static func isAboutFiles(_ text: String) -> Bool {
         let lower = text.lowercased()
         return fileWords.contains { lower.contains($0) }
