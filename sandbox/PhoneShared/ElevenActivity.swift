@@ -35,8 +35,10 @@ struct ActivityCountdown: View {
             }
         }
         .font(BrandFace.label(compact ? 13 : 15))
+        .lineLimit(1)
+        .minimumScaleFactor(0.7)
         .multilineTextAlignment(.trailing)
-        .frame(maxWidth: compact ? 52 : 80, alignment: .trailing)
+        .frame(maxWidth: compact ? 52 : 96, alignment: .trailing)
     }
 }
 
