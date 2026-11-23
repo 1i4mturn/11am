@@ -158,9 +158,22 @@ struct DisplayTitle: View {
 }
 
 /// The top of every app: a Schibsted heading, the line under it in Instrument Sans, optional actions.
+/// True inside an app's own window, whose ink title bar already says `marc · mail`.
+private struct InAppWindowKey: EnvironmentKey {
+    static let defaultValue = false
+}
+
+extension EnvironmentValues {
+    var inAppWindow: Bool {
+        get { self[InAppWindowKey.self] }
+        set { self[InAppWindowKey.self] = newValue }
+    }
+}
+
 struct SectionHeader<Trailing: View>: View {
     @EnvironmentObject private var theme: Theme
     @Environment(\.colorScheme) private var scheme
+    @Environment(\.inAppWindow) private var inAppWindow
     var title: String
     var subtitle: String
     @ViewBuilder var trailing: () -> Trailing
@@ -168,7 +181,8 @@ struct SectionHeader<Trailing: View>: View {
     var body: some View {
         HStack(alignment: .lastTextBaseline) {
             VStack(alignment: .leading, spacing: 6) {
-                if let section = AppSection.allCases.first(where: { $0.title.lowercased() == title.lowercased() }) {
+                // In its own window the title bar carries the label, so it isn't said twice.
+                if !inAppWindow, let section = AppSection.allCases.first(where: { $0.title.lowercased() == title.lowercased() }) {
                     AppLabel(section: section)
                         .padding(.bottom, 2)
                 }

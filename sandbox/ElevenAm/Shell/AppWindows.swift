@@ -167,9 +167,13 @@ final class AppWindows: NSObject, ObservableObject, NSWindowDelegate {
         UserDefaults.standard.set(openSections.map(\.rawValue), forKey: "windows.open")
     }
 
+    /// Set from a launch flag (screenshots): used for this run only, not saved.
+    var styleIsTemporary = false
+
     /// Switching style closes what's open and shows the same app the new way.
     private func restyle() {
-        UserDefaults.standard.set(style.rawValue, forKey: "windows.style")
+        if !styleIsTemporary { UserDefaults.standard.set(style.rawValue, forKey: "windows.style") }
+        styleIsTemporary = false
         let current = model?.section ?? lastSection
         let open = Array(windows.values) + [main].compactMap { $0 }
         for window in open { window.close() }
@@ -233,6 +237,7 @@ struct AppWindowView: View {
                 AppTitleBar(section: section)
                     .frame(height: proxy.safeAreaInsets.top > 0 ? proxy.safeAreaInsets.top : 28)
                 SectionContent(section: section)
+                    .environment(\.inAppWindow, true)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .clipped()
                     .overlay(alignment: .topTrailing) { lookUp }

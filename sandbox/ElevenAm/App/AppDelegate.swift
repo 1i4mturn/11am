@@ -85,7 +85,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         func has(_ menu: NSMenu) -> Bool {
             menu.items.contains { $0.action == close || ($0.submenu.map(has) ?? false) }
         }
-        print("Menus: \(menu.items.map(\.title).joined(separator: ", ")) · close item: \(has(menu))")
+        NSLog("Menus: %@ · close item: %@", menu.items.map(\.title).joined(separator: ", "), has(menu) ? "yes" : "no")
         guard !has(menu) else { return }
         let file: NSMenu
         if let existing = menu.items.first(where: { $0.title == "File" })?.submenu {
@@ -128,9 +128,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if let start = arguments.string(forKey: "startSection"), let section = AppSection(rawValue: start) {
             model.section = section
         }
-        // -windowStyle single shows the earlier one-window layout.
-        if let style = arguments.string(forKey: "windowStyle").flatMap(WindowStyle.init(rawValue:)) {
-            UserDefaults.standard.set(style.rawValue, forKey: "windows.style")
+        // -windowStyle single shows the earlier one-window layout, for this run only.
+        if let style = arguments.string(forKey: "windowStyle").flatMap(WindowStyle.init(rawValue:)), style != model.windows.style {
+            model.windows.styleIsTemporary = true
             model.windows.style = style
         }
         if let appearance = arguments.string(forKey: "forceAppearance"), let value = Appearance(rawValue: appearance) {
