@@ -213,7 +213,31 @@ final class AppWindows: NSObject, ObservableObject, NSWindowDelegate {
         saveOpen()
     }
 
+    /// SwiftUI builds the menus, and with Settings as its only scene it leaves out File, so File › Close Window (⌘W)
+    /// is added when it's missing: at launch, and again whenever a window comes forward in case the menus were rebuilt.
+    static func ensureCloseItem(log: Bool = false) {
+        guard let menu = NSApp.mainMenu else { return }
+        let close = #selector(NSWindow.performClose(_:))
+        func has(_ menu: NSMenu) -> Bool {
+            menu.items.contains { $0.action == close || ($0.submenu.map(has) ?? false) }
+        }
+        let present = has(menu)
+        if log { NSLog("Menus: %@ · close item: %@", menu.items.map(\.title).joined(separator: ", "), present ? "yes" : "no") }
+        guard !present else { return }
+        let file: NSMenu
+        if let existing = menu.items.first(where: { $0.title == "File" })?.submenu {
+            file = existing
+        } else {
+            file = NSMenu(title: "File")
+            let item = NSMenuItem(title: "File", action: nil, keyEquivalent: "")
+            item.submenu = file
+            menu.insertItem(item, at: min(1, menu.items.count))
+        }
+        file.addItem(NSMenuItem(title: "Close Window", action: close, keyEquivalent: "w"))
+    }
+
     func windowDidBecomeKey(_ notification: Notification) {
+        Self.ensureCloseItem()
         guard let window = notification.object as? NSWindow,
               let section = windows.first(where: { $0.value === window })?.key else { return }
         model?.section = section

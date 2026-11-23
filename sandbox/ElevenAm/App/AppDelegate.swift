@@ -77,26 +77,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in self?.ensureCloseItem() }
     }
 
-    /// SwiftUI builds the menus; with no window scene of its own it might leave out File › Close, so ⌘W is added if
-    /// it's missing. The menus are logged once, which the screenshot runs keep.
     private func ensureCloseItem() {
-        guard let menu = NSApp.mainMenu else { return }
-        let close = #selector(NSWindow.performClose(_:))
-        func has(_ menu: NSMenu) -> Bool {
-            menu.items.contains { $0.action == close || ($0.submenu.map(has) ?? false) }
-        }
-        NSLog("Menus: %@ · close item: %@", menu.items.map(\.title).joined(separator: ", "), has(menu) ? "yes" : "no")
-        guard !has(menu) else { return }
-        let file: NSMenu
-        if let existing = menu.items.first(where: { $0.title == "File" })?.submenu {
-            file = existing
-        } else {
-            file = NSMenu(title: "File")
-            let item = NSMenuItem(title: "File", action: nil, keyEquivalent: "")
-            item.submenu = file
-            menu.insertItem(item, at: min(1, menu.items.count))
-        }
-        file.addItem(NSMenuItem(title: "Close Window", action: close, keyEquivalent: "w"))
+        AppWindows.ensureCloseItem(log: true)
     }
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
