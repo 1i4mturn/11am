@@ -251,10 +251,10 @@ struct PageBlocksStrip: View {
                     withAnimation(theme.spring) { collapsed.toggle() }
                 } label: {
                     HStack(spacing: 6) {
-                        Image(systemName: "dot.radiowaves.left.and.right").font(.brand(size: 10))
+                        Icon("dot.radiowaves.left.and.right").font(.brand(size: 10))
                         SectionLabel(text: "Live in this page · \(blocks.count)")
                         Spacer()
-                        Image(systemName: collapsed ? "chevron.down" : "chevron.up").font(.brand(size: 9, weight: .bold))
+                        Icon(collapsed ? "chevron.down" : "chevron.up").font(.brand(size: 9, weight: .bold))
                     }
                     .contentShape(Rectangle())
                 }
@@ -298,7 +298,7 @@ private struct BlockFrame<Content: View>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 7) {
             HStack(spacing: 6) {
-                Image(systemName: symbol).font(.brand(size: 11))
+                Icon(symbol).font(.brand(size: 11))
                 Text(title).font(.brand(size: 12, weight: .semibold)).lineLimit(1)
                 Spacer()
                 if let action {
@@ -549,7 +549,7 @@ struct PageCommentsPanel: View {
                     .padding(.vertical, 7)
                     .background(RoundedRectangle(cornerRadius: 0, style: .continuous).fill(theme.well(scheme)))
                 Button(action: send) {
-                    Image(systemName: "arrow.up.circle.fill").font(.brand(size: 18))
+                    Icon("arrow.up.circle.fill").font(.brand(size: 18))
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(theme.ink(scheme))
@@ -578,7 +578,7 @@ private struct CommentRow: View {
         VStack(alignment: .leading, spacing: 4) {
             HStack(spacing: 6) {
                 if comment.author == "you" {
-                    Image(systemName: "person.crop.circle").font(.brand(size: 14))
+                    Icon("person.crop.circle").font(.brand(size: 14))
                     Text("You").font(.brand(size: 12, weight: .semibold))
                 } else {
                     Monogram(text: comment.author, size: 18)

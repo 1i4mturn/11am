@@ -64,7 +64,7 @@ struct EventCard: View {
                 Button {
                     NSWorkspace.shared.open(join)
                 } label: {
-                    Label("Join \(JoinLinks.service(join))", systemImage: "video.fill")
+                    Label { Text("Join \(JoinLinks.service(join))") } icon: { Icon("video.fill") }
                 }
                 .buttonStyle(.vellumPrimary)
             }
@@ -75,7 +75,7 @@ struct EventCard: View {
                         NSWorkspace.shared.open(url)
                     }
                 } label: {
-                    Label(place, systemImage: "mappin.and.ellipse")
+                    Label { Text(place) } icon: { Icon("mappin.and.ellipse") }
                         .font(.brand(size: 12.5))
                         .lineLimit(2)
                 }
@@ -89,7 +89,7 @@ struct EventCard: View {
                     Text("Leave by \(CalText.time(trip.leaveBy)) · \(Travel.duration(trip.seconds)) from \(trip.from)")
                         .fixedSize(horizontal: false, vertical: true)
                 } icon: {
-                    Image(systemName: "car")
+                    Icon("car")
                 }
                 .font(.brand(size: 12))
                 .foregroundStyle(theme.ink(scheme))
@@ -97,7 +97,7 @@ struct EventCard: View {
             }
 
             if !event.isAllDay, let weather = calendar.weather(on: event.start) {
-                Label(weather.line, systemImage: weather.symbol)
+                Label { Text(weather.line) } icon: { Icon(weather.symbol) }
                     .font(.brand(size: 12))
                     .foregroundStyle(theme.inkSecondary(scheme))
             }
@@ -105,7 +105,7 @@ struct EventCard: View {
             let tight = calendar.tightNeighbours(of: event)
             if tight.before != nil || tight.after != nil {
                 HStack(alignment: .top, spacing: 6) {
-                    Image(systemName: "timer")
+                    Icon("timer")
                     Text([tight.before.map { "Straight after \($0.title)" }, tight.after.map { "straight into \($0.title)" }]
                         .compactMap { $0 }.joined(separator: ", ").capitalisedFirst + ", with less than your \(calendar.bufferMinutes) minutes between.")
                         .fixedSize(horizontal: false, vertical: true)
@@ -134,7 +134,7 @@ struct EventCard: View {
                     SectionLabel(text: event.attendees.count == 1 ? "With" : "\(event.attendees.count) people")
                     ForEach(Array(event.attendees.prefix(8)), id: \.email) { person in
                         HStack(spacing: 6) {
-                            Image(systemName: EventCard.symbol(person.response))
+                            Icon(EventCard.symbol(person.response))
                                 .font(.brand(size: 10.5))
                                 .foregroundStyle(theme.inkSecondary(scheme))
                                 .frame(width: 14)

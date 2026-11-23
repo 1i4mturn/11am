@@ -193,7 +193,7 @@ private struct TaskSidebar: View {
                     Button {
                         addingProject = true
                     } label: {
-                        Label("New project", systemImage: "plus")
+                        Label { Text("New project") } icon: { Icon("plus") }
                             .font(.brand(size: 12.5))
                             .padding(.horizontal, 8)
                             .padding(.vertical, 6)
@@ -228,7 +228,7 @@ private struct TaskSidebar: View {
                         .frame(width: 13, height: 13)
                         .frame(width: 16)
                 } else {
-                    Image(systemName: tasks.symbol(of: list))
+                    Icon(tasks.symbol(of: list))
                         .font(.brand(size: 12))
                         .frame(width: 16)
                 }
@@ -427,7 +427,7 @@ private struct ListTitle: View {
 
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 10) {
-            Image(systemName: tasks.symbol(of: tasks.list))
+            Icon(tasks.symbol(of: tasks.list))
                 .font(.brand(size: 17, weight: .medium))
             if renaming, let id = projectID {
                 TextField("Project name", text: $name)
@@ -461,7 +461,7 @@ private struct ListTitle: View {
                     }
                     Menu("Icon") {
                         ForEach(["circle.dashed", "globe", "house", "briefcase", "doc.text", "leaf", "airplane", "hammer", "book", "cart", "heart", "graduationcap"], id: \.self) { symbol in
-                            Button { tasks.updateProject(id) { $0.symbol = symbol } } label: { Label(symbol, systemImage: symbol) }
+                            Button { tasks.updateProject(id) { $0.symbol = symbol } } label: { Label { Text(symbol) } icon: { Image.brand(symbol) } }
                         }
                     }
                     Divider()
@@ -659,27 +659,27 @@ private struct TaskMeta: View {
             FlowLayout(spacing: 9) {
                 if !showDay {
                     if task.dueHasTime, let due = task.due {
-                        Label(TaskDates.time(due, calendar: tasks.calendar), systemImage: "clock")
+                        Label { Text(TaskDates.time(due, calendar: tasks.calendar)) } icon: { Icon("clock") }
                     }
                 } else if let due = tasks.dueText(task) {
-                    Label(due, systemImage: overdue ? "exclamationmark.circle" : "calendar")
+                    Label { Text(due) } icon: { Icon(overdue ? "exclamationmark.circle" : "calendar") }
                         .fontWeight(overdue ? .semibold : .regular)
                         .foregroundStyle(overdue ? theme.ink(scheme) : theme.inkTertiary(scheme))
                 } else if let start = task.start, start > tasks.now {
-                    Label("From " + TaskDates.inline(TaskDates.label(start, hasTime: false, now: tasks.now, calendar: tasks.calendar)), systemImage: "moon.zzz")
+                    Label { Text("From " + TaskDates.inline(TaskDates.label(start, hasTime: false, now: tasks.now, calendar: tasks.calendar))) } icon: { Icon("moon.zzz") }
                 }
                 if task.recurrence != nil {
                     Icon("repeat")
                 }
                 if !task.checklist.isEmpty {
                     let progress = task.checklistProgress
-                    Label("\(progress.done)/\(progress.total)", systemImage: "checklist")
+                    Label { Text("\(progress.done)/\(progress.total)") } icon: { Icon("checklist") }
                 }
                 if !task.notes.isEmpty {
-                    Image(systemName: "note.text")
+                    Icon("note.text")
                 }
                 if let project {
-                    Label(project.name, systemImage: project.symbol)
+                    Label { Text(project.name) } icon: { Icon(project.symbol) }
                 }
                 ForEach(task.tags.prefix(3), id: \.self) { tag in
                     Text("#" + tag)

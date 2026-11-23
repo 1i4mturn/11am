@@ -35,7 +35,7 @@ struct NotesView: View {
                     Button {
                         withAnimation(theme.spring) { notes.openToday() }
                     } label: {
-                        Label("Today", systemImage: "calendar.day.timeline.left")
+                        Label { Text("Today") } icon: { Icon("calendar.day.timeline.left") }
                     }
                     .buttonStyle(.vellumSecondary)
                     .help("Today's note, with today's calendar from Leo")
@@ -44,7 +44,7 @@ struct NotesView: View {
                         withAnimation(theme.spring) { notes.newNote() }
                         editor.focus()
                     } label: {
-                        Label("New note", systemImage: "square.and.pencil")
+                        Label { Text("New note") } icon: { Icon("square.and.pencil") }
                     }
                     .buttonStyle(.vellumPrimary)
                     .keyboardShortcut("n", modifiers: [.command, .shift])
@@ -223,7 +223,7 @@ private struct NotesSidebar: View {
                         savingSearch = true
                         smartName = notes.search
                     } label: {
-                        Label("Save this search", systemImage: "plus.magnifyingglass")
+                        Label { Text("Save this search") } icon: { Icon("plus.magnifyingglass") }
                             .font(.brand(size: 12))
                             .padding(.horizontal, 8)
                             .padding(.vertical, 5)
@@ -317,7 +317,7 @@ private struct NotesSidebar: View {
         } label: {
             HStack(spacing: 7) {
                 if let symbol {
-                    Image(systemName: symbol)
+                    Icon(symbol)
                         .font(.brand(size: 11))
                         .frame(width: 14)
                         .foregroundStyle(theme.inkSecondary(scheme))
@@ -433,7 +433,7 @@ private struct NoteRow: View {
             VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: 5) {
                     if note.pinned {
-                        Image(systemName: "pin.fill").font(.brand(size: 9)).foregroundStyle(theme.inkSecondary(scheme))
+                        Icon("pin.fill").font(.brand(size: 9)).foregroundStyle(theme.inkSecondary(scheme))
                     }
                     Text(note.title)
                         .font(.brand(size: 13, weight: .semibold))
@@ -449,7 +449,7 @@ private struct NoteRow: View {
                         .lineLimit(1)
                 }
                 if showsFolder && !note.folder.isEmpty {
-                    Label(note.folder, systemImage: "folder")
+                    Label { Text(note.folder) } icon: { Icon("folder") }
                         .font(.brand(size: 10.5))
                         .foregroundStyle(theme.inkTertiary(scheme))
                 }
@@ -696,7 +696,7 @@ private struct VoiceNoteButton: View {
                 withAnimation(theme.spring) { notes.stopVoiceNote() }
             } label: {
                 HStack(spacing: 6) {
-                    Circle().fill(Color.red).frame(width: 8, height: 8)
+                    RecordingDot(size: 8)
                     Text(String(format: "%d:%02d", Int(recorder.elapsed) / 60, Int(recorder.elapsed) % 60)).monospacedDigit()
                     Capsule()
                         .fill(theme.ink(scheme).opacity(0.6))

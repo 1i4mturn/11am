@@ -453,7 +453,7 @@ private struct AutomationEditor: View {
                     .toggleStyle(.brandSwitch)
                     .controlSize(.small)
                     .help(automation.enabled ? "It runs by itself when its trigger happens" : "It only runs when you press Run")
-                Button { automations.runNow(automation) } label: { Label("Run", systemImage: "play.fill") }
+                Button { automations.runNow(automation) } label: { Label { Text("Run") } icon: { Icon("play.fill") } }
                     .buttonStyle(.vellumPrimary)
             }
 
@@ -487,7 +487,7 @@ private struct AutomationEditor: View {
                 Button("Add to a note") { edit { $0.steps.append(.appendNote(title: "Automation log", text: "- {{date}} {{time}}: {{input}}")) } }
                 Button("Show a notification") { edit { $0.steps.append(.notify(title: automation.name, body: "{{input}}")) } }
             } label: {
-                Label("Add a step", systemImage: "plus")
+                Label { Text("Add a step") } icon: { Image.brand("plus") }
             }
             .menuStyle(.button)
             .buttonStyle(.vellumSecondary)
@@ -636,7 +636,7 @@ private struct StepRow: View {
                     .font(.brand(size: 10.5, weight: .bold).monospacedDigit())
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .frame(width: 14)
-                Image(systemName: step.symbol)
+                Icon(step.symbol)
                     .foregroundStyle(theme.inkSecondary(scheme))
                 Text(step.title)
                     .font(.brand(size: 12.5, weight: .semibold))
@@ -753,7 +753,7 @@ private struct RunHistory: View {
                     ForEach(runs.prefix(scrolls ? 200 : 8)) { run in
                         VStack(alignment: .leading, spacing: 4) {
                             HStack(spacing: 6) {
-                                Image(systemName: symbol(run.status))
+                                Icon(symbol(run.status))
                                     .foregroundStyle(color(run.status))
                                 Text(run.status.title)
                                     .font(.brand(size: 12, weight: .semibold))

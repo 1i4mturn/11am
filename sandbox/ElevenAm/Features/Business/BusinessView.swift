@@ -14,14 +14,14 @@ struct BusinessView: View {
                     Button {
                         withAnimation(theme.spring) { business.refreshContacts() }
                     } label: {
-                        Image(systemName: "person.crop.circle.badge.plus")
+                        Icon("person.crop.circle.badge.plus")
                     }
                     .buttonStyle(.vellumSecondary)
                     .help("Find the people you write to in your mail, and their companies")
                     Button {
                         withAnimation(theme.spring) { add() }
                     } label: {
-                        Label(addTitle, systemImage: "plus")
+                        Label { Text(addTitle) } icon: { Icon("plus") }
                     }
                     .buttonStyle(.vellumPrimary)
                 }
@@ -484,7 +484,7 @@ private struct ActivityList: View {
         }
         ForEach(activities.prefix(limit)) { activity in
             HStack(alignment: .top, spacing: 8) {
-                Image(systemName: activity.kind.symbol)
+                Icon(activity.kind.symbol)
                     .font(.brand(size: 11))
                     .frame(width: 16)
                     .foregroundStyle(theme.inkSecondary(scheme))
@@ -745,8 +745,8 @@ private struct CompanyList: View {
                                 .font(.brand(size: 11.5))
                                 .foregroundStyle(theme.inkTertiary(scheme))
                             HStack(spacing: 10) {
-                                Label("\(business.people(at: company.id).count)", systemImage: "person.2")
-                                Label(open.isEmpty ? "No open deals" : Money.short(open.reduce(0) { $0 + $1.value }), systemImage: "briefcase")
+                                Label { Text("\(business.people(at: company.id).count)") } icon: { Icon("person.2") }
+                                Label { Text(open.isEmpty ? "No open deals" : Money.short(open.reduce(0) { $0 + $1.value })) } icon: { Icon("briefcase") }
                             }
                             .font(.brand(size: 11.5))
                             .foregroundStyle(theme.inkSecondary(scheme))

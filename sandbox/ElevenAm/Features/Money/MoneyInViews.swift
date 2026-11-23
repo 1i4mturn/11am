@@ -61,7 +61,7 @@ struct QuotesPanel: View {
                     Button {
                         ledger.newQuote()
                     } label: {
-                        Label("New quote", systemImage: "plus")
+                        Label { Text("New quote") } icon: { Icon("plus") }
                     }
                     .buttonStyle(.vellumPrimary)
                     .fixedSize()
@@ -478,7 +478,7 @@ struct RepeatingList: View {
             ledger.selectedSchedule = selected ? nil : schedule.id
         } label: {
             HStack(spacing: 12) {
-                Image(systemName: schedule.paused ? "pause.circle" : "repeat")
+                Icon(schedule.paused ? "pause.circle" : "repeat")
                     .font(.brand(size: 13))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .frame(width: 18)
@@ -580,7 +580,7 @@ struct RepeatingDetail: View {
                         ledger.salesFilter = .all
                         ledger.selectedInvoice = last.id
                     } label: {
-                        Label("The last one: \(last.number), \(last.issued.shortDay)", systemImage: "arrow.right.circle")
+                        Label { Text("The last one: \(last.number), \(last.issued.shortDay)") } icon: { Icon("arrow.right.circle") }
                     }
                     .buttonStyle(.borderless)
                     .font(.brand(size: 12))
@@ -861,8 +861,7 @@ struct AuditTrailView: View {
                     .font(.brand(size: 11.5))
                     .foregroundStyle(theme.inkTertiary(scheme))
                 Spacer(minLength: 8)
-                Label(ledger.book.settings.lockDate.map { "Locked up to \($0.fullDay)" } ?? "Not locked",
-                      systemImage: ledger.book.settings.lockDate == nil ? "lock.open" : "lock.fill")
+                Label { Text(ledger.book.settings.lockDate.map { "Locked up to \($0.fullDay)" } ?? "Not locked") } icon: { Icon(ledger.book.settings.lockDate == nil ? "lock.open" : "lock.fill") }
                     .font(.brand(size: 11.5))
                     .foregroundStyle(theme.inkSecondary(scheme))
             }

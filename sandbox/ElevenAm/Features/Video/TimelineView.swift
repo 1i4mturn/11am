@@ -140,10 +140,10 @@ private struct ClipBlock: View {
                 Text(clip.name)
                     .lineLimit(1)
                 if abs(clip.speed - 1) > 0.001 { Text(String(format: "%g×", clip.speed)) }
-                if clip.muted { Image(systemName: "speaker.slash.fill") }
-                if clip.useCleanAudio && clip.cleanAudio != nil { Image(systemName: "waveform") }
+                if clip.muted { Icon("speaker.slash.fill") }
+                if clip.useCleanAudio && clip.cleanAudio != nil { Icon("waveform") }
                 if clip.cutCount > 0 || clip.silenceCount > 0 { Icon("scissors") }
-                if clip.grade != GradeSettings() { Image(systemName: "camera.filters") }
+                if clip.grade != GradeSettings() { Icon("camera.filters") }
             }
             .font(.brand(size: 10.5, weight: .semibold))
             .foregroundStyle(Color.white)
@@ -160,7 +160,7 @@ private struct ClipBlock: View {
         .overlay(alignment: .trailing) { handle(leading: false).opacity(selected || hovering ? 1 : 0) }
         .overlay(alignment: .leading) {
             if joined {
-                Image(systemName: "circle.lefthalf.filled")
+                Icon("circle.lefthalf.filled")
                     .font(.brand(size: 9))
                     .foregroundStyle(theme.paper(scheme))
                     .padding(2)
@@ -256,7 +256,7 @@ private struct TitlesLane: View {
         ZStack(alignment: .topLeading) {
             ForEach(video.titles) { title in
                 HStack(spacing: 3) {
-                    Image(systemName: title.kind == .lowerThird ? "rectangle.bottomhalf.inset.filled" : "textformat")
+                    Icon(title.kind == .lowerThird ? "rectangle.bottomhalf.inset.filled" : "textformat")
                     Text(title.text)
                         .lineLimit(1)
                 }
@@ -301,7 +301,7 @@ private struct MusicLane: View {
             context.fill(shape, with: .color(ink.opacity(0.16)))
         }
         .overlay(alignment: .leading) {
-            Label(music.name, systemImage: "music.note")
+            Label { Text(music.name) } icon: { Icon("music.note") }
                 .font(.brand(size: 9.5, weight: .semibold))
                 .foregroundStyle(ink.opacity(0.7))
                 .lineLimit(1)
@@ -319,7 +319,7 @@ private struct PlayheadLine: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Image(systemName: "arrowtriangle.down.fill")
+            Icon("arrowtriangle.down.fill")
                 .font(.brand(size: 9))
             Rectangle()
                 .frame(width: 1.5)

@@ -25,25 +25,24 @@ struct PDFAppView: View {
                     if pdf.document != nil && !pdf.showsCollections { searchField.frame(width: 190) }
                     if pdf.document != nil && !pdf.showsCollections {
                         // Room for the file's name and size: just the icon while a PDF is open.
-                        Button { pdf.showsCollections = true } label: { Image(systemName: "books.vertical") }
+                        Button { pdf.showsCollections = true } label: { Icon("books.vertical") }
                             .buttonStyle(.vellumSecondary)
                             .help("Collections: ask questions across a set of PDFs")
                     } else {
                         Button { pdf.showsCollections.toggle() } label: {
-                            Label(pdf.showsCollections && pdf.document != nil ? "Back to \(pdf.title)" : "Collections",
-                                  systemImage: pdf.showsCollections && pdf.document != nil ? "chevron.left" : "books.vertical")
+                            Label { Text(pdf.showsCollections && pdf.document != nil ? "Back to \(pdf.title)" : "Collections") } icon: { Icon(pdf.showsCollections && pdf.document != nil ? "chevron.left" : "books.vertical") }
                                 .lineLimit(1)
                         }
                         .buttonStyle(.vellumSecondary)
                         .help("Ask questions across a set of PDFs")
                     }
-                    Button { pdf.openPanel() } label: { Label("Open", systemImage: "doc") }
+                    Button { pdf.openPanel() } label: { Label { Text("Open") } icon: { Icon("doc") } }
                         .buttonStyle(.vellumSecondary)
                         .keyboardShortcut("o", modifiers: .command)
                     NewPDFMenu()
                     if pdf.document != nil && !pdf.showsCollections {
                         documentMenu
-                        Button { pdf.save() } label: { Label("Save", systemImage: "square.and.arrow.down") }
+                        Button { pdf.save() } label: { Label { Text("Save") } icon: { Icon("square.and.arrow.down") } }
                             .buttonStyle(.vellumPrimary)
                             .keyboardShortcut("s", modifiers: .command)
                             .disabled(!pdf.isDirty && pdf.url != nil)
@@ -232,7 +231,7 @@ struct PDFAppView: View {
                         }
                     }
                 } label: {
-                    Image(systemName: "rectangle.split.2x1")
+                    Image.brand("rectangle.split.2x1")
                 }
                 .menuStyle(.button)
                 .buttonStyle(.borderless)
@@ -373,7 +372,7 @@ private struct RedactionBar: View {
 
     var body: some View {
         HStack(spacing: 10) {
-            Image(systemName: "rectangle.fill").foregroundStyle(theme.ink(scheme))
+            Icon("rectangle.fill").foregroundStyle(theme.ink(scheme))
             Text(pdf.redactionCount == 0
                  ? "Drag over anything to hide it. Nothing changes until you apply."
                  : "\(pdf.redactionCount) \(pdf.redactionCount == 1 ? "area" : "areas") marked. Applying removes what's underneath for good, in a copy, then checks it.")
@@ -427,7 +426,7 @@ private struct EmptyPDF: View {
                         Button {
                             pdf.open(url)
                         } label: {
-                            Label(url.deletingPathExtension().lastPathComponent, systemImage: "doc.richtext")
+                            Label { Text(url.deletingPathExtension().lastPathComponent) } icon: { Icon("doc.richtext") }
                                 .font(.brand(size: 12.5))
                         }
                         .buttonStyle(.plain)

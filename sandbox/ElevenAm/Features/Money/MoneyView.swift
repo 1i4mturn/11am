@@ -25,7 +25,7 @@ struct MoneyView: View {
                             Button("Import bank CSV for the overview…") { importing = true }
                         }
                     } label: {
-                        Label(ledger.book.settings.businessName, systemImage: "building.columns")
+                        Label { Text(ledger.book.settings.businessName) } icon: { Image.brand("building.columns") }
                     }
                     .menuStyle(.button)
                     .buttonStyle(.borderless)
@@ -34,7 +34,7 @@ struct MoneyView: View {
                     Button {
                         ledger.newInvoice(.sale)
                     } label: {
-                        Label("New invoice", systemImage: "doc.badge.plus")
+                        Label { Text("New invoice") } icon: { Icon("doc.badge.plus") }
                     }
                     .buttonStyle(.vellumPrimary)
                 }

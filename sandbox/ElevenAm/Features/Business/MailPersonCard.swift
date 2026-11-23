@@ -99,7 +99,7 @@ struct PersonCardButton: View {
             showing = true
         } label: {
             HStack(spacing: 3) {
-                Image(systemName: business.person(forAddress: address) == nil ? "person.crop.circle.badge.plus" : "person.crop.circle")
+                Icon(business.person(forAddress: address) == nil ? "person.crop.circle.badge.plus" : "person.crop.circle")
                 if deals > 0 { Text("\(deals)").font(.brand(size: 10.5, weight: .semibold)) }
             }
             .font(.brand(size: 12))

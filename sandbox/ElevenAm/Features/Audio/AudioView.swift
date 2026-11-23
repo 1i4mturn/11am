@@ -15,7 +15,7 @@ struct AudioView: View {
                     Button {
                         audio.importFiles()
                     } label: {
-                        Label("Import", systemImage: "square.and.arrow.down")
+                        Label { Text("Import") } icon: { Icon("square.and.arrow.down") }
                     }
                     .buttonStyle(.vellumSecondary)
                     .help("Sound files, or the sound from a video")
@@ -31,7 +31,7 @@ struct AudioView: View {
                             Button("Move \u{201C}\(project.name)\u{201D} to the Trash") { audio.delete(project.id) }
                         }
                     } label: {
-                        Label("Projects", systemImage: "rectangle.stack")
+                        Label { Text("Projects") } icon: { Image.brand("rectangle.stack") }
                     }
                     .menuStyle(.button)
                     .buttonStyle(.vellumSecondary)
@@ -95,6 +95,7 @@ struct AudioView: View {
     private var recordControl: some View {
         if let kind = audio.recordingKind {
             HStack(spacing: 8) {
+                RecordingDot(size: 10)
                 Group {
                     if kind == .microphone { MicMeter(recorder: audio.mic) } else { LevelMeter(level: audio.recordingLevel) }
                 }
@@ -102,7 +103,7 @@ struct AudioView: View {
                 Button {
                     audio.stopRecording()
                 } label: {
-                    Label("Stop", systemImage: "stop.fill")
+                    Label { Text("Stop") } icon: { Icon("stop.fill") }
                 }
                 .buttonStyle(.vellumPrimary)
             }
@@ -111,7 +112,7 @@ struct AudioView: View {
                 Button("From the microphone") { audio.record(.microphone) }
                 Button("This Mac's sound (a call, a video)") { audio.record(.mac) }
             } label: {
-                Label("Record", systemImage: "record.circle")
+                Label { Text("Record") } icon: { Image.brand("record.circle") }
             }
             .menuStyle(.button)
             .buttonStyle(.vellumPrimary)
@@ -130,7 +131,7 @@ struct AudioView: View {
                 }
             }
         } label: {
-            Label("Export", systemImage: "square.and.arrow.up")
+            Label { Text("Export") } icon: { Image.brand("square.and.arrow.up") }
         }
         .menuStyle(.button)
         .buttonStyle(.vellumSecondary)
@@ -261,7 +262,7 @@ private struct AudioToolbar: View {
                 Button("Silence") { audio.apply(.silence) }
             }
         } label: {
-            Label("Effects", systemImage: "slider.vertical.3")
+            Label { Text("Effects") } icon: { Image.brand("slider.vertical.3") }
                 .font(.brand(size: 12, weight: .medium))
                 .foregroundStyle(theme.inkSecondary(scheme))
         }
@@ -280,7 +281,7 @@ private struct AudioToolbar: View {
             Button("Transcribe") { audio.transcribe() }
             Button("Remove ums and uhs") { audio.removeFillers() }
         } label: {
-            Label("Clean up", systemImage: "wand.and.stars")
+            Label { Text("Clean up") } icon: { Image.brand("wand.and.stars") }
                 .font(.brand(size: 12, weight: .medium))
                 .foregroundStyle(theme.inkSecondary(scheme))
         }
@@ -316,7 +317,7 @@ private struct AudioTimeline: View {
                 Button {
                     audio.addTrack()
                 } label: {
-                    Label("Add a track", systemImage: "plus").font(.brand(size: 11.5))
+                    Label { Text("Add a track") } icon: { Icon("plus") }.font(.brand(size: 11.5))
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(theme.inkTertiary(scheme))
@@ -381,7 +382,7 @@ private struct TrackHeader: View {
                 toggle("S", on: track.solo, help: "Solo") { audio.updateTrack(track.id) { $0.solo.toggle() } }
             }
             HStack(spacing: 4) {
-                Image(systemName: "speaker.wave.2").font(.brand(size: 9)).foregroundStyle(theme.inkTertiary(scheme))
+                Icon("speaker.wave.2").font(.brand(size: 9)).foregroundStyle(theme.inkTertiary(scheme))
                 Slider(value: Binding(get: { track.volume }, set: { value in audio.updateTrack(track.id) { $0.volume = value } }), in: -30...6)
                     .controlSize(.mini)
                 Text(String(format: "%+.0f", track.volume)).font(.brand(size: 9.5).monospacedDigit()).foregroundStyle(theme.inkTertiary(scheme)).frame(width: 22)

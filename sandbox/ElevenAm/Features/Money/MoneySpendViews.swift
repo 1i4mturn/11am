@@ -34,7 +34,7 @@ struct SpendPanel: View {
                     Button {
                         ledger.chooseReceipts()
                     } label: {
-                        Label("Add receipts…", systemImage: "doc.badge.plus")
+                        Label { Text("Add receipts…") } icon: { Icon("doc.badge.plus") }
                     }
                     .buttonStyle(.vellumPrimary)
                 }
@@ -69,7 +69,7 @@ struct SpendPanel: View {
                         Button {
                             withAnimation(theme.spring) { showsMatched.toggle() }
                         } label: {
-                            Label("\(matched.count) matched", systemImage: showsMatched ? "chevron.down" : "chevron.right")
+                            Label { Text("\(matched.count) matched") } icon: { Icon(showsMatched ? "chevron.down" : "chevron.right") }
                                 .font(.brand(size: 11.5))
                         }
                         .buttonStyle(.plain)
@@ -163,7 +163,7 @@ struct SpendPanel: View {
         let line = receipt.bankLine.flatMap { id in ledger.book.bank.first { $0.id == id } }
         let bill = receipt.bill.flatMap { ledger.book.invoice($0) }
         return HStack(spacing: 10) {
-            Image(systemName: "paperclip")
+            Icon("paperclip")
                 .font(.brand(size: 11))
                 .foregroundStyle(theme.inkTertiary(scheme))
             Text(receipt.vendor)
@@ -221,7 +221,7 @@ private struct ReceiptRow: View {
                 .toggleStyle(.brandCheck)
                 .labelsHidden()
                 .help("Paid for it yourself: tick to put it on an expense claim")
-            Image(systemName: receipt.source == .mail ? "envelope" : "doc.text")
+            Icon(receipt.source == .mail ? "envelope" : "doc.text")
                 .font(.brand(size: 12))
                 .foregroundStyle(theme.inkTertiary(scheme))
                 .frame(width: 16)

@@ -30,7 +30,7 @@ struct PhotoView: View {
                             Button(format.title) { photo.export(as: format) }
                         }
                     } label: {
-                        Label("Export", systemImage: "square.and.arrow.up")
+                        Label { Text("Export") } icon: { Image.brand("square.and.arrow.up") }
                     }
                     .menuStyle(.button)
                     .buttonStyle(.borderless)
@@ -39,7 +39,7 @@ struct PhotoView: View {
                     Button {
                         importing = true
                     } label: {
-                        Label("Open photo…", systemImage: "photo")
+                        Label { Text("Open photo…") } icon: { Icon("photo") }
                     }
                     .buttonStyle(.vellumPrimary)
                 }
@@ -84,7 +84,7 @@ private struct PhotoToolBar: View {
             HStack(spacing: 12) {
                 Picker("Tool", selection: $photo.tool) {
                     ForEach(PhotoTool.allCases) { tool in
-                        Label(tool.title, systemImage: tool.symbol).tag(tool)
+                        Label { Text(tool.title) } icon: { Image.brand(tool.symbol) }.tag(tool)
                     }
                 }
                 .pickerStyle(.segmented)
@@ -131,13 +131,13 @@ private struct PhotoToolBar: View {
                 }
                 .labelsHidden()
                 .fixedSize()
-                Button { photo.rotate() } label: { Image(systemName: "rotate.right") }
+                Button { photo.rotate() } label: { Icon("rotate.right") }
                     .buttonStyle(.vellumSecondary)
                     .help("Rotate 90°")
-                Button { photo.flipHorizontal() } label: { Image(systemName: "arrow.left.and.right.righttriangle.left.righttriangle.right") }
+                Button { photo.flipHorizontal() } label: { Icon("arrow.left.and.right.righttriangle.left.righttriangle.right") }
                     .buttonStyle(.vellumSecondary)
                     .help("Flip horizontally")
-                Button { photo.flipVertical() } label: { Image(systemName: "arrow.up.and.down.righttriangle.up.righttriangle.down") }
+                Button { photo.flipVertical() } label: { Icon("arrow.up.and.down.righttriangle.up.righttriangle.down") }
                     .buttonStyle(.vellumSecondary)
                     .help("Flip vertically")
                 Text("Straighten")

@@ -34,7 +34,7 @@ struct VideoView: View {
                         Divider()
                         Button("Captions (.srt)") { video.exportCaptions() }
                     } label: {
-                        Label("Export", systemImage: "square.and.arrow.up")
+                        Label { Text("Export") } icon: { Image.brand("square.and.arrow.up") }
                     }
                     .menuStyle(.button)
                     .buttonStyle(.borderless)
@@ -44,7 +44,7 @@ struct VideoView: View {
                     Button {
                         importing = true
                     } label: {
-                        Label("Add clips…", systemImage: "film")
+                        Label { Text("Add clips…") } icon: { Icon("film") }
                     }
                     .buttonStyle(.vellumPrimary)
                 }
@@ -154,24 +154,24 @@ private struct TransportBar: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            Button { video.step(-1) } label: { Image(systemName: "backward.frame") }
+            Button { video.step(-1) } label: { Icon("backward.frame") }
                 .buttonStyle(.vellumSecondary)
                 .help("Back one frame")
             Button { video.togglePlay() } label: {
-                Image(systemName: clock.isPlaying ? "pause.fill" : "play.fill")
+                Icon(clock.isPlaying ? "pause.fill" : "play.fill")
                     .frame(width: 14)
             }
             .buttonStyle(.vellumPrimary)
             .keyboardShortcut(.return, modifiers: .command)
             .help("Play or pause (⌘↩)")
-            Button { video.step(1) } label: { Image(systemName: "forward.frame") }
+            Button { video.step(1) } label: { Icon("forward.frame") }
                 .buttonStyle(.vellumSecondary)
                 .help("Forward one frame")
             Text("\(VideoModel.timecode(clock.time)) / \(VideoModel.timecode(video.totalDuration))")
                 .font(.brand(size: 12).monospacedDigit())
                 .foregroundStyle(theme.inkSecondary(scheme))
                 .fixedSize()
-            Button { video.splitAtPlayhead() } label: { Label("Split", systemImage: "scissors") }
+            Button { video.splitAtPlayhead() } label: { Label { Text("Split") } icon: { Icon("scissors") } }
                 .buttonStyle(.vellumSecondary)
                 .keyboardShortcut("b", modifiers: .command)
                 .help("Split the clip at the playhead (⌘B)")
@@ -298,7 +298,7 @@ private struct ClipPanel: View {
 
         SectionLabel(text: "Clip")
         FlowLayout(spacing: 6) {
-            Button { video.splitAtPlayhead() } label: { Label("Split", systemImage: "scissors") }
+            Button { video.splitAtPlayhead() } label: { Label { Text("Split") } icon: { Icon("scissors") } }
                 .buttonStyle(.vellumSecondary)
             Button("Duplicate") { video.duplicateSelected() }
                 .buttonStyle(.vellumSecondary)
@@ -371,7 +371,7 @@ private struct SoundPanel: View {
         }
         SectionLabel(text: "Level")
         HStack {
-            Image(systemName: "speaker.fill").foregroundStyle(theme.inkTertiary(scheme))
+            Icon("speaker.fill").foregroundStyle(theme.inkTertiary(scheme))
             Slider(value: Binding(get: { clip.volume }, set: { value in video.updateSelected { $0.volume = value } }), in: 0...1)
                 .controlSize(.small)
             Text("\(Int(clip.volume * 100))%")
@@ -388,7 +388,7 @@ private struct SoundPanel: View {
         Button {
             video.cleanVoice()
         } label: {
-            Label(clip.cleanAudio == nil ? "Clean up the voice" : "Clean up again", systemImage: "waveform.badge.magnifyingglass")
+            Label { Text(clip.cleanAudio == nil ? "Clean up the voice" : "Clean up again") } icon: { Icon("waveform.badge.magnifyingglass") }
         }
         .buttonStyle(.vellumPrimary)
         .disabled(!clip.hasAudio || video.isWorking)
@@ -408,7 +408,7 @@ private struct SoundPanel: View {
                 Button {
                     video.cutSilences(everyClip: false)
                 } label: {
-                    Label(clip.silenceCuts.isEmpty ? "Cut the pauses" : "Find them again", systemImage: "scissors")
+                    Label { Text(clip.silenceCuts.isEmpty ? "Cut the pauses" : "Find them again") } icon: { Icon("scissors") }
                 }
                 .buttonStyle(.vellumSecondary)
                 .disabled(!clip.hasAudio || video.isWorking)
@@ -458,7 +458,7 @@ private struct MusicSection: View {
                         .lineLimit(1)
                         .truncationMode(.middle)
                     Spacer(minLength: 4)
-                    Button { importing = true } label: { Image(systemName: "arrow.triangle.2.circlepath") }
+                    Button { importing = true } label: { Icon("arrow.triangle.2.circlepath") }
                         .buttonStyle(.plain)
                         .foregroundStyle(theme.inkSecondary(scheme))
                         .help("Use another file")
@@ -468,7 +468,7 @@ private struct MusicSection: View {
                         .help("Take the music out")
                 }
                 HStack {
-                    Image(systemName: "speaker.fill").foregroundStyle(theme.inkTertiary(scheme))
+                    Icon("speaker.fill").foregroundStyle(theme.inkTertiary(scheme))
                     Slider(value: Binding(get: { music.volume }, set: { value in video.updateMusic { $0.volume = value } }), in: 0...1)
                         .controlSize(.small)
                     Text("\(Int(music.volume * 100))%")
@@ -501,7 +501,7 @@ private struct MusicSection: View {
                 }
             } else {
                 FlowLayout(spacing: 6) {
-                    Button { importing = true } label: { Label("Add music…", systemImage: "music.note") }
+                    Button { importing = true } label: { Label { Text("Add music…") } icon: { Icon("music.note") } }
                         .buttonStyle(.vellumSecondary)
                     Button("Sample bed") { video.addSampleMusic() }
                         .buttonStyle(.vellumSecondary)
@@ -664,7 +664,7 @@ private struct TranscriptRow: View {
             Button {
                 withAnimation(theme.spring) { video.toggleCut(line) }
             } label: {
-                Image(systemName: line.cut ? "arrow.uturn.backward" : "scissors")
+                Icon(line.cut ? "arrow.uturn.backward" : "scissors")
                     .font(.brand(size: 11))
             }
             .buttonStyle(.plain)

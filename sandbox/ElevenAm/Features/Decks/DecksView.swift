@@ -30,7 +30,7 @@ struct DecksView: View {
                             }
                         }
                     } label: {
-                        Label(decks.deck?.theme.name ?? "Theme", systemImage: "paintpalette")
+                        Label { Text(decks.deck?.theme.name ?? "Theme") } icon: { Image.brand("paintpalette") }
                     }
                     .menuStyle(.button)
                     .buttonStyle(.borderless)
@@ -55,7 +55,7 @@ struct DecksView: View {
                     Button {
                         decks.rehearse()
                     } label: {
-                        Label("Rehearse", systemImage: "stopwatch")
+                        Label { Text("Rehearse") } icon: { Icon("stopwatch") }
                     }
                     .buttonStyle(.vellumSecondary)
                     .disabled(decks.deck == nil)
@@ -63,7 +63,7 @@ struct DecksView: View {
                     Button {
                         decks.present()
                     } label: {
-                        Label("Present", systemImage: "play.fill")
+                        Label { Text("Present") } icon: { Icon("play.fill") }
                     }
                     .buttonStyle(.vellumPrimary)
                     .keyboardShortcut(.return, modifiers: [.command, .option])
@@ -153,7 +153,7 @@ struct DecksView: View {
                 Button("Move \u{201C}\(deck.name)\u{201D} to the Trash") { decks.delete(deck.id) }
             }
         } label: {
-            Label("New", systemImage: "plus")
+            Label { Text("New") } icon: { Image.brand("plus") }
         }
         .menuStyle(.button)
         .buttonStyle(.vellumSecondary)
@@ -185,11 +185,11 @@ private struct SlideSorter: View {
                     Button {
                         decks.addSlide(layout)
                     } label: {
-                        Label(layout.title, systemImage: layout.symbol)
+                        Label { Text(layout.title) } icon: { Image.brand(layout.symbol) }
                     }
                 }
             } label: {
-                Label("Add a slide", systemImage: "plus")
+                Label { Text("Add a slide") } icon: { Image.brand("plus") }
                     .frame(maxWidth: .infinity)
             }
             .menuStyle(.button)
@@ -231,7 +231,7 @@ private struct SlideSorter: View {
                     .opacity(slide.hidden ? 0.35 : 1)
                     .overlay(alignment: .bottomTrailing) {
                         if slide.hidden {
-                            Image(systemName: "eye.slash.fill").font(.brand(size: 10)).padding(4).foregroundStyle(theme.ink(scheme))
+                            Icon("eye.slash.fill").font(.brand(size: 10)).padding(4).foregroundStyle(theme.ink(scheme))
                         }
                     }
             }
@@ -258,7 +258,7 @@ private struct NotesField: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 8) {
-            Image(systemName: "text.bubble")
+            Icon("text.bubble")
                 .foregroundStyle(theme.inkTertiary(scheme))
                 .padding(.top, 2)
             TextField("Speaker notes for this slide", text: $notes, axis: .vertical)
@@ -336,7 +336,7 @@ private struct SlideContentEditor: View {
                             withAnimation(theme.spring) { decks.setLayout(item) }
                         } label: {
                             VStack(spacing: 3) {
-                                Image(systemName: item.symbol).font(.brand(size: 13))
+                                Icon(item.symbol).font(.brand(size: 13))
                                 Text(item.title).font(.brand(size: 9)).lineLimit(1).minimumScaleFactor(0.7)
                             }
                             .foregroundStyle(item == layout ? theme.paper(scheme) : theme.inkSecondary(scheme))
@@ -403,7 +403,7 @@ private struct SlideContentEditor: View {
                     Button {
                         decks.sharpen()
                     } label: {
-                        Label("Sharper", systemImage: "sparkle")
+                        Label { Text("Sharper") } icon: { Icon("sparkle") }
                     }
                     .buttonStyle(.vellumSecondary)
                     .help("Conner rewrites the words shorter, keeping the facts")

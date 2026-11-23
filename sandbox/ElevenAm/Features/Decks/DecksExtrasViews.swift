@@ -63,7 +63,7 @@ struct ChartLinkBox: View {
                         }
                     }
                 } label: {
-                    Label("Link to a sheet", systemImage: "tablecells")
+                    Label { Text("Link to a sheet") } icon: { Image.brand("tablecells") }
                 }
                 .menuStyle(.button)
                 .buttonStyle(.vellumSecondary)

@@ -35,14 +35,14 @@ struct MailView: View {
                     Button {
                         showingLearning = true
                     } label: {
-                        Image(systemName: "brain")
+                        Icon("brain")
                     }
                     .buttonStyle(.vellumSecondary)
                     .help("How Marc sorts your mail")
                     Button {
                         mail.compose()
                     } label: {
-                        Label("Compose", systemImage: "square.and.pencil")
+                        Label { Text("Compose") } icon: { Icon("square.and.pencil") }
                     }
                     .buttonStyle(.vellumPrimary)
                     .keyboardShortcut("n", modifiers: [.command, .shift])
@@ -133,7 +133,7 @@ struct MailView: View {
             Button(mail.source == .sample ? "Showing the sample inbox" : "Show the sample inbox") { mail.useSample() }
                 .disabled(mail.source == .sample)
         } label: {
-            Label("Accounts", systemImage: "person.crop.circle")
+            Label { Text("Accounts") } icon: { Image.brand("person.crop.circle") }
         }
         .menuStyle(.button)
         .buttonStyle(.borderless)
@@ -283,7 +283,7 @@ private struct LaneBar: View {
                         }
                     }
                 } label: {
-                    Label("\(mail.scheduled.count) scheduled", systemImage: "clock")
+                    Label { Text("\(mail.scheduled.count) scheduled") } icon: { Image.brand("clock") }
                         .font(.brand(size: 12))
                 }
                 .menuStyle(.button)
@@ -298,7 +298,7 @@ private struct LaneBar: View {
                         Button("\(message.fromName) · \(message.subject)") { mail.unsnooze(message) }
                     }
                 } label: {
-                    Label("\(mail.snoozed.count) snoozed", systemImage: "moon.zzz")
+                    Label { Text("\(mail.snoozed.count) snoozed") } icon: { Image.brand("moon.zzz") }
                         .font(.brand(size: 12))
                 }
                 .menuStyle(.button)
@@ -378,7 +378,7 @@ private struct MailBanner: View {
 
     var body: some View {
         HStack(spacing: 10) {
-            Image(systemName: symbol)
+            Icon(symbol)
                 .foregroundStyle(theme.inkSecondary(scheme))
             Text(text)
                 .font(.brand(size: 12.5))
@@ -411,7 +411,7 @@ private struct MailLoadNotice: View {
     var body: some View {
         Card {
             HStack(alignment: .top, spacing: 12) {
-                Image(systemName: error == .noAccess ? "lock" : "tray")
+                Icon(error == .noAccess ? "lock" : "tray")
                     .font(.brand(size: 16))
                     .foregroundStyle(theme.inkSecondary(scheme))
                 VStack(alignment: .leading, spacing: 8) {
@@ -514,7 +514,7 @@ private struct MessageRow: View {
                         .font(.brand(size: 13, weight: message.seen ? .medium : .semibold))
                         .lineLimit(1)
                     if message.flagged { Icon("flag.fill").font(.brand(size: 9)) }
-                    if message.answered { Image(systemName: "arrowshape.turn.up.left.fill").font(.brand(size: 9)).opacity(0.5) }
+                    if message.answered { Icon("arrowshape.turn.up.left.fill").font(.brand(size: 9)).opacity(0.5) }
                     Spacer(minLength: 6)
                     if mail.accounts.count > 1, mail.accountFilter == nil, let account = mail.account(for: message) {
                         AccountBadge(initial: account.initial, size: 14)
@@ -678,7 +678,7 @@ private struct ReaderActions: View {
                 Button("By Friday") { nudge(weekday: 6) }
                 Button("Next week") { nudge(weekday: 2) }
             } label: {
-                Image(systemName: "bell.badge")
+                Image.brand("bell.badge")
             }
             .menuStyle(.button)
             .buttonStyle(.borderless)
@@ -707,7 +707,7 @@ private struct ReaderActions: View {
                 }
                 Button("Block \(message.fromName)") { mail.block(message) }
             } label: {
-                Label("Lane", systemImage: "line.3.horizontal.decrease")
+                Label { Text("Lane") } icon: { Image.brand("line.3.horizontal.decrease") }
             }
             .menuStyle(.button)
             .buttonStyle(.borderless)
@@ -737,7 +737,7 @@ private struct ReaderActions: View {
 
     private func icon(_ symbol: String, _ help: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            Image(systemName: symbol)
+            Icon(symbol)
                 .font(.brand(size: 13))
                 .frame(width: 28, height: 24)
                 .contentShape(Rectangle())

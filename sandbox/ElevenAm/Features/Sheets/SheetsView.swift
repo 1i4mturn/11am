@@ -17,7 +17,7 @@ struct SheetsView: View {
                     Button {
                         asking = true
                     } label: {
-                        Label("Ask George", systemImage: "sparkle")
+                        Label { Text("Ask George") } icon: { Icon("sparkle") }
                     }
                     .buttonStyle(.vellumSecondary)
                     .help("Write a formula, explain one, ask about the numbers or make a sheet")
@@ -29,7 +29,7 @@ struct SheetsView: View {
                     Button {
                         summarising = true
                     } label: {
-                        Label("Summarise", systemImage: "sum")
+                        Label { Text("Summarise") } icon: { Icon("sum") }
                     }
                     .buttonStyle(.vellumSecondary)
                     .help("A live summary of this table, grouped by one column")
@@ -43,7 +43,7 @@ struct SheetsView: View {
                     Button {
                         withAnimation(theme.spring) { sheets.newWorkbook() }
                     } label: {
-                        Label("New workbook", systemImage: "plus.square.on.square")
+                        Label { Text("New workbook") } icon: { Icon("plus.square.on.square") }
                     }
                     .buttonStyle(.vellumPrimary)
                 }
@@ -390,7 +390,7 @@ private struct SheetsFormatBar: View {
                 }
             }
         } label: {
-            Image(systemName: symbol)
+            Image.brand(symbol)
                 .font(.brand(size: 12, weight: .medium))
                 .foregroundStyle(theme.inkSecondary(scheme))
         }
@@ -412,7 +412,7 @@ private struct SheetsFormatBar: View {
             Button("Delete rows") { sheets.deleteRows() }
             Button("Delete columns") { sheets.deleteColumns() }
         } label: {
-            Image(systemName: "plus.rectangle.on.rectangle")
+            Image.brand("plus.rectangle.on.rectangle")
                 .font(.brand(size: 12, weight: .medium))
                 .foregroundStyle(theme.inkSecondary(scheme))
         }
@@ -430,7 +430,7 @@ private struct SheetsFormatBar: View {
                 Button(kind.title) { sheets.addChart(kind) }
             }
         } label: {
-            Image(systemName: "chart.bar.xaxis")
+            Image.brand("chart.bar.xaxis")
                 .font(.brand(size: 12, weight: .medium))
                 .foregroundStyle(theme.inkSecondary(scheme))
         }
@@ -529,7 +529,7 @@ private struct FormulaBar: View {
                             Button(choice) { sheets.setInput(choice, at: sheets.active) }
                         }
                     } label: {
-                        Label("Pick", systemImage: "chevron.down.circle")
+                        Label { Text("Pick") } icon: { Image.brand("chevron.down.circle") }
                             .font(.brand(size: 11.5))
                     }
                     .menuStyle(.button)

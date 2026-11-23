@@ -5,11 +5,11 @@ struct SettingsView: View {
     var body: some View {
         TabView {
             BrainSettings()
-                .tabItem { Label("Brain", systemImage: "cpu") }
+                .tabItem { Label { Text("Brain") } icon: { Image.brand("cpu", size: 22) } }
             MacSettings()
-                .tabItem { Label("This Mac", systemImage: "laptopcomputer") }
+                .tabItem { Label { Text("This Mac") } icon: { Image.brand("laptopcomputer", size: 22) } }
             PhonePairingSheet(showsDone: false)
-                .tabItem { Label("iPhone", systemImage: "iphone") }
+                .tabItem { Label { Text("iPhone") } icon: { Image.brand("iphone", size: 22) } }
         }
         .frame(width: 560, height: 560)
     }

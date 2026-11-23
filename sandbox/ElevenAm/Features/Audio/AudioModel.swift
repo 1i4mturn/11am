@@ -336,6 +336,11 @@ final class AudioModel: ObservableObject {
 
     // MARK: Recording
 
+    /// For screenshots: the record control as it looks while recording, without recording anything.
+    func previewRecording() {
+        recordingKind = .mac
+    }
+
     func record(_ kind: RecordingKind) {
         guard project != nil, recordingKind == nil else { return }
         stop()

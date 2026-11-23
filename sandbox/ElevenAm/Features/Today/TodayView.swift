@@ -41,7 +41,7 @@ struct TodayView: View {
                         Button {
                             phone.showsPairing = true
                         } label: {
-                            Label(phone.isConnected ? "iPhone connected" : (phone.pairing == nil ? "Pair your iPhone" : "iPhone"), systemImage: "iphone")
+                            Label { Text(phone.isConnected ? "iPhone connected" : (phone.pairing == nil ? "Pair your iPhone" : "iPhone")) } icon: { Icon("iphone") }
                         }
                         .buttonStyle(.vellumSecondary)
                         .help("Energy from Apple Health, captures and your brief on the 11am iPhone app")

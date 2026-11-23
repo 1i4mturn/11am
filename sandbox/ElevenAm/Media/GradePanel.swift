@@ -51,7 +51,7 @@ struct GradePanel: View {
                         lookName = ""
                         naming = true
                     } label: {
-                        Label("Save look", systemImage: "plus")
+                        Label { Text("Save look") } icon: { Icon("plus") }
                     }
                     .buttonStyle(.vellumPrimary)
                     .popover(isPresented: $naming, arrowEdge: .bottom) {

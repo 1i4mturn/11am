@@ -53,7 +53,7 @@ struct PDFCollectionsView: View {
                     pdf.collectionAsk = nil
                 } label: {
                     HStack(spacing: 8) {
-                        Image(systemName: "books.vertical")
+                        Icon("books.vertical")
                             .font(.brand(size: 12))
                             .foregroundStyle(theme.inkTertiary(scheme))
                         VStack(alignment: .leading, spacing: 1) {
@@ -121,14 +121,18 @@ private struct PDFCollectionDetail: View {
                         .buttonStyle(.vellumSecondary)
                         .lineLimit(1)
                 }
-                Button { pdf.addFilesPanel(to: collection.id) } label: { Label("Add PDFs…", systemImage: "plus") }
+                Button { pdf.addFilesPanel(to: collection.id) } label: { Label { Text("Add PDFs…") } icon: { Icon("plus") } }
                     .buttonStyle(.vellumSecondary)
             }
             files
             let blank = pdf.filesWithoutText(collection)
             if !blank.isEmpty {
-                Label("No text to search in \(blank.map { PDFCollection.name(of: $0) }.joined(separator: ", ")). Open \(blank.count == 1 ? "it" : "each") and make it searchable.",
-                      systemImage: "exclamationmark.triangle")
+                let names = blank.map { PDFCollection.name(of: $0) }.joined(separator: ", ")
+                Label {
+                    Text("No text to search in \(names). Open \(blank.count == 1 ? "it" : "each") and make it searchable.")
+                } icon: {
+                    Icon("exclamationmark.triangle")
+                }
                     .font(.brand(size: 11.5))
                     .foregroundStyle(theme.inkSecondary(scheme))
             }
@@ -182,7 +186,7 @@ private struct PDFCollectionDetail: View {
         FlowLayout(spacing: 6) {
             ForEach(collection.files, id: \.self) { path in
                 HStack(spacing: 5) {
-                    Image(systemName: "doc.richtext")
+                    Icon("doc.richtext")
                         .font(.brand(size: 11))
                     Text(PDFCollection.name(of: path))
                         .font(.brand(size: 12))
@@ -311,7 +315,7 @@ private struct PDFCollectionAnswer: View {
                                         .lineLimit(2)
                                 }
                                 Spacer(minLength: 0)
-                                Image(systemName: "arrow.up.forward.square")
+                                Icon("arrow.up.forward.square")
                                     .font(.brand(size: 11))
                                     .foregroundStyle(theme.inkTertiary(scheme))
                             }
@@ -526,7 +530,7 @@ struct NewPDFMenu: View {
                 }
             }
         } label: {
-            Label("New", systemImage: "plus")
+            Label { Text("New") } icon: { Image.brand("plus") }
         }
         .menuStyle(.button)
         .buttonStyle(.borderless)

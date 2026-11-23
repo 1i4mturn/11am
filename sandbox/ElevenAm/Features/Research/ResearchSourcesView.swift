@@ -43,7 +43,7 @@ struct SourceEditor: View {
                 Spacer()
                 Picker("", selection: $source.kind) {
                     ForEach(SourceKind.allCases) { kind in
-                        Label(kind.title, systemImage: kind.symbol).tag(kind)
+                        Label { Text(kind.title) } icon: { Image.brand(kind.symbol) }.tag(kind)
                     }
                 }
                 .labelsHidden()
@@ -275,12 +275,12 @@ struct LookUpCard: View {
             if let review = lookup.review, !review.unsourced.isEmpty || !review.unknown.isEmpty {
                 VStack(alignment: .leading, spacing: 3) {
                     if !review.unsourced.isEmpty {
-                        Label(review.unsourced.count == 1 ? "One sentence has no source. Treat it with care." : "\(review.unsourced.count) sentences have no source. Treat them with care.",
-                              systemImage: "exclamationmark.triangle")
+                        Label { Text(review.unsourced.count == 1 ? "One sentence has no source. Treat it with care." : "\(review.unsourced.count) sentences have no source. Treat them with care.") } icon: { Icon("exclamationmark.triangle") }
                             .help(review.unsourced.joined(separator: "\n"))
                     }
                     if !review.unknown.isEmpty {
-                        Label("Cites \(review.unknown.map { "[\($0)]" }.joined(separator: ", ")), which isn't a page he read.", systemImage: "questionmark.circle")
+                        let cited = review.unknown.map { "[\($0)]" }.joined(separator: ", ")
+                        Label { Text("Cites \(cited), which isn't a page he read.") } icon: { Icon("questionmark.circle") }
                     }
                 }
                 .font(.brand(size: 11))

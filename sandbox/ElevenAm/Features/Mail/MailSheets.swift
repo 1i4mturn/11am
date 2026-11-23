@@ -78,7 +78,7 @@ struct ComposeView: View {
                     Button {
                         mail.draftReply(to: original)
                     } label: {
-                        Label("Draft with Marc", systemImage: "sparkles")
+                        Label { Text("Draft with Marc") } icon: { Icon("sparkles") }
                     }
                     .buttonStyle(.vellumSecondary)
                     .disabled(brain.isBusy)
@@ -90,7 +90,7 @@ struct ComposeView: View {
                     Divider()
                     Button("Edit snippets…") { editingSnippets = true }
                 } label: {
-                    Label("Snippets", systemImage: "text.badge.plus")
+                    Label { Text("Snippets") } icon: { Image.brand("text.badge.plus") }
                 }
                 .menuStyle(.button)
                 .fixedSize()
@@ -98,7 +98,7 @@ struct ComposeView: View {
                 Button {
                     attach()
                 } label: {
-                    Label("Attach", systemImage: "paperclip")
+                    Label { Text("Attach") } icon: { Icon("paperclip") }
                 }
                 .buttonStyle(.vellumSecondary)
                 .help("Send files with it. You can also drop them here.")
@@ -123,7 +123,7 @@ struct ComposeView: View {
                         Divider()
                         Button("Pick a time…") { pickingTime = true }
                     } label: {
-                        Label("Send later", systemImage: "clock")
+                        Label { Text("Send later") } icon: { Image.brand("clock") }
                     }
                     .menuStyle(.button)
                     .fixedSize()

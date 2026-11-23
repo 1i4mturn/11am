@@ -1,5 +1,6 @@
 import AppKit
 import Carbon.HIToolbox
+import SwiftUI
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
@@ -10,6 +11,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var noteHotKey: HotKey?
     private var taskHotKey: HotKey?
     private var services: ResearchServices?
+    private var glyphWindow: NSWindow?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         FontRegistry.registerBundledFonts()
@@ -57,6 +59,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 if let section = AppSection(rawValue: String(name)) { model.windows.show(section, activate: false) }
             }
             if let start { model.windows.show(start, activate: false) }
+        }
+        // -glyphSheet YES opens every drawn icon in one window, to check the set by eye.
+        if UserDefaults.standard.bool(forKey: "glyphSheet") {
+            let sheet = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 1180, height: 820), styleMask: [.titled, .closable, .resizable],
+                                 backing: .buffered, defer: false)
+            sheet.title = "Icons"
+            sheet.isReleasedWhenClosed = false
+            sheet.contentView = NSHostingView(rootView: GlyphSheet().withAppEnvironment(model))
+            sheet.center()
+            sheet.makeKeyAndOrderFront(nil)
+            glyphWindow = sheet
         }
         if UserDefaults.standard.bool(forKey: "activate") { NSApp.activate() }
         // -agentNote YES opens the agent's note from the front window's title bar; -mailAttach YES starts an email with
@@ -281,6 +294,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if arguments.bool(forKey: "audioClip") {
             model.audio.selectFirstClip = true
             model.audio.selectFirstClipIfAsked()
+        }
+        if arguments.bool(forKey: "audioRecordPreview") {
+            if model.audio.project == nil { model.audio.open(named: "Founders") }
+            model.audio.previewRecording()
         }
         if arguments.object(forKey: "audioTab") != nil {
             model.audio.panelTab = arguments.integer(forKey: "audioTab")

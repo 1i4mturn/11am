@@ -229,7 +229,7 @@ struct Chip: View {
     var body: some View {
         HStack(spacing: 4) {
             if let systemImage {
-                Image(systemName: systemImage).font(.brand(size: 9, weight: .regular))
+                Icon(systemImage).font(.brand(size: 9, weight: .regular))
             }
             Text(text.lowercased()).font(BrandFont.label(12))
         }

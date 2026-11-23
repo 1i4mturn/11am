@@ -12,7 +12,7 @@ struct SheetsSidePanel: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 8) {
-                Image(systemName: panel.symbol)
+                Icon(panel.symbol)
                     .font(.brand(size: 12, weight: .medium))
                     .foregroundStyle(theme.inkSecondary(scheme))
                 Text(panel.title)
@@ -107,7 +107,7 @@ private struct RulesPanel: View {
             }
             Button(ConditionalRule.Kind.formula.title + "…") { add(.formula) }
         } label: {
-            Label("Add a rule for \(sheets.targetRange.a1)", systemImage: "plus")
+            Label { Text("Add a rule for \(sheets.targetRange.a1)") } icon: { Image.brand("plus") }
         }
         .menuStyle(.button)
         .fixedSize()
@@ -315,7 +315,7 @@ private struct ValidationPanel: View {
                 }
             }
         } label: {
-            Label("Add for \(sheets.targetRange.a1)", systemImage: "plus")
+            Label { Text("Add for \(sheets.targetRange.a1)") } icon: { Image.brand("plus") }
         }
         .menuStyle(.button)
         .fixedSize()
@@ -328,7 +328,7 @@ private struct ValidationPanel: View {
         ForEach(sheets.validations) { rule in
             PanelCard(selected: open == rule.id) {
                 HStack(spacing: 6) {
-                    Image(systemName: icon(rule.kind))
+                    Icon(icon(rule.kind))
                         .font(.brand(size: 11))
                         .foregroundStyle(theme.inkSecondary(scheme))
                         .frame(width: 18)
@@ -453,7 +453,7 @@ private struct CleanPanel: View {
         PanelHint(text: "George checks the column you're in. Click another column to check that one.")
         if issues.isEmpty {
             PanelCard {
-                Label("Nothing to clean here.", systemImage: "checkmark")
+                Label { Text("Nothing to clean here.") } icon: { Icon("checkmark") }
                     .font(.brand(size: 11.5))
                     .foregroundStyle(theme.inkSecondary(scheme))
             }
@@ -597,7 +597,7 @@ private struct CommentsPanel: View {
                     Button {
                         reply(thread.address)
                     } label: {
-                        Image(systemName: "arrow.up.circle.fill")
+                        Icon("arrow.up.circle.fill")
                     }
                     .buttonStyle(.plain)
                     .disabled((replies[thread.address] ?? "").trimmingCharacters(in: .whitespaces).isEmpty)

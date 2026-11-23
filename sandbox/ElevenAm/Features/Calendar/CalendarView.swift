@@ -30,7 +30,7 @@ struct CalendarView: View {
                     Button {
                         findingTime = true
                     } label: {
-                        Image(systemName: "clock.badge.checkmark")
+                        Icon("clock.badge.checkmark")
                     }
                     .buttonStyle(.vellumSecondary)
                     .help("Find a time")
@@ -41,7 +41,7 @@ struct CalendarView: View {
                     Button {
                         choosingCalendars = true
                     } label: {
-                        Image(systemName: "line.3.horizontal.decrease.circle")
+                        Icon("line.3.horizontal.decrease.circle")
                     }
                     .buttonStyle(.vellumSecondary)
                     .help("Choose calendars")
@@ -52,7 +52,7 @@ struct CalendarView: View {
                     Button {
                         calendar.newEvent(at: CalendarView.suggestedStart(for: calendar))
                     } label: {
-                        Label("New event", systemImage: "plus")
+                        Label { Text("New event") } icon: { Icon("plus") }
                     }
                     .buttonStyle(.vellumPrimary)
                     .keyboardShortcut("n", modifiers: [.command, .shift])
@@ -293,7 +293,7 @@ private struct QuickAddField: View {
 
     var body: some View {
         HStack(spacing: 6) {
-            Image(systemName: "calendar.badge.plus")
+            Icon("calendar.badge.plus")
                 .font(.brand(size: 11.5))
                 .foregroundStyle(theme.inkTertiary(scheme))
             TextField("Lunch Fri 1pm at Lune", text: $text)
@@ -301,7 +301,7 @@ private struct QuickAddField: View {
                 .font(.brand(size: 12.5))
                 .onSubmit(onSubmit)
             if !text.isEmpty {
-                Button(action: onSubmit) { Image(systemName: "return") }
+                Button(action: onSubmit) { Icon("return") }
                     .buttonStyle(.plain)
                     .foregroundStyle(theme.inkSecondary(scheme))
                     .help("Add it")
@@ -428,7 +428,7 @@ struct CalendarBanner<Actions: View>: View {
 
     var body: some View {
         HStack(spacing: 10) {
-            Image(systemName: symbol)
+            Icon(symbol)
                 .foregroundStyle(theme.inkSecondary(scheme))
             Text(text)
                 .font(.brand(size: 12.5))
@@ -638,7 +638,7 @@ private struct CalendarsView: View {
                         Button {
                             calendar.apply(set)
                         } label: {
-                            Label(set.name, systemImage: calendar.activeSet?.id == set.id ? "checkmark.circle.fill" : "circle")
+                            Label { Text(set.name) } icon: { Icon(calendar.activeSet?.id == set.id ? "checkmark.circle.fill" : "circle") }
                                 .font(.brand(size: 12.5))
                         }
                         .buttonStyle(.plain)

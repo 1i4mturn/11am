@@ -570,11 +570,11 @@ private struct ScriptToolbar: View {
                 .keyboardShortcut("k", modifiers: .command)
                 .help("Check it without running (⌘K)")
             if scripts.isRunning {
-                Button { scripts.stop() } label: { Label("Stop", systemImage: "stop.fill") }
+                Button { scripts.stop() } label: { Label { Text("Stop") } icon: { Icon("stop.fill") } }
                     .buttonStyle(.vellumSecondary)
                     .keyboardShortcut(".", modifiers: .command)
             } else {
-                Button { scripts.run() } label: { Label("Run", systemImage: "play.fill") }
+                Button { scripts.run() } label: { Label { Text("Run") } icon: { Icon("play.fill") } }
                     .buttonStyle(.vellumPrimary)
                     .keyboardShortcut("r", modifiers: .command)
                     .help("Run (⌘R)")
@@ -595,7 +595,7 @@ private struct ScriptToolbar: View {
                 .menuStyle(.button)
                 .buttonStyle(.vellumSecondary)
                 .fixedSize()
-            Button { showsDictionary.toggle() } label: { Image(systemName: "book") }
+            Button { showsDictionary.toggle() } label: { Icon("book") }
                 .buttonStyle(.vellumSecondary)
                 .help("What each app can be told to do")
         }
@@ -610,7 +610,7 @@ private struct ApprovalBanner: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            Image(systemName: "hand.raised")
+            Icon("hand.raised")
             Text("This script will control \(ListFormatter.localizedString(byJoining: apps)). Johnny asks once; macOS may ask too.")
                 .font(.brand(size: 12))
             Spacer()
@@ -714,7 +714,7 @@ private struct DictionaryPanel: View {
                     ForEach(scripts.dictionaryItems) { item in
                         VStack(alignment: .leading, spacing: 2) {
                             HStack(spacing: 5) {
-                                Image(systemName: item.kind == .command ? "c.square" : "cube")
+                                Icon(item.kind == .command ? "c.square" : "cube")
                                     .font(.brand(size: 10))
                                     .foregroundStyle(theme.inkTertiary(scheme))
                                 Text(item.name)

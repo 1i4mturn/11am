@@ -127,7 +127,7 @@ private struct FlowChips: View {
                         .controlSize(.mini)
                         .tint(theme.ink(scheme))
                         .labelsHidden()
-                    Image(systemName: symbol(change))
+                    Icon(symbol(change))
                         .font(.brand(size: 11))
                         .foregroundStyle(theme.inkTertiary(scheme))
                         .frame(width: 16)
@@ -264,7 +264,7 @@ private struct ForecastTable: View {
                         withAnimation(theme.spring) { openMonth = openMonth == month.start ? nil : month.start }
                     } label: {
                         HStack {
-                            Image(systemName: openMonth == month.start ? "chevron.down" : "chevron.right")
+                            Icon(openMonth == month.start ? "chevron.down" : "chevron.right")
                                 .font(.brand(size: 9, weight: .semibold))
                                 .foregroundStyle(theme.inkTertiary(scheme))
                                 .frame(width: 12)
@@ -514,7 +514,7 @@ struct ExplainableRow: View {
         } label: {
             HStack(spacing: 4) {
                 ReportRow(label: label, cents: cents, indent: 12)
-                Image(systemName: "questionmark.circle")
+                Icon("questionmark.circle")
                     .font(.brand(size: 11))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .opacity(hovering ? 1 : 0)
@@ -571,7 +571,7 @@ struct XeroImportSheet: View {
 
     private func fileRow(_ title: String, where place: String, path: WritableKeyPath<XeroFiles, URL?>) -> some View {
         HStack(spacing: 10) {
-            Image(systemName: files[keyPath: path] == nil ? "circle" : "checkmark.circle.fill")
+            Icon(files[keyPath: path] == nil ? "circle" : "checkmark.circle.fill")
                 .foregroundStyle(theme.ink(scheme))
             VStack(alignment: .leading, spacing: 1) {
                 Text(title).font(.brand(size: 12.5, weight: .semibold)).foregroundStyle(theme.ink(scheme))

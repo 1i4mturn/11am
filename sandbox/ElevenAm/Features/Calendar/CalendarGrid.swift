@@ -104,8 +104,7 @@ private struct DayHeader: View {
                     }
                 if let weather {
                     HStack(spacing: 2) {
-                        Image(systemName: weather.symbol)
-                            .symbolRenderingMode(.hierarchical)
+                        Icon(weather.symbol)
                         if !compact {
                             Text(wide ? weather.line : weather.short)
                                 .monospacedDigit()
@@ -796,7 +795,7 @@ private struct AgendaRow: View {
                 Button {
                     NSWorkspace.shared.open(join)
                 } label: {
-                    Label(JoinLinks.service(join), systemImage: "video")
+                    Label { Text(JoinLinks.service(join)) } icon: { Icon("video") }
                 }
                 .buttonStyle(.vellumSecondary)
             }

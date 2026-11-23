@@ -75,7 +75,7 @@ private struct PlacesList: View {
                 guard panel.runModal() == .OK, let url = panel.url else { return }
                 browser.open(url)
             } label: {
-                Label("Open a folder…", systemImage: "plus")
+                Label { Text("Open a folder…") } icon: { Icon("plus") }
                     .font(.brand(size: 12))
             }
             .buttonStyle(.plain)
@@ -97,7 +97,7 @@ private struct PlacesList: View {
         return Button {
             browser.open(url)
         } label: {
-            Label(name, systemImage: symbol)
+            Label { Text(name) } icon: { Icon(symbol) }
                 .font(.brand(size: 12.5, weight: selected ? .semibold : .regular))
                 .foregroundStyle(theme.ink(scheme))
                 .lineLimit(1)
@@ -128,7 +128,7 @@ private struct BrowserToolbar: View {
                 Menu {
                     ForEach(browser.places) { place in Button(place.name) { browser.open(place.url) } }
                 } label: {
-                    Image(systemName: "sidebar.left")
+                    Image.brand("sidebar.left")
                 }
                 .menuStyle(.button)
                 .buttonStyle(.borderless)
@@ -218,7 +218,7 @@ private struct ThumbnailCell: View {
                         .aspectRatio(contentMode: .fit)
                         .shadow(color: .black.opacity(0.12), radius: 2, y: 1)
                 } else {
-                    Image(systemName: item.kind.symbol)
+                    Icon(item.kind.symbol)
                         .font(.brand(size: side * 0.3, weight: .light))
                         .foregroundStyle(theme.inkTertiary(scheme))
                 }
@@ -319,7 +319,7 @@ private struct PreviewPane: View {
                 if let info, info.hasLocation, let latitude = info.latitude, let longitude = info.longitude {
                     VStack(alignment: .leading, spacing: 6) {
                         HStack(spacing: 6) {
-                            Image(systemName: "location.fill").font(.brand(size: 11))
+                            Icon("location.fill").font(.brand(size: 11))
                             Text(String(format: "%.4f, %.4f", latitude, longitude))
                                 .font(.brand(size: 12).monospacedDigit())
                             Spacer()
@@ -477,7 +477,7 @@ struct ImageEditorView: View {
                 Button {
                     liftSubject()
                 } label: {
-                    Label(cutout == nil ? "Remove background" : "Put the background back", systemImage: "person.crop.rectangle")
+                    Label { Text(cutout == nil ? "Remove background" : "Put the background back") } icon: { Icon("person.crop.rectangle") }
                 }
                 .disabled(lifting)
                 if lifting { ProgressView("Finding the subject…").controlSize(.small) }
@@ -797,7 +797,7 @@ struct SlideshowView: View {
                 HStack(spacing: 18) {
                     Button { browser.stepSlide(-1) } label: { Icon("chevron.left") }
                         .keyboardShortcut(.leftArrow, modifiers: [])
-                    Button { playing.toggle() } label: { Image(systemName: playing ? "pause.fill" : "play.fill") }
+                    Button { playing.toggle() } label: { Icon(playing ? "pause.fill" : "play.fill") }
                         .keyboardShortcut(.space, modifiers: [])
                     Button { browser.stepSlide(1) } label: { Icon("chevron.right") }
                         .keyboardShortcut(.rightArrow, modifiers: [])

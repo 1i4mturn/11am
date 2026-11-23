@@ -48,7 +48,7 @@ struct LearnView: View {
                     Divider()
                     Button("New deck") { withAnimation(theme.spring) { learn.newDeck(named: "") } }
                 } label: {
-                    Label(learn.deck?.name ?? "Decks", systemImage: "rectangle.stack")
+                    Label { Text(learn.deck?.name ?? "Decks") } icon: { Image.brand("rectangle.stack") }
                 }
                 .menuStyle(.button)
                 .buttonStyle(.borderless)
@@ -218,7 +218,7 @@ private struct SidePanel: View {
                                 withAnimation(theme.spring) { learn.toggle(step) }
                             } label: {
                                 HStack(alignment: .firstTextBaseline, spacing: 8) {
-                                    Image(systemName: step.done ? "checkmark.circle.fill" : "circle")
+                                    Icon(step.done ? "checkmark.circle.fill" : "circle")
                                         .font(.brand(size: 12))
                                     Text(step.title)
                                         .font(.brand(size: 12.5))

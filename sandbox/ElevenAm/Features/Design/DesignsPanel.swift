@@ -60,7 +60,7 @@ struct DesignsPanel: View {
             Divider()
             Button("Use the brand kit's colours and fonts") { studio.applyBrand() }
         } label: {
-            Label("Export", systemImage: "square.and.arrow.up")
+            Label { Text("Export") } icon: { Image.brand("square.and.arrow.up") }
         }
         .menuStyle(.button)
         .buttonStyle(.borderless)
@@ -98,7 +98,7 @@ private struct DesignList: View {
                     Button("Custom size in pixels, millimetres or inches…") { customSize = true }
                 }
             } label: {
-                Label("New design", systemImage: "plus")
+                Label { Text("New design") } icon: { Image.brand("plus") }
                     .frame(maxWidth: .infinity)
             }
             .menuStyle(.button)
@@ -109,7 +109,7 @@ private struct DesignList: View {
             Button {
                 making = true
             } label: {
-                Label("Make me a graphic…", systemImage: "sparkle")
+                Label { Text("Make me a graphic…") } icon: { Icon("sparkle") }
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.vellumSecondary)
@@ -173,7 +173,7 @@ private struct DesignList: View {
                         CanvasThumbnail(document: document, images: { assets.image($0) }, height: min(34, 44 / CGFloat(max(document.size.aspect, 0.1))))
                             .clipShape(RoundedRectangle(cornerRadius: 0))
                     } else {
-                        Image(systemName: "rectangle.on.rectangle").font(.brand(size: 11)).foregroundStyle(theme.inkTertiary(scheme))
+                        Icon("rectangle.on.rectangle").font(.brand(size: 11)).foregroundStyle(theme.inkTertiary(scheme))
                     }
                 }
                 .frame(width: 48, height: 40)

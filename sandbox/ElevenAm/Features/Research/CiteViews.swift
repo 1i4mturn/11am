@@ -83,7 +83,7 @@ struct CitePicker: View {
                             done()
                         } label: {
                             HStack(alignment: .firstTextBaseline, spacing: 8) {
-                                Image(systemName: source.kind.symbol)
+                                Icon(source.kind.symbol)
                                     .font(.brand(size: 10.5))
                                     .foregroundStyle(theme.inkTertiary(scheme))
                                     .frame(width: 14)
@@ -164,7 +164,7 @@ struct DeckSourcesMenu: View {
                 }
             }
         } label: {
-            Label("Sources", systemImage: "text.quote")
+            Label { Text("Sources") } icon: { Image.brand("text.quote") }
         }
         .menuStyle(.button)
         .buttonStyle(.borderless)

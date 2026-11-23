@@ -19,7 +19,7 @@ struct ResearchView: View {
                 Button {
                     research.showsBrowserButton = true
                 } label: {
-                    Label("Clip from anywhere", systemImage: "bookmark")
+                    Label { Text("Clip from anywhere") } icon: { Icon("bookmark") }
                 }
                 .buttonStyle(.borderless)
                 .foregroundStyle(theme.inkSecondary(scheme))
@@ -84,7 +84,7 @@ private struct BrowserBar: View {
             .buttonStyle(.vellumSecondary)
 
             HStack(spacing: 8) {
-                Image(systemName: research.isOnWebPage ? "lock" : "magnifyingglass")
+                Icon(research.isOnWebPage ? "lock" : "magnifyingglass")
                     .font(.brand(size: 11))
                     .foregroundStyle(theme.inkTertiary(scheme))
                 TextField("Search or enter an address", text: $research.address)
@@ -108,7 +108,7 @@ private struct BrowserBar: View {
                     }
                 }
             } label: {
-                Label("Clip", systemImage: "scissors")
+                Label { Text("Clip") } icon: { Image.brand("scissors") }
             } primaryAction: {
                 research.clipCurrentPage()
             }
@@ -121,7 +121,7 @@ private struct BrowserBar: View {
             Button {
                 research.addCurrentPage()
             } label: {
-                Label("Add to sources", systemImage: "plus")
+                Label { Text("Add to sources") } icon: { Icon("plus") }
             }
             .buttonStyle(.vellumPrimary)
             .disabled(!research.isOnWebPage)
@@ -265,11 +265,11 @@ private struct SourcesTab: View {
                         Button {
                             research.style = style
                         } label: {
-                            if style == research.style { Label(style.title, systemImage: "checkmark") } else { Text(style.title) }
+                            if style == research.style { Label { Text(style.title) } icon: { Image.brand("checkmark") } } else { Text(style.title) }
                         }
                     }
                 } label: {
-                    Label(research.style.title, systemImage: "text.quote")
+                    Label { Text(research.style.title) } icon: { Image.brand("text.quote") }
                 }
                 .menuStyle(.button)
                 .buttonStyle(.borderless)
@@ -325,7 +325,7 @@ private struct SourceRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {
             HStack(alignment: .firstTextBaseline, spacing: 6) {
-                Image(systemName: source.kind.symbol)
+                Icon(source.kind.symbol)
                     .font(.brand(size: 10.5))
                     .foregroundStyle(theme.inkTertiary(scheme))
                     .frame(width: 14)

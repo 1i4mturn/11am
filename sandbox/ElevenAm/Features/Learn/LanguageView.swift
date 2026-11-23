@@ -118,9 +118,9 @@ private struct CourseHome: View {
                             .foregroundStyle(theme.inkTertiary(scheme))
                     }
                     Spacer()
-                    Button { languages.choosing = true } label: { Label("Language", systemImage: "globe") }
+                    Button { languages.choosing = true } label: { Label { Text("Language") } icon: { Icon("globe") } }
                         .buttonStyle(.vellumSecondary)
-                    Button { showsSettings.toggle() } label: { Image(systemName: "slider.horizontal.3") }
+                    Button { showsSettings.toggle() } label: { Icon("slider.horizontal.3") }
                         .buttonStyle(.vellumSecondary)
                         .popover(isPresented: $showsSettings, arrowEdge: .bottom) { LanguageSettingsView().padding(16).frame(width: 300) }
                 }
@@ -129,7 +129,7 @@ private struct CourseHome: View {
                     Button {
                         languages.continueCourse()
                     } label: {
-                        Label(languages.next.map { "Continue: \($0.unit.title), lesson \($0.lesson + 1)" } ?? "Write the next unit", systemImage: "play.fill")
+                        Label { Text(languages.next.map { "Continue: \($0.unit.title), lesson \($0.lesson + 1)" } ?? "Write the next unit") } icon: { Icon("play.fill") }
                     }
                     .buttonStyle(.vellumPrimary)
                     .keyboardShortcut(.return, modifiers: .command)
@@ -217,7 +217,7 @@ private struct UnitRow: View {
         HStack(spacing: 12) {
             ZStack {
                 Circle().fill(done >= unit.lessonCount ? theme.ink(scheme) : theme.well(scheme))
-                Image(systemName: unit.words.first?.symbol ?? "text.bubble")
+                Icon(unit.words.first?.symbol ?? "text.bubble")
                     .font(.brand(size: 14))
                     .foregroundStyle(done >= unit.lessonCount ? theme.paper(scheme) : theme.inkSecondary(scheme))
             }
@@ -253,7 +253,7 @@ private struct UnitRow: View {
                 }
                 if unit.story != nil {
                     Button { languages.read(unit) } label: {
-                        Image(systemName: (languages.progress?.storiesRead.contains(unit.id) ?? false) ? "book.closed.fill" : "book.closed")
+                        Icon((languages.progress?.storiesRead.contains(unit.id) ?? false) ? "book.closed.fill" : "book.closed")
                             .frame(width: 26, height: 26)
                             .background(Circle().fill(theme.well(scheme)))
                     }
@@ -324,7 +324,7 @@ private struct LessonPlayer: View {
             }
             if let tip = session.tip, tipShown, session.index < 2 {
                 HStack(alignment: .top, spacing: 10) {
-                    Image(systemName: "lightbulb")
+                    Icon("lightbulb")
                     Text(tip).fixedSize(horizontal: false, vertical: true)
                     Spacer()
                     Button { tipShown = false } label: { Icon("xmark").font(.brand(size: 10)) }
@@ -358,7 +358,7 @@ private struct LessonDone: View {
 
     var body: some View {
         VStack(spacing: 14) {
-            Image(systemName: "checkmark.seal")
+            Icon("checkmark.seal")
                 .font(.brand(size: 44))
                 .foregroundStyle(theme.ink(scheme))
             Text("Lesson done")
@@ -599,7 +599,7 @@ private struct ExerciseCard: View {
             }
         }()
         HStack(alignment: .top, spacing: 10) {
-            Image(systemName: verdict == .wrong ? "arrow.uturn.backward.circle.fill" : "checkmark.circle.fill")
+            Icon(verdict == .wrong ? "arrow.uturn.backward.circle.fill" : "checkmark.circle.fill")
                 .font(.brand(size: 20))
                 .foregroundStyle(colour)
             VStack(alignment: .leading, spacing: 2) {
@@ -640,7 +640,7 @@ private struct ExerciseCard: View {
             Button {
                 if let language { languages.speaker.say(text, language: language.id) }
             } label: {
-                Image(systemName: "speaker.wave.2.fill")
+                Icon("speaker.wave.2.fill")
                     .font(.brand(size: small ? 13 : 18))
                     .frame(width: small ? 30 : 46, height: small ? 30 : 46)
                     .background(Circle().fill(theme.ink(scheme)))
@@ -652,7 +652,7 @@ private struct ExerciseCard: View {
                 Button {
                     if let language { languages.speaker.say(text, language: language.id, slow: true) }
                 } label: {
-                    Image(systemName: "tortoise.fill")
+                    Icon("tortoise.fill")
                         .font(.brand(size: 13))
                         .frame(width: 32, height: 32)
                         .background(Circle().fill(theme.well(scheme)))
@@ -667,7 +667,7 @@ private struct ExerciseCard: View {
     private func choiceTile(_ text: String, symbol: String?, selected: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             VStack(spacing: 8) {
-                Image(systemName: symbol ?? "textformat")
+                Icon(symbol ?? "textformat")
                     .font(.brand(size: 28))
                     .frame(height: 36)
                 Text(text)
@@ -718,7 +718,7 @@ private struct SpeakButton: View {
                     }
                 }
             } label: {
-                Label(listener.isListening ? "Done" : "Press and speak", systemImage: listener.isListening ? "stop.fill" : "mic.fill")
+                Label { Text(listener.isListening ? "Done" : "Press and speak") } icon: { Icon(listener.isListening ? "stop.fill" : "mic.fill") }
             }
             .buttonStyle(.vellumPrimary)
             Text(listener.isListening ? (listener.heard.isEmpty ? "Listening…" : listener.heard) : "Heard on this Mac, compared word by word.")
@@ -831,14 +831,14 @@ private struct StoryReader: View {
                     Spacer()
                     Button {
                         if let language = languages.language { languages.speaker.say(story.lines.map(\.target).joined(separator: " "), language: language.id) }
-                    } label: { Label("Read it to me", systemImage: "speaker.wave.2.fill") }
+                    } label: { Label { Text("Read it to me") } icon: { Icon("speaker.wave.2.fill") } }
                         .buttonStyle(.vellumSecondary)
                 }
                 ForEach(Array(story.lines.enumerated()), id: \.offset) { index, line in
                     HStack(alignment: .top, spacing: 10) {
                         Button {
                             if let language = languages.language { languages.speaker.say(line.target, language: language.id) }
-                        } label: { Image(systemName: "speaker.wave.1") }
+                        } label: { Icon("speaker.wave.1") }
                             .buttonStyle(.plain)
                             .foregroundStyle(theme.inkSecondary(scheme))
                         VStack(alignment: .leading, spacing: 3) {

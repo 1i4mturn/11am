@@ -1,0 +1,950 @@
+import SwiftUI
+
+// Generated from the glyph definitions (see the comment in Icons.swift); 1.5pt ink lines on a 24-point square.
+
+/// The rest of the action icons, drawn in the brand's line: everything the apps use that the first set didn't cover.
+enum MoreGlyphs {
+    static let names: Set<String> = [
+        "align.horizontal.center", "arrow.down.circle", "arrow.down.left", "arrow.down.right.and.arrow.up.left",
+        "arrow.left.and.right.righttriangle.left.righttriangle.right", "arrow.right.circle", "arrow.right.to.line",
+        "arrow.triangle.2.circlepath", "arrow.triangle.branch",
+        "arrow.up.and.down.righttriangle.up.righttriangle.down", "arrow.up.arrow.down", "arrow.up.circle",
+        "arrow.up.forward.square", "arrow.up.right", "arrow.uturn.backward.circle", "arrow.uturn.right.circle",
+        "arrowshape.turn.up.left", "arrowtriangle.down", "backward.end", "backward.frame", "bandage", "bell.badge",
+        "bold", "book", "book.closed", "bookmark", "books.vertical", "brain", "briefcase", "building.columns",
+        "c.square", "calendar.badge.plus", "calendar.day.timeline.left", "camera.aperture", "camera.filters", "car",
+        "character", "character.textbox", "chart.bar.doc.horizontal", "chart.bar.xaxis", "chart.line.uptrend.xyaxis",
+        "checkmark.seal", "checkmark.square", "chevron.down.circle", "chevron.left.forwardslash.chevron.right",
+        "circle.dashed", "circle.dotted", "circle.lefthalf.filled", "clock.arrow.circlepath", "clock.badge.checkmark",
+        "cloud", "cloud.bolt", "cloud.bolt.rain", "cloud.drizzle", "cloud.fog", "cloud.rain", "cloud.snow",
+        "cloud.sun", "cpu", "crop", "cube", "cursorarrow", "doc.badge.plus", "doc.plaintext", "doc.richtext",
+        "doc.text.magnifyingglass", "doc.zipper", "dot.radiowaves.left.and.right", "eye.slash", "film",
+        "flag.checkered", "forward.frame", "graduationcap", "hammer", "hand.raised", "highlighter", "inbox", "iphone",
+        "iphone.and.arrow.forward", "italic", "key", "laptopcomputer", "lightbulb", "line.3.horizontal.decrease",
+        "line.3.horizontal.decrease.circle", "line.diagonal", "list.number", "location", "mappin.and.ellipse",
+        "megaphone", "menubar.dock.rectangle", "moon.stars", "newspaper", "note.text", "number", "paintbrush",
+        "paintbrush.pointed", "paintpalette", "paperclip", "pause.circle", "pencil.line", "person.3",
+        "person.crop.circle", "person.crop.circle.badge.minus", "person.crop.circle.badge.plus",
+        "person.crop.rectangle", "person.text.rectangle", "person.wave.2", "photo.on.rectangle", "pin",
+        "play.rectangle", "plus.rectangle.on.rectangle", "qrcode", "questionmark.circle", "quote.bubble",
+        "quote.opening", "record.circle", "rectangle", "rectangle.3.group", "rectangle.bottomhalf.inset.filled",
+        "rectangle.on.rectangle", "rectangle.on.rectangle.angled", "rectangle.split.1x2", "rectangle.split.2x1",
+        "rectangle.split.2x2", "rectangle.split.3x1", "rectangle.stack", "return", "rotate.left", "rotate.right",
+        "safari", "scope", "scribble", "sidebar.left", "sidebar.right", "signature", "slider.horizontal.3",
+        "slider.vertical.3", "speaker", "speaker.slash", "speaker.wave.1", "speaker.wave.2", "square.2.layers.3d",
+        "square.3.layers.3d", "square.and.pencil", "square.on.circle", "stop.circle", "strikethrough", "sum",
+        "sun.horizon", "sun.max", "terminal", "text.aligncenter", "text.alignleft", "text.alignright", "text.append",
+        "text.badge.plus", "text.badge.star", "text.book.closed", "text.bubble", "text.quote", "textformat",
+        "textformat.size", "textformat.size.larger", "timer", "tortoise", "tray", "underline", "video", "waveform",
+        "waveform.badge.magnifyingglass", "xmark.octagon",
+    ]
+
+    static func path(_ name: String) -> Path {
+        var pen = GlyphPen()
+        switch name {
+        case "align.horizontal.center":
+            pen.line([(12, 3), (12, 21)])
+            pen.box(6, 6, 12, 4)
+            pen.box(8, 14, 8, 4)
+        case "arrow.down.circle":
+            pen.circle(12, 12, 9)
+            pen.line([(12, 7.5), (12, 16.5)])
+            pen.line([(8.5, 13), (12, 16.5), (15.5, 13)])
+        case "arrow.down.left":
+            pen.line([(18, 6), (6, 18)])
+            pen.line([(6, 9), (6, 18), (15, 18)])
+        case "arrow.down.right.and.arrow.up.left":
+            pen.line([(4, 4), (10, 10)])
+            pen.line([(10, 5.5), (10, 10), (5.5, 10)])
+            pen.line([(20, 20), (14, 14)])
+            pen.line([(14, 18.5), (14, 14), (18.5, 14)])
+        case "arrow.left.and.right.righttriangle.left.righttriangle.right":
+            pen.line([(10, 6), (10, 18), (3, 18)], closed: true)
+            pen.line([(14, 6), (14, 18), (21, 18)], closed: true)
+            pen.line([(12, 3), (12, 21)])
+        case "arrow.right.circle":
+            pen.circle(12, 12, 9)
+            pen.line([(7.5, 12), (16.5, 12)])
+            pen.line([(13, 8.5), (16.5, 12), (13, 15.5)])
+        case "arrow.right.to.line":
+            pen.line([(3, 12), (15, 12)])
+            pen.line([(10, 7), (15, 12), (10, 17)])
+            pen.line([(20, 4), (20, 20)])
+        case "arrow.triangle.2.circlepath":
+            pen.arc(12, 12, 8, from: 200, to: 340)
+            pen.line([(20.5, 5.5), (19.5, 9.3), (15.8, 8.4)])
+            pen.arc(12, 12, 8, from: 20, to: 160)
+            pen.line([(3.5, 18.5), (4.5, 14.7), (8.2, 15.6)])
+        case "arrow.triangle.branch":
+            pen.line([(12, 21), (12, 12), (5, 5)])
+            pen.line([(12, 12), (19, 5)])
+            pen.line([(5, 9), (5, 5), (9, 5)])
+            pen.line([(15, 5), (19, 5), (19, 9)])
+        case "arrow.up.and.down.righttriangle.up.righttriangle.down":
+            pen.line([(6, 10), (18, 10), (18, 3)], closed: true)
+            pen.line([(6, 14), (18, 14), (18, 21)], closed: true)
+            pen.line([(3, 12), (21, 12)])
+        case "arrow.up.arrow.down":
+            pen.line([(8, 20), (8, 4)])
+            pen.line([(4, 8), (8, 4), (12, 8)])
+            pen.line([(16, 4), (16, 20)])
+            pen.line([(12, 16), (16, 20), (20, 16)])
+        case "arrow.up.circle":
+            pen.circle(12, 12, 9)
+            pen.line([(12, 16.5), (12, 7.5)])
+            pen.line([(8.5, 11), (12, 7.5), (15.5, 11)])
+        case "arrow.up.forward.square":
+            pen.box(3, 3, 18, 18)
+            pen.line([(9, 15), (15, 9)])
+            pen.line([(10, 9), (15, 9), (15, 14)])
+        case "arrow.up.right":
+            pen.line([(6, 18), (18, 6)])
+            pen.line([(9, 6), (18, 6), (18, 15)])
+        case "arrow.uturn.backward.circle":
+            pen.circle(12, 12, 9)
+            pen.line([(8, 10), (13, 10)])
+            pen.arc(13, 13, 3, from: -90, to: 90, start: false)
+            pen.line([(13, 16), (10, 16)])
+            pen.line([(10, 7.5), (8, 10), (10, 12.5)])
+        case "arrow.uturn.right.circle":
+            pen.circle(12, 12, 9)
+            pen.line([(16, 10), (11, 10)])
+            pen.arc(11, 13, 3, from: 270, to: 90, start: false)
+            pen.line([(11, 16), (14, 16)])
+            pen.line([(14, 7.5), (16, 10), (14, 12.5)])
+        case "arrowshape.turn.up.left":
+            pen.line([(10, 4), (3, 10), (10, 16), (10, 12.5)])
+            pen.quad(21, 19, control: (18, 12))
+            pen.quad(10, 7.5, control: (19, 7))
+            pen.close()
+        case "arrowtriangle.down":
+            pen.line([(5, 8), (19, 8), (12, 17)], closed: true)
+        case "backward.end":
+            pen.line([(5, 5), (5, 19)])
+            pen.line([(19, 5), (9, 12), (19, 19)], closed: true)
+        case "backward.frame":
+            pen.line([(5, 5), (5, 19)])
+            pen.line([(19, 5), (9, 12), (19, 19)], closed: true)
+        case "bandage":
+            pen.line([(4, 14), (14, 4), (20, 10), (10, 20)], closed: true)
+            pen.circle(11, 12, 0.4)
+            pen.circle(13, 12, 0.4)
+            pen.circle(12, 11, 0.4)
+            pen.circle(12, 13, 0.4)
+        case "bell.badge":
+            pen.line([(5, 17), (19, 17)])
+            pen.line([(6.5, 17), (6.5, 11)])
+            pen.arc(12, 11, 5.5, from: 180, to: 360, start: false)
+            pen.line([(17.5, 11), (17.5, 17)])
+            pen.line([(10, 20.5), (14, 20.5)])
+            pen.circle(18.5, 5, 2.5)
+        case "bold":
+            pen.line([(7, 4), (7, 20)])
+            pen.line([(7, 4), (13, 4)])
+            pen.arc(13, 8, 4, from: 270, to: 450, start: false)
+            pen.line([(13, 12), (7, 12)])
+            pen.line([(7, 12), (14, 12)])
+            pen.arc(14, 16, 4, from: 270, to: 450, start: false)
+            pen.line([(14, 20), (7, 20)])
+        case "book":
+            pen.line([(12, 6), (12, 20)])
+            pen.line([(12, 6), (8, 4.5), (3, 5), (3, 19), (8, 18.5), (12, 20)])
+            pen.line([(12, 6), (16, 4.5), (21, 5), (21, 19), (16, 18.5), (12, 20)])
+        case "book.closed":
+            pen.line([(6, 21), (6, 3), (19, 3), (19, 21), (6, 21)])
+            pen.line([(9, 3), (9, 21)])
+            pen.line([(12, 8), (16, 8)])
+        case "bookmark":
+            pen.line([(6, 3), (18, 3), (18, 21), (12, 16), (6, 21)], closed: true)
+        case "books.vertical":
+            pen.box(3, 4, 4, 16)
+            pen.box(9, 4, 4, 16)
+            pen.line([(15.2, 5), (18.8, 4.2), (21.8, 19.4), (18.2, 20.2)], closed: true)
+        case "brain":
+            pen.circle(12, 12, 8.5)
+            pen.line([(12, 3.5), (12, 20.5)])
+            pen.arc(8, 9.5, 2.5, from: -60, to: 120)
+            pen.arc(16, 14.5, 2.5, from: 120, to: 300)
+        case "briefcase":
+            pen.box(3, 7, 18, 13)
+            pen.line([(9, 7), (9, 4), (15, 4), (15, 7)])
+            pen.line([(3, 12.5), (21, 12.5)])
+        case "building.columns":
+            pen.line([(3, 9), (12, 3.5), (21, 9)], closed: true)
+            pen.line([(3, 20.5), (21, 20.5)])
+            pen.line([(6, 11.5), (6, 18)])
+            pen.line([(10, 11.5), (10, 18)])
+            pen.line([(14, 11.5), (14, 18)])
+            pen.line([(18, 11.5), (18, 18)])
+        case "c.square":
+            pen.box(4, 4, 16, 16)
+            pen.arc(12, 12, 4, from: 45, to: 315)
+        case "calendar.badge.plus":
+            pen.box(3, 5, 18, 16)
+            pen.line([(3, 10), (21, 10)])
+            pen.line([(8, 3), (8, 7)])
+            pen.line([(16, 3), (16, 7)])
+            pen.line([(12, 12.5), (12, 18.5)])
+            pen.line([(9, 15.5), (15, 15.5)])
+        case "calendar.day.timeline.left":
+            pen.box(3, 4, 18, 16)
+            pen.line([(8, 4), (8, 20)])
+            pen.line([(11, 9), (18, 9)])
+            pen.line([(11, 14), (16, 14)])
+        case "camera.aperture":
+            pen.circle(12, 12, 9)
+            pen.line([(21, 12), (13.75, 15.03)])
+            pen.line([(16.5, 19.79), (10.25, 15.03)])
+            pen.line([(7.5, 19.79), (8.5, 12)])
+            pen.line([(3, 12), (10.25, 8.97)])
+            pen.line([(7.5, 4.21), (13.75, 8.97)])
+            pen.line([(16.5, 4.21), (15.5, 12)])
+        case "camera.filters":
+            pen.circle(12, 8.5, 5)
+            pen.circle(8.5, 14.5, 5)
+            pen.circle(15.5, 14.5, 5)
+        case "car":
+            pen.line([(3, 16), (3, 12), (6.5, 7), (17.5, 7), (21, 12), (21, 16), (3, 16)])
+            pen.line([(3, 12), (21, 12)])
+            pen.circle(7.5, 16.5, 1.8)
+            pen.circle(16.5, 16.5, 1.8)
+        case "character":
+            pen.line([(5, 20), (12, 4), (19, 20)])
+            pen.line([(8, 14), (16, 14)])
+        case "character.textbox":
+            pen.line([(5, 20), (12, 4), (19, 20)])
+            pen.line([(8, 14), (16, 14)])
+        case "chart.bar.doc.horizontal":
+            pen.line([(6, 3), (14, 3), (19, 8), (19, 21), (6, 21)], closed: true)
+            pen.line([(14, 3), (14, 8), (19, 8)])
+            pen.line([(9, 11), (15, 11)])
+            pen.line([(9, 14.5), (13, 14.5)])
+            pen.line([(9, 18), (16, 18)])
+        case "chart.bar.xaxis":
+            pen.line([(3, 20), (21, 20)])
+            pen.box(5.5, 12, 3, 6)
+            pen.box(10.5, 6, 3, 12)
+            pen.box(15.5, 9, 3, 9)
+        case "chart.line.uptrend.xyaxis":
+            pen.line([(3, 3), (3, 21), (21, 21)])
+            pen.line([(6, 16), (10, 11), (13, 14), (20, 6)])
+            pen.line([(16, 6), (20, 6), (20, 10)])
+        case "checkmark.seal":
+            pen.line([(21.5, 12), (19.92, 14.12), (20.23, 16.75), (17.8, 17.8), (16.75, 20.23), (14.12, 19.92), (12, 21.5), (9.88, 19.92), (7.25, 20.23), (6.2, 17.8), (3.77, 16.75), (4.08, 14.12), (2.5, 12), (4.08, 9.88), (3.77, 7.25), (6.2, 6.2), (7.25, 3.77), (9.88, 4.08), (12, 2.5), (14.12, 4.08), (16.75, 3.77), (17.8, 6.2), (20.23, 7.25), (19.92, 9.88)], closed: true)
+            pen.line([(8, 12.5), (11, 15.5), (16.5, 9)])
+        case "checkmark.square":
+            pen.box(4, 4, 16, 16)
+            pen.line([(8, 12.5), (11, 15.5), (16, 9)])
+        case "chevron.down.circle":
+            pen.circle(12, 12, 9)
+            pen.line([(7.5, 10.5), (12, 15), (16.5, 10.5)])
+        case "chevron.left.forwardslash.chevron.right":
+            pen.line([(7, 7), (2.5, 12), (7, 17)])
+            pen.line([(17, 7), (21.5, 12), (17, 17)])
+            pen.line([(14, 5), (10, 19)])
+        case "circle.dashed":
+            pen.arc(12, 12, 9, from: 6, to: 20)
+            pen.arc(12, 12, 9, from: 36, to: 50)
+            pen.arc(12, 12, 9, from: 66, to: 80)
+            pen.arc(12, 12, 9, from: 96, to: 110)
+            pen.arc(12, 12, 9, from: 126, to: 140)
+            pen.arc(12, 12, 9, from: 156, to: 170)
+            pen.arc(12, 12, 9, from: 186, to: 200)
+            pen.arc(12, 12, 9, from: 216, to: 230)
+            pen.arc(12, 12, 9, from: 246, to: 260)
+            pen.arc(12, 12, 9, from: 276, to: 290)
+            pen.arc(12, 12, 9, from: 306, to: 320)
+            pen.arc(12, 12, 9, from: 336, to: 350)
+        case "circle.dotted":
+            pen.circle(21, 12, 0.4)
+            pen.circle(19.79, 16.5, 0.4)
+            pen.circle(16.5, 19.79, 0.4)
+            pen.circle(12, 21, 0.4)
+            pen.circle(7.5, 19.79, 0.4)
+            pen.circle(4.21, 16.5, 0.4)
+            pen.circle(3, 12, 0.4)
+            pen.circle(4.21, 7.5, 0.4)
+            pen.circle(7.5, 4.21, 0.4)
+            pen.circle(12, 3, 0.4)
+            pen.circle(16.5, 4.21, 0.4)
+            pen.circle(19.79, 7.5, 0.4)
+        case "circle.lefthalf.filled":
+            pen.circle(12, 12, 9)
+            pen.line([(12, 3), (12, 21)])
+            pen.line([(6, 7.5), (12, 7.5)])
+            pen.line([(3.5, 12), (12, 12)])
+            pen.line([(6, 16.5), (12, 16.5)])
+        case "clock.arrow.circlepath":
+            pen.arc(12, 12, 8.5, from: 200, to: 500)
+            pen.line([(2, 6.5), (4, 9.1), (6.8, 7.6)])
+            pen.line([(12, 7.5), (12, 12), (15, 14)])
+        case "clock.badge.checkmark":
+            pen.circle(11, 13, 7.5)
+            pen.line([(11, 9), (11, 13), (14, 15)])
+            pen.line([(16, 4.5), (18, 6.5), (22, 2.5)])
+        case "cloud":
+            pen.arc(8, 13, 3.5, from: 90, to: 270)
+            pen.arc(12.5, 9.5, 5, from: 200, to: 340, start: false)
+            pen.arc(17, 13, 3.5, from: 270, to: 450, start: false)
+            pen.line([(17, 16.5), (8, 16.5)])
+        case "cloud.bolt":
+            pen.arc(8, 10, 3.5, from: 90, to: 270)
+            pen.arc(12.5, 6.5, 5, from: 200, to: 340, start: false)
+            pen.arc(17, 10, 3.5, from: 270, to: 450, start: false)
+            pen.line([(17, 13.5), (8, 13.5)])
+            pen.line([(13, 15), (10, 19), (14, 19), (11, 22.5)])
+            pen.line([(7, 17), (6, 20)])
+            pen.line([(18, 17), (17, 20)])
+        case "cloud.bolt.rain":
+            pen.arc(8, 10, 3.5, from: 90, to: 270)
+            pen.arc(12.5, 6.5, 5, from: 200, to: 340, start: false)
+            pen.arc(17, 10, 3.5, from: 270, to: 450, start: false)
+            pen.line([(17, 13.5), (8, 13.5)])
+            pen.line([(13, 15), (10, 19), (14, 19), (11, 22.5)])
+            pen.line([(7, 17), (6, 20)])
+            pen.line([(18, 17), (17, 20)])
+        case "cloud.drizzle":
+            pen.arc(8, 10, 3.5, from: 90, to: 270)
+            pen.arc(12.5, 6.5, 5, from: 200, to: 340, start: false)
+            pen.arc(17, 10, 3.5, from: 270, to: 450, start: false)
+            pen.line([(17, 13.5), (8, 13.5)])
+            pen.line([(8, 17), (7, 20)])
+            pen.line([(12, 17), (11, 20)])
+            pen.line([(16, 17), (15, 20)])
+        case "cloud.fog":
+            pen.arc(8, 10, 3.5, from: 90, to: 270)
+            pen.arc(12.5, 6.5, 5, from: 200, to: 340, start: false)
+            pen.arc(17, 10, 3.5, from: 270, to: 450, start: false)
+            pen.line([(17, 13.5), (8, 13.5)])
+            pen.line([(5, 17), (19, 17)])
+            pen.line([(7, 20.5), (17, 20.5)])
+        case "cloud.rain":
+            pen.arc(8, 10, 3.5, from: 90, to: 270)
+            pen.arc(12.5, 6.5, 5, from: 200, to: 340, start: false)
+            pen.arc(17, 10, 3.5, from: 270, to: 450, start: false)
+            pen.line([(17, 13.5), (8, 13.5)])
+            pen.line([(8, 17), (7, 20)])
+            pen.line([(12, 17), (11, 20)])
+            pen.line([(16, 17), (15, 20)])
+        case "cloud.snow":
+            pen.arc(8, 10, 3.5, from: 90, to: 270)
+            pen.arc(12.5, 6.5, 5, from: 200, to: 340, start: false)
+            pen.arc(17, 10, 3.5, from: 270, to: 450, start: false)
+            pen.line([(17, 13.5), (8, 13.5)])
+            pen.circle(8, 18.5, 0.5)
+            pen.circle(12, 20, 0.5)
+            pen.circle(16, 18.5, 0.5)
+            pen.circle(10, 21.5, 0.5)
+            pen.circle(14, 21.5, 0.5)
+        case "cloud.sun":
+            pen.arc(9, 8, 3.5, from: 150, to: 390)
+            pen.line([(4, 8), (2.2, 8)])
+            pen.line([(5.46, 4.46), (4.19, 3.19)])
+            pen.line([(9, 3), (9, 1.2)])
+            pen.line([(12.54, 4.46), (13.81, 3.19)])
+            pen.arc(8, 16, 3.5, from: 90, to: 270)
+            pen.arc(12.5, 12.5, 5, from: 200, to: 340, start: false)
+            pen.arc(17, 16, 3.5, from: 270, to: 450, start: false)
+            pen.line([(17, 19.5), (8, 19.5)])
+        case "cpu":
+            pen.box(6, 6, 12, 12)
+            pen.box(9.5, 9.5, 5, 5)
+            pen.line([(9, 3), (9, 6)])
+            pen.line([(9, 18), (9, 21)])
+            pen.line([(3, 9), (6, 9)])
+            pen.line([(18, 9), (21, 9)])
+            pen.line([(12, 3), (12, 6)])
+            pen.line([(12, 18), (12, 21)])
+            pen.line([(3, 12), (6, 12)])
+            pen.line([(18, 12), (21, 12)])
+            pen.line([(15, 3), (15, 6)])
+            pen.line([(15, 18), (15, 21)])
+            pen.line([(3, 15), (6, 15)])
+            pen.line([(18, 15), (21, 15)])
+        case "crop":
+            pen.line([(6, 2), (6, 18), (22, 18)])
+            pen.line([(2, 6), (18, 6), (18, 22)])
+        case "cube":
+            pen.line([(12, 3), (20, 7.5), (20, 16.5), (12, 21), (4, 16.5), (4, 7.5)], closed: true)
+            pen.line([(4, 7.5), (12, 12), (20, 7.5)])
+            pen.line([(12, 12), (12, 21)])
+        case "cursorarrow":
+            pen.line([(6, 3), (6, 19), (10, 15), (13, 21), (15.5, 20), (12.5, 14), (18, 14)], closed: true)
+        case "doc.badge.plus":
+            pen.line([(6, 3), (14, 3), (19, 8), (19, 21), (6, 21)], closed: true)
+            pen.line([(14, 3), (14, 8), (19, 8)])
+            pen.line([(12.5, 11), (12.5, 18)])
+            pen.line([(9, 14.5), (16, 14.5)])
+        case "doc.plaintext":
+            pen.line([(6, 3), (14, 3), (19, 8), (19, 21), (6, 21)], closed: true)
+            pen.line([(14, 3), (14, 8), (19, 8)])
+            pen.line([(9, 11), (16, 11)])
+            pen.line([(9, 14.5), (16, 14.5)])
+            pen.line([(9, 18), (13, 18)])
+        case "doc.richtext":
+            pen.line([(6, 3), (14, 3), (19, 8), (19, 21), (6, 21)], closed: true)
+            pen.line([(14, 3), (14, 8), (19, 8)])
+            pen.line([(9, 12), (16, 12)])
+            pen.line([(9, 18), (11.5, 15.5), (13.5, 17), (16, 14.5)])
+        case "doc.text.magnifyingglass":
+            pen.line([(13, 21), (5, 21), (5, 3), (13, 3), (18, 8), (18, 10)])
+            pen.line([(13, 3), (13, 8), (18, 8)])
+            pen.circle(14.5, 15, 3.5)
+            pen.line([(17.27, 17.77), (22, 22.5)])
+        case "doc.zipper":
+            pen.line([(6, 3), (14, 3), (19, 8), (19, 21), (6, 21)], closed: true)
+            pen.line([(14, 3), (14, 8), (19, 8)])
+            pen.line([(10, 5), (10, 6)])
+            pen.line([(10, 8), (10, 9)])
+            pen.line([(10, 11), (10, 12)])
+            pen.box(8.5, 14, 3, 4)
+        case "dot.radiowaves.left.and.right":
+            pen.circle(12, 12, 1.5)
+            pen.arc(12, 12, 5, from: -40, to: 40)
+            pen.arc(12, 12, 5, from: 140, to: 220)
+            pen.arc(12, 12, 8.5, from: -40, to: 40)
+            pen.arc(12, 12, 8.5, from: 140, to: 220)
+        case "eye.slash":
+            pen.move(2, 12)
+            pen.quad(22, 12, control: (12, 2))
+            pen.quad(2, 12, control: (12, 22))
+            pen.circle(12, 12, 3)
+            pen.line([(4, 4), (20, 20)])
+        case "film":
+            pen.box(4, 3, 16, 18)
+            pen.line([(8, 3), (8, 21)])
+            pen.line([(16, 3), (16, 21)])
+            pen.line([(4, 8), (8, 8)])
+            pen.line([(16, 8), (20, 8)])
+            pen.line([(4, 12), (8, 12)])
+            pen.line([(16, 12), (20, 12)])
+            pen.line([(4, 16), (8, 16)])
+            pen.line([(16, 16), (20, 16)])
+        case "flag.checkered":
+            pen.line([(5, 21), (5, 4)])
+            pen.box(5, 4, 13, 9)
+            pen.line([(11.5, 4), (11.5, 13)])
+            pen.line([(5, 8.5), (18, 8.5)])
+        case "forward.frame":
+            pen.line([(19, 5), (19, 19)])
+            pen.line([(5, 5), (15, 12), (5, 19)], closed: true)
+        case "graduationcap":
+            pen.line([(2, 9), (12, 4), (22, 9), (12, 14)], closed: true)
+            pen.line([(6, 11), (6, 16)])
+            pen.arc(12, 13, 6, from: 0, to: 180)
+            pen.line([(22, 9), (22, 15)])
+        case "hammer":
+            pen.line([(4, 20), (13, 11)])
+            pen.line([(10, 8), (14, 4), (19, 5), (16, 8), (20, 12), (17, 15), (13, 11)], closed: true)
+        case "hand.raised":
+            pen.line([(7, 14), (7, 6.5), (9, 6.5), (9, 11)])
+            pen.line([(9, 11), (9, 4), (11, 4), (11, 11)])
+            pen.line([(11, 11), (11, 4.5), (13, 4.5), (13, 11)])
+            pen.line([(13, 11), (13, 6), (15, 6), (15, 13), (17.5, 10.5), (19, 12), (15, 19), (9, 20), (7, 17), (7, 14)])
+        case "highlighter":
+            pen.line([(8, 15), (17, 6), (20, 9), (11, 18)], closed: true)
+            pen.line([(8, 15), (6, 17), (8, 19), (11, 18)])
+            pen.line([(4, 21), (9, 21)])
+        case "inbox":
+            pen.line([(3, 13), (8, 13), (9.5, 16), (14.5, 16), (16, 13), (21, 13)])
+            pen.line([(3, 13), (5.5, 5), (18.5, 5), (21, 13), (21, 20), (3, 20)], closed: true)
+        case "iphone":
+            pen.rrect(7, 2.5, 10, 19, 2.5)
+            pen.line([(10.5, 5), (13.5, 5)])
+        case "iphone.and.arrow.forward":
+            pen.rrect(3, 2.5, 9, 19, 2.5)
+            pen.line([(14, 12), (21, 12)])
+            pen.line([(18, 9), (21, 12), (18, 15)])
+        case "italic":
+            pen.line([(10, 4), (18, 4)])
+            pen.line([(6, 20), (14, 20)])
+            pen.line([(14, 4), (10, 20)])
+        case "key":
+            pen.circle(8, 12, 4)
+            pen.line([(12, 12), (21, 12)])
+            pen.line([(17, 12), (17, 15)])
+            pen.line([(20, 12), (20, 14)])
+        case "laptopcomputer":
+            pen.box(5, 4.5, 14, 10.5)
+            pen.line([(2.5, 18.5), (21.5, 18.5)])
+            pen.line([(5, 15), (3, 18.5)])
+            pen.line([(19, 15), (21, 18.5)])
+        case "lightbulb":
+            pen.arc(12, 9.5, 6, from: 140, to: 400)
+            pen.line([(16.6, 13.4), (15, 16), (9, 16), (7.4, 13.4)])
+            pen.line([(9.5, 19), (14.5, 19)])
+            pen.line([(10.5, 21.5), (13.5, 21.5)])
+        case "line.3.horizontal.decrease":
+            pen.line([(4, 7), (20, 7)])
+            pen.line([(7, 12), (17, 12)])
+            pen.line([(10, 17), (14, 17)])
+        case "line.3.horizontal.decrease.circle":
+            pen.circle(12, 12, 9)
+            pen.line([(7, 9), (17, 9)])
+            pen.line([(9, 12.5), (15, 12.5)])
+            pen.line([(11, 16), (13, 16)])
+        case "line.diagonal":
+            pen.line([(5, 19), (19, 5)])
+        case "list.number":
+            pen.line([(4, 4.5), (5, 4), (5, 9)])
+            pen.line([(3.5, 13.5), (6, 13.5), (3.5, 17.5), (6.5, 17.5)])
+            pen.line([(10, 7), (20, 7)])
+            pen.line([(10, 15.5), (20, 15.5)])
+        case "location":
+            pen.line([(20, 4), (4, 11), (11, 13), (13, 20)], closed: true)
+        case "mappin.and.ellipse":
+            pen.circle(12, 8, 4.5)
+            pen.line([(12, 12.5), (12, 18)])
+            pen.ellipse(5, 16.5, 14, 5)
+        case "megaphone":
+            pen.line([(3, 10), (7, 10), (18, 4), (18, 20), (7, 14), (3, 14)], closed: true)
+            pen.line([(7, 10), (7, 14)])
+            pen.line([(7, 14), (9, 20), (12, 20), (10.5, 15.5)])
+        case "menubar.dock.rectangle":
+            pen.box(3, 4, 18, 16)
+            pen.line([(3, 7.5), (21, 7.5)])
+            pen.box(7, 16, 10, 2)
+        case "moon.stars":
+            pen.arc(11, 13, 7.5, from: 14.8, to: 262)
+            pen.arc(15, 9.5, 6.4, from: 217.8, to: 58.9, start: false)
+            pen.close()
+            pen.line([(18, 3), (18, 7)])
+            pen.line([(16, 5), (20, 5)])
+        case "newspaper":
+            pen.line([(5, 4), (19, 4), (19, 20), (5, 20)], closed: true)
+            pen.box(8, 7, 8, 4)
+            pen.line([(8, 14), (16, 14)])
+            pen.line([(8, 17), (14, 17)])
+        case "note.text":
+            pen.box(4, 4, 16, 16)
+            pen.line([(8, 9), (16, 9)])
+            pen.line([(8, 13), (16, 13)])
+            pen.line([(8, 17), (13, 17)])
+        case "number":
+            pen.line([(9, 4), (7, 20)])
+            pen.line([(17, 4), (15, 20)])
+            pen.line([(4.5, 9), (20, 9)])
+            pen.line([(4, 15), (19.5, 15)])
+        case "paintbrush":
+            pen.line([(20, 3), (10, 13)])
+            pen.line([(21, 4), (11, 14)])
+            pen.line([(9.5, 13), (11, 14.5)])
+            pen.quad(3, 20, control: (9, 19))
+            pen.line([(3, 20), (5, 15), (9.5, 13)])
+        case "paintbrush.pointed":
+            pen.line([(20, 4), (11, 14), (9, 12), (19, 3)], closed: true)
+            pen.line([(9, 12), (5, 13), (3, 21), (11, 19), (11, 14)])
+        case "paintpalette":
+            pen.arc(12, 12, 9, from: 30, to: 320)
+            pen.quad(15.5, 16, control: (19.5, 8))
+            pen.quad(19.8, 19, control: (13, 19.5))
+            pen.circle(8, 9, 1.3)
+            pen.circle(12, 6.5, 1.3)
+            pen.circle(16, 8.5, 1.3)
+            pen.circle(7.5, 14, 1.3)
+        case "paperclip":
+            pen.move(15.5, 8)
+            pen.line([(15.5, 8), (15.5, 16)])
+            pen.arc(12, 16, 3.5, from: 0, to: 180, start: false)
+            pen.line([(8.5, 16), (8.5, 6)])
+            pen.arc(11.5, 6, 3, from: 180, to: 360, start: false)
+            pen.line([(14.5, 6), (14.5, 15)])
+            pen.arc(12.5, 15, 2, from: 0, to: 180, start: false)
+            pen.line([(10.5, 15), (10.5, 8)])
+        case "pause.circle":
+            pen.circle(12, 12, 9)
+            pen.line([(10, 8.5), (10, 15.5)])
+            pen.line([(14, 8.5), (14, 15.5)])
+        case "pencil.line":
+            pen.line([(15, 3), (19, 7), (9, 17), (5, 17), (5, 13)], closed: true)
+            pen.line([(12.5, 5.5), (16.5, 9.5)])
+            pen.line([(3, 21), (21, 21)])
+        case "person.3":
+            pen.circle(12, 7.5, 3)
+            pen.arc(12, 18, 5.5, from: 180, to: 360)
+            pen.circle(5.5, 9.5, 2.3)
+            pen.arc(5.5, 18, 4, from: 200, to: 330)
+            pen.circle(18.5, 9.5, 2.3)
+            pen.arc(18.5, 18, 4, from: 210, to: 340)
+        case "person.crop.circle":
+            pen.circle(12, 12, 9)
+            pen.circle(12, 10.24, 2.64)
+            pen.arc(12, 19.84, 5.6, from: 200, to: 340)
+        case "person.crop.circle.badge.minus":
+            pen.circle(11, 13, 8)
+            pen.circle(11, 11.46, 2.31)
+            pen.arc(11, 19.86, 4.9, from: 200, to: 340)
+            pen.line([(16.5, 4.5), (22.5, 4.5)])
+        case "person.crop.circle.badge.plus":
+            pen.circle(11, 13, 8)
+            pen.circle(11, 11.46, 2.31)
+            pen.arc(11, 19.86, 4.9, from: 200, to: 340)
+            pen.line([(19.5, 1.5), (19.5, 7.5)])
+            pen.line([(16.5, 4.5), (22.5, 4.5)])
+        case "person.crop.rectangle":
+            pen.box(3, 4, 18, 16)
+            pen.circle(12, 10, 3)
+            pen.arc(12, 20, 5.5, from: 180, to: 360)
+        case "person.text.rectangle":
+            pen.box(2.5, 4, 19, 16)
+            pen.circle(8, 10, 2.5)
+            pen.arc(8, 18.5, 4.5, from: 180, to: 360)
+            pen.line([(14, 9), (19, 9)])
+            pen.line([(14, 13), (19, 13)])
+        case "person.wave.2":
+            pen.circle(12, 8, 3.5)
+            pen.arc(12, 21, 7, from: 180, to: 360)
+            pen.arc(12, 9, 8, from: 140, to: 220)
+            pen.arc(12, 9, 8, from: -40, to: 40)
+        case "photo.on.rectangle":
+            pen.line([(3, 16), (3, 4), (17, 4)])
+            pen.box(7, 8, 14, 12)
+            pen.line([(7, 18), (11, 14), (14, 17), (16, 15), (21, 19)])
+        case "pin":
+            pen.line([(9, 3), (15, 3)])
+            pen.line([(10, 3), (10, 9), (7, 13), (17, 13), (14, 9), (14, 3)])
+            pen.line([(12, 13), (12, 21)])
+        case "play.rectangle":
+            pen.box(3, 5, 18, 14)
+            pen.line([(10, 9), (15, 12), (10, 15)], closed: true)
+        case "plus.rectangle.on.rectangle":
+            pen.line([(3, 16), (3, 4), (16, 4)])
+            pen.box(7, 8, 14, 12)
+            pen.line([(14, 11), (14, 17)])
+            pen.line([(11, 14), (17, 14)])
+        case "qrcode":
+            pen.box(3, 3, 7, 7)
+            pen.box(14, 3, 7, 7)
+            pen.box(3, 14, 7, 7)
+            pen.box(5.5, 5.5, 2, 2)
+            pen.box(16.5, 5.5, 2, 2)
+            pen.box(5.5, 16.5, 2, 2)
+            pen.line([(14, 14), (14, 17)])
+            pen.line([(17, 14), (21, 14)])
+            pen.line([(17, 17), (17, 21), (21, 21), (21, 17)])
+        case "questionmark.circle":
+            pen.circle(12, 12, 9)
+            pen.arc(12, 9.8, 3, from: 200, to: 390)
+            pen.line([(14.8, 10.8), (12, 13), (12, 14.5)])
+            pen.circle(12, 17.3, 0.5)
+        case "quote.bubble":
+            pen.line([(3, 4), (21, 4), (21, 16), (10, 16), (5, 20), (5, 16), (3, 16)], closed: true)
+            pen.line([(9, 8), (8, 12)])
+            pen.line([(13, 8), (12, 12)])
+        case "quote.opening":
+            pen.circle(7.5, 13, 2.5)
+            pen.arc(9, 13, 4, from: 180, to: 250)
+            pen.circle(15.5, 13, 2.5)
+            pen.arc(17, 13, 4, from: 180, to: 250)
+        case "record.circle":
+            pen.circle(12, 12, 9)
+            pen.circle(12, 12, 4)
+        case "rectangle":
+            pen.box(3, 6, 18, 12)
+        case "rectangle.3.group":
+            pen.box(3, 4, 8, 7)
+            pen.box(13, 4, 8, 7)
+            pen.box(3, 13, 18, 7)
+        case "rectangle.bottomhalf.inset.filled":
+            pen.box(3, 4, 18, 16)
+            pen.box(6, 13, 12, 4)
+        case "rectangle.on.rectangle":
+            pen.line([(3, 16), (3, 4), (17, 4)])
+            pen.box(7, 8, 14, 12)
+        case "rectangle.on.rectangle.angled":
+            pen.line([(4, 15), (2.5, 6), (16, 3.5)])
+            pen.line([(7, 8), (20, 7), (21, 18), (8, 19)], closed: true)
+        case "rectangle.split.1x2":
+            pen.box(3, 4, 18, 16)
+            pen.line([(3, 12), (21, 12)])
+        case "rectangle.split.2x1":
+            pen.box(3, 5, 18, 14)
+            pen.line([(12, 5), (12, 19)])
+        case "rectangle.split.2x2":
+            pen.box(3, 4, 18, 16)
+            pen.line([(12, 4), (12, 20)])
+            pen.line([(3, 12), (21, 12)])
+        case "rectangle.split.3x1":
+            pen.box(3, 5, 18, 14)
+            pen.line([(9, 5), (9, 19)])
+            pen.line([(15, 5), (15, 19)])
+        case "rectangle.stack":
+            pen.box(3, 9, 18, 12)
+            pen.line([(5, 6), (19, 6)])
+            pen.line([(7, 3), (17, 3)])
+        case "return":
+            pen.line([(19, 5), (19, 13), (6, 13)])
+            pen.line([(10, 9), (6, 13), (10, 17)])
+        case "rotate.left":
+            pen.box(10, 11, 10, 10)
+            pen.arc(12, 11, 7, from: 210, to: 320)
+            pen.line([(5.5, 3.8), (5.94, 7.5), (9.5, 6.8)])
+        case "rotate.right":
+            pen.box(4, 11, 10, 10)
+            pen.arc(12, 11, 7, from: 220, to: 330)
+            pen.line([(18.5, 3.8), (18.06, 7.5), (14.5, 6.8)])
+        case "safari":
+            pen.circle(12, 12, 9)
+            pen.line([(15.5, 8.5), (13, 13), (8.5, 15.5), (11, 11)], closed: true)
+        case "scope":
+            pen.circle(12, 12, 8)
+            pen.circle(12, 12, 3)
+            pen.line([(12, 2), (12, 6)])
+            pen.line([(12, 18), (12, 22)])
+            pen.line([(2, 12), (6, 12)])
+            pen.line([(18, 12), (22, 12)])
+        case "scribble":
+            pen.move(3, 16)
+            pen.quad(9, 7, control: (4, 6))
+            pen.quad(12, 15, control: (10, 15))
+            pen.quad(17, 6, control: (13, 6))
+            pen.quad(21, 13, control: (21, 8))
+        case "sidebar.left":
+            pen.box(3, 4, 18, 16)
+            pen.line([(9, 4), (9, 20)])
+            pen.line([(5, 7.5), (7, 7.5)])
+            pen.line([(5, 10.5), (7, 10.5)])
+        case "sidebar.right":
+            pen.box(3, 4, 18, 16)
+            pen.line([(15, 4), (15, 20)])
+            pen.line([(17, 7.5), (19, 7.5)])
+            pen.line([(17, 10.5), (19, 10.5)])
+        case "signature":
+            pen.move(3, 16)
+            pen.quad(8, 6, control: (5, 4))
+            pen.quad(9, 17, control: (11, 9))
+            pen.quad(14, 12, control: (12, 14))
+            pen.quad(21, 14, control: (16, 11))
+            pen.line([(3, 20.5), (21, 20.5)])
+        case "slider.horizontal.3":
+            pen.line([(3, 6), (6, 6)])
+            pen.circle(8, 6, 2)
+            pen.line([(10, 6), (21, 6)])
+            pen.line([(3, 12), (14, 12)])
+            pen.circle(16, 12, 2)
+            pen.line([(18, 12), (21, 12)])
+            pen.line([(3, 18), (9, 18)])
+            pen.circle(11, 18, 2)
+            pen.line([(13, 18), (21, 18)])
+        case "slider.vertical.3":
+            pen.line([(6, 3), (6, 8)])
+            pen.circle(6, 10, 2)
+            pen.line([(6, 12), (6, 21)])
+            pen.line([(12, 3), (12, 14)])
+            pen.circle(12, 16, 2)
+            pen.line([(12, 18), (12, 21)])
+            pen.line([(18, 3), (18, 5)])
+            pen.circle(18, 7, 2)
+            pen.line([(18, 9), (18, 21)])
+        case "speaker":
+            pen.line([(3, 9.5), (7, 9.5), (11.5, 5.5), (11.5, 18.5), (7, 14.5), (3, 14.5)], closed: true)
+        case "speaker.slash":
+            pen.line([(3, 9.5), (7, 9.5), (11.5, 5.5), (11.5, 18.5), (7, 14.5), (3, 14.5)], closed: true)
+            pen.line([(3, 3), (21, 21)])
+        case "speaker.wave.1":
+            pen.line([(3, 9.5), (7, 9.5), (11.5, 5.5), (11.5, 18.5), (7, 14.5), (3, 14.5)], closed: true)
+            pen.arc(12.5, 12, 4, from: -45, to: 45)
+        case "speaker.wave.2":
+            pen.line([(3, 9.5), (7, 9.5), (11.5, 5.5), (11.5, 18.5), (7, 14.5), (3, 14.5)], closed: true)
+            pen.arc(12.5, 12, 4, from: -45, to: 45)
+            pen.arc(12.5, 12, 7.5, from: -45, to: 45)
+        case "square.2.layers.3d":
+            pen.line([(12, 4), (21, 8.5), (12, 13), (3, 8.5)], closed: true)
+            pen.line([(3, 14), (12, 18.5), (21, 14)])
+        case "square.3.layers.3d":
+            pen.line([(12, 3), (21, 7.5), (12, 12), (3, 7.5)], closed: true)
+            pen.line([(3, 12), (12, 16.5), (21, 12)])
+            pen.line([(3, 16.5), (12, 21), (21, 16.5)])
+        case "square.and.pencil":
+            pen.line([(11, 4), (4, 4), (4, 20), (20, 20), (20, 13)])
+            pen.line([(17.5, 3), (21, 6.5), (13, 14.5), (9.5, 14.5), (9.5, 11)], closed: true)
+        case "square.on.circle":
+            pen.circle(9, 9, 6)
+            pen.box(10, 10, 11, 11)
+        case "stop.circle":
+            pen.circle(12, 12, 9)
+            pen.box(9, 9, 6, 6)
+        case "strikethrough":
+            pen.arc(12, 8, 4.5, from: 0, to: -270)
+            pen.arc(12, 16, 4.5, from: 270, to: 450)
+            pen.line([(12, 20.5), (7.5, 18)])
+            pen.line([(3, 12), (21, 12)])
+        case "sum":
+            pen.line([(18, 4), (6, 4), (13, 12), (6, 20), (18, 20)])
+        case "sun.horizon":
+            pen.arc(12, 16, 5, from: 180, to: 360)
+            pen.line([(2, 16), (22, 16)])
+            pen.line([(6, 20), (18, 20)])
+            pen.line([(4.5, 16), (2.5, 16)])
+            pen.line([(6.7, 10.7), (5.28, 9.28)])
+            pen.line([(12, 8.5), (12, 6.5)])
+            pen.line([(17.3, 10.7), (18.72, 9.28)])
+            pen.line([(19.5, 16), (21.5, 16)])
+        case "sun.max":
+            pen.circle(12, 12, 4.5)
+            pen.line([(19, 12), (21.5, 12)])
+            pen.line([(16.95, 16.95), (18.72, 18.72)])
+            pen.line([(12, 19), (12, 21.5)])
+            pen.line([(7.05, 16.95), (5.28, 18.72)])
+            pen.line([(5, 12), (2.5, 12)])
+            pen.line([(7.05, 7.05), (5.28, 5.28)])
+            pen.line([(12, 5), (12, 2.5)])
+            pen.line([(16.95, 7.05), (18.72, 5.28)])
+        case "terminal":
+            pen.box(3, 4, 18, 16)
+            pen.line([(7, 9), (10, 12), (7, 15)])
+            pen.line([(12, 15.5), (17, 15.5)])
+        case "text.aligncenter":
+            pen.line([(3, 5), (21, 5)])
+            pen.line([(6, 10), (18, 10)])
+            pen.line([(3, 15), (21, 15)])
+            pen.line([(7, 20), (17, 20)])
+        case "text.alignleft":
+            pen.line([(3, 5), (21, 5)])
+            pen.line([(3, 10), (15, 10)])
+            pen.line([(3, 15), (21, 15)])
+            pen.line([(3, 20), (13, 20)])
+        case "text.alignright":
+            pen.line([(3, 5), (21, 5)])
+            pen.line([(9, 10), (21, 10)])
+            pen.line([(3, 15), (21, 15)])
+            pen.line([(11, 20), (21, 20)])
+        case "text.append":
+            pen.line([(3, 5), (21, 5)])
+            pen.line([(3, 10), (21, 10)])
+            pen.line([(3, 15), (12, 15)])
+            pen.line([(17, 13), (17, 21)])
+            pen.line([(13, 17), (21, 17)])
+        case "text.badge.plus":
+            pen.line([(3, 6), (14, 6)])
+            pen.line([(3, 11), (14, 11)])
+            pen.line([(3, 16), (10, 16)])
+            pen.line([(18, 11), (18, 19)])
+            pen.line([(14, 15), (22, 15)])
+        case "text.badge.star":
+            pen.line([(3, 6), (14, 6)])
+            pen.line([(3, 11), (12, 11)])
+            pen.line([(3, 16), (10, 16)])
+            pen.line([(18, 12), (19, 14.62), (21.8, 14.76), (19.62, 16.53), (20.35, 19.24), (18, 17.7), (15.65, 19.24), (16.38, 16.53), (14.2, 14.76), (17, 14.62)], closed: true)
+        case "text.book.closed":
+            pen.line([(6, 21), (6, 3), (19, 3), (19, 21), (6, 21)])
+            pen.line([(9, 3), (9, 21)])
+            pen.line([(12, 8), (16, 8)])
+        case "text.bubble":
+            pen.line([(3, 4), (21, 4), (21, 16), (10, 16), (5, 20), (5, 16), (3, 16)], closed: true)
+            pen.line([(7, 8.5), (17, 8.5)])
+            pen.line([(7, 12), (14, 12)])
+        case "text.quote":
+            pen.line([(4, 5), (4, 19)])
+            pen.line([(8, 6), (20, 6)])
+            pen.line([(8, 12), (20, 12)])
+            pen.line([(8, 18), (16, 18)])
+        case "textformat":
+            pen.line([(3, 19), (8, 5), (13, 19)])
+            pen.line([(5, 14), (11, 14)])
+            pen.circle(17.5, 15.5, 3)
+            pen.line([(20.5, 12), (20.5, 19)])
+        case "textformat.size":
+            pen.line([(2, 19), (8, 4), (14, 19)])
+            pen.line([(4.5, 13.5), (11.5, 13.5)])
+            pen.line([(14, 19), (17.5, 10), (21, 19)])
+            pen.line([(15.3, 16), (19.7, 16)])
+        case "textformat.size.larger":
+            pen.line([(2, 19), (8, 4), (14, 19)])
+            pen.line([(4.5, 13.5), (11.5, 13.5)])
+            pen.line([(14, 19), (17.5, 10), (21, 19)])
+            pen.line([(15.3, 16), (19.7, 16)])
+        case "timer":
+            pen.circle(12, 13, 8)
+            pen.line([(12, 13), (15.5, 9.5)])
+            pen.line([(12, 2.5), (12, 5)])
+            pen.line([(10, 2.5), (14, 2.5)])
+            pen.line([(18.5, 5), (20, 6.5)])
+        case "tortoise":
+            pen.arc(11, 15, 7, from: 180, to: 360)
+            pen.line([(4, 15), (18, 15)])
+            pen.circle(20, 13, 1.8)
+            pen.line([(7, 15), (6, 18.5)])
+            pen.line([(15, 15), (16, 18.5)])
+            pen.line([(8, 11), (14, 11)])
+        case "tray":
+            pen.line([(3, 13), (8, 13), (9.5, 16), (14.5, 16), (16, 13), (21, 13)])
+            pen.line([(3, 13), (5.5, 5), (18.5, 5), (21, 13), (21, 20), (3, 20)], closed: true)
+        case "underline":
+            pen.line([(7, 4), (7, 12)])
+            pen.arc(12, 12, 5, from: 180, to: 0, start: false)
+            pen.line([(17, 12), (17, 4)])
+            pen.line([(5, 20.5), (19, 20.5)])
+        case "video":
+            pen.box(3, 7, 12.5, 10)
+            pen.line([(15.5, 10.5), (21, 7.5), (21, 16.5), (15.5, 13.5)])
+        case "waveform":
+            pen.line([(3, 10), (3, 14)])
+            pen.line([(5.25, 8), (5.25, 16)])
+            pen.line([(7.5, 5.5), (7.5, 18.5)])
+            pen.line([(9.75, 3.5), (9.75, 20.5)])
+            pen.line([(12, 7), (12, 17)])
+            pen.line([(14.25, 9), (14.25, 15)])
+            pen.line([(16.5, 5), (16.5, 19)])
+            pen.line([(18.75, 8), (18.75, 16)])
+            pen.line([(21, 10), (21, 14)])
+        case "waveform.badge.magnifyingglass":
+            pen.line([(3, 10), (3, 14)])
+            pen.line([(5.5, 7.5), (5.5, 16.5)])
+            pen.line([(8, 9), (8, 15)])
+            pen.circle(15, 12, 4.5)
+            pen.line([(18.2, 15.2), (21, 18)])
+        case "xmark.octagon":
+            pen.line([(8.3, 3), (15.7, 3), (21, 8.3), (21, 15.7), (15.7, 21), (8.3, 21), (3, 15.7), (3, 8.3)], closed: true)
+            pen.line([(9, 9), (15, 15)])
+            pen.line([(15, 9), (9, 15)])
+        default: break
+        }
+        return pen.path
+    }
+}
+
+/// Draws the glyphs: straight lines, boxes, circles, arcs in degrees (clockwise from three o'clock, y down) and curves.
+struct GlyphPen {
+    var path = Path()
+
+    mutating func line(_ points: [(CGFloat, CGFloat)], closed: Bool = false) {
+        guard let first = points.first else { return }
+        path.move(to: CGPoint(x: first.0, y: first.1))
+        for point in points.dropFirst() { path.addLine(to: CGPoint(x: point.0, y: point.1)) }
+        if closed { path.closeSubpath() }
+    }
+
+    mutating func box(_ x: CGFloat, _ y: CGFloat, _ width: CGFloat, _ height: CGFloat) {
+        path.addRect(CGRect(x: x, y: y, width: width, height: height))
+    }
+
+    mutating func circle(_ x: CGFloat, _ y: CGFloat, _ radius: CGFloat) {
+        path.addEllipse(in: CGRect(x: x - radius, y: y - radius, width: radius * 2, height: radius * 2))
+    }
+
+    mutating func ellipse(_ x: CGFloat, _ y: CGFloat, _ width: CGFloat, _ height: CGFloat) {
+        path.addEllipse(in: CGRect(x: x, y: y, width: width, height: height))
+    }
+
+    mutating func rrect(_ x: CGFloat, _ y: CGFloat, _ width: CGFloat, _ height: CGFloat, _ radius: CGFloat) {
+        path.addRoundedRect(in: CGRect(x: x, y: y, width: width, height: height), cornerSize: CGSize(width: radius, height: radius))
+    }
+
+    mutating func arc(_ cx: CGFloat, _ cy: CGFloat, _ radius: CGFloat, from: CGFloat, to: CGFloat, start: Bool = true) {
+        let steps = 24
+        for step in 0...steps {
+            let angle = (from + (to - from) * CGFloat(step) / CGFloat(steps)) * .pi / 180
+            let point = CGPoint(x: cx + radius * cos(angle), y: cy + radius * sin(angle))
+            if step == 0 && start { path.move(to: point) } else { path.addLine(to: point) }
+        }
+    }
+
+    mutating func move(_ x: CGFloat, _ y: CGFloat) { path.move(to: CGPoint(x: x, y: y)) }
+
+    mutating func quad(_ x: CGFloat, _ y: CGFloat, control: (CGFloat, CGFloat)) {
+        path.addQuadCurve(to: CGPoint(x: x, y: y), control: CGPoint(x: control.0, y: control.1))
+    }
+
+    mutating func close() { path.closeSubpath() }
+}

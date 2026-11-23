@@ -29,7 +29,7 @@ struct CanvasToolbar: View {
                     Button("Heading") { controller.addText("Add a heading", heading: true, brand: brand) }
                     Button("Body text") { controller.addText("Add a little text", heading: false, brand: brand) }
                 } label: {
-                    Label("Text", systemImage: "textformat")
+                    Label { Text("Text") } icon: { Image.brand("textformat") }
                         .font(.brand(size: 12, weight: .medium))
                         .foregroundStyle(theme.inkSecondary(scheme))
                 }
@@ -42,7 +42,7 @@ struct CanvasToolbar: View {
                         Button(kind.title) { controller.addShape(kind, brand: brand) }
                     }
                 } label: {
-                    Label("Shape", systemImage: "square.on.circle")
+                    Label { Text("Shape") } icon: { Image.brand("square.on.circle") }
                         .font(.brand(size: 12, weight: .medium))
                         .foregroundStyle(theme.inkSecondary(scheme))
                 }
@@ -56,7 +56,7 @@ struct CanvasToolbar: View {
                         Button(grid.title) { controller.addFrames(grid, fill: brand.soft) }
                     }
                 } label: {
-                    Label("Frames", systemImage: "rectangle.split.2x2")
+                    Label { Text("Frames") } icon: { Image.brand("rectangle.split.2x2") }
                         .font(.brand(size: 12, weight: .medium))
                         .foregroundStyle(theme.inkSecondary(scheme))
                 }
@@ -91,7 +91,7 @@ struct CanvasToolbar: View {
                                                         color: brand.soft, accent: brand.accent, ink: brand.primary, font: brand.bodyFont))
                     }
                 } label: {
-                    Label("Chart", systemImage: "chart.bar")
+                    Label { Text("Chart") } icon: { Image.brand("chart.bar") }
                         .font(.brand(size: 12, weight: .medium))
                         .foregroundStyle(theme.inkSecondary(scheme))
                 }
@@ -125,7 +125,7 @@ struct CanvasToolbar: View {
                         Button("Down") { controller.distribute(horizontally: false) }
                     }
                 } label: {
-                    Image(systemName: "align.horizontal.center")
+                    Image.brand("align.horizontal.center")
                         .font(.brand(size: 12, weight: .medium))
                         .foregroundStyle(theme.inkSecondary(scheme))
                 }
@@ -142,7 +142,7 @@ struct CanvasToolbar: View {
                     Button("Send backward") { controller.reorder(.backward) }
                     Button("Send to back") { controller.reorder(.back) }
                 } label: {
-                    Image(systemName: "square.3.layers.3d")
+                    Image.brand("square.3.layers.3d")
                         .font(.brand(size: 12, weight: .medium))
                         .foregroundStyle(theme.inkSecondary(scheme))
                 }
@@ -319,7 +319,7 @@ struct CanvasInspector: View {
                 GridRow {
                     number("°", layer.rotation) { value in controller.update { $0.rotation = value.truncatingRemainder(dividingBy: 360) } }
                     HStack(spacing: 4) {
-                        Image(systemName: "circle.lefthalf.filled").font(.brand(size: 10)).foregroundStyle(theme.inkTertiary(scheme))
+                        Icon("circle.lefthalf.filled").font(.brand(size: 10)).foregroundStyle(theme.inkTertiary(scheme))
                         Slider(value: Binding(get: { layer.opacity }, set: { value in controller.update { $0.opacity = value } }), in: 0...1)
                             .controlSize(.small)
                     }
@@ -380,7 +380,7 @@ struct CanvasInspector: View {
             colourRow("The biggest", current: chart.accent) { color in controller.redrawChart { $0.accent = color } }
             if let link = chart.link {
                 VStack(alignment: .leading, spacing: 4) {
-                    Label("From \(link.sheet) in \(link.workbook)", systemImage: "tablecells")
+                    Label { Text("From \(link.sheet) in \(link.workbook)") } icon: { Icon("tablecells") }
                         .font(.brand(size: 11.5))
                         .foregroundStyle(theme.inkSecondary(scheme))
                         .lineLimit(2)
@@ -453,7 +453,7 @@ struct CanvasInspector: View {
             ForEach(controller.document.layers.reversed()) { layer in
                 let selected = controller.selection.contains(layer.id)
                 HStack(spacing: 8) {
-                    Image(systemName: symbol(layer))
+                    Icon(symbol(layer))
                         .font(.brand(size: 11))
                         .foregroundStyle(theme.inkTertiary(scheme))
                         .frame(width: 16)
@@ -465,14 +465,14 @@ struct CanvasInspector: View {
                     Button {
                         controller.update([layer.id]) { $0.hidden.toggle() }
                     } label: {
-                        Image(systemName: layer.hidden ? "eye.slash" : "eye").font(.brand(size: 10.5))
+                        Icon(layer.hidden ? "eye.slash" : "eye").font(.brand(size: 10.5))
                     }
                     .buttonStyle(.plain)
                     .foregroundStyle(theme.inkTertiary(scheme))
                     Button {
                         controller.update([layer.id]) { $0.locked.toggle() }
                     } label: {
-                        Image(systemName: layer.locked ? "lock.fill" : "lock.open").font(.brand(size: 10.5))
+                        Icon(layer.locked ? "lock.fill" : "lock.open").font(.brand(size: 10.5))
                     }
                     .buttonStyle(.plain)
                     .foregroundStyle(theme.inkTertiary(scheme))

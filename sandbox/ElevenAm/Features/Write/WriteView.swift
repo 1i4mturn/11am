@@ -44,7 +44,7 @@ struct WriteView: View {
                     Button {
                         importing = true
                     } label: {
-                        Label("Import", systemImage: "square.and.arrow.down")
+                        Label { Text("Import") } icon: { Icon("square.and.arrow.down") }
                     }
                     .buttonStyle(.vellumSecondary)
                     .help("Open Word, RTF, HTML, OpenDocument or Markdown files as documents")
@@ -128,7 +128,7 @@ struct WriteView: View {
             Button("Copy with formatting") { write.copyRichText() }
             Button("Page setup…") { showingPageSetup = true }
         } label: {
-            Label("Export", systemImage: "square.and.arrow.up")
+            Label { Text("Export") } icon: { Image.brand("square.and.arrow.up") }
         }
         .menuStyle(.button)
         .buttonStyle(.borderless)
@@ -146,11 +146,11 @@ struct WriteView: View {
                 Button {
                     withAnimation(theme.spring) { write.newDocument(template: template) }
                 } label: {
-                    Label(template.name, systemImage: template.symbol)
+                    Label { Text(template.name) } icon: { Image.brand(template.symbol) }
                 }
             }
         } label: {
-            Label("New", systemImage: "plus")
+            Label { Text("New") } icon: { Image.brand("plus") }
         } primaryAction: {
             withAnimation(theme.spring) { write.newDocument() }
         }
@@ -405,9 +405,9 @@ private struct Page: View {
                     write.suggest(action, selection: selection)
                 } label: {
                     if showTitles {
-                        Label(action.title, systemImage: action.symbol)
+                        Label { Text(action.title) } icon: { Icon(action.symbol) }
                     } else {
-                        Image(systemName: action.symbol)
+                        Icon(action.symbol)
                     }
                 }
                 .buttonStyle(.vellumSecondary)
@@ -535,7 +535,7 @@ struct ToolButton: View {
 
     var body: some View {
         Button(action: action) {
-            Image(systemName: symbol)
+            Icon(symbol)
                 .font(.brand(size: 12, weight: .medium))
                 .foregroundStyle(on ? theme.paper(scheme) : theme.inkSecondary(scheme))
                 .frame(width: 26, height: 24)

@@ -277,7 +277,7 @@ struct TaskInspector: View {
         ForEach(task.checklist) { step in
             HStack(spacing: 8) {
                 Button { tasks.toggleStep(step.id, in: task.id) } label: {
-                    Image(systemName: step.done ? "checkmark.square.fill" : "square")
+                    Icon(step.done ? "checkmark.square.fill" : "square")
                         .font(.brand(size: 13))
                 }
                 .buttonStyle(.plain)

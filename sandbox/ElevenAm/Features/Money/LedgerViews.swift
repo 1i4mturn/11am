@@ -100,7 +100,7 @@ struct BankPanel: View {
                 Button {
                     ledger.importStatement()
                 } label: {
-                    Label("Import statement…", systemImage: "square.and.arrow.down")
+                    Label { Text("Import statement…") } icon: { Icon("square.and.arrow.down") }
                 }
                 .buttonStyle(.vellumSecondary)
                 .padding(.top, 4)
@@ -197,7 +197,7 @@ struct BankPanel: View {
             }
             Group {
                 if receipt {
-                    Image(systemName: "paperclip").help("Receipt kept")
+                    Icon("paperclip").help("Receipt kept")
                 } else if needsReceipt {
                     Icon("exclamationmark.circle").help("Over $82.50 with GST claimed: keep its tax invoice")
                 } else {
@@ -431,7 +431,7 @@ struct InvoicesPanel: View {
                     Button {
                         if filter == .repeating { ledger.newSchedule() } else { ledger.newInvoice(kind) }
                     } label: {
-                        Label(kind == .sale ? (filter == .repeating ? "New repeating" : "New invoice") : "New bill", systemImage: "plus")
+                        Label { Text(kind == .sale ? (filter == .repeating ? "New repeating" : "New invoice") : "New bill") } icon: { Icon("plus") }
                     }
                     .buttonStyle(.vellumPrimary)
                     .fixedSize()
@@ -649,7 +649,7 @@ private struct InvoiceDetail: View {
                         Button("Every year") { ledger.repeatInvoice(invoice.id, every: 1, unit: .year) }
                         Button("Every week") { ledger.repeatInvoice(invoice.id, every: 1, unit: .week) }
                     } label: {
-                        Label("Repeat this invoice", systemImage: "repeat")
+                        Label { Text("Repeat this invoice") } icon: { Image.brand("repeat") }
                     }
                     .menuStyle(.button)
                     .buttonStyle(.borderless)
@@ -824,7 +824,7 @@ struct LineItemsEditor: View {
                     let last = lines.last
                     lines.append(InvoiceLine(description: "", unitPrice: 0, account: last?.account ?? (sale ? "200" : "429"), gst: last?.gst ?? .gst))
                 } label: {
-                    Label("Add a line", systemImage: "plus")
+                    Label { Text("Add a line") } icon: { Icon("plus") }
                 }
                 .buttonStyle(.vellumSecondary)
                 Spacer()
@@ -1214,7 +1214,7 @@ struct GSTPanel: View {
                 }
                 if back > 0 || quarter.end < ledger.today {
                     if ledger.book.isLocked(quarter.end) {
-                        Label("Locked. Nothing in this quarter can change.", systemImage: "lock.fill")
+                        Label { Text("Locked. Nothing in this quarter can change.") } icon: { Icon("lock.fill") }
                             .font(.brand(size: 12))
                             .foregroundStyle(theme.inkSecondary(scheme))
                     } else {
@@ -1222,7 +1222,7 @@ struct GSTPanel: View {
                             Button {
                                 ledger.setLockDate(quarter.end)
                             } label: {
-                                Label("Lodged? Lock the books up to \(quarter.end.fullDay)", systemImage: "lock")
+                                Label { Text("Lodged? Lock the books up to \(quarter.end.fullDay)") } icon: { Icon("lock") }
                             }
                             .buttonStyle(.vellumSecondary)
                             Text("So nothing in a lodged quarter changes by accident. You can unlock it in Settings.")

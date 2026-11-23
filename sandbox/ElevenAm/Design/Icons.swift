@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 /// The brand has no icon set, so 11am draws its own: each app as a few strokes of 1.5pt ink on a 24-point square,
@@ -206,11 +207,72 @@ enum ActionGlyph {
         "square.grid.2x2", "chart.bar", "printer", "pencil", "wand.and.stars", "circle", "circle.fill", "square", "info.circle",
     ]
 
-    /// The drawn name for a symbol, if there is one (".fill" versions use the line drawing).
+    /// Every name with a line drawing: the first set here and the rest in `MoreGlyphs`.
+    static let all: Set<String> = names.union(MoreGlyphs.names)
+
+    /// The drawn name for a symbol, if there is one. Filled versions use the line drawing (the brand fills nothing but
+    /// the ink recording dot), so "play.fill" draws "play" and "xmark.octagon.fill" draws "xmark.octagon".
     static func drawn(_ name: String) -> String? {
-        if names.contains(name) { return name }
-        let plain = name.replacingOccurrences(of: ".fill", with: "")
-        return names.contains(plain) ? plain : nil
+        if all.contains(name) { return name }
+        let plain = name.hasSuffix(".fill") ? String(name.dropLast(5)) : name.replacingOccurrences(of: ".fill.", with: ".")
+        return all.contains(plain) ? plain : nil
+    }
+
+    private static var images: [String: NSImage] = [:]
+
+    /// A drawn glyph as a template image, for places that only take an image (menus, Settings tabs, text): stroked at
+    /// 1.5pt for the size it's drawn at, tinted like any symbol.
+    static func image(_ name: String, size: CGFloat) -> NSImage {
+        let key = "\(name)@\(size)"
+        if let cached = images[key] { return cached }
+        let path = ActionGlyphShape(name: name).path(in: CGRect(x: 0, y: 0, width: 24, height: 24)).cgPath
+        let image = NSImage(size: NSSize(width: size, height: size), flipped: true) { _ in
+            guard let context = NSGraphicsContext.current?.cgContext else { return false }
+            context.scaleBy(x: size / 24, y: size / 24)
+            context.addPath(path)
+            context.setLineWidth(1.5 * 24 / size)
+            context.setLineCap(.round)
+            context.setLineJoin(.round)
+            context.setStrokeColor(NSColor.black.cgColor)
+            context.strokePath()
+            return true
+        }
+        image.isTemplate = true
+        images[key] = image
+        return image
+    }
+}
+
+extension Image {
+    /// An action's icon as an `Image`, for menus, Settings tabs and text, where only an image will do. The brand's line
+    /// drawing where there is one, otherwise the SF Symbol. Elsewhere use `Icon`, which grows with the font.
+    static func brand(_ name: String, size: CGFloat = 15) -> Image {
+        guard let drawn = ActionGlyph.drawn(name) else { return Image(systemName: name) }
+        return Image(nsImage: ActionGlyph.image(drawn, size: size)).renderingMode(.template)
+    }
+}
+
+/// Recording, the brand's way: an open ink ring that fills while it records and breathes slowly (still, with reduced
+/// motion). No red anywhere.
+struct RecordingDot: View {
+    var recording = true
+    var size: CGFloat = 10
+    @Environment(\.colorScheme) private var scheme
+    @State private var breath = false
+
+    var body: some View {
+        let ink = BrandTokens.ink(scheme)
+        Circle()
+            .fill(recording ? ink : Color.clear)
+            .overlay { Circle().strokeBorder(ink, lineWidth: BrandTokens.ruleOpen) }
+            .frame(width: size, height: size)
+            .scaleEffect(recording && breath ? 1.25 : 1)
+            .opacity(recording && breath ? 0.7 : 1)
+            .animation(recording && !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
+                       ? .easeInOut(duration: 0.9).repeatForever(autoreverses: true) : .default, value: breath)
+            .onAppear { breath = recording }
+            .onChange(of: recording) { _, value in breath = value }
+            .accessibilityLabel(recording ? "Recording" : "Not recording")
     }
 }
 
@@ -360,8 +422,35 @@ struct ActionGlyphShape: Shape {
         case "chart.bar": line([(3, 20), (21, 20)]); box(5, 12, 3.5, 8); box(10.25, 7, 3.5, 13); box(15.5, 4, 3.5, 16)
         case "printer": box(6, 3, 12, 6); box(3, 9, 18, 8); box(6, 14, 12, 7)
         case "pencil": line([(15, 4), (20, 9), (9, 20), (4, 20), (4, 15)], closed: true); line([(12.5, 6.5), (17.5, 11.5)])
-        default: break
+        default: p = MoreGlyphs.path(name)
         }
         return p
+    }
+}
+
+/// Every drawn icon with its name, for checking the set by eye (`-glyphSheet YES`).
+struct GlyphSheet: View {
+    @Environment(\.colorScheme) private var scheme
+
+    var body: some View {
+        ScrollView {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 104), spacing: 10)], spacing: 14) {
+                ForEach(ActionGlyph.all.sorted(), id: \.self) { name in
+                    VStack(spacing: 6) {
+                        Icon(name)
+                            .font(.brand(size: 26))
+                            .frame(height: 30)
+                        Text(name)
+                            .font(BrandFont.label(9))
+                            .lineLimit(2)
+                            .multilineTextAlignment(.center)
+                            .frame(height: 24, alignment: .top)
+                    }
+                    .foregroundStyle(BrandTokens.ink(scheme))
+                }
+            }
+            .padding(20)
+        }
+        .background(BrandTokens.paper(scheme))
     }
 }

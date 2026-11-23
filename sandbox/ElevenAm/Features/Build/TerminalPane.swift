@@ -347,15 +347,15 @@ private struct TabStrip: View {
                 .buttonStyle(.vellumSecondary)
                 .keyboardShortcut("t", modifiers: .command)
                 .help("New tab (⌘T)")
-            Button { terminal.split(vertical: false) } label: { Image(systemName: "rectangle.split.2x1") }
+            Button { terminal.split(vertical: false) } label: { Icon("rectangle.split.2x1") }
                 .buttonStyle(.vellumSecondary)
                 .keyboardShortcut("d", modifiers: .command)
                 .help("Split side by side (⌘D)")
-            Button { terminal.split(vertical: true) } label: { Image(systemName: "rectangle.split.1x2") }
+            Button { terminal.split(vertical: true) } label: { Icon("rectangle.split.1x2") }
                 .buttonStyle(.vellumSecondary)
                 .keyboardShortcut("d", modifiers: [.command, .shift])
                 .help("Split top and bottom (⇧⌘D)")
-            Button { showsHistory.toggle() } label: { Image(systemName: "clock.arrow.circlepath") }
+            Button { showsHistory.toggle() } label: { Icon("clock.arrow.circlepath") }
                 .buttonStyle(.vellumSecondary)
                 .keyboardShortcut("r", modifiers: [.command, .option])
                 .help("Search your command history (⌥⌘R)")
@@ -380,7 +380,7 @@ private struct TabStrip: View {
                 Button("Clear the scrollback") { terminal.activeSession?.emulator.feed("\u{1B}[3J"); terminal.type("\u{0C}") }
                 Button("Close pane") { terminal.closePane() }
             } label: {
-                Image(systemName: "slider.horizontal.3")
+                Image.brand("slider.horizontal.3")
             }
             .menuStyle(.button)
             .buttonStyle(.vellumSecondary)
@@ -656,7 +656,7 @@ private struct CommandSuggestion: View {
                         }
                         .buttonStyle(.vellumPrimary)
                         if TerminalWorkspace.isRisky(suggestion.command) {
-                            Label("Can change or delete things", systemImage: "exclamationmark.triangle")
+                            Label { Text("Can change or delete things") } icon: { Icon("exclamationmark.triangle") }
                                 .font(.brand(size: 11))
                                 .foregroundStyle(Color.orange)
                         }
