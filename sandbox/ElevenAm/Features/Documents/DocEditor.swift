@@ -266,7 +266,7 @@ struct DocEditor: NSViewRepresentable {
 
 final class MarkdownTextView: NSTextView {
     var editorStyle = DocEditorStyle(body: .systemFont(ofSize: 14), ink: .textColor, secondary: .secondaryLabelColor,
-                                     tertiary: .tertiaryLabelColor, accent: .linkColor, shade: .quaternaryLabelColor, highlight: .yellow)
+                                     tertiary: .tertiaryLabelColor, accent: .linkColor, shade: .quaternaryLabelColor, highlight: .yellow) // brand-lint: allow a ==highlight== in the writer's own text
     var focusMode = false
     var typewriter = false
     var emptyHint = ""

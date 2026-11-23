@@ -748,14 +748,15 @@ private struct RehearsalClock: View {
             let over = presenter.target.map { here > $0 } ?? false
             HStack(spacing: 14) {
                 Icon("stopwatch")
-                Text(RehearsalReport.clock(here))
-                    .foregroundStyle(over ? Color.orange : .white)
+                // Over the target is said in words and weight, not colour.
+                Text(RehearsalReport.clock(here) + (over ? " over" : ""))
+                    .fontWeight(over ? .heavy : .semibold)
                 if let target = presenter.target {
-                    Text("of \(RehearsalReport.clock(target))").foregroundStyle(.white.opacity(0.5))
+                    Text("of \(RehearsalReport.clock(target))").fontWeight(.regular)
                 }
-                Text("·").foregroundStyle(.white.opacity(0.4))
+                Text("·")
                 Text(RehearsalReport.clock(context.date.timeIntervalSince(presenter.started)))
-                    .foregroundStyle(.white.opacity(0.7))
+                    .fontWeight(.regular)
             }
             .font(.brand(size: 22, weight: .semibold).monospacedDigit())
             .foregroundStyle(.white)
@@ -779,7 +780,7 @@ private struct PresenterStage: View {
                         ScrollView {
                             Text(slide.notes.isEmpty ? "No notes for this slide." : slide.notes)
                                 .font(.brand(size: 26))
-                                .foregroundStyle(.white.opacity(slide.notes.isEmpty ? 0.4 : 0.92))
+                                .foregroundStyle(.white)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                         }
                     }
@@ -789,14 +790,14 @@ private struct PresenterStage: View {
                         .font(.brand(size: 54, weight: .semibold).monospacedDigit())
                         .foregroundStyle(.white)
                     Text("Slide \(presenter.index + 1) of \(presenter.slides.count)")
-                        .font(.brand(size: 20))
-                        .foregroundStyle(.white.opacity(0.6))
+                        .font(BrandFont.label(20))
+                        .foregroundStyle(.white)
                     if presenter.slides.indices.contains(presenter.index + 1) {
-                        Text("Next").font(.brand(size: 16, weight: .semibold)).foregroundStyle(.white.opacity(0.5))
+                        Text("next").font(BrandFont.label(16)).foregroundStyle(.white)
                         CanvasThumbnail(document: presenter.slides[presenter.index + 1].canvas, images: presenter.images, height: 200)
                     }
                     Spacer()
-                    Text("← → to move · esc to stop").font(.brand(size: 15)).foregroundStyle(.white.opacity(0.4))
+                    Text("← → to move · esc to stop").font(BrandFont.label(15)).foregroundStyle(.white)
                 }
                 .frame(width: 380, alignment: .leading)
             }

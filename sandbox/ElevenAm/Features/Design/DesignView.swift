@@ -186,8 +186,8 @@ struct GraphicCanvas: View {
     var body: some View {
         let pixels = size.pixels
         let unit = min(pixels.width, pixels.height) / 1080
-        let ink = dark ? Color(white: 0.96) : Color(white: 0.07)
-        let paper = dark ? Color(white: 0.07) : Color(red: 0.985, green: 0.98, blue: 0.972)
+        let ink = dark ? BrandTokens.paperHex : BrandTokens.inkHex
+        let paper = dark ? BrandTokens.inkHex : BrandTokens.paperHex
         ZStack(alignment: .topLeading) {
             paper
             Tooth()
@@ -197,7 +197,7 @@ struct GraphicCanvas: View {
                     Text("ANNOUNCEMENT")
                         .font(.brand(size: 26 * unit, weight: .semibold))
                         .tracking(4 * unit)
-                        .foregroundStyle(ink.opacity(0.55))
+                        .foregroundStyle(ink.opacity(0.55)) // brand-lint: allow the graphic being made, not the interface
                     Spacer(minLength: 0)
                     Text(headline)
                         .font(.custom("SchibstedGrotesk-Black", size: 104 * unit))
@@ -207,7 +207,7 @@ struct GraphicCanvas: View {
                         .minimumScaleFactor(0.4)
                     Text(detail)
                         .font(.brand(size: 38 * unit))
-                        .foregroundStyle(ink.opacity(0.7))
+                        .foregroundStyle(ink.opacity(0.7)) // brand-lint: allow the graphic being made, not the interface
                         .padding(.top, 28 * unit)
                 case .quote:
                     Text("“")
@@ -222,7 +222,7 @@ struct GraphicCanvas: View {
                         .minimumScaleFactor(0.4)
                     Text("— \(detail)")
                         .font(.brand(size: 36 * unit, weight: .medium))
-                        .foregroundStyle(ink.opacity(0.65))
+                        .foregroundStyle(ink.opacity(0.65)) // brand-lint: allow the graphic being made, not the interface
                         .padding(.top, 30 * unit)
                 case .stat:
                     Spacer(minLength: 0)
@@ -234,7 +234,7 @@ struct GraphicCanvas: View {
                         .minimumScaleFactor(0.3)
                     Text(detail)
                         .font(.brand(size: 44 * unit, weight: .medium))
-                        .foregroundStyle(ink.opacity(0.7))
+                        .foregroundStyle(ink.opacity(0.7)) // brand-lint: allow the graphic being made, not the interface
                         .padding(.top, 10 * unit)
                 }
                 Spacer(minLength: 0)
@@ -250,7 +250,7 @@ struct GraphicCanvas: View {
                     Spacer()
                     Text(footer)
                         .font(.brand(size: 26 * unit, weight: .medium))
-                        .foregroundStyle(ink.opacity(0.55))
+                        .foregroundStyle(ink.opacity(0.55)) // brand-lint: allow the graphic being made, not the interface
                 }
             }
             .padding(84 * unit)
@@ -376,7 +376,7 @@ private struct Checkerboard: View {
             let cell: CGFloat = 10
             for row in 0..<Int(size.height / cell) + 1 {
                 for column in 0..<Int(size.width / cell) + 1 where (row + column) % 2 == 0 {
-                    context.fill(Path(CGRect(x: CGFloat(column) * cell, y: CGFloat(row) * cell, width: cell, height: cell)), with: .color(Color.gray.opacity(0.14)))
+                    context.fill(Path(CGRect(x: CGFloat(column) * cell, y: CGFloat(row) * cell, width: cell, height: cell)), with: .color(Color.gray.opacity(0.14))) // brand-lint: allow the transparency grid behind a picture
                 }
             }
         }
@@ -392,10 +392,11 @@ private struct BrandKit: View {
     @State private var copied = false
 
     private let swatches: [(name: String, hex: String, color: Color)] = [
-        ("Ink", "#121212", Color(white: 0.07)),
-        ("Graphite", "#5C5C5C", Color(white: 0.36)),
-        ("Mist", "#E8E7E4", Color(red: 0.91, green: 0.906, blue: 0.894)),
-        ("Paper", "#FBFAF8", Color(red: 0.985, green: 0.98, blue: 0.972)),
+        // Brand v2: two colours at full strength, the drop's black, and the vellum note that carries text.
+        ("Ink", "#0A0A0A", BrandTokens.inkHex),
+        ("Paper", "#FFFFFF", BrandTokens.paperHex),
+        ("Drop", "#000000", BrandTokens.drop),
+        ("Note", "paper 82%", BrandTokens.note),
     ]
 
     private let agents = ["le", "mc", "wm", "bn", "jm", "ge", "cr", "rt", "co", "hr", "jo"]
@@ -406,7 +407,8 @@ private struct BrandKit: View {
                 HStack(alignment: .top, spacing: 14) {
                     VStack(alignment: .leading, spacing: 10) {
                         SectionLabel(text: "Logo")
-                        Wordmark(height: 64)
+                        // Big enough for the outline mark, which glitches now and then.
+                        Wordmark(height: 72)
                             .frame(maxWidth: .infinity, minHeight: 120)
                             .background(RoundedRectangle(cornerRadius: 0).fill(theme.raised(scheme)))
                         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 6), spacing: 6) {

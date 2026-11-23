@@ -675,7 +675,7 @@ private struct DropAskBar: View {
 
     var body: some View {
         HStack(spacing: 10) {
-            TextField("", text: $state.askText, prompt: Text("Ask the team, or + to add a task").foregroundStyle(.white.opacity(0.7)))
+            TextField("", text: $state.askText, prompt: Text("Ask the team, or + to add a task"))
                 .textFieldStyle(.plain)
                 .font(BrandFont.body(14))
                 .foregroundStyle(.white)

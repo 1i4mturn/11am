@@ -10,6 +10,12 @@ struct DocTypography {
     var rule: NSColor
     var shade: NSColor
     var link: NSColor
+    /// Small labels: callout names, the running title and page numbers.
+    var label: NSFont = .systemFont(ofSize: 8.5, weight: .bold)
+    /// Brand v2 labels are lowercase Courier; the older look is small capitals.
+    var lowercaseLabels = false
+    /// Body paragraphs fill the measure, justified and hyphenated.
+    var justified = false
 
     static func serif(_ size: CGFloat) -> NSFont {
         let base = NSFont.systemFont(ofSize: size)
@@ -17,8 +23,33 @@ struct DocTypography {
         return font
     }
 
-    /// New York for reading, SF for headings, Menlo for code: the same as the Write page.
+    /// A bundled brand face, or the system's when it isn't there (the tests run without the app's fonts).
+    static func brand(_ name: String, _ size: CGFloat, fallback: NSFont.Weight = .regular, mono: Bool = false) -> NSFont {
+        NSFont(name: name, size: size) ?? (mono ? .monospacedSystemFont(ofSize: size, weight: fallback) : .systemFont(ofSize: size, weight: fallback))
+    }
+
+    /// Brand v2 on paper: Instrument Sans for reading, justified; Schibsted Grotesk for headings; Hack for code; Courier
+    /// Prime for labels. Ink at full strength throughout: no greys, no blue links, rules in ink.
     static let print = DocTypography(
+        body: brand("InstrumentSans-Regular", 10.5),
+        heading: { level in
+            let sizes: [CGFloat] = [24, 24, 17, 13.5, 12, 11, 11]
+            let size = sizes[min(max(level, 0), 6)]
+            return level <= 2 ? brand("SchibstedGrotesk-ExtraBold", size, fallback: .heavy) : brand("SchibstedGrotesk-Bold", size, fallback: .bold)
+        },
+        mono: brand("Hack-Regular", 9, mono: true),
+        text: NSColor(srgbRed: 10 / 255, green: 10 / 255, blue: 10 / 255, alpha: 1),
+        secondary: NSColor(srgbRed: 10 / 255, green: 10 / 255, blue: 10 / 255, alpha: 1),
+        rule: NSColor(srgbRed: 10 / 255, green: 10 / 255, blue: 10 / 255, alpha: 1),
+        shade: .white,
+        link: NSColor(srgbRed: 10 / 255, green: 10 / 255, blue: 10 / 255, alpha: 1),
+        label: brand("CourierPrime-Regular", 8.5, mono: true),
+        lowercaseLabels: true,
+        justified: true
+    )
+
+    /// The earlier print look: New York for reading, SF for headings, Menlo for code.
+    static let classic = DocTypography(
         body: serif(11),
         heading: { level in
             let sizes: [CGFloat] = [22, 22, 16.5, 13.5, 12, 11, 11]
@@ -76,7 +107,12 @@ enum DocRenderer {
                 }
                 append(inline(block.text, attributes: [.font: font, .foregroundColor: type.text], type: type), style: style)
             case .paragraph:
-                append(inline(block.text, attributes: base, type: type), style: paragraph { _ in })
+                append(inline(block.text, attributes: base, type: type), style: paragraph {
+                    if type.justified {
+                        $0.alignment = .justified
+                        $0.hyphenationFactor = 0.9
+                    }
+                })
             case .listItem(let level, let ordered, let number, let task):
                 for deeper in counters.keys where deeper > level {
                     counters[deeper] = nil
@@ -107,7 +143,7 @@ enum DocRenderer {
                 append(line, style: style)
             case .quote(let callout):
                 let frame = NSTextBlock()
-                frame.setWidth(callout == nil ? 2.5 : 3, type: .absoluteValueType, for: .border, edge: .minX)
+                frame.setWidth(callout == nil ? (type.justified ? 1.5 : 2.5) : 3, type: .absoluteValueType, for: .border, edge: .minX)
                 frame.setBorderColor(callout == nil ? type.rule : type.secondary, for: .minX)
                 frame.setWidth(12, type: .absoluteValueType, for: .padding, edge: .minX)
                 frame.setWidth(callout == nil ? 2 : 8, type: .absoluteValueType, for: .padding, edge: .minY)
@@ -119,9 +155,9 @@ enum DocRenderer {
                 }
                 let content = NSMutableAttributedString()
                 if let callout {
-                    let label = NSFont.systemFont(ofSize: 8.5, weight: .bold)
-                    content.append(NSAttributedString(string: callout.title.uppercased() + "\u{2028}",
-                                                      attributes: [.font: label, .foregroundColor: type.secondary, .kern: 0.8]))
+                    let title = type.lowercaseLabels ? callout.title.lowercased() : callout.title.uppercased()
+                    content.append(NSAttributedString(string: title + "\u{2028}",
+                                                      attributes: [.font: type.label, .foregroundColor: type.secondary, .kern: type.lowercaseLabels ? 0 : 0.8]))
                 }
                 var attributes = base
                 if callout == nil { attributes[.foregroundColor] = type.secondary }
@@ -131,6 +167,11 @@ enum DocRenderer {
                 let frame = NSTextBlock()
                 frame.backgroundColor = type.shade
                 frame.setWidth(9, type: .absoluteValueType, for: .padding)
+                // On white there's no shade to show the block, so it gets the brand's open rule instead.
+                if type.shade == .white {
+                    frame.setWidth(0.75, type: .absoluteValueType, for: .border)
+                    frame.setBorderColor(type.rule)
+                }
                 let style = paragraph {
                     $0.textBlocks = [frame]
                     $0.lineHeightMultiple = 1.1
@@ -164,8 +205,9 @@ enum DocRenderer {
                         $0.alignment = .center
                         $0.paragraphSpacing = 10
                     }
-                    let font = NSFontManager.shared.convert(NSFont.systemFont(ofSize: 9), toHaveTrait: .italicFontMask)
-                    append(NSAttributedString(string: alt, attributes: [.font: font, .foregroundColor: type.secondary]), style: caption)
+                    let font = type.lowercaseLabels ? type.label : NSFontManager.shared.convert(NSFont.systemFont(ofSize: 9), toHaveTrait: .italicFontMask)
+                    append(NSAttributedString(string: type.lowercaseLabels ? alt.lowercased() : alt, attributes: [.font: font, .foregroundColor: type.secondary]),
+                           style: caption)
                 }
             }
         }
@@ -196,14 +238,20 @@ enum DocRenderer {
                 inner[.strikethroughStyle] = NSUnderlineStyle.single.rawValue
                 result.append(render(item.children, attributes: inner, type: type))
             case .highlight:
-                inner[.backgroundColor] = NSColor(calibratedRed: 1, green: 0.94, blue: 0.55, alpha: 1)
+                // The brand has no colour to mark with, so a highlight on paper is weight; the classic look keeps yellow.
+                if type.justified {
+                    inner[.font] = trait(font, .bold)
+                } else {
+                    inner[.backgroundColor] = NSColor(calibratedRed: 1, green: 0.94, blue: 0.55, alpha: 1)
+                }
                 result.append(render(item.children, attributes: inner, type: type))
             case .underline:
                 inner[.underlineStyle] = NSUnderlineStyle.single.rawValue
                 result.append(render(item.children, attributes: inner, type: type))
             case .code:
-                inner[.font] = NSFont.monospacedSystemFont(ofSize: font.pointSize * 0.88, weight: .regular)
-                inner[.backgroundColor] = type.shade
+                inner[.font] = NSFont(descriptor: type.mono.fontDescriptor, size: font.pointSize * 0.88)
+                    ?? NSFont.monospacedSystemFont(ofSize: font.pointSize * 0.88, weight: .regular)
+                if type.shade != .white { inner[.backgroundColor] = type.shade }
                 result.append(NSAttributedString(string: item.text, attributes: inner))
             case .link:
                 if let url = URL(string: item.url) { inner[.link] = url }
@@ -227,6 +275,19 @@ enum DocRenderer {
     }
 
     static func trait(_ font: NSFont, _ trait: NSFontDescriptor.SymbolicTraits) -> NSFont {
+        // The bundled faces have no italics, and their bold is a named weight: bold takes the next face up, italic slants.
+        let name = font.fontName
+        if trait == .bold {
+            for (from, to) in [("InstrumentSans-Regular", "InstrumentSans-SemiBold"), ("InstrumentSans-Medium", "InstrumentSans-SemiBold"),
+                               ("Hack-Regular", "Hack-Bold"), ("SchibstedGrotesk-Bold", "SchibstedGrotesk-ExtraBold")] where name == from {
+                return NSFont(name: to, size: font.pointSize) ?? font
+            }
+            if name.hasPrefix("SchibstedGrotesk") || name == "InstrumentSans-SemiBold" || name == "Hack-Bold" { return font }
+        }
+        if trait == .italic, name.hasPrefix("InstrumentSans") || name.hasPrefix("SchibstedGrotesk") || name.hasPrefix("Hack") || name.hasPrefix("CourierPrime") {
+            let slant = AffineTransform(m11: 1, m12: 0, m21: 0.2, m22: 1, tX: 0, tY: 0)
+            return NSFont(descriptor: font.fontDescriptor.withMatrix(slant), size: font.pointSize) ?? font
+        }
         let descriptor = font.fontDescriptor.withSymbolicTraits(font.fontDescriptor.symbolicTraits.union(trait))
         return NSFont(descriptor: descriptor, size: font.pointSize) ?? font
     }
@@ -319,8 +380,10 @@ enum DocPDF {
         guard let consumer = CGDataConsumer(data: output as CFMutableData),
               let context = CGContext(consumer: consumer, mediaBox: &box, info) else { return Data() }
         let graphics = NSGraphicsContext(cgContext: context, flipped: true)
-        let small = NSFont.systemFont(ofSize: 8.5)
+        let small = type.lowercaseLabels ? type.label : NSFont.systemFont(ofSize: 8.5)
         let quiet: [NSAttributedString.Key: Any] = [.font: small, .foregroundColor: type.secondary]
+        // The running title is the document's own name, so it keeps its case; it's set in the label face.
+        let runningTitle = title
 
         for (index, container) in containers.enumerated() {
             context.beginPDFPage(nil)
@@ -334,7 +397,7 @@ enum DocPDF {
             layout.drawBackground(forGlyphRange: glyphs, at: origin)
             layout.drawGlyphs(forGlyphRange: glyphs, at: origin)
             if setup.showsTitle && index > 0 && !title.isEmpty {
-                let header = NSAttributedString(string: title, attributes: quiet)
+                let header = NSAttributedString(string: runningTitle, attributes: quiet)
                 header.draw(at: CGPoint(x: margin, y: margin / 2 - header.size().height / 2))
             }
             if setup.pageNumbers && containers.count > 1 {

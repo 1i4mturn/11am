@@ -451,7 +451,8 @@ private struct ChipLabel: View {
     var body: some View {
         HStack(spacing: 5) {
             Circle()
-                .fill(session.isRunning ? Color.green.opacity(0.75) : theme.inkTertiary(scheme))
+                .fill(session.isRunning ? theme.ink(scheme) : Color.clear)
+                .overlay { Circle().strokeBorder(theme.ink(scheme), lineWidth: 1) }
                 .frame(width: 5, height: 5)
             Text(label)
                 .font(.brand(size: 11.5, weight: selected ? .semibold : .regular))
@@ -626,7 +627,8 @@ private struct RiskBanner: View {
             }
             .foregroundStyle(theme.ink(scheme))
             .padding(10)
-            .background(RoundedRectangle(cornerRadius: 0, style: .continuous).fill(Color.orange.opacity(0.14)))
+            .background(Rectangle().fill(theme.well(scheme)))
+            .overlay(alignment: .leading) { Rectangle().fill(theme.ink(scheme)).frame(width: BrandTokens.errorBar) }
         }
     }
 }
@@ -657,8 +659,8 @@ private struct CommandSuggestion: View {
                         .buttonStyle(.vellumPrimary)
                         if TerminalWorkspace.isRisky(suggestion.command) {
                             Label { Text("Can change or delete things") } icon: { Icon("exclamationmark.triangle") }
-                                .font(.brand(size: 11))
-                                .foregroundStyle(Color.orange)
+                                .font(.brand(size: 11, weight: .semibold))
+                                .foregroundStyle(theme.ink(scheme))
                         }
                     }
                 } else {

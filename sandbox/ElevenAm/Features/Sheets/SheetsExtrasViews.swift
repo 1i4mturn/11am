@@ -171,7 +171,7 @@ private struct RuleSwatch: View {
                 LinearGradient(colors: [rule.low, rule.middle, rule.high].compactMap { GridColor.swiftUI($0) }, startPoint: .leading, endPoint: .trailing)
             } else if rule.kind == .dataBar {
                 HStack(spacing: 0) {
-                    (GridColor.swiftUI(rule.high) ?? .gray).opacity(0.6).frame(width: 12)
+                    (GridColor.swiftUI(rule.high) ?? Color.clear).opacity(0.6).frame(width: 12) // brand-lint: allow the rule's own colour, chosen for the sheet
                     Color.clear
                 }
             } else {

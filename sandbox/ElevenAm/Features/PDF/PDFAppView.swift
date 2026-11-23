@@ -449,7 +449,7 @@ private struct EmptyPDF: View {
 
 final class MarkupPDFView: PDFView {
     var tool: PDFTool = .select
-    var markColor: NSColor = .yellow
+    var markColor: NSColor = .yellow // brand-lint: allow the colour of a highlight on the PDF itself
     var onMark: (() -> Void)?
     var onPlace: ((PDFTool, Int, CGPoint) -> Void)?
     var onSign: ((Int, CGPoint) -> Void)?
@@ -845,7 +845,7 @@ private struct SignatureSheet: View {
                     .textFieldStyle(.roundedBorder)
                 Text(name.isEmpty ? " " : name)
                     .font(.custom("SnellRoundhand-Bold", size: 34))
-                    .foregroundStyle(Color(red: 0.05, green: 0.1, blue: 0.3))
+                    .foregroundStyle(Color(red: 0.05, green: 0.1, blue: 0.3)) // brand-lint: allow signature ink on the document
                     .frame(width: canvas.width, height: 70)
                     .background(Color.white)
             } else {
@@ -853,7 +853,7 @@ private struct SignatureSheet: View {
                     for stroke in strokes + [current] where stroke.count > 1 {
                         var path = Path()
                         path.addLines(stroke)
-                        context.stroke(path, with: .color(Color(red: 0.05, green: 0.1, blue: 0.3)), style: StrokeStyle(lineWidth: 2.2, lineCap: .round, lineJoin: .round))
+                        context.stroke(path, with: .color(Color(red: 0.05, green: 0.1, blue: 0.3)), style: StrokeStyle(lineWidth: 2.2, lineCap: .round, lineJoin: .round)) // brand-lint: allow signature ink on the document
                     }
                 }
                 .frame(width: canvas.width, height: canvas.height)

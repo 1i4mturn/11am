@@ -140,7 +140,7 @@ struct RehearsalView: View {
                                 .frame(width: 200, alignment: .leading)
                             GeometryReader { proxy in
                                 Capsule()
-                                    .fill(row.long ? Color.orange : theme.ink(scheme).opacity(0.75))
+                                    .fill(theme.ink(scheme).opacity(row.long ? 1 : 0.35))
                                     .frame(width: max(4, proxy.size.width * row.seconds / longest), height: 8)
                                     .frame(maxHeight: .infinity, alignment: .center)
                             }

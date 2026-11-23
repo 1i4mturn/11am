@@ -57,7 +57,11 @@ struct PhonePairingSheet: View {
                         Button("Copy the pairing link") { phone.copyPairingLink() }
                             .buttonStyle(.vellumSecondary)
                         HStack(spacing: 6) {
-                            Circle().fill(phone.isConnected ? Color.green : (phone.listening ? Color.orange : Color.gray)).frame(width: 7, height: 7)
+                            // Connected is a filled ink dot, waiting an open ring, off an empty space.
+                            Circle()
+                                .fill(phone.isConnected ? theme.ink(scheme) : Color.clear)
+                                .overlay { Circle().strokeBorder(theme.ink(scheme), lineWidth: phone.isConnected || phone.listening ? BrandTokens.ruleOpen : 0) }
+                                .frame(width: 8, height: 8)
                             Text(status)
                                 .font(.brand(size: 12))
                                 .foregroundStyle(theme.inkSecondary(scheme))
@@ -65,7 +69,9 @@ struct PhonePairingSheet: View {
                         if let problem = phone.problem {
                             Text(problem)
                                 .font(.brand(size: 11.5))
-                                .foregroundStyle(.red)
+                                .foregroundStyle(theme.ink(scheme))
+                                .padding(.leading, 8)
+                                .overlay(alignment: .leading) { Rectangle().fill(theme.ink(scheme)).frame(width: BrandTokens.errorBar) }
                                 .fixedSize(horizontal: false, vertical: true)
                         }
                     }
@@ -179,7 +185,7 @@ struct EnergyCard: View {
                     ForEach(phone.energy.suffix(14)) { day in
                         if let minutes = day.sleepMinutes, let date = day.date {
                             BarMark(x: .value("Night", date, unit: .day), y: .value("Hours", minutes / 60))
-                                .foregroundStyle(day.id == phone.energy.last?.id ? Color(red: 0.96, green: 0.42, blue: 0.24) : theme.ink(scheme).opacity(0.7))
+                                .foregroundStyle(theme.ink(scheme).opacity(day.id == phone.energy.last?.id ? 1 : 0.35))
                                 .cornerRadius(3)
                         }
                     }
@@ -215,9 +221,7 @@ struct EnergyCard: View {
 
     private func colour(_ tone: EnergyInsight.Tone) -> Color {
         switch tone {
-        case .good: return Color(red: 0.3, green: 0.62, blue: 0.4)
-        case .usual: return theme.inkSecondary(scheme)
-        case .easy: return Color(red: 0.9, green: 0.4, blue: 0.22)
+        case .good, .usual, .easy: return theme.ink(scheme)
         }
     }
 }

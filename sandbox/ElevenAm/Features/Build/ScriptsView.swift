@@ -619,7 +619,8 @@ private struct ApprovalBanner: View {
         }
         .foregroundStyle(theme.ink(scheme))
         .padding(10)
-        .background(RoundedRectangle(cornerRadius: 0, style: .continuous).fill(Color.orange.opacity(0.14)))
+        .background(Rectangle().fill(theme.well(scheme)))
+        .overlay(alignment: .leading) { Rectangle().fill(theme.ink(scheme)).frame(width: BrandTokens.errorBar) }
     }
 }
 

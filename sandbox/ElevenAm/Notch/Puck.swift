@@ -517,7 +517,7 @@ struct PuckNoteView: View {
                         .tracking(-0.5)
                         .fixedSize(horizontal: false, vertical: true)
                 } else if state.run == nil && state.added == nil || !state.transcript.isEmpty {
-                    TextField("", text: $state.transcript, prompt: Text(state.attached == nil ? "Say or type what you need" : "Ask about it, or just send").foregroundStyle(BrandTokens.inkHex.opacity(0.55)), axis: .vertical)
+                    TextField("", text: $state.transcript, prompt: Text(state.attached == nil ? "Say or type what you need" : "Ask about it, or just send"), axis: .vertical)
                         .textFieldStyle(.plain)
                         .font(BrandFont.heading(20, weight: .heavy))
                         .lineLimit(1...4)

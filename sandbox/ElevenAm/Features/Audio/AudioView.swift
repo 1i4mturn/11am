@@ -154,7 +154,8 @@ private struct LevelMeter: View {
             let fraction = max(0, min(1, (level + 60) / 60))
             ZStack(alignment: .leading) {
                 Capsule().fill(Color.primary.opacity(0.12))
-                Capsule().fill(level > -3 ? Color.red : Color.primary.opacity(0.7))
+                // Too loud is the whole bar in ink, solid; otherwise it fills as it goes.
+                Capsule().fill(Color.primary.opacity(level > -3 ? 1 : 0.6))
                     .frame(width: proxy.size.width * fraction)
             }
         }
@@ -348,7 +349,7 @@ private struct AudioTimeline: View {
                                 .allowsHitTesting(false)
                         }
                         Rectangle()
-                            .fill(Color.red.opacity(0.85))
+                            .fill(Color.primary)
                             .frame(width: 1.5, height: Self.rulerHeight + Self.laneHeight * CGFloat(tracks.count))
                             .offset(x: CGFloat(audio.playhead) * CGFloat(pps))
                             .allowsHitTesting(false)
@@ -513,7 +514,7 @@ private struct Lane: View {
             if selectedTrack {
                 ForEach(Array(audio.silences.enumerated()), id: \.offset) { item in
                     Rectangle()
-                        .fill(Color.orange.opacity(0.12))
+                        .fill(Color.primary.opacity(0.1))
                         .frame(width: CGFloat(item.element.upperBound - item.element.lowerBound) * CGFloat(pps), height: AudioTimeline.laneHeight)
                         .offset(x: CGFloat(item.element.lowerBound) * CGFloat(pps))
                         .allowsHitTesting(false)
@@ -581,7 +582,7 @@ private struct ClipView: View {
             }
             Text(clip.name)
                 .font(.brand(size: 10, weight: .semibold))
-                .foregroundStyle(ink.opacity(0.75))
+                .foregroundStyle(ink)
                 .lineLimit(1)
                 .padding(.horizontal, 6)
                 .padding(.top, 3)
@@ -712,7 +713,8 @@ private struct AudioPanel: View {
         var result = Text("")
         for word in inLine {
             let piece = Text(word.text + " ")
-            result = result + (word.isFiller ? piece.foregroundColor(.orange).bold() : piece.foregroundColor(theme.ink(scheme)))
+            // Fillers are struck through in ink, ready to come out.
+            result = result + (word.isFiller ? piece.foregroundColor(theme.ink(scheme)).strikethrough().bold() : piece.foregroundColor(theme.ink(scheme)))
         }
         return result.font(.brand(size: 12.5))
     }

@@ -141,10 +141,10 @@ final class PDFModel: ObservableObject {
 
     var markColor: NSColor {
         switch tool {
-        case .highlight: return NSColor(calibratedRed: 1, green: 0.85, blue: 0.2, alpha: 0.6)
-        case .underline: return NSColor(calibratedRed: 0.15, green: 0.4, blue: 0.85, alpha: 1)
-        case .strike: return NSColor(calibratedRed: 0.85, green: 0.15, blue: 0.15, alpha: 1)
-        default: return NSColor(calibratedRed: 0.1, green: 0.15, blue: 0.35, alpha: 1)
+        case .highlight: return NSColor(calibratedRed: 1, green: 0.85, blue: 0.2, alpha: 0.6) // brand-lint: allow markup and signatures on the PDF itself
+        case .underline: return NSColor(calibratedRed: 0.15, green: 0.4, blue: 0.85, alpha: 1) // brand-lint: allow markup and signatures on the PDF itself
+        case .strike: return NSColor(calibratedRed: 0.85, green: 0.15, blue: 0.15, alpha: 1) // brand-lint: allow markup and signatures on the PDF itself
+        default: return NSColor(calibratedRed: 0.1, green: 0.15, blue: 0.35, alpha: 1) // brand-lint: allow markup and signatures on the PDF itself
         }
     }
 
@@ -458,7 +458,7 @@ final class PDFModel: ObservableObject {
             let size = CGSize(width: 180, height: 180 * signature.height / max(signature.width, 1))
             let rect = CGRect(x: point.x - size.width / 2, y: point.y - size.height / 2, width: size.width, height: size.height)
             page.addAnnotation(PDFEngine.ink(signature.points, canvas: CGSize(width: signature.width, height: signature.height), in: rect,
-                                             color: NSColor(calibratedRed: 0.05, green: 0.1, blue: 0.3, alpha: 1), width: 1.6))
+                                             color: NSColor(calibratedRed: 0.05, green: 0.1, blue: 0.3, alpha: 1), width: 1.6)) // brand-lint: allow markup and signatures on the PDF itself
         }
         changed()
     }
@@ -560,7 +560,7 @@ final class PDFModel: ObservableObject {
         try? data.write(to: destination)
         open(destination)
         if let document, let found = document.findString("40 seats", withOptions: []).first {
-            PDFEngine.markup(found, type: .highlight, color: NSColor(calibratedRed: 1, green: 0.85, blue: 0.2, alpha: 0.6))
+            PDFEngine.markup(found, type: .highlight, color: NSColor(calibratedRed: 1, green: 0.85, blue: 0.2, alpha: 0.6)) // brand-lint: allow markup and signatures on the PDF itself
         }
         isDirty = false
         revision += 1

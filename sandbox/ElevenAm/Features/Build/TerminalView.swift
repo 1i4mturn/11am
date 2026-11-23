@@ -12,7 +12,7 @@ struct TerminalPalette: Equatable {
     var ansi: [NSColor]
 
     private static func hex(_ value: UInt32) -> NSColor {
-        NSColor(srgbRed: CGFloat((value >> 16) & 0xFF) / 255, green: CGFloat((value >> 8) & 0xFF) / 255, blue: CGFloat(value & 0xFF) / 255, alpha: 1)
+        NSColor(srgbRed: CGFloat((value >> 16) & 0xFF) / 255, green: CGFloat((value >> 8) & 0xFF) / 255, blue: CGFloat(value & 0xFF) / 255, alpha: 1) // brand-lint: allow the terminal's own colours, as programs ask for them
     }
 
     /// Near-black with paper-coloured ink, like the rest of 11am at night.
@@ -44,12 +44,12 @@ struct TerminalPalette: Equatable {
             if number < 232 {
                 let levels: [CGFloat] = [0, 95, 135, 175, 215, 255]
                 let value = number - 16
-                return NSColor(srgbRed: levels[value / 36] / 255, green: levels[(value / 6) % 6] / 255, blue: levels[value % 6] / 255, alpha: 1)
+                return NSColor(srgbRed: levels[value / 36] / 255, green: levels[(value / 6) % 6] / 255, blue: levels[value % 6] / 255, alpha: 1) // brand-lint: allow the terminal's own colours, as programs ask for them
             }
             let grey = CGFloat(8 + (number - 232) * 10) / 255
-            return NSColor(srgbRed: grey, green: grey, blue: grey, alpha: 1)
+            return NSColor(srgbRed: grey, green: grey, blue: grey, alpha: 1) // brand-lint: allow the terminal's own colours, as programs ask for them
         case .rgb(let r, let g, let b):
-            return NSColor(srgbRed: CGFloat(r) / 255, green: CGFloat(g) / 255, blue: CGFloat(b) / 255, alpha: 1)
+            return NSColor(srgbRed: CGFloat(r) / 255, green: CGFloat(g) / 255, blue: CGFloat(b) / 255, alpha: 1) // brand-lint: allow the terminal's own colours, as programs ask for them
         }
     }
 }

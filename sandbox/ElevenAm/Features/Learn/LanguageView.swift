@@ -404,7 +404,7 @@ private struct ExerciseCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text(exercise.title.uppercased())
+            Text(exercise.title.lowercased())
                 .font(.brand(size: 11, weight: .semibold))
                 .tracking(1)
                 .foregroundStyle(theme.inkTertiary(scheme))
@@ -489,7 +489,9 @@ private struct ExerciseCard: View {
                     ForEach(Array(pronunciation.words.enumerated()), id: \.offset) { _, word in
                         Text(word.word)
                             .font(.brand(size: 15, weight: .medium))
-                            .foregroundStyle(word.heard ? Color.green : Color.orange)
+                            .foregroundStyle(theme.ink(scheme))
+                            // Heard words stand plain; the ones it didn't catch are underlined to say them again.
+                            .underline(!word.heard, pattern: .dot)
                     }
                 }
             }
@@ -593,9 +595,9 @@ private struct ExerciseCard: View {
     private func feedback(_ verdict: AnswerCheck.Verdict) -> some View {
         let (title, detail, colour): (String, String?, Color) = {
             switch verdict {
-            case .right: return ("Right", nil, .green)
-            case .nearly(let note): return ("Right", note, .green)
-            case .wrong: return ("Not quite", correctAnswer, .orange)
+            case .right: return ("Right", nil, theme.ink(scheme))
+            case .nearly(let note): return ("Right", note, theme.ink(scheme))
+            case .wrong: return ("Not quite", correctAnswer, theme.ink(scheme))
             }
         }()
         HStack(alignment: .top, spacing: 10) {
@@ -773,7 +775,7 @@ private struct MatchGrid: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 10)
                 .background(RoundedRectangle(cornerRadius: 0, style: .continuous)
-                    .fill(shaking ? Color.orange.opacity(0.2) : (selected ? theme.ink(scheme).opacity(0.12) : theme.well(scheme))))
+                    .fill(selected ? theme.ink(scheme).opacity(0.12) : theme.well(scheme)))
                 .overlay(RoundedRectangle(cornerRadius: 0, style: .continuous).strokeBorder(selected ? theme.ink(scheme) : Color.clear, lineWidth: 1.5))
         }
         .buttonStyle(.plain)
@@ -872,7 +874,10 @@ private struct StoryReader: View {
                                 let showRight = answers[number] != nil && index == question.answer
                                 Button(option) { answers[number] = index }
                                     .buttonStyle(.vellumSecondary)
-                                    .overlay(RoundedRectangle(cornerRadius: 0).strokeBorder(showRight ? Color.green : (picked ? Color.orange : Color.clear), lineWidth: 1.5))
+                                    .overlay(RoundedRectangle(cornerRadius: 0).strokeBorder(showRight || picked ? theme.ink(scheme) : Color.clear, lineWidth: showRight ? 3 : 1.5))
+                                    .overlay(alignment: .trailing) {
+                                        if picked && !showRight { Icon("xmark").font(.brand(size: 11, weight: .bold)).padding(.trailing, 8) }
+                                    }
                                     .disabled(answers[number] != nil)
                             }
                         }

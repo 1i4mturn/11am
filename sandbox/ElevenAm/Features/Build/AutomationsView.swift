@@ -396,7 +396,8 @@ private struct AutomationList: View {
                         Button { automations.selectedID = automation.id } label: {
                             HStack(alignment: .top, spacing: 8) {
                                 Circle()
-                                    .fill(automation.enabled ? Color.green.opacity(0.8) : theme.inkTertiary(scheme).opacity(0.5))
+                                    .fill(automation.enabled ? theme.ink(scheme) : Color.clear)
+                                    .overlay { Circle().strokeBorder(theme.ink(scheme), lineWidth: BrandTokens.ruleOpen) }
                                     .frame(width: 6, height: 6)
                                     .padding(.top, 5)
                                 VStack(alignment: .leading, spacing: 1) {
@@ -812,10 +813,8 @@ private struct RunHistory: View {
 
     private func color(_ status: AutomationRun.Status) -> Color {
         switch status {
-        case .succeeded: return .green
-        case .failed: return .red
-        case .waiting: return .orange
-        default: return theme.inkTertiary(scheme)
+        // Each status has its own icon, so all of them are ink.
+        default: return theme.ink(scheme)
         }
     }
 }

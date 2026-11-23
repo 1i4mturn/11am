@@ -57,7 +57,7 @@ struct SourceEditor: View {
                     HStack {
                         TextField("3 November 2026, 2026-11-03 or 2026", text: $date)
                         if !date.isEmpty && CiteDate.parse(date) == nil {
-                            Text("Not a date").font(.brand(size: 11)).foregroundStyle(.red)
+                            Text("not a date").font(BrandFont.label(11)).foregroundStyle(theme.ink(scheme))
                         }
                     }
                 }

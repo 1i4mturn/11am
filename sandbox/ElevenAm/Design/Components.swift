@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 /// The agents' codes. Brand v2 renamed four (Marc mr, William wi, Robert rb, Cole ce); older code and saved data may
@@ -100,16 +101,59 @@ struct Wordmark: View {
     @Environment(\.colorScheme) private var scheme
     var height: CGFloat = 20
     var color: Color?
+    @State private var tear: [CGFloat] = Array(repeating: 0, count: 8)
 
-    var body: some View {
-        Image(height * 1876 / 796 < 160 ? "wordmark-solid" : "wordmark-outline")
+    /// The outline is the primary mark; under 160 wide it's solid.
+    private var outline: Bool { height * 1876 / 796 >= 160 }
+
+    private var mark: some View {
+        Image(outline ? "wordmark-outline" : "wordmark-solid")
             .renderingMode(.template)
             .resizable()
             .interpolation(.high)
             .aspectRatio(contentMode: .fit)
             .frame(height: height)
             .foregroundStyle(color ?? theme.ink(scheme))
-            .accessibilityLabel("11am")
+    }
+
+    var body: some View {
+        Group {
+            if outline {
+                // The outline glitches: every few seconds it tears into eight strips that jump sideways and snap back.
+                ZStack {
+                    ForEach(0..<8, id: \.self) { strip in
+                        mark
+                            .offset(x: tear[strip])
+                            .mask {
+                                GeometryReader { proxy in
+                                    Rectangle()
+                                        .frame(height: proxy.size.height / 8 + 0.5)
+                                        .offset(y: proxy.size.height / 8 * CGFloat(strip))
+                                }
+                            }
+                    }
+                }
+                .task { await glitch() }
+            } else {
+                mark
+            }
+        }
+        .accessibilityElement()
+        .accessibilityLabel("11am")
+    }
+
+    /// Rare and quick, and never under reduced motion.
+    private func glitch() async {
+        let width = height * 1876 / 796
+        while !Task.isCancelled {
+            try? await Task.sleep(nanoseconds: UInt64.random(in: 5_000_000_000...9_000_000_000))
+            guard !Task.isCancelled, !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion else { continue }
+            for _ in 0..<2 {
+                tear = (0..<8).map { _ in CGFloat.random(in: -0.04...0.04) * width }
+                try? await Task.sleep(nanoseconds: 70_000_000)
+            }
+            tear = Array(repeating: 0, count: 8)
+        }
     }
 }
 

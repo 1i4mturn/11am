@@ -98,7 +98,7 @@ private struct TimelineRuler: View {
                 let x = CGFloat(time) * scale
                 context.fill(Path(CGRect(x: x, y: size.height - 7, width: 0.75, height: 7)), with: .color(ink.opacity(0.4)))
                 context.draw(
-                    Text(VideoModel.clock(time)).font(.brand(size: 9.5).monospacedDigit()).foregroundColor(ink.opacity(0.46)),
+                    Text(VideoModel.clock(time)).font(BrandFont.label(9.5)).foregroundColor(ink),
                     at: CGPoint(x: x + 3, y: 5), anchor: .leading
                 )
                 for minor in 1..<5 {
@@ -289,7 +289,7 @@ private struct MusicLane: View {
                                           duckLevel: music.duckLevel, fades: video.fades)
         Canvas { context, size in
             let frame = CGRect(origin: .zero, size: size)
-            context.fill(Path(roundedRect: frame, cornerRadius: 4), with: .color(ink.opacity(0.06)))
+            context.fill(Path(frame), with: .color(ink.opacity(0.06)))
             var shape = Path()
             shape.move(to: CGPoint(x: 0, y: size.height))
             for point in points {
@@ -297,13 +297,13 @@ private struct MusicLane: View {
             }
             shape.addLine(to: CGPoint(x: CGFloat(total) * scale, y: size.height))
             shape.closeSubpath()
-            context.clip(to: Path(roundedRect: frame, cornerRadius: 4))
+            context.clip(to: Path(frame))
             context.fill(shape, with: .color(ink.opacity(0.16)))
         }
         .overlay(alignment: .leading) {
             Label { Text(music.name) } icon: { Icon("music.note") }
                 .font(.brand(size: 9.5, weight: .semibold))
-                .foregroundStyle(ink.opacity(0.7))
+                .foregroundStyle(ink)
                 .lineLimit(1)
                 .padding(.leading, 6)
         }

@@ -887,7 +887,7 @@ final class GridView: NSView, NSTextFieldDelegate {
         let field = GridEditorField(frame: .zero)
         field.isBordered = false
         field.drawsBackground = true
-        field.focusRingType = .none
+        field.focusRingType = .none // brand-lint: allow the cell's own outline shows where you are typing
         field.font = NSFont.systemFont(ofSize: 12)
         field.delegate = self
         field.cell?.isScrollable = true

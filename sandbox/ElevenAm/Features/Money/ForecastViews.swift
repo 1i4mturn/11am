@@ -277,7 +277,9 @@ private struct ForecastTable: View {
                                 .frame(width: 120, alignment: .trailing)
                         }
                         .font(.brand(size: 12.5).monospacedDigit())
-                        .foregroundStyle(month.closing < 0 ? Color.red : theme.ink(scheme))
+                        .foregroundStyle(theme.ink(scheme))
+                        // Below zero is said by weight, not colour.
+                        .fontWeight(month.closing < 0 ? .bold : .regular)
                         .padding(.vertical, 6)
                         .contentShape(Rectangle())
                     }

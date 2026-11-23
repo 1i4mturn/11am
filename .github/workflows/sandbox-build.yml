@@ -18,6 +18,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Brand lint (colour, grey, faded text, labels, symbols, fonts, corners, focus, contrast)
+        working-directory: sandbox
+        run: python3 ci/brand_lint.py
+
       - name: Show Xcode
         run: xcodebuild -version
 

@@ -693,7 +693,7 @@ private struct CheckerBoard: View {
             let side: CGFloat = 10
             for row in 0..<Int(size.height / side) + 1 {
                 for column in 0..<Int(size.width / side) + 1 where (row + column) % 2 == 0 {
-                    context.fill(Path(CGRect(x: CGFloat(column) * side, y: CGFloat(row) * side, width: side, height: side)), with: .color(.gray.opacity(0.25)))
+                    context.fill(Path(CGRect(x: CGFloat(column) * side, y: CGFloat(row) * side, width: side, height: side)), with: .color(.gray.opacity(0.25))) // brand-lint: allow the transparency grid behind a picture
                 }
             }
         }

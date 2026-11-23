@@ -156,7 +156,7 @@ private struct DocCommentThread: View {
                 if let range { editor.select(range) }
             } label: {
                 HStack(alignment: .top, spacing: 6) {
-                    Rectangle().fill(range == nil ? theme.inkTertiary(scheme) : Color.yellow.opacity(0.7)).frame(width: 3)
+                    Rectangle().fill(theme.ink(scheme).opacity(range == nil ? 0.3 : 1)).frame(width: 3)
                     Text(range == nil ? "The words this was on have changed: \u{201C}\(DocAnchors.excerpt(comment, length: 40))\u{201D}" : DocAnchors.excerpt(comment))
                         .font(.brand(size: 11, weight: .medium))
                         .foregroundStyle(theme.inkSecondary(scheme))

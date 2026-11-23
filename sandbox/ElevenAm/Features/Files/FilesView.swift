@@ -173,7 +173,7 @@ private struct ResultRow: View {
             NSWorkspace.shared.open(hit.file.url)
         } label: {
             HStack(alignment: .top, spacing: 14) {
-                Text(hit.file.kind.uppercased())
+                Text(hit.file.kind.lowercased())
                     .font(.brand(size: 9, weight: .bold))
                     .foregroundStyle(theme.inkSecondary(scheme))
                     .frame(width: 38, height: 46)
