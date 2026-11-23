@@ -44,7 +44,50 @@ final class PhoneModel: ObservableObject {
     @Published private(set) var pairing: LinkPairing?
     @Published private(set) var exchanges: [AskExchange] = []
     @Published var notice: String?
+    /// Who a notice is from, to lead its note: Bolton for captures, Leo for the brief, the 11 otherwise.
+    @Published var noticeAgent = "11"
     @Published var tab: PhoneTab = .today
+    /// Home is the drop; an app opens as a screen over it.
+    @Published var showsDrop = true
+    /// The talk note is open.
+    @Published var talking = false
+    /// What was last said in the talk note, shown above the answer.
+    @Published var talkQuestion: String?
+    /// For screenshots: the Live Activity and the Dynamic Island, drawn in the app.
+    @Published var showsActivityPreview = false
+
+    func open(_ screen: PhoneTab) {
+        tab = screen
+        showsDrop = false
+    }
+
+    func showDrop() {
+        showsDrop = true
+    }
+
+    func startTalking() {
+        guard !talking else { return }
+        talkQuestion = nil
+        talking = true
+    }
+
+    /// Which screen an agent's circle opens: Leo the day, Harris energy, Bolton capture; the rest work on the Mac.
+    static func screen(for code: String) -> PhoneTab {
+        switch code {
+        case "le": return .today
+        case "hr": return .energy
+        case "bn", "mr", "wi", "jm": return .capture
+        default: return .mac
+        }
+    }
+
+    /// For screenshots: the talk note with a question asked and its answer.
+    func previewTalk() {
+        talkQuestion = "What do I need for the Acme review?"
+        exchanges.insert(AskExchange(id: UUID(), question: talkQuestion ?? "",
+                                     answer: "Tom's pilot numbers and last month's usage export. Both are in Files on your Mac.", done: true), at: 0)
+        talking = true
+    }
 
     private let health = HealthReader()
     private var client: LinkClient?
@@ -205,12 +248,18 @@ final class PhoneModel: ObservableObject {
             sendEnergyIfChanged()
             for item in outbox where item.status == .waiting { channel?.send(.capture(item.capture)) }
         case .brief(let brief):
+            let isNew = self.brief?.text != brief.text
             self.brief = brief
             PhoneStore.save(brief, "brief")
+            if isNew {
+                PhoneNotes.post(agent: "le", title: "leo · your brief", body: String(brief.text.prefix(140)))
+                LiveActivities.nextEvent(brief)
+            }
         case .received(let id, let place):
             if let index = outbox.firstIndex(where: { $0.id == id }) {
                 outbox[index].status = .sent(place)
                 saveOutbox()
+                noticeAgent = "bn"
                 notice = "On your Mac, in \(place)."
             }
         case .answer(let id, let text, let done):
@@ -280,6 +329,25 @@ enum PhoneTab: String, CaseIterable, Identifiable {
     case today, energy, capture, mac
 
     var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .today: return "Today"
+        case .energy: return "Energy"
+        case .capture: return "Capture"
+        case .mac: return "Mac"
+        }
+    }
+
+    /// The agent whose screen it is, for the title bar.
+    var agent: String {
+        switch self {
+        case .today: return "le"
+        case .energy: return "hr"
+        case .capture: return "bn"
+        case .mac: return "11"
+        }
+    }
 }
 
 /// Small JSON files in the app's own folder.

@@ -20,7 +20,7 @@ struct PDFAppView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            SectionHeader(title: "pdf", subtitle: subtitle) {
+            SectionHeader(title: "PDF", subtitle: subtitle) {
                 HStack(spacing: 8) {
                     if pdf.document != nil && !pdf.showsCollections { searchField.frame(width: 190) }
                     if pdf.document != nil && !pdf.showsCollections {

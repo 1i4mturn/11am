@@ -58,7 +58,13 @@ Screenshots from the CI Mac (a small virtual display without a notch, so the not
 
 ## Your iPhone (11am for iPhone)
 
-The iPhone app is where you stay in touch while away from the Mac. It has four tabs:
+The iPhone app is where you stay in touch while away from the Mac, in the same brand as the Mac (the fonts, monograms, line icons and texture come from `Shared/`).
+
+**Home is the drop**: true black, the eleven agents and the 11 as circles (white when one has something for you), white notices with one pill each (what's next, the brief, how you slept, captures waiting), your apps as pills, and **hold the 11 to talk**: it listens, writes out what you said on the iPhone and asks your Mac's team, with the answer on a white note. Each app opens as a screen under an ink title bar in Courier (`leo · today`); **pull the bar down for the drop** (or double-tap it). The puck sits small in the corner of every screen: tap or hold it to talk. Notices arrive as notes led by the agent's monogram (with the iPhone's 22pt corners).
+
+**Away from the app.** **Count down on the Lock Screen** (under the brief) starts a **Live Activity**: the next thing on your day, from Leo, counting down on the Lock Screen and in the **Dynamic Island** (the agent's circle and the minutes; expanded, the thing itself), and the 11 with its halo while you talk. On iOS 18 the **Talk to 11am** control goes in Control Center (or on the Lock Screen in place of the torch), and the same **Talk to 11am** shortcut works with Siri and the **Action button**. The brief arrives as a notification led by Leo's monogram.
+
+The apps:
 
 - **Today**: Leo's brief and your day from the Mac, the Energy line, and **Ask your Mac**, which your Mac answers with its own brain.
 - **Energy**: Apple Health, read only. Last night's sleep against your own usual, when you fell asleep and woke, steps, active energy, exercise, stand hours, resting heart rate and heart-rate variability, and workouts. Each is charted, with what it means for the day ("Short night. Put the hardest work after 10."). It compares you with you, and gives no medical advice.

@@ -20,13 +20,21 @@ struct TodayScreen: View {
                 }
                 if let brief = model.brief {
                     BriefCard(brief: brief)
+                    // The next event counts down on the Lock Screen and in the Dynamic Island, from Leo.
+                    Button("Count down on the Lock Screen") {
+                        PhoneNotes.requestPermission()
+                        if !LiveActivities.nextEvent(brief) {
+                            model.notice = "Nothing left on today's calendar, or Live Activities are off (Settings › 11am)."
+                        }
+                    }
+                    .buttonStyle(InkButtonStyle(secondary: true))
                 } else {
                     Card {
                         Label2(text: "Leo's brief")
                         Text(model.pairing == nil
                              ? "Pair with 11am on your Mac to see your brief and your day here."
                              : "Your brief arrives when your Mac and iPhone are on the same Wi-Fi.")
-                            .font(.system(size: 15))
+                            .font(.brand(size: 15))
                             .foregroundStyle(Ink.secondary(scheme))
                         if model.pairing == nil {
                             Button("Pair with your Mac") { model.tab = .mac }
@@ -38,30 +46,30 @@ struct TodayScreen: View {
                     Label2(text: "Ask your Mac")
                     HStack(spacing: 8) {
                         TextField("What do I need for the Acme review?", text: $question, axis: .vertical)
-                            .font(.system(size: 15))
+                            .font(.brand(size: 15))
                             .lineLimit(1...4)
                             .submitLabel(.send)
                             .onSubmit(send)
                         Button(action: send) {
-                            Image(systemName: "arrow.up.circle.fill").font(.system(size: 26))
+                            Icon("arrow.up.circle.fill").font(.brand(size: 26))
                         }
                         .disabled(question.trimmingCharacters(in: .whitespaces).isEmpty)
                     }
                     .padding(12)
-                    .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Ink.well(scheme)))
+                    .background(Rectangle().fill(Ink.well(scheme)))
                     ForEach(model.exchanges) { exchange in
                         VStack(alignment: .leading, spacing: 4) {
                             Text(exchange.question)
-                                .font(.system(size: 14, weight: .semibold))
+                                .font(.brand(size: 14, weight: .semibold))
                                 .foregroundStyle(Ink.ink(scheme))
                             Text(exchange.answer.isEmpty ? "Thinking on your Mac…" : exchange.answer)
-                                .font(.system(size: 14.5))
+                                .font(.brand(size: 14.5))
                                 .foregroundStyle(exchange.answer.isEmpty ? Ink.tertiary(scheme) : Ink.secondary(scheme))
                         }
                         .padding(.top, 4)
                     }
                     Text("Answered by your Mac's brain, with your files and notes. Nothing goes anywhere else unless you've allowed cloud help on the Mac.")
-                        .font(.system(size: 12))
+                        .font(.brand(size: 12))
                         .foregroundStyle(Ink.tertiary(scheme))
                 }
             }
@@ -87,22 +95,22 @@ struct EnergyLine: View {
             HStack(spacing: 8) {
                 Circle().fill(Ink.tone(reading.tone)).frame(width: 9, height: 9)
                 Text(reading.headline)
-                    .font(.system(size: 17, weight: .semibold))
+                    .font(.brand(size: 17, weight: .semibold))
                     .foregroundStyle(Ink.ink(scheme))
                 Spacer()
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .semibold))
+                Icon("chevron.right")
+                    .font(.brand(size: 12, weight: .semibold))
                     .foregroundStyle(Ink.tertiary(scheme))
             }
             if !reading.detail.isEmpty {
                 Text(reading.detail)
-                    .font(.system(size: 14.5))
+                    .font(.brand(size: 14.5))
                     .foregroundStyle(Ink.secondary(scheme))
                     .fixedSize(horizontal: false, vertical: true)
             }
             if let first = reading.suggestions.first {
                 Text(first)
-                    .font(.system(size: 14.5, weight: .medium))
+                    .font(.brand(size: 14.5, weight: .medium))
                     .foregroundStyle(Ink.ink(scheme))
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -121,12 +129,12 @@ struct BriefCard: View {
                 Spacer()
                 if let written = brief.written {
                     Text("\(written.formatted(date: .omitted, time: .shortened)) · \(brief.macName)")
-                        .font(.system(size: 11.5))
+                        .font(.brand(size: 11.5))
                         .foregroundStyle(Ink.tertiary(scheme))
                 }
             }
             Text(brief.text.isEmpty ? "Leo hasn't written today's brief yet." : brief.text)
-                .font(.system(size: 16))
+                .font(.brand(size: 16))
                 .lineSpacing(2)
                 .foregroundStyle(Ink.ink(scheme))
                 .fixedSize(horizontal: false, vertical: true)
@@ -135,16 +143,16 @@ struct BriefCard: View {
                 ForEach(Array(brief.events.enumerated()), id: \.offset) { _, event in
                     HStack(alignment: .firstTextBaseline, spacing: 12) {
                         Text(event.isAllDay ? "All day" : event.start.formatted(date: .omitted, time: .shortened))
-                            .font(.system(size: 13.5).monospacedDigit())
+                            .font(.brand(size: 13.5).monospacedDigit())
                             .foregroundStyle(Ink.tertiary(scheme))
                             .frame(width: 70, alignment: .leading)
                         VStack(alignment: .leading, spacing: 1) {
                             Text(event.title)
-                                .font(.system(size: 15, weight: .medium))
+                                .font(.brand(size: 15, weight: .medium))
                                 .foregroundStyle(Ink.ink(scheme))
                             if let location = event.location, !location.isEmpty {
                                 Text(location)
-                                    .font(.system(size: 12.5))
+                                    .font(.brand(size: 12.5))
                                     .foregroundStyle(Ink.tertiary(scheme))
                             }
                         }
@@ -178,7 +186,7 @@ struct EnergyScreen: View {
                     Card {
                         Label2(text: "Private by design")
                         Text("Health data stays on this iPhone. Only a short daily summary (sleep, steps, heart rate) goes to your own Mac, sealed, over your own network. It's never sent to a cloud model unless you say so on the Mac. None of this is medical advice.")
-                            .font(.system(size: 13.5))
+                            .font(.brand(size: 13.5))
                             .foregroundStyle(Ink.secondary(scheme))
                             .fixedSize(horizontal: false, vertical: true)
                         if model.pairing != nil && !model.usingSample {
@@ -209,20 +217,20 @@ private struct ConnectHealthCard: View {
 
     var body: some View {
         Card {
-            Image(systemName: "heart.text.square")
-                .font(.system(size: 34))
+            Icon("heart.text.square")
+                .font(.brand(size: 34))
                 .foregroundStyle(Ink.accent)
             Text("See how you slept and how your body's doing, against your own usual.")
-                .font(.system(size: 19, weight: .semibold))
+                .font(.brand(size: 19, weight: .semibold))
                 .foregroundStyle(Ink.ink(scheme))
                 .fixedSize(horizontal: false, vertical: true)
             Text("Leo reads sleep, steps, active energy, exercise, stand hours, resting heart rate, heart-rate variability and workouts from Apple Health, and plans your day around a short night. 11am only reads; it never writes to Health.")
-                .font(.system(size: 14.5))
+                .font(.brand(size: 14.5))
                 .foregroundStyle(Ink.secondary(scheme))
                 .fixedSize(horizontal: false, vertical: true)
             if model.healthState == .unavailable {
                 Text("Apple Health isn't available on this device.")
-                    .font(.system(size: 13.5, weight: .medium))
+                    .font(.brand(size: 13.5, weight: .medium))
                     .foregroundStyle(Ink.accent)
             } else {
                 Button("Connect Apple Health") { Task { await model.connectHealth() } }
@@ -247,7 +255,7 @@ private struct LastNightCard: View {
                 Spacer()
                 if let reading {
                     Text(reading.headline)
-                        .font(.system(size: 12.5, weight: .semibold))
+                        .font(.brand(size: 12.5, weight: .semibold))
                         .foregroundStyle(Ink.tone(reading.tone))
                         .padding(.horizontal, 9)
                         .padding(.vertical, 4)
@@ -256,34 +264,34 @@ private struct LastNightCard: View {
             }
             HStack(alignment: .firstTextBaseline, spacing: 10) {
                 Text(today?.sleepMinutes.map(EnergyFormat.duration) ?? "No sleep recorded")
-                    .font(.system(size: today?.sleepMinutes == nil ? 20 : 40, weight: .bold).monospacedDigit())
+                    .font(.brand(size: today?.sleepMinutes == nil ? 20 : 40, weight: .bold).monospacedDigit())
                     .tracking(-1)
                     .foregroundStyle(Ink.ink(scheme))
                 if let usual = baseline.sleepMinutes {
                     Text("usual \(EnergyFormat.duration(usual))")
-                        .font(.system(size: 14))
+                        .font(.brand(size: 14))
                         .foregroundStyle(Ink.tertiary(scheme))
                 }
             }
             if let bed = today?.bedtime, let wake = today?.wakeTime {
                 Text("Asleep \(bed.formatted(date: .omitted, time: .shortened)) to \(wake.formatted(date: .omitted, time: .shortened))")
-                    .font(.system(size: 13.5))
+                    .font(.brand(size: 13.5))
                     .foregroundStyle(Ink.secondary(scheme))
             }
             if let reading {
                 if !reading.detail.isEmpty {
                     Text(reading.detail)
-                        .font(.system(size: 14.5))
+                        .font(.brand(size: 14.5))
                         .foregroundStyle(Ink.secondary(scheme))
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 ForEach(reading.suggestions, id: \.self) { suggestion in
                     HStack(alignment: .firstTextBaseline, spacing: 8) {
-                        Image(systemName: "arrow.turn.down.right")
-                            .font(.system(size: 11, weight: .semibold))
+                        Icon("arrow.turn.down.right")
+                            .font(.brand(size: 11, weight: .semibold))
                             .foregroundStyle(Ink.tertiary(scheme))
                         Text(suggestion)
-                            .font(.system(size: 14.5, weight: .medium))
+                            .font(.brand(size: 14.5, weight: .medium))
                             .foregroundStyle(Ink.ink(scheme))
                             .fixedSize(horizontal: false, vertical: true)
                     }
@@ -307,10 +315,10 @@ private struct Stat: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(value)
-                .font(.system(size: 18, weight: .semibold).monospacedDigit())
+                .font(.brand(size: 18, weight: .semibold).monospacedDigit())
                 .foregroundStyle(Ink.ink(scheme))
             Text(title)
-                .font(.system(size: 11.5))
+                .font(.brand(size: 11.5))
                 .foregroundStyle(Ink.tertiary(scheme))
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -331,8 +339,7 @@ private struct SleepChart: View {
                 ForEach(days) { day in
                     if let minutes = day.sleepMinutes {
                         BarMark(x: .value("Night", shortDay(day), unit: .day), y: .value("Hours", minutes / 60))
-                            .foregroundStyle(day.id == days.last?.id ? Ink.accent : Ink.ink(scheme).opacity(0.75))
-                            .cornerRadius(4)
+                            .foregroundStyle(Ink.ink(scheme).opacity(day.id == days.last?.id ? 1 : 0.35))
                     }
                 }
                 if let usual {
@@ -340,7 +347,7 @@ private struct SleepChart: View {
                         .foregroundStyle(Ink.tertiary(scheme))
                         .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 3]))
                         .annotation(position: .top, alignment: .leading) {
-                            Text("usual").font(.system(size: 10.5)).foregroundStyle(Ink.tertiary(scheme))
+                            Text("usual").font(.brand(size: 10.5)).foregroundStyle(Ink.tertiary(scheme))
                         }
                 }
             }
@@ -369,7 +376,6 @@ private struct StepsChart: View {
                     if let steps = day.steps {
                         BarMark(x: .value("Day", shortDay(day), unit: .day), y: .value("Steps", steps))
                             .foregroundStyle(Ink.ink(scheme).opacity(day.id == days.last?.id ? 0.35 : 0.75))
-                            .cornerRadius(4)
                     }
                 }
                 if let usual {
@@ -381,7 +387,7 @@ private struct StepsChart: View {
             .chartXAxis { AxisMarks(values: .stride(by: .day, count: 3)) { _ in AxisValueLabel(format: .dateTime.weekday(.narrow)) } }
             .frame(height: 130)
             Text("Today so far is the lighter bar.")
-                .font(.system(size: 11.5))
+                .font(.brand(size: 11.5))
                 .foregroundStyle(Ink.tertiary(scheme))
         }
     }
@@ -402,7 +408,7 @@ private struct HeartChart: View {
                      usual: baseline.heartRateVariability, colour: Ink.ink(scheme))
             }
             Text("Lower resting heart rate and higher variability than your usual tend to mean you're well recovered. These compare you with you; they aren't medical readings.")
-                .font(.system(size: 11.5))
+                .font(.brand(size: 11.5))
                 .foregroundStyle(Ink.tertiary(scheme))
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -411,11 +417,11 @@ private struct HeartChart: View {
     private func mini(title: String, unit: String, values: [(Date, Double)], usual: Double?, colour: Color) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(title)
-                .font(.system(size: 12, weight: .medium))
+                .font(.brand(size: 12, weight: .medium))
                 .foregroundStyle(Ink.secondary(scheme))
             if let last = values.last {
                 Text("\(Int(last.1)) \(unit)")
-                    .font(.system(size: 17, weight: .semibold).monospacedDigit())
+                    .font(.brand(size: 17, weight: .semibold).monospacedDigit())
                     .foregroundStyle(Ink.ink(scheme))
             }
             Chart {
@@ -455,11 +461,11 @@ private struct WorkoutsCard: View {
             ForEach(Array(workouts.enumerated()), id: \.offset) { _, entry in
                 HStack {
                     Text(entry.1.kind)
-                        .font(.system(size: 14.5, weight: .medium))
+                        .font(.brand(size: 14.5, weight: .medium))
                         .foregroundStyle(Ink.ink(scheme))
                     Spacer()
                     Text("\(EnergyFormat.duration(entry.1.minutes)) · \(shortDay(entry.0).formatted(.dateTime.weekday(.abbreviated)))")
-                        .font(.system(size: 13).monospacedDigit())
+                        .font(.brand(size: 13).monospacedDigit())
                         .foregroundStyle(Ink.tertiary(scheme))
                 }
             }
@@ -517,7 +523,7 @@ struct CaptureScreen: View {
                 if let working {
                     HStack(spacing: 10) {
                         ProgressView()
-                        Text(working).font(.system(size: 14)).foregroundStyle(Ink.secondary(scheme))
+                        Text(working).font(.brand(size: 14)).foregroundStyle(Ink.secondary(scheme))
                     }
                 }
                 if !model.outbox.isEmpty {
@@ -594,23 +600,23 @@ private struct TileFace: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Image(systemName: symbol)
-                .font(.system(size: 22, weight: .medium))
+            Icon(symbol)
+                .font(.brand(size: 22, weight: .medium))
                 .foregroundStyle(Ink.ink(scheme))
             Spacer(minLength: 0)
             Text(title)
-                .font(.system(size: 15.5, weight: .semibold))
+                .font(.brand(size: 15.5, weight: .semibold))
                 .foregroundStyle(Ink.ink(scheme))
             Text(detail)
-                .font(.system(size: 12))
+                .font(.brand(size: 12))
                 .foregroundStyle(Ink.tertiary(scheme))
                 .lineLimit(2)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding(14)
         .frame(maxWidth: .infinity, minHeight: 124, alignment: .topLeading)
-        .background(RoundedRectangle(cornerRadius: 20, style: .continuous).fill(Ink.card(scheme)))
-        .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous).strokeBorder(Ink.edge(scheme), lineWidth: 0.5))
+        .background(Rectangle().fill(Ink.card(scheme)))
+        .shadow(color: .black.opacity(scheme == .dark ? 0 : 0.08), radius: 10, y: 6)
         .contentShape(Rectangle())
     }
 }
@@ -633,27 +639,27 @@ private struct OutboxRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            Image(systemName: symbol)
-                .font(.system(size: 16))
+            Icon(symbol)
+                .font(.brand(size: 16))
                 .foregroundStyle(Ink.secondary(scheme))
                 .frame(width: 36, height: 36)
                 .background(Circle().fill(Ink.well(scheme)))
             VStack(alignment: .leading, spacing: 2) {
                 Text(item.capture.title)
-                    .font(.system(size: 15, weight: .medium))
+                    .font(.brand(size: 15, weight: .medium))
                     .foregroundStyle(Ink.ink(scheme))
                     .lineLimit(1)
                 Text(status)
-                    .font(.system(size: 12.5))
+                    .font(.brand(size: 12.5))
                     .foregroundStyle(Ink.tertiary(scheme))
             }
             Spacer()
             Text(item.capture.created.formatted(date: .omitted, time: .shortened))
-                .font(.system(size: 12).monospacedDigit())
+                .font(.brand(size: 12).monospacedDigit())
                 .foregroundStyle(Ink.tertiary(scheme))
         }
         .padding(12)
-        .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(Ink.card(scheme)))
+        .background(RoundedRectangle(cornerRadius: PhoneBrand.radiusSwipeRow, style: .continuous).fill(Ink.card(scheme)))
     }
 
     private var symbol: String {
@@ -735,10 +741,10 @@ private struct VoiceSheet: View {
     var body: some View {
         VStack(spacing: 24) {
             Text(recorder.isRecording ? "Listening" : (transcribing ? "Writing it down…" : "Voice note"))
-                .font(.system(size: 22, weight: .bold))
+                .font(.brand(size: 22, weight: .bold))
                 .foregroundStyle(Ink.ink(scheme))
             Text(String(format: "%d:%02d", Int(recorder.elapsed) / 60, Int(recorder.elapsed) % 60))
-                .font(.system(size: 48, weight: .light).monospacedDigit())
+                .font(.brand(size: 48, weight: .light).monospacedDigit())
                 .foregroundStyle(Ink.ink(scheme))
             Capsule()
                 .fill(Ink.accent)
@@ -747,15 +753,15 @@ private struct VoiceSheet: View {
             Button {
                 if recorder.isRecording { finish() } else { Task { if !(await recorder.start()) { model.notice = "11am needs the microphone for voice notes (Settings › 11am)." } } }
             } label: {
-                Image(systemName: recorder.isRecording ? "stop.fill" : "mic.fill")
-                    .font(.system(size: 30, weight: .semibold))
+                Icon(recorder.isRecording ? "stop.fill" : "mic.fill")
+                    .font(.brand(size: 30, weight: .semibold))
                     .foregroundStyle(Ink.paper(scheme))
                     .frame(width: 84, height: 84)
                     .background(Circle().fill(recorder.isRecording ? Ink.accent : Ink.ink(scheme)))
             }
             .disabled(transcribing)
             Text("Transcribed on this iPhone. The recording and the words go to Notes on your Mac.")
-                .font(.system(size: 13))
+                .font(.brand(size: 13))
                 .foregroundStyle(Ink.tertiary(scheme))
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
@@ -862,17 +868,17 @@ struct MacScreen: View {
                 if let pairing = model.pairing {
                     Card {
                         HStack(spacing: 12) {
-                            Image(systemName: "laptopcomputer")
-                                .font(.system(size: 26))
+                            Icon("laptopcomputer")
+                                .font(.brand(size: 26))
                                 .foregroundStyle(Ink.ink(scheme))
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(pairing.macName)
-                                    .font(.system(size: 18, weight: .semibold))
+                                    .font(.brand(size: 18, weight: .semibold))
                                     .foregroundStyle(Ink.ink(scheme))
                                 HStack(spacing: 6) {
                                     Circle().fill(statusColour).frame(width: 7, height: 7)
                                     Text(statusText)
-                                        .font(.system(size: 13))
+                                        .font(.brand(size: 13))
                                         .foregroundStyle(Ink.secondary(scheme))
                                         .fixedSize(horizontal: false, vertical: true)
                                 }
@@ -889,7 +895,7 @@ struct MacScreen: View {
                             .buttonStyle(InkButtonStyle(secondary: true))
                             .disabled(!model.link.isConnected)
                         Button("Unpair", role: .destructive) { model.unpair() }
-                            .font(.system(size: 14.5, weight: .medium))
+                            .font(.brand(size: 14.5, weight: .medium))
                             .frame(maxWidth: .infinity)
                             .padding(.top, 4)
                     }
@@ -897,7 +903,7 @@ struct MacScreen: View {
                     Card {
                         Label2(text: "Pair with your Mac")
                         Text("On your Mac, open 11am and choose Today › Pair your iPhone (or 11am › Settings › iPhone). Then scan the code it shows.")
-                            .font(.system(size: 15))
+                            .font(.brand(size: 15))
                             .foregroundStyle(Ink.secondary(scheme))
                             .fixedSize(horizontal: false, vertical: true)
                         Button("Scan the code") { scanningCode = true }
@@ -919,7 +925,7 @@ struct MacScreen: View {
                     Bullet("This iPhone sends what you capture and a daily Energy summary from Health.")
                     Bullet("Ask questions that your Mac answers with its own brain.")
                     Text("Everything is sealed with a key made on your Mac and shown only in its pairing code. No server, no account; they talk directly on your network.")
-                        .font(.system(size: 12.5))
+                        .font(.brand(size: 12.5))
                         .foregroundStyle(Ink.tertiary(scheme))
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -965,7 +971,7 @@ private struct Bullet: View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
             Circle().fill(Ink.tertiary(scheme)).frame(width: 4, height: 4).offset(y: -3)
             Text(text)
-                .font(.system(size: 14.5))
+                .font(.brand(size: 14.5))
                 .foregroundStyle(Ink.secondary(scheme))
                 .fixedSize(horizontal: false, vertical: true)
         }

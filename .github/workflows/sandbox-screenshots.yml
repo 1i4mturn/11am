@@ -216,12 +216,15 @@ jobs:
             sleep "${WAIT:-7}"
             xcrun simctl io "$DEVICE" screenshot "shots/$name.png"
           }
-          WAIT=10 shot phone-today-light -phoneSample YES -phoneTab today -phoneAppearance light
+          WAIT=10 shot phone-drop-light -phoneSample YES -phoneAppearance light
+          shot phone-drop-empty-dark -phoneAppearance dark
+          shot phone-today-light -phoneSample YES -phoneTab today -phoneAppearance light
+          shot phone-today-dark -phoneSample YES -phoneTab today -phoneAppearance dark
           shot phone-energy-light -phoneSample YES -phoneTab energy -phoneAppearance light
-          shot phone-energy-dark -phoneSample YES -phoneTab energy -phoneAppearance dark
           shot phone-capture-light -phoneSample YES -phoneTab capture -phoneAppearance light
           shot phone-mac-light -phoneTab mac -phoneAppearance light
-          shot phone-energy-empty-dark -phoneTab energy -phoneAppearance dark
+          shot phone-talk-dark -phoneSample YES -phoneTab today -phoneTalk YES -phoneAppearance light
+          shot phone-activity-dark -phoneSample YES -phoneActivityPreview YES -phoneAppearance dark
           ls -la shots | grep phone
 
       - name: Publish to the ci/sandbox-shots branch

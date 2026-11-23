@@ -8,7 +8,7 @@ options:
 settings:
   base:
     SWIFT_VERSION: "5.0"
-    MARKETING_VERSION: "0.36.0"
+    MARKETING_VERSION: "0.37.0"
     CURRENT_PROJECT_VERSION: "1"
 targets:
   ElevenAm:
@@ -82,7 +82,10 @@ targets:
     platform: iOS
     sources:
       - path: Phone
+      - path: PhoneShared
       - path: Shared
+    dependencies:
+      - target: ElevenAmWidgets
     info:
       path: Support/Phone-Info.plist
       properties:
@@ -91,6 +94,7 @@ targets:
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         UILaunchScreen: {}
+        NSSupportsLiveActivities: true
         UIApplicationSceneManifest:
           UIApplicationSupportsMultipleScenes: false
         UISupportedInterfaceOrientations:
@@ -126,4 +130,30 @@ targets:
         SUPPORTS_MACCATALYST: NO
     scheme:
       testTargets: []
-
+  ElevenAmWidgets:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: Widgets
+      - path: PhoneShared
+      - path: Shared/Brand.xcassets
+      - path: Shared/Fonts
+      - path: Shared/Glyphs.swift
+      - path: Shared/IconsMore.swift
+    info:
+      path: Support/Widgets-Info.plist
+      properties:
+        CFBundleDisplayName: 11am
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    settings:
+      base:
+        PRODUCT_NAME: ElevenAmWidgets
+        PRODUCT_BUNDLE_IDENTIFIER: au.elevenam.sandbox.phone.widgets
+        GENERATE_INFOPLIST_FILE: NO
+        TARGETED_DEVICE_FAMILY: "1"
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: ""
+        SKIP_INSTALL: YES

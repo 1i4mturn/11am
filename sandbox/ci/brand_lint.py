@@ -13,7 +13,7 @@ CONTENT = ('Features/Canvas/', 'Media/', 'Features/Files/ImageKit.swift', 'Featu
            'Features/PDF/PDFEngine.swift', 'Features/Documents/DocRender.swift', 'Features/Documents/DocxWriter.swift',
            'Features/Documents/DocumentKit.swift', 'Features/Photo/', 'Features/Video/VideoRender', 'Features/Video/VideoKit',
            'Features/Sheets/Grid', 'Features/Mail/', 'Features/Money/LedgerKit.swift', 'Features/Build/TerminalKit.swift')
-ICON_FILES = ('Design/Icons.swift', 'Design/IconsMore.swift')
+ICON_FILES = ('Design/Icons.swift',)
 HUES = r'(red|green|blue|orange|yellow|purple|pink|teal|mint|indigo|cyan|brown|gray|grey)'
 
 RULES = [
